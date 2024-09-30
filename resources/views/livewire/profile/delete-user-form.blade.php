@@ -58,9 +58,9 @@ $deleteUser = function (Logout $logout) {
             </div>
 
             <div class="mt-6 flex justify-end">
-                <x-secondary-button x-on:click="$dispatch('close')">
+                <flux:button x-on:click="$dispatch('close')">
                     {{ __('Cancel') }}
-                </x-secondary-button>
+                </flux:button>
 
                 <x-danger-button class="ms-3">
                     {{ __('Delete Account') }}
