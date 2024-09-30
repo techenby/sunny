@@ -53,9 +53,9 @@ $confirmPassword = function () {
         </div>
 
         <div class="flex justify-end mt-4">
-            <x-primary-button>
+            <flux:button variant="primary" type="submit">
                 {{ __('Confirm') }}
-            </x-primary-button>
+            </flux:button>
         </div>
     </form>
 </div>

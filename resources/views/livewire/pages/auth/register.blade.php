@@ -83,9 +83,9 @@ $register = function () {
                 {{ __('Already registered?') }}
             </a>
 
-            <x-primary-button class="ms-4">
+            <flux:button variant="primary" type="submit" class="ms-4">
                 {{ __('Register') }}
-            </x-primary-button>
+            </flux:button>
         </div>
     </form>
 </div>

@@ -53,9 +53,9 @@ $sendPasswordResetLink = function () {
         </div>
 
         <div class="flex items-center justify-end mt-4">
-            <x-primary-button>
+            <flux:button variant="primary" type="submit">
                 {{ __('Email Password Reset Link') }}
-            </x-primary-button>
+            </flux:button>
         </div>
     </form>
 </div>

@@ -89,9 +89,9 @@ $resetPassword = function () {
         </div>
 
         <div class="flex items-center justify-end mt-4">
-            <x-primary-button>
+            <flux:button variant="primary" type="submit">
                 {{ __('Reset Password') }}
-            </x-primary-button>
+            </flux:button>
         </div>
     </form>
 </div>
