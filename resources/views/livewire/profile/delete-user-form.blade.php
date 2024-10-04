@@ -44,20 +44,13 @@ $deleteUser = function (Logout $logout) {
                 {{ __('Once your account is deleted, all of its resources and data will be permanently deleted. Please enter your password to confirm you would like to permanently delete your account.') }}
             </p>
 
-            <div class="mt-6">
-                <x-input-label for="password" value="{{ __('Password') }}" class="sr-only" />
+            <flux:field class="mt-6">
+                <flux:label class="sr-only">{{ __('Password') }}</flux:label>
 
-                <x-text-input
-                    wire:model="password"
-                    id="password"
-                    name="password"
-                    type="password"
-                    class="mt-1 block w-3/4"
-                    placeholder="{{ __('Password') }}"
-                />
+                <flux:input wire:model="password" type="password" />
 
-                <x-input-error :messages="$errors->get('password')" class="mt-2" />
-            </div>
+                <flux:error name="password" />
+            </flux:field>
 
             <div class="mt-6 flex justify-end">
                 <flux:button x-on:click="$dispatch('close')">
