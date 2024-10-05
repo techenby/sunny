@@ -20,8 +20,8 @@ $deleteUser = function (Logout $logout) {
 
 ?>
 
-<section class="space-y-6">
-    <header>
+<section>
+    <header class="mb-6">
         <flux:heading level="2" size="lg">{{ __('Delete Account') }}</flux:heading>
         <flux:subheading>{{ __('Once your account is deleted, all of its resources and data will be permanently deleted. Before deleting your account, please download any data or information that you wish to retain.') }}</flux:subheading>
     </header>
@@ -54,6 +54,4 @@ $deleteUser = function (Logout $logout) {
             </div>
         </form>
     </flux:modal>
-
-
 </section>
