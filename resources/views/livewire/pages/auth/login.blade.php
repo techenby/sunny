@@ -26,7 +26,7 @@ $login = function () {
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
-    <form wire:submit="login">
+    <form wire:submit="login" class="space-y-4">
         <!-- Email Address -->
         <flux:input wire:model="form.email" :label="__('Email')" type="email" required autofocus autocomplete="username" />
 
@@ -34,12 +34,7 @@ $login = function () {
         <flux:input wire:model="form.password" :label="__('Password')" type="password" required autocomplete="current-password" />
 
         <!-- Remember Me -->
-        <div class="block mt-4">
-            <label for="remember" class="inline-flex items-center">
-                <input wire:model="form.remember" id="remember" type="checkbox" class="rounded dark:bg-gray-900 border-gray-300 dark:border-gray-700 text-indigo-600 shadow-sm focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:focus:ring-offset-gray-800" name="remember">
-                <span class="ms-2 text-sm text-gray-600 dark:text-gray-400">{{ __('Remember me') }}</span>
-            </label>
-        </div>
+        <flux:checkbox wire:model="form.remember" :label="__('Remember me')" />
 
         <div class="flex items-center justify-end mt-4">
             @if (Route::has('password.request'))
