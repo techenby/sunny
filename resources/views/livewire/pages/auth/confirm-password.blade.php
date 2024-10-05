@@ -33,29 +33,18 @@ $confirmPassword = function () {
 ?>
 
 <div>
-    <div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
+    <flux:subheading class="mb-4">
         {{ __('This is a secure area of the application. Please confirm your password before continuing.') }}
-    </div>
+    </flux:subheading>
 
     <form wire:submit="confirmPassword">
         <!-- Password -->
-        <div>
-            <x-input-label for="password" :value="__('Password')" />
-
-            <x-text-input wire:model="password"
-                          id="password"
-                          class="block mt-1 w-full"
-                          type="password"
-                          name="password"
-                          required autocomplete="current-password" />
-
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
+        <flux:input wire:model="password" :label="__('Password')" type="password" required autocomplete="current-password" />
 
         <div class="flex justify-end mt-4">
-            <x-primary-button>
+            <flux:button variant="primary" type="submit">
                 {{ __('Confirm') }}
-            </x-primary-button>
+            </flux:button>
         </div>
     </form>
 </div>
