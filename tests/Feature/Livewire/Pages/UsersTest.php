@@ -42,3 +42,34 @@ test('can sort columns', function () {
         // assert names are back in default order
         ->assertSeeInOrder(['Ashar', 'Velvet', 'Andy', 'Geo']);
 });
+
+test('can edit user', function () {
+    $user = User::factory()->create([
+        'name' => 'Kouzuki Oden',
+        'email' => 'oden@whitebeard.pirate',
+    ]);
+
+    Volt::test('pages.users')
+        ->call('edit', $user->id)
+        ->assertSet('name', 'Kouzuki Oden')
+        ->assertSet('email', 'oden@whitebeard.pirate')
+        ->set('email', 'oden@rodger.pirate')
+        ->call('save');
+
+    expect($user->fresh()->email)->toBe('oden@rodger.pirate');
+});
+
+test('can delete user', function () {
+    $user = User::factory()->create([
+        'name' => 'Kouzuki Oden',
+        'email' => 'oden@whitebeard.pirate',
+    ]);
+
+    Volt::test('pages.users')
+        ->call('delete', $user->id);
+
+    $this->assertDatabaseMissing('users', [
+        'name' => 'Kouzuki Oden',
+        'email' => 'oden@whitebeard.pirate',
+    ]);
+});

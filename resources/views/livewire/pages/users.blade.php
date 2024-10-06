@@ -16,6 +16,12 @@ state([
     'email' => '',
 ]);
 
+$delete = function ($id) {
+    $this->users->firstWhere('id', $id)->delete();
+
+    unset($this->users);
+};
+
 $edit = function ($id) {
     $user = $this->users->firstWhere('id', $id);
 
@@ -86,7 +92,7 @@ $users = computed(function () {
 
                             <flux:menu>
                                 <flux:menu.item icon="pencil-square" wire:click="edit({{ $user->id }})">Edit</flux:menu.item>
-                                <flux:menu.item variant="danger" icon="trash">Delete</flux:menu.item>
+                                <flux:menu.item variant="danger" icon="trash" wire:click="delete({{ $user->id }})">Delete</flux:menu.item>
                             </flux:menu>
                         </flux:dropdown>
                     </flux:cell>
