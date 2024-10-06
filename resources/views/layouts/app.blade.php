@@ -27,6 +27,7 @@
 
         <flux:navlist variant="outline">
             <flux:navlist.item icon="home" :href="route('dashboard')">{{ __('Home') }}</flux:navlist.item>
+            <flux:navlist.item icon="users" :href="route('users')">{{ __('Users') }}</flux:navlist.item>
         </flux:navlist>
 
         <flux:spacer />
@@ -58,9 +59,7 @@
         </flux:dropdown>
     </flux:header>
 
-    <flux:main>
-        {{ $slot }}
-    </flux:main>
+    {{ $slot }}
 
     @fluxScripts
     @vite('resources/js/app.js')
