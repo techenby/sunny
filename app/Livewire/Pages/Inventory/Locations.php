@@ -19,6 +19,8 @@ class Locations extends Component
     public $name = '';
     public $editingLocation = null;
 
+    public $perPage = 10;
+    public $search = '';
     public $sortBy = '';
     public $sortDirection = 'desc';
 
@@ -33,7 +35,8 @@ class Locations extends Component
     {
         return Location::query()
             ->when($this->sortBy, fn ($query) => $query->orderBy($this->sortBy, $this->sortDirection))
-            ->paginate(10);
+            ->when($this->search, fn ($query) => $query->where('name', 'like', '%' . $this->search . '%'))
+            ->paginate($this->perPage);
     }
 
     public function delete($id)

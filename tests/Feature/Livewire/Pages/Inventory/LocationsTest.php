@@ -56,6 +56,36 @@ test('can sort locations', function () {
         ->assertSeeInOrder(['Basement', 'Living Room', 'Bedroom']);
 });
 
+test('can search locations', function () {
+    Location::factory()
+        ->count(3)
+        ->state(new Sequence(
+            ['name' => 'Basement'],
+            ['name' => 'Living Room'],
+            ['name' => 'Bedroom'],
+        ))
+        ->create();
+
+    Livewire::test(Locations::class)
+        ->assertSee(['Basement', 'Living Room', 'Bedroom'])
+        ->set('search', 'B')
+        ->assertSee(['Bedroom', 'Basement'])
+        ->set('search', 'Bed')
+        ->assertSee(['Bedroom']);
+});
+
+test('can adjust number per page locations', function () {
+    Location::factory()
+        ->count(10)
+        ->sequence(fn (Sequence $sequence) => ['name' => 'Name ' . $sequence->index + 1])
+        ->create();
+
+    Livewire::test(Locations::class)
+        ->assertSee(['Name 1', 'Name 2', 'Name 3', 'Name 4', 'Name 5', 'Name 6', 'Name 7', 'Name 8', 'Name 9', 'Name 10'])
+        ->set('perPage', 5)
+        ->assertSee(['Name 1', 'Name 2', 'Name 3', 'Name 4', 'Name 5']);
+});
+
 test('can create location', function () {
     Livewire::test(Locations::class)
         ->assertSee('Create')
