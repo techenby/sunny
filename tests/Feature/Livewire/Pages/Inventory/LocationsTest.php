@@ -66,7 +66,20 @@ test('can create location', function () {
     ]);
 });
 
-test('can edit location')->todo();
+test('can edit location', function () {
+    $location = Location::factory()->create(['name' => 'Bedroom']);
+
+    Livewire::test(Locations::class)
+        ->assertSee('Bedroom')
+        ->call('edit', $location->id)
+        ->assertSet('name', 'Bedroom')
+        ->set('name', 'Main Bedroom')
+        ->call('update')
+        ->assertSet('name', '');
+
+    expect($location->fresh()->name)->toBe('Main Bedroom');
+});
+
 test('can delete location')->todo();
 test('deleting location updates bins')->todo();
 test('deleting location updates things')->todo();

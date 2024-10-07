@@ -50,4 +50,21 @@
             </div>
         </form>
     </flux:modal>
+
+    <flux:modal name="edit-location" variant="flyout">
+        <form wire:submit="update" class="space-y-6">
+            <div>
+                <flux:heading size="lg">Edit Location</flux:heading>
+                <flux:subheading>A place or room that can store bins and things.</flux:subheading>
+            </div>
+
+            <flux:input wire:model="name" :label="__('Name')" />
+
+            <div class="flex">
+                <flux:spacer />
+
+                <flux:button type="submit" variant="primary">Save changes</flux:button>
+            </div>
+        </form>
+    </flux:modal>
 </flux:main>
