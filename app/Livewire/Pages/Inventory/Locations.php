@@ -39,18 +39,22 @@ class Locations extends Component
         $this->editingLocation = $this->locations->firstWhere('id', $id);
         $this->name = $this->editingLocation->name;
 
-        $this->modal('edit-location')->show();
+        $this->modal('location-form')->show();
     }
 
-    public function store()
+    public function save()
     {
         $this->validate();
 
-        Location::create(['name' => $this->name]);
+        if ($this->editingLocation) {
+            $this->editingLocation->update(['name' => $this->name]);
+        } else {
+            Location::create(['name' => $this->name]);
+        }
 
         $this->reset('name');
         unset($this->locations);
-        $this->modal('create-location')->close();
+        $this->modal('location-form')->close();
     }
 
     public function sort($column)
@@ -63,16 +67,5 @@ class Locations extends Component
             $this->sortBy = $column;
             $this->sortDirection = 'desc';
         }
-    }
-
-    public function update()
-    {
-        $this->validate();
-
-        $this->editingLocation->update(['name' => $this->name]);
-
-        $this->reset('name');
-        unset($this->locations);
-        $this->modal('edit-location')->close();
     }
 }

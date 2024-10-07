@@ -34,27 +34,10 @@
         </flux:rows>
     </flux:table>
 
-    <flux:modal name="create-location" variant="flyout">
-        <form wire:submit="store" class="space-y-6">
+    <flux:modal name="location-form" variant="flyout">
+        <form wire:submit="save" class="space-y-6">
             <div>
-                <flux:heading size="lg">Create Location</flux:heading>
-                <flux:subheading>A place or room that can store bins and things.</flux:subheading>
-            </div>
-
-            <flux:input wire:model="name" :label="__('Name')" />
-
-            <div class="flex">
-                <flux:spacer />
-
-                <flux:button type="submit" variant="primary">Save changes</flux:button>
-            </div>
-        </form>
-    </flux:modal>
-
-    <flux:modal name="edit-location" variant="flyout">
-        <form wire:submit="update" class="space-y-6">
-            <div>
-                <flux:heading size="lg">Edit Location</flux:heading>
+                <flux:heading size="lg">{{ $this->editingLocation ? 'Edit' : 'Create' }} Location</flux:heading>
                 <flux:subheading>A place or room that can store bins and things.</flux:subheading>
             </div>
 

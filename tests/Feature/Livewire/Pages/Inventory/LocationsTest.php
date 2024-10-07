@@ -58,7 +58,7 @@ test('can create location', function () {
     Livewire::test(Locations::class)
         ->assertSee('Create')
         ->set('name', 'Kitchen')
-        ->call('store')
+        ->call('save')
         ->assertSet('name', '');
 
     $this->assertDatabaseHas('locations', [
@@ -74,7 +74,7 @@ test('can edit location', function () {
         ->call('edit', $location->id)
         ->assertSet('name', 'Bedroom')
         ->set('name', 'Main Bedroom')
-        ->call('update')
+        ->call('save')
         ->assertSet('name', '');
 
     expect($location->fresh()->name)->toBe('Main Bedroom');
