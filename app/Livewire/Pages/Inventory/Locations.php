@@ -2,7 +2,9 @@
 
 namespace App\Livewire\Pages\Inventory;
 
+use App\Models\Bin;
 use App\Models\Location;
+use App\Models\Thing;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Validate;
@@ -32,6 +34,17 @@ class Locations extends Component
         return Location::query()
             ->when($this->sortBy, fn ($query) => $query->orderBy($this->sortBy, $this->sortDirection))
             ->paginate(10);
+    }
+
+    public function delete($id)
+    {
+        $location = $this->locations->firstWhere('id', $id);
+
+        Bin::where('location_id', $location->id)->update(['location_id' => null]);
+        Thing::where('location_id', $location->id)->update(['location_id' => null]);
+
+        $location->delete();
+        unset($this->locations);
     }
 
     public function edit($id)

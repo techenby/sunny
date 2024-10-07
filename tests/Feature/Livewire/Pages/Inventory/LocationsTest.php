@@ -1,7 +1,9 @@
 <?php
 
 use App\Livewire\Pages\Inventory\Locations;
+use App\Models\Bin;
 use App\Models\Location;
+use App\Models\Thing;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Livewire\Livewire;
@@ -80,6 +82,35 @@ test('can edit location', function () {
     expect($location->fresh()->name)->toBe('Main Bedroom');
 });
 
-test('can delete location')->todo();
-test('deleting location updates bins')->todo();
-test('deleting location updates things')->todo();
+test('can delete location', function () {
+    $location = Location::factory()->create(['name' => 'Bedroom']);
+
+    Livewire::test(Locations::class)
+        ->assertSee('Bedroom')
+        ->call('delete', $location->id)
+        ->assertDontSee('Bedroom');
+
+    $this->assertDatabaseMissing('locations', [
+        'name' => 'Bedroom',
+    ]);
+});
+
+test('deleting location updates bins', function () {
+    $location = Location::factory()->create(['name' => 'Bedroom']);
+    $bin = Bin::factory()->for($location)->create(['name' => 'Sheets Box']);
+
+    Livewire::test(Locations::class)
+        ->call('delete', $location->id);
+
+    expect($bin->fresh()->location_id)->toBeNull();
+});
+
+test('deleting location updates things', function () {
+    $location = Location::factory()->create(['name' => 'Bedroom']);
+    $thing = Thing::factory()->for($location)->create(['name' => 'Light Blue King Sheets']);
+
+    Livewire::test(Locations::class)
+        ->call('delete', $location->id);
+
+    expect($thing->fresh()->location_id)->toBeNull();
+});
