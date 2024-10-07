@@ -5,6 +5,7 @@ namespace App\Livewire\Pages\Inventory;
 use App\Models\Location;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Validate;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -12,6 +13,8 @@ class Locations extends Component
 {
     use WithPagination;
 
+    #[Validate('required|min:3')]
+    public $name = '';
     public $sortBy = '';
     public $sortDirection = 'desc';
 
@@ -29,10 +32,21 @@ class Locations extends Component
             ->paginate(10);
     }
 
-    public function sort($column) {
+    public function store()
+    {
+        $this->validate();
+
+        Location::create(['name' => $this->name]);
+
+        $this->reset('name');
+        unset($this->locations);
+    }
+
+    public function sort($column)
+    {
         if ($this->sortBy === $column && $this->sortDirection === 'asc') {
             $this->reset('sortBy', 'sortDirection');
-        } else if ($this->sortBy === $column) {
+        } elseif ($this->sortBy === $column) {
             $this->sortDirection = 'asc';
         } else {
             $this->sortBy = $column;

@@ -1,5 +1,11 @@
 <flux:main class="space-y-6">
-    <flux:heading size="xl" level="1">{{ __('Locations') }}</flux:heading>
+    <div class="flex">
+        <flux:heading size="xl" level="1">{{ __('Locations') }}</flux:heading>
+        <flux:spacer />
+        <flux:modal.trigger name="create-location">
+            <flux:button>Create</flux:button>
+        </flux:modal.trigger>
+    </div>
 
     <flux:table :paginate="$this->locations">
         <flux:columns>
@@ -27,4 +33,21 @@
             @endforeach
         </flux:rows>
     </flux:table>
+
+    <flux:modal name="create-location" variant="flyout">
+        <form wire:submit="store" class="space-y-6">
+            <div>
+                <flux:heading size="lg">Create Location</flux:heading>
+                <flux:subheading>A place or room that can store bins and things.</flux:subheading>
+            </div>
+
+            <flux:input wire:model="name" :label="__('Name')" />
+
+            <div class="flex">
+                <flux:spacer />
+
+                <flux:button type="submit" variant="primary">Save changes</flux:button>
+            </div>
+        </form>
+    </flux:modal>
 </flux:main>

@@ -54,7 +54,18 @@ test('can sort locations', function () {
         ->assertSeeInOrder(['Basement', 'Living Room', 'Bedroom']);
 });
 
-test('can create location')->todo();
+test('can create location', function () {
+    Livewire::test(Locations::class)
+        ->assertSee('Create')
+        ->set('name', 'Kitchen')
+        ->call('store')
+        ->assertSet('name', '');
+
+    $this->assertDatabaseHas('locations', [
+        'name' => 'Kitchen',
+    ]);
+});
+
 test('can edit location')->todo();
 test('can delete location')->todo();
 test('deleting location updates bins')->todo();
