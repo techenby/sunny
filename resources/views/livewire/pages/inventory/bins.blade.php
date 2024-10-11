@@ -57,8 +57,14 @@
                 <flux:subheading>A box or bookshelf that can store things in a location.</flux:subheading>
             </div>
 
-            <flux:input wire:model="name" :label="__('Name')" />
-            <flux:input wire:model="location_id" :label="__('Location')" />
+            <flux:input wire:model="name" :label="__('Name')" aria-autocomplete="none" />
+
+            <flux:select wire:model="location_id" :label="__('Location')" placeholder="Choose location...">
+                @foreach ($locations as $id => $label)
+                    <flux:option wire:key="{{ $id }}" value="{{ $id }}">{{ $label }}</flux:option>
+                @endforeach
+            </flux:select>
+
             <flux:input wire:model="type" :label="__('Type')" />
 
             <div class="flex">

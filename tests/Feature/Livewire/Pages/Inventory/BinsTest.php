@@ -92,7 +92,7 @@ test('can create bin', function () {
     Livewire::test(Bins::class)
         ->assertSee('Create')
         ->set('name', 'Beach Box')
-
+        ->set('location_id', $location->id)
         ->set('type', 'Medium box with Purple Lid')
         ->call('save')
         ->assertSet('name', '')
@@ -101,28 +101,34 @@ test('can create bin', function () {
 
     $this->assertDatabaseHas('bins', [
         'name' => 'Beach Box',
-        // 'location_id' => $location->id,
-        'type' => 'Medium box with Purple Lid'
+        'location_id' => $location->id,
+        'type' => 'Medium box with Purple Lid',
     ]);
 });
 
 test('can edit bin', function () {
+    [$locationA, $locationB] = Location::factory()->count(2)->create();
     $bin = Bin::factory()->create([
         'name' => 'Beach Box',
-        'type' => 'Medium box with Purple Lid'
+        'location_id' => $locationA->id,
+        'type' => 'Medium box with Purple Lid',
     ]);
 
     Livewire::test(Bins::class)
         ->assertSee('Beach Box')
         ->call('edit', $bin->id)
         ->assertSet('name', 'Beach Box')
-        ->assertSet('location_id', $bin->location_id)
+        ->assertSet('location_id', $locationA->id)
         ->assertSet('type', 'Medium box with Purple Lid')
         ->set('name', 'Beach Bin')
+        ->set('location_id', $locationB->id)
         ->call('save')
         ->assertSet('name', '');
 
-    expect($bin->fresh()->name)->toBe('Beach Bin');
+    tap($bin->fresh(), function ($bin) use ($locationB) {
+        expect($bin->name)->toBe('Beach Bin');
+        expect($bin->location_id)->toBe($locationB->id);
+    });
 });
 
 test('can delete location', function () {

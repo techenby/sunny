@@ -3,6 +3,7 @@
 namespace App\Livewire\Pages\Inventory;
 
 use App\Models\Bin;
+use App\Models\Location;
 use App\Models\Thing;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -17,7 +18,7 @@ class Bins extends Component
     #[Validate('required|min:3')]
     public $name = '';
 
-    #[Validate('nullable|min:3')]
+    #[Validate('nullable|exists:App\Models\Location,id')]
     public $location_id = null;
 
     #[Validate('nullable|min:3')]
@@ -33,7 +34,9 @@ class Bins extends Component
     #[Layout('layouts.app')]
     public function render()
     {
-        return view('livewire.pages.inventory.bins');
+        return view('livewire.pages.inventory.bins', [
+            'locations' => Location::all()->sortBy('name')->pluck('name', 'id'),
+        ]);
     }
 
     #[Computed]
@@ -69,7 +72,6 @@ class Bins extends Component
     {
         $validated = $this->validate();
 
-        dd($validated);
         if ($this->editingBin) {
             $this->editingBin->update($validated);
         } else {
