@@ -131,7 +131,7 @@ test('can edit bin', function () {
     });
 });
 
-test('can delete location', function () {
+test('can delete bin', function () {
     $bin = Bin::factory()->create(['name' => 'Beach Box']);
 
     Livewire::test(Bins::class)
@@ -139,7 +139,7 @@ test('can delete location', function () {
         ->call('delete', $bin->id)
         ->assertDontSee('Beach Box');
 
-    $this->assertDatabaseMissing('locations', [
+    $this->assertDatabaseMissing('bins', [
         'name' => 'Beach Box',
     ]);
 });
