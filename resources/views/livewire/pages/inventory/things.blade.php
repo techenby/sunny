@@ -50,7 +50,7 @@
         </flux:table>
     </section>
 
-    <flux:modal name="bin-form" variant="flyout">
+    <flux:modal name="thing-form" variant="flyout">
         <form wire:submit="save" class="space-y-6">
             <div>
                 <flux:heading size="lg">{{ $this->editingThing ? 'Edit' : 'Create' }} Thing</flux:heading>

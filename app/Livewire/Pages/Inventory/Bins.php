@@ -19,7 +19,7 @@ class Bins extends Component
     public $name = '';
 
     #[Validate('nullable|exists:App\Models\Location,id')]
-    public $location_id = null;
+    public $location_id = '';
 
     #[Validate('nullable|min:3')]
     public $type = '';

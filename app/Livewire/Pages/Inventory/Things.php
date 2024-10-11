@@ -19,10 +19,10 @@ class Things extends Component
     public $name = '';
 
     #[Validate('nullable|exists:App\Models\Bin,id')]
-    public $bin_id = null;
+    public $bin_id = '';
 
     #[Validate('nullable|exists:App\Models\Location,id')]
-    public $location_id = null;
+    public $location_id = '';
 
     public $editingThing = null;
 
