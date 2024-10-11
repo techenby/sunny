@@ -32,7 +32,7 @@
             <flux:navlist.group heading="Inventory" expandable>
                 <flux:navlist.item :href="route('inventory.locations')">{{ __('Locations') }}</flux:navlist.item>
                 <flux:navlist.item :href="route('inventory.bins')">{{ __('Bins') }}</flux:navlist.item>
-                <flux:navlist.item :href="route('inventory.things')">{{ __('Thingsg') }}</flux:navlist.item>
+                <flux:navlist.item :href="route('inventory.things')">{{ __('Things') }}</flux:navlist.item>
             </flux:navlist.group>
         </flux:navlist>
 
