@@ -28,6 +28,11 @@
         <flux:navlist variant="outline">
             <flux:navlist.item icon="home" :href="route('dashboard')">{{ __('Home') }}</flux:navlist.item>
             <flux:navlist.item icon="users" :href="route('users')">{{ __('Users') }}</flux:navlist.item>
+
+            <flux:navlist.group heading="Inventory" expandable>
+                <flux:navlist.item :href="route('inventory.locations')">{{ __('Locations') }}</flux:navlist.item>
+                <flux:navlist.item :href="route('inventory.bins')">{{ __('Bins') }}</flux:navlist.item>
+            </flux:navlist.group>
         </flux:navlist>
 
         <flux:spacer />

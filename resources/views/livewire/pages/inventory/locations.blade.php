@@ -2,7 +2,7 @@
     <header class="flex">
         <flux:heading size="xl" level="1">{{ __('Locations') }}</flux:heading>
         <flux:spacer />
-        <flux:modal.trigger name="create-location">
+        <flux:modal.trigger name="location-form">
             <flux:button>Create</flux:button>
         </flux:modal.trigger>
     </header>
