@@ -2,7 +2,8 @@
 
 namespace App\Livewire\Concerns;
 
-trait WithDataTable {
+trait WithDataTable
+{
     public $perPage = 10;
     public $search = '';
     public $sortBy = '';
