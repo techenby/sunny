@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Pages\Inventory;
 
+use App\Livewire\Concerns\WithDataTable;
 use App\Models\Bin;
 use App\Models\Location;
 use App\Models\Thing;
@@ -13,6 +14,7 @@ use Livewire\WithPagination;
 
 class Bins extends Component
 {
+    use WithDataTable;
     use WithPagination;
 
     #[Validate('required|min:3')]
@@ -25,11 +27,6 @@ class Bins extends Component
     public $type = '';
 
     public $editingBin = null;
-
-    public $perPage = 10;
-    public $search = '';
-    public $sortBy = '';
-    public $sortDirection = 'desc';
 
     #[Layout('layouts.app')]
     public function render()
@@ -81,17 +78,5 @@ class Bins extends Component
         $this->reset(['name', 'location_id', 'type']);
         unset($this->bins);
         $this->modal('bin-form')->close();
-    }
-
-    public function sort($column)
-    {
-        if ($this->sortBy === $column && $this->sortDirection === 'asc') {
-            $this->reset('sortBy', 'sortDirection');
-        } elseif ($this->sortBy === $column) {
-            $this->sortDirection = 'asc';
-        } else {
-            $this->sortBy = $column;
-            $this->sortDirection = 'desc';
-        }
     }
 }
