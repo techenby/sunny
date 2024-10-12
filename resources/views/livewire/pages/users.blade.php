@@ -14,6 +14,7 @@ state([
     'editingUser',
     'name' => '',
     'email' => '',
+    'status' => '',
 ]);
 
 $delete = function ($id) {
@@ -28,6 +29,7 @@ $edit = function ($id) {
     $this->editingUser = $user;
     $this->name = $user->name;
     $this->email = $user->email;
+    $this->status = $user->status;
 
     $this->modal('edit-user')->show();
 };
@@ -36,6 +38,7 @@ $save = function () {
     $validated = $this->validate([
         'name' => ['required', 'string', 'max:255'],
         'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique(User::class)->ignore($this->editingUser->id)],
+        'status' => ['nullable', 'string'],
     ]);
 
     $this->editingUser->fill($validated);
@@ -46,7 +49,7 @@ $save = function () {
 
     $this->editingUser->save();
 
-    $this->reset('editingUser', 'name', 'email');
+    $this->reset('editingUser', 'name', 'email', 'status');
     $this->modal('edit-user')->close();
 };
 
@@ -77,6 +80,7 @@ $users = computed(function () {
             <flux:column>ID</flux:column>
             <flux:column sortable :sorted="$sortBy === 'name'" :direction="$sortDirection" wire:click="sort('name')">Name</flux:column>
             <flux:column sortable :sorted="$sortBy === 'email'" :direction="$sortDirection" wire:click="sort('email')">Email</flux:column>
+            <flux:column sortable :sorted="$sortBy === 'status'" :direction="$sortDirection" wire:click="sort('status')">Status</flux:column>
         </flux:columns>
 
         <flux:rows>
@@ -85,6 +89,7 @@ $users = computed(function () {
                     <flux:cell>{{ $user->id }}</flux:cell>
                     <flux:cell>{{ $user->name }}</flux:cell>
                     <flux:cell>{{ $user->email }}</flux:cell>
+                    <flux:cell>{{ $user->status }}</flux:cell>
 
                     <flux:cell>
                         <flux:dropdown>
@@ -110,6 +115,7 @@ $users = computed(function () {
 
             <flux:input wire:model="name" :label="__('Name')" type="text" required autocomplete="name" />
             <flux:input wire:model="email" :label="__('Email')" type="email" required autocomplete="email" />
+            <flux:input wire:model="status" :label="__('Status')" type="text" clearable />
 
             <div class="flex">
                 <flux:spacer />

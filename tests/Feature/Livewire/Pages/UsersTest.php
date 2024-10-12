@@ -73,3 +73,53 @@ test('can delete user', function () {
         'email' => 'oden@whitebeard.pirate',
     ]);
 });
+
+test('can set status', function () {
+    $user = User::factory()->create([
+        'name' => 'Kouzuki Oden',
+        'email' => 'oden@whitebeard.pirate',
+    ]);
+
+    Volt::test('pages.users')
+        ->call('edit', $user->id)
+        ->assertSet('name', 'Kouzuki Oden')
+        ->assertSet('email', 'oden@whitebeard.pirate')
+        ->set('status', 'Eating Oden')
+        ->call('save');
+
+    expect($user->fresh()->status)->toBe('Eating Oden');
+});
+
+test('can clear status', function () {
+    $user = User::factory()->create([
+        'name' => 'Kouzuki Oden',
+        'email' => 'oden@whitebeard.pirate',
+        'status' => 'Eating Oden',
+    ]);
+
+    Volt::test('pages.users')
+        ->call('edit', $user->id)
+        ->assertSet('name', 'Kouzuki Oden')
+        ->assertSet('email', 'oden@whitebeard.pirate')
+        ->set('status', '')
+        ->call('save');
+
+    expect($user->fresh()->status)->toBe('');
+});
+
+test('can change status', function () {
+    $user = User::factory()->create([
+        'name' => 'Kouzuki Oden',
+        'email' => 'oden@whitebeard.pirate',
+        'status' => 'Eating Oden',
+    ]);
+
+    Volt::test('pages.users')
+        ->call('edit', $user->id)
+        ->assertSet('name', 'Kouzuki Oden')
+        ->assertSet('email', 'oden@whitebeard.pirate')
+        ->set('status', 'Fighting')
+        ->call('save');
+
+    expect($user->fresh()->status)->toBe('Fighting');
+});
