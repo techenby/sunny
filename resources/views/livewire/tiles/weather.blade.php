@@ -3,21 +3,22 @@
 use App\Http\Integrations\OpenWeather\OpenWeather;
 use App\Http\Integrations\OpenWeather\Requests\OneCall;
 
-use function Livewire\Volt\mount;
-use function Livewire\Volt\state;
+use function Livewire\Volt\{state, with};
 
-state(['position', 'weather']);
+state(['position']);
 
-mount(function () {
+with(function () {
     $openWeather = new OpenWeather();
     $oneCall = new OneCall();
 
-    $this->weather = $openWeather->send($oneCall)->json();
+    return [
+        'weather' => $openWeather->send($oneCall)->json(),
+    ];
 });
 
 ?>
 
-<x-dashboard-tile :position="$position">
+<x-dashboard-tile :position="$position" refresh-interval="60">
     <div class="flex items-end justify-between">
         <h1>Plainfield</h1>
         <x-weather-icon class="w-6 h-6" :id="$weather['current']['weather'][0]['id']" />
