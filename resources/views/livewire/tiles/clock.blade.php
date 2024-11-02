@@ -1,11 +1,8 @@
 <?php
 
-use function Livewire\Volt\computed;
 use function Livewire\Volt\state;
 
 state(['position' => '']);
-
-$now = computed(fn () => now('America/Chicago')->format('h:i:s a'));
 ?>
 
 <x-dashboard-tile :position="$position">
