@@ -18,7 +18,10 @@ mount(function () {
 ?>
 
 <x-dashboard-tile :position="$position">
-    <h1>Plainfield</h1>
+    <div class="flex items-end justify-between">
+        <h1>Plainfield</h1>
+        <x-weather-icon class="w-6 h-6" :id="$weather['current']['weather'][0]['id']" />
+    </div>
     <div class="flex items-end justify-between">
         <div class="text-2xl">{{ round($weather['current']['temp']) }}°</div>
         <div class="space-x-2">
