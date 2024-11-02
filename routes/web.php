@@ -8,6 +8,8 @@ use Livewire\Volt\Volt;
 
 Route::view('/', 'welcome');
 
+Route::view('log-pose', 'log-pose');
+
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::view('dashboard', 'dashboard')->name('dashboard');
     Route::view('profile', 'profile')->name('profile');
