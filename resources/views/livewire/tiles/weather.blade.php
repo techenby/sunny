@@ -30,10 +30,10 @@ mount(function () {
     @if ($index == 0)
         @continue
     @endif
-    <div class="flex items-end justify-between">
-        <div class="space-x-2">
-            <span class="inline-block w-8">{{ Carbon\Carbon::parse($day['dt'])->shortEnglishDayOfWeek }}</span>
-            <img src="https://openweathermap.org/img/wn/{{ $day['weather'][0]['icon'] }}.png" alt="" class="inline-block w-6 h-6">
+    <div class="flex items-end justify-between py-1">
+        <div class="flex space-x-4">
+            <span class="w-8">{{ Carbon\Carbon::parse($day['dt'])->shortEnglishDayOfWeek }}</span>
+            <x-weather-icon class="w-6 h-6" :id="$day['weather'][0]['id']" />
         </div>
         <div class="space-x-2">
             <span class="text-dimmed">{{ round($day['temp']['min']) }}</span>
