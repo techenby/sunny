@@ -12,7 +12,7 @@ state([
 ]);
 
 mount(function () {
-    $this->setUpMonth(now('America/Chicago')->addDay());
+    $this->setUpMonth(now('America/Chicago'));
 });
 
 $setUpMonth = function ($carbon = null) {
