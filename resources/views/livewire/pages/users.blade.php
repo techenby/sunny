@@ -38,8 +38,12 @@ $save = function () {
     $validated = $this->validate([
         'name' => ['required', 'string', 'max:255'],
         'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique(User::class)->ignore($this->editingUser->id)],
-        'status' => ['nullable', 'string'],
+        'status' => ['nullable'],
     ]);
+
+    if ($validated['status'] === '') {
+        $validated['status'] = null;
+    }
 
     $this->editingUser->fill($validated);
 
