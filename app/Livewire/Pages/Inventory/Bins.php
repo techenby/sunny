@@ -6,12 +6,17 @@ use App\Livewire\Concerns\WithDataTable;
 use App\Models\Bin;
 use App\Models\Location;
 use App\Models\Thing;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+/**
+ * @property Collection $bins
+ */
 class Bins extends Component
 {
     use WithDataTable;
@@ -37,7 +42,7 @@ class Bins extends Component
     }
 
     #[Computed]
-    public function bins()
+    public function bins(): LengthAwarePaginator
     {
         return Bin::query()
             ->when($this->sortBy, fn ($query) => $query->orderBy($this->sortBy, $this->sortDirection))
@@ -45,9 +50,9 @@ class Bins extends Component
             ->paginate($this->perPage);
     }
 
-    public function delete($id)
+    public function delete(int $id): void
     {
-        $bin = $this->bins->firstWhere('id', $id);
+        $bin = Bin::find($id);
 
         Thing::where('bin_id', $bin->id)->update(['bin_id' => null]);
 
@@ -55,9 +60,9 @@ class Bins extends Component
         unset($this->bins);
     }
 
-    public function edit($id)
+    public function edit(int $id): void
     {
-        $this->editingBin = $this->bins->firstWhere('id', $id);
+        $this->editingBin = Bin::find($id);
         $this->name = $this->editingBin->name;
         $this->location_id = $this->editingBin->location_id;
         $this->type = $this->editingBin->type;
@@ -65,7 +70,7 @@ class Bins extends Component
         $this->modal('bin-form')->show();
     }
 
-    public function save()
+    public function save(): void
     {
         $validated = $this->validate();
 

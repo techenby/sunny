@@ -6,12 +6,16 @@ use App\Livewire\Concerns\WithDataTable;
 use App\Models\Bin;
 use App\Models\Location;
 use App\Models\Thing;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+/**
+ * @property LengthAwarePaginator $locations
+ */
 class Locations extends Component
 {
     use WithDataTable;
@@ -28,7 +32,7 @@ class Locations extends Component
     }
 
     #[Computed]
-    public function locations()
+    public function locations(): LengthAwarePaginator
     {
         return Location::query()
             ->when($this->sortBy, fn ($query) => $query->orderBy($this->sortBy, $this->sortDirection))
@@ -38,7 +42,7 @@ class Locations extends Component
 
     public function delete($id)
     {
-        $location = $this->locations->firstWhere('id', $id);
+        $location = Location::find($id);
 
         Bin::where('location_id', $location->id)->update(['location_id' => null]);
         Thing::where('location_id', $location->id)->update(['location_id' => null]);
@@ -49,7 +53,7 @@ class Locations extends Component
 
     public function edit($id)
     {
-        $this->editingLocation = $this->locations->firstWhere('id', $id);
+        $this->editingLocation = Location::find($id);
         $this->name = $this->editingLocation->name;
 
         $this->modal('location-form')->show();

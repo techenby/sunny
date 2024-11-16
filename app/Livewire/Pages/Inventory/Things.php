@@ -6,12 +6,18 @@ use App\Livewire\Concerns\WithDataTable;
 use App\Models\Bin;
 use App\Models\Location;
 use App\Models\Thing;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+/**
+ * @property Collection $bins
+ * @property Collection $things
+ */
 class Things extends Component
 {
     use WithDataTable;
@@ -37,7 +43,7 @@ class Things extends Component
         ]);
     }
 
-    public function updating($property, $value)
+    public function updating($property, $value): void
     {
         if ($property === 'bin_id') {
             $this->location_id = $this->bins->firstWhere('id', $value)->location_id;
@@ -45,13 +51,13 @@ class Things extends Component
     }
 
     #[Computed]
-    public function bins()
+    public function bins(): Collection
     {
         return Bin::all();
     }
 
     #[Computed]
-    public function things()
+    public function things(): LengthAwarePaginator
     {
         return Thing::query()
             ->when($this->sortBy, fn ($query) => $query->orderBy($this->sortBy, $this->sortDirection))
@@ -59,13 +65,13 @@ class Things extends Component
             ->paginate($this->perPage);
     }
 
-    public function delete($id)
+    public function delete(int $id): void
     {
         $this->things->firstWhere('id', $id)->delete();
         unset($this->things);
     }
 
-    public function edit($id)
+    public function edit(int $id): void
     {
         $this->editingThing = $this->things->firstWhere('id', $id);
         $this->name = $this->editingThing->name;
@@ -75,7 +81,7 @@ class Things extends Component
         $this->modal('thing-form')->show();
     }
 
-    public function save()
+    public function save(): void
     {
         $validated = $this->validate();
 
