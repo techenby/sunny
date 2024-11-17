@@ -27,6 +27,8 @@ return [
         'inter' => 'https://rsms.me/inter/inter.css',
     ],
 
+'token' => env('LOG_POSE_TOKEN'),
+
     'tiles' => [
         'calendar' => [
             'andy' => [
@@ -41,8 +43,8 @@ return [
             ],
         ],
         'weather' => [
-            'lat' => config('WEATHER_LAT'),
-            'lon' => config('WEATHER_LON'),
+            'lat' => env('WEATHER_LAT'),
+            'lon' => env('WEATHER_LON'),
         ],
     ],
 ];

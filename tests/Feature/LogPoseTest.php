@@ -11,7 +11,7 @@ test('page is not visible without correct token', function () {
 });
 
 test('page is visible with correct token', function () {
-    config(['log-pose.token' => 'cube']);
+    config(['dashboard.token' => 'cube']);
 
     $this->withoutExceptionHandling()->get('/log-pose?token=cube')
         ->assertOk();
