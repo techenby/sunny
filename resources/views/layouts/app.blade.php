@@ -34,6 +34,9 @@
                 <flux:navlist.item :href="route('inventory.bins')">{{ __('Bins') }}</flux:navlist.item>
                 <flux:navlist.item :href="route('inventory.things')">{{ __('Things') }}</flux:navlist.item>
             </flux:navlist.group>
+            <flux:navlist.group heading="Log Pose" expandable>
+                <flux:navlist.item :href="route('log-pose.tiles')">{{ __('Tiles') }}</flux:navlist.item>
+            </flux:navlist.group>
         </flux:navlist>
 
         <flux:spacer />
