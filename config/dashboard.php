@@ -38,7 +38,7 @@ return [
             ],
             'ashar' => [
                 env('CAL_ASHAR'),
-            ]
-        ]
-    ]
+            ],
+        ],
+    ],
 ];

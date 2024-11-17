@@ -2,28 +2,14 @@
 
 use Illuminate\Support\Carbon;
 use Sabre\VObject\Reader;
+use Spatie\Dashboard\Models\Tile;
 
 use function Livewire\Volt\{computed, state};
 
-state(['position' => '', 'links' => '', 'label' => '']);
+state(['position' => '', 'name' => '', 'label' => '']);
 
 $events = computed(function () {
-    return collect($this->links)->flatMap(function ($link) {
-        $vcalendar = Reader::read(fopen($link, "r"));
-
-        return collect($vcalendar->VEVENT)
-          ->map(function ($event) {
-            return [
-              "name" => (string) $event->SUMMARY,
-              "start" => $start = Carbon::parse($event->DTSTART?->getDateTimes()[0]),
-              "end" => $end = Carbon::parse($event->DTEND?->getDateTimes()[0]),
-              'duration' => $start->shortAbsoluteDiffForHumans($end),
-              'formatted' => $start->format('D, M jS g:i a'),
-            ];
-          })
-          ->filter(fn($event) => $event["start"]->isFuture())
-          ->sortBy('start');
-    });
+    return Tile::firstWhere('name', $this->name)->data ?? [];
 });
 ?>
 

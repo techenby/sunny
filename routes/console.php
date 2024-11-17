@@ -3,6 +3,7 @@
 use App\Models\User;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schedule;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
@@ -15,3 +16,5 @@ Artisan::command('app:clear-status', function () {
         ->where('updated_at', '<=', $twoHoursAgo)
         ->update(['status' => null]);
 })->purpose('Clear stale statuses')->everyMinute();
+
+Schedule::command('app:fetch-calendar-events')->everyFiveMinutes();
