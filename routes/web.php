@@ -8,6 +8,14 @@ use Livewire\Volt\Volt;
 
 Route::view('/', 'welcome');
 
+Route::get('log-pose', function () {
+    if (! app()->environment('local')) {
+        abort_if(request()->query('token') !== config('dashboard.token', false), 404);
+    }
+
+    return view('log-pose');
+});
+
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::view('dashboard', 'dashboard')->name('dashboard');
     Route::view('profile', 'profile')->name('profile');

@@ -104,7 +104,7 @@ test('can clear status', function () {
         ->set('status', '')
         ->call('save');
 
-    expect($user->fresh()->status)->toBe('');
+    expect($user->fresh()->status)->toBeNull();
 });
 
 test('can change status', function () {
