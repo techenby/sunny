@@ -40,5 +40,9 @@ return [
                 env('CAL_ASHAR'),
             ],
         ],
+        'weather' => [
+            'lat' => config('WEATHER_LAT'),
+            'lon' => config('WEATHER_LON'),
+        ],
     ],
 ];

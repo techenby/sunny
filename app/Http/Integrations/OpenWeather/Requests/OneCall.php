@@ -17,8 +17,8 @@ class OneCall extends Request
     protected function defaultQuery(): array
     {
         return [
-            'lat' => 41.61349933574811,
-            'lon' => -88.20253686791719,
+            'lat' => config('dashboard.tiles.weather.lat'),
+            'lon' => config('dashboard.tiles.weather.lon'),
             'exclude' => 'minutely,hourly',
             'units' => 'imperial',
         ];

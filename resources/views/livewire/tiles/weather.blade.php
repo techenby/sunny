@@ -1,18 +1,14 @@
 <?php
 
-use App\Http\Integrations\OpenWeather\OpenWeather;
-use App\Http\Integrations\OpenWeather\Requests\OneCall;
+use Spatie\Dashboard\Models\Tile;
 
 use function Livewire\Volt\{state, with};
 
 state(['position']);
 
 with(function () {
-    $openWeather = new OpenWeather();
-    $oneCall = new OneCall();
-
     return [
-        'weather' => $openWeather->send($oneCall)->json(),
+        'weather' => Tile::firstWhere('name', 'weather')->data ?? [],
     ];
 });
 
@@ -21,8 +17,9 @@ with(function () {
 <x-dashboard-tile :position="$position" refresh-interval="60">
     <div class="flex items-end justify-between">
         <h1>Plainfield</h1>
-        <x-weather-icon class="w-6 h-6" :id="$weather['current']['weather'][0]['id']" />
+        <x-weather-icon class="w-6 h-6" :id="data_get($weather, 'current.weather.0.id', 800)" />
     </div>
+    @if (isset($weather['current']))
     <div class="flex items-end justify-between">
         <div class="text-2xl">{{ round($weather['current']['temp']) }}°</div>
         <div class="space-x-2">
@@ -45,4 +42,5 @@ with(function () {
         </div>
     </div>
     @endforeach
+    @endif
 </x-dashboard-tile>
