@@ -26,4 +26,19 @@ return [
     'stylesheets' => [
         'inter' => 'https://rsms.me/inter/inter.css',
     ],
+
+    'tiles' => [
+        'calendar' => [
+            'andy' => [
+                env('CAL_ANDY_PERSONAL'),
+                env('CAL_ANDY_WORK'),
+            ],
+            'family' => [
+                env('CAL_FAMILY'),
+            ],
+            'ashar' => [
+                env('CAL_ASHAR'),
+            ]
+        ]
+    ]
 ];

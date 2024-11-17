@@ -13,6 +13,7 @@
         "livewire/flux-pro": "^1.0",
         "livewire/livewire": "^3.4",
         "livewire/volt": "^1.0",
+        "sabre/vobject": "^4.5",
         "saloonphp/laravel-plugin": "^3.0",
         "saloonphp/saloon": "^3.0",
         "spatie/laravel-dashboard": "^3.1"
