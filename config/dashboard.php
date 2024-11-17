@@ -27,7 +27,7 @@ return [
         'inter' => 'https://rsms.me/inter/inter.css',
     ],
 
-'token' => env('LOG_POSE_TOKEN'),
+    'token' => env('LOG_POSE_TOKEN'),
 
     'tiles' => [
         'calendar' => [
