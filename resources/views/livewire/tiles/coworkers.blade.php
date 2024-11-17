@@ -1,30 +1,16 @@
 <?php
 
+use Spatie\Dashboard\Models\Tile;
+
 use function Livewire\Volt\{computed, state};
 
 state([
     'position' => null,
+    'name' => '',
 ]);
 
 $coworkers = computed(function () {
-    return [
-        ['name' => 'Andrew', 'location' => 'Charlotte, NC', 'timezone' => 'America/New_York'],
-        ['name' => 'Anthony', 'location' => 'Victoria, CA', 'timezone' => 'America/Vancouver'],
-        ['name' => 'Anna', 'location' => 'Portland, OR', 'timezone' => 'America/Los_Angeles'],
-        ['name' => 'Guillermo', 'location' => 'Lima, PE', 'timezone' => 'America/Lima'],
-        ['name' => 'Jake', 'location' => 'Dallas, TX', 'timezone' => 'America/Chicago'],
-        ['name' => 'Jamo', 'location' => 'Denver, CO', 'timezone' => 'America/Denver'],
-        ['name' => 'Jeanne', 'location' => 'Chicago, IL', 'timezone' => 'America/Chicago'],
-        ['name' => 'Keith', 'location' => 'Charlottesville, VA', 'timezone' => 'America/New_York'],
-        ['name' => 'Marcy', 'location' => 'Chicago, IL', 'timezone' => 'America/Chicago'],
-        ['name' => 'Mateus', 'location' => 'Ponta Grossa, BR', 'timezone' => 'America/Sao_Paulo'],
-        ['name' => 'Matt', 'location' => 'Atlanta, GA', 'timezone' => 'America/New_York'],
-        ['name' => 'Molly', 'location' => 'Lansing, MI', 'timezone' => 'America/New_York'],
-        ['name' => 'Nico', 'location' => 'Montevideo, UY', 'timezone' => 'America/Montevideo'],
-        ['name' => 'Nohemi', 'location' => 'Mexico City, MX', 'timezone' => 'America/Mexico_City'],
-        ['name' => 'Omar', 'location' => 'Amman, JO', 'timezone' => 'Asia/Amman'],
-        ['name' => 'Tony', 'location' => 'Maceió, BR', 'timezone' => 'America/Maceio'],
-    ];
+    return Tile::firstWhere('name', $this->name)->data ?? [];
 });
 ?>
 
