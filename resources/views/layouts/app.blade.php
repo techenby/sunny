@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    @include('layouts.favicons')
 
     <title>{{ config('app.name', 'Laravel') }}</title>
 
@@ -33,6 +34,9 @@
                 <flux:navlist.item :href="route('inventory.locations')">{{ __('Locations') }}</flux:navlist.item>
                 <flux:navlist.item :href="route('inventory.bins')">{{ __('Bins') }}</flux:navlist.item>
                 <flux:navlist.item :href="route('inventory.things')">{{ __('Things') }}</flux:navlist.item>
+            </flux:navlist.group>
+            <flux:navlist.group heading="Log Pose" expandable>
+                <flux:navlist.item :href="route('log-pose.tiles')">{{ __('Tiles') }}</flux:navlist.item>
             </flux:navlist.group>
         </flux:navlist>
 
