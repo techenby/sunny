@@ -2,7 +2,6 @@
 
 use App\Livewire\Pages\LogPose\Tiles;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Factories\Sequence;
 use Livewire\Livewire;
 use Spatie\Dashboard\Models\Tile;
 
