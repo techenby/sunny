@@ -15,7 +15,13 @@ state([
     'name' => '',
     'email' => '',
     'status' => '',
+    'apiToken' => '',
 ]);
+
+$closeApiToken = function () {
+    $this->modal('api-token')->close();
+    $this->reset(['apiToken']);
+};
 
 $delete = function ($id) {
     $this->users->firstWhere('id', $id)->delete();
@@ -32,6 +38,13 @@ $edit = function ($id) {
     $this->status = $user->status;
 
     $this->modal('edit-user')->show();
+};
+
+$getToken = function ($id) {
+    $user = $this->users->firstWhere('id', $id);
+    $this->apiToken = $user->createToken('Sunny')->plainTextToken;
+
+    $this->modal('api-token')->show();
 };
 
 $save = function () {
@@ -102,6 +115,7 @@ $users = computed(function () {
                             <flux:menu>
                                 <flux:menu.item icon="pencil-square" wire:click="edit({{ $user->id }})">Edit</flux:menu.item>
                                 <flux:menu.item variant="danger" icon="trash" wire:click="delete({{ $user->id }})">Delete</flux:menu.item>
+                                <flux:menu.item icon="code-bracket" wire:click="getToken({{ $user->id }})">GetToken</flux:menu.item>
                             </flux:menu>
                         </flux:dropdown>
                     </flux:cell>
@@ -127,5 +141,20 @@ $users = computed(function () {
                 <flux:button type="submit" variant="primary">Save changes</flux:button>
             </div>
         </form>
+    </flux:modal>
+
+    <flux:modal name="api-token" class="space-y-6">
+        <div>
+            <flux:heading size="lg">API Token</flux:heading>
+            <flux:subheading>Copy the token below, it will not be shown again.</flux:subheading>
+        </div>
+
+        <flux:input wire:model="apiToken" :label="__('API Token')" type="text" copyable />
+
+        <div class="flex">
+            <flux:spacer />
+
+            <flux:button wire:click="closeApiToken" variant="primary">Close</flux:button>
+        </div>
     </flux:modal>
 </flux:main>
