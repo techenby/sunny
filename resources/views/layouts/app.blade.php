@@ -23,7 +23,7 @@
         <flux:sidebar.toggle class="lg:hidden" icon="x-mark" />
 
         <a href="{{ route('dashboard') }}" wire:navigate class="max-lg:hidden">
-            <x-application-logo class="max-lg:hidden block h-9 w-auto fill-current text-gray-800 dark:text-gray-200" />
+            <x-application-logo class="max-lg:hidden block h-24 mx-auto w-auto fill-current text-gray-800 dark:text-gray-200" />
         </a>
 
         <flux:navlist variant="outline">

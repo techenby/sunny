@@ -1,3 +1,3 @@
 <x-guest-layout>
-    <flux:heading>{{ __("Sunny") }}</flux:heading>
+    <flux:link :href="route('login')">Login</flux:link>
 </x-guest-layout>
