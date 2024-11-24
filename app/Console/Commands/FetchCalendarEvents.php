@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Actions\GetEventsFromLink;
 use App\Models\Tile;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
@@ -17,32 +18,18 @@ class FetchCalendarEvents extends Command
 
     public function handle(): void
     {
-        foreach (config('dashboard.tiles.calendar') as $name => $links) {
-            $events = collect($links)->flatMap(function ($link) {
+        foreach (Tile::where('type', 'calendar')->get() as $tile) {
+            $tile->data = collect($tile->settings['links'])->flatMap(function ($link) {
                 if (! $link) {
                     return;
                 }
 
-                $vcalendar = Reader::read(fopen($link, 'r'));
-
-                return collect($vcalendar->VEVENT)
-                    ->map(function ($event) {
-                        return [
-                            'name' => (string) $event->SUMMARY,
-                            'start' => $start = Carbon::parse($event->DTSTART?->getDateTimes()[0]),
-                            'end' => $end = Carbon::parse($event->DTEND?->getDateTimes()[0]),
-                            'duration' => $start->shortAbsoluteDiffForHumans($end),
-                            'formatted' => $start->format('D, M jS g:i a'),
-                        ];
-                    })
+                (new GetEventsFromLink)($link)
                     ->filter(fn ($event) => $event['end']->isFuture())
                     ->sortBy('start');
             });
 
-            Tile::updateOrCreate(
-                ['name' => "calendar-{$name}"],
-                ['data' => $events]
-            );
+            $tile->save();
         }
     }
 }
