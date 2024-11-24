@@ -19,8 +19,14 @@ class Tiles extends Component
     #[Validate('required|min:3')]
     public $name = '';
 
+    #[Validate('required|min:3')]
+    public $type = '';
+
     #[Validate('nullable')]
-    public $data = '[]';
+    public $data = null;
+
+    #[Validate('nullable')]
+    public $settings = [];
 
     public $editingTile = null;
 
@@ -65,8 +71,15 @@ class Tiles extends Component
             Tile::create($validated);
         }
 
-        $this->reset(['name', 'data']);
+        $this->reset(['name', 'type', 'data', 'settings']);
         unset($this->tiles);
         $this->modal('tile-form')->close();
+    }
+
+    public function updatedType()
+    {
+        if ($this->type === 'calendar') {
+            $this->settings = ['color' => '#', 'links' => ['']];
+        }
     }
 }
