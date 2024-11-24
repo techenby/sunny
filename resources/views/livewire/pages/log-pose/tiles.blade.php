@@ -2,7 +2,7 @@
     <header class="flex">
         <flux:heading size="xl" level="1">{{ __('Tiles') }}</flux:heading>
         <flux:spacer />
-        <flux:modal.trigger name="bin-form">
+        <flux:modal.trigger name="tile-form">
             <flux:button>Create</flux:button>
         </flux:modal.trigger>
     </header>
