@@ -3,13 +3,13 @@
 namespace App\Livewire\Pages\LogPose;
 
 use App\Livewire\Concerns\WithDataTable;
+use App\Models\Tile;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 use Livewire\WithPagination;
-use App\Models\Tile;
 
 class Tiles extends Component
 {

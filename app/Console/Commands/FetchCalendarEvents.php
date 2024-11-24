@@ -2,10 +2,10 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Tile;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 use Sabre\VObject\Reader;
-use App\Models\Tile;
 
 class FetchCalendarEvents extends Command
 {

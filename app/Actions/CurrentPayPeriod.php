@@ -2,9 +2,8 @@
 
 namespace App\Actions;
 
-use Illuminate\Support\Carbon;
-
-class CurrentPayPeriod {
+class CurrentPayPeriod
+{
     public function __invoke()
     {
         $now = now();

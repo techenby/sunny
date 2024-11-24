@@ -2,10 +2,10 @@
 
 use App\Http\Integrations\OpenWeather\OpenWeather;
 use App\Http\Integrations\OpenWeather\Requests\OneCall;
+use App\Models\Tile;
 use App\Models\User;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
-use App\Models\Tile;
 
 Artisan::command('app:clear-status', function () {
     $twoHoursAgo = now()->subHours(2);

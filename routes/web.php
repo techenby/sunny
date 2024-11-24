@@ -21,6 +21,7 @@ Route::get('log-pose', function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
         $payPeriod = (new CurrentPayPeriod)();
+
         return view('dashboard', ['payPeriod' => $payPeriod]);
     })->name('dashboard');
     Route::view('profile', 'profile')->name('profile');
