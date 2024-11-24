@@ -18,8 +18,8 @@
                         buttonText: 'pay period',
                         type: 'dayGrid',
                         visibleRange: {
-                            start: '2024-11-22',
-                            end: '2024-12-06'
+                            start: '{{ $payPeriod["start"] }}',
+                            end: '{{ $payPeriod["end"] }}',
                         }
                     }
                 },
