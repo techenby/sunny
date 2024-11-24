@@ -3,7 +3,7 @@
 use App\Livewire\Pages\LogPose\Tiles;
 use App\Models\User;
 use Livewire\Livewire;
-use Spatie\Dashboard\Models\Tile;
+use App\Models\Tile;
 
 test('can view page', function () {
     $user = User::factory()->create();

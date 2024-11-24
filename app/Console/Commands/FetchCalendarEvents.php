@@ -5,7 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 use Sabre\VObject\Reader;
-use Spatie\Dashboard\Models\Tile;
+use App\Models\Tile;
 
 class FetchCalendarEvents extends Command
 {

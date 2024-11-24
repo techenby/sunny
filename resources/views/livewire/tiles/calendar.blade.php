@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Carbon;
 use Sabre\VObject\Reader;
-use Spatie\Dashboard\Models\Tile;
+use App\Models\Tile;
 
 use function Livewire\Volt\{computed, state};
 

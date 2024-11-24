@@ -9,7 +9,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Spatie\Dashboard\Models\Tile;
+use App\Models\Tile;
 
 class Tiles extends Component
 {
