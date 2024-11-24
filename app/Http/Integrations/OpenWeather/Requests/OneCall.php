@@ -9,6 +9,10 @@ class OneCall extends Request
 {
     protected Method $method = Method::GET;
 
+    public function __construct(protected readonly string $lat, protected readonly string $lon) {
+        //
+    }
+
     public function resolveEndpoint(): string
     {
         return '/onecall';
@@ -17,8 +21,8 @@ class OneCall extends Request
     protected function defaultQuery(): array
     {
         return [
-            'lat' => config('dashboard.tiles.weather.lat'),
-            'lon' => config('dashboard.tiles.weather.lon'),
+            'lat' => $this->lat,
+            'lon' => $this->lon,
             'exclude' => 'minutely,hourly',
             'units' => 'imperial',
         ];
