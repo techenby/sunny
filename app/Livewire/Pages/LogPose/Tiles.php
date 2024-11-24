@@ -55,6 +55,8 @@ class Tiles extends Component
     {
         $this->editingTile = Tile::find($id);
         $this->name = $this->editingTile->name;
+        $this->type = $this->editingTile->type;
+        $this->settings = $this->editingTile->settings;
         $this->data = $this->editingTile->getRawOriginal('data');
 
         $this->modal('tile-form')->show();
