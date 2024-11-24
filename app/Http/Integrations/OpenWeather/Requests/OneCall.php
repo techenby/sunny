@@ -9,7 +9,8 @@ class OneCall extends Request
 {
     protected Method $method = Method::GET;
 
-    public function __construct(protected readonly string $lat, protected readonly string $lon) {
+    public function __construct(protected readonly string $lat, protected readonly string $lon)
+    {
         //
     }
 

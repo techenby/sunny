@@ -2,7 +2,6 @@
 
 namespace App\Actions;
 
-use DateTime;
 use Illuminate\Support\Carbon;
 use Sabre\VObject\Reader;
 
@@ -11,6 +10,7 @@ class GetEventsFromLink
     public function __invoke($link)
     {
         $vcalendar = Reader::read(fopen($link, 'r'));
+
         return collect($vcalendar->VEVENT)
             ->map(function ($event) {
                 return [
