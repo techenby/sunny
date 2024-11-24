@@ -6,6 +6,7 @@
             var calendarEl = document.getElementById('calendar');
             var calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'timeGridWeek',
+                events: 'api/events',
                 nowIndicator: true,
                 scrollTime: '8:00:00',
                 headerToolbar: {
