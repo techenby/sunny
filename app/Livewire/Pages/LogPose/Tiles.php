@@ -65,9 +65,9 @@ class Tiles extends Component
     public function save(): void
     {
         $validated = $this->validate();
+        $validated['data'] = json_decode($validated['data'], true);
 
         if ($this->editingTile) {
-            $validated['data'] = json_decode($validated['data'], true);
             $this->editingTile->update($validated);
         } else {
             Tile::create($validated);
