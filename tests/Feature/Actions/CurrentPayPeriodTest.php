@@ -8,8 +8,8 @@ test('can get current pay period', function ($now, $start, $end) {
 
     $result = (new CurrentPayPeriod)();
 
-    expect($result['start'])->toBe($start);
-    expect($result['end'])->toBe($end);
+    expect($result['start']->format('Y-m-d'))->toBe($start);
+    expect($result['end']->format('Y-m-d'))->toBe($end);
 })->with([
     ['2024-11-22', '2024-11-22', '2024-12-06'],
     ['2024-11-23', '2024-11-22', '2024-12-06'],

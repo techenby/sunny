@@ -19,8 +19,8 @@
                         buttonText: 'pay period',
                         type: 'dayGrid',
                         visibleRange: {
-                            start: '{{ $payPeriod["start"] }}',
-                            end: '{{ $payPeriod["end"] }}',
+                            start: '{{ $payPeriod["start"]->startOfWeek() }}',
+                            end: '{{ $payPeriod["end"]->endOfWeek() }}',
                         }
                     }
                 },
