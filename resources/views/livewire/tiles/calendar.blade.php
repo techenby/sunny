@@ -9,6 +9,9 @@ use function Livewire\Volt\{computed, state};
 state(['position' => '', 'name' => '', 'label' => '']);
 
 $events = computed(function () {
+    if (is_array($this->name)) {
+        return Tile::whereIn('name', $this->name)->get()->pluck('data')->flatten(1)->sortBy('start');
+    }
     return Tile::firstWhere('name', $this->name)->data ?? [];
 });
 ?>
