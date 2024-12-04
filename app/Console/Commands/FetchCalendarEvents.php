@@ -22,8 +22,7 @@ class FetchCalendarEvents extends Command
                     return;
                 }
 
-                (new GetEventsFromLink)($link)
-                    ->filter(fn ($event) => $event['end']->isFuture())
+                return (new GetEventsFromLink)($link, now()->subWeeks(2), now()->addWeeks(52))
                     ->sortBy('start');
             });
 
