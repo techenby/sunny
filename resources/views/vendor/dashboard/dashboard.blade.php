@@ -45,6 +45,10 @@
         <livewire:dashboard-update-mode/>
 
         {{ $slot }}
+
+        <button type="button" x-data @click="location.reload()" class="absolute bottom-0 left-0 p-8">
+            <span class="sr-only">Hidden Reload Page Button</span>
+        </div>
     </div>
 </div>
 
