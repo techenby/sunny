@@ -4,11 +4,11 @@ use App\Models\Tile;
 
 use function Livewire\Volt\{state, with};
 
-state(['position']);
+state(['position', 'name']);
 
 with(function () {
     return [
-        'weather' => Tile::firstWhere('name', 'weather')->data ?? [],
+        'weather' => Tile::firstWhere('name', $this->name)->data ?? [],
     ];
 });
 
