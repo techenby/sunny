@@ -38,3 +38,46 @@ test('can create tile', function () {
     expect($tile)->not->toBeNull();
     expect($tile->data)->toBeArray();
 });
+
+test('can edit tile', function () {
+    $tile = Tile::factory()->create([
+        'name' => 'wano',
+        'type' => 'weather',
+    ]);
+
+    Livewire::test(Tiles::class)
+        ->call('edit', $tile->id)
+        ->assertSet('name', 'wano')
+        ->assertSet('type', 'weather')
+        ->set('name', 'flower-capital')
+        ->call('save');
+
+    expect($tile->fresh()->name)->toBe('flower-capital');
+});
+
+test('can delete tile', function () {
+    $tile = Tile::factory()->create([
+        'name' => 'oden',
+        'type' => 'calendar'
+    ]);
+
+    Livewire::test(Tiles::class)
+        ->call('delete', $tile->id);
+
+    $this->assertDatabaseMissing('dashboard_tiles', [
+        'name' => 'oden',
+        'type' => 'calendar',
+    ]);
+});
+
+test('when setting type to calendar color and links are populated', function () {
+    $tile = Tile::factory()->create([
+        'name' => 'wano',
+        'type' => 'weather',
+    ]);
+
+    Livewire::test(Tiles::class)
+        ->call('edit', $tile->id)
+        ->set('type', 'calendar')
+        ->assertSet('settings', ['color' => '#', 'links' => ['']]);
+});
