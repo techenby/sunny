@@ -2,7 +2,7 @@
     <header class="flex">
         <flux:heading size="xl" level="1">{{ __('Tiles') }}</flux:heading>
         <flux:spacer />
-        <flux:modal.trigger name="bin-form">
+        <flux:modal.trigger name="tile-form">
             <flux:button>Create</flux:button>
         </flux:modal.trigger>
     </header>
@@ -22,7 +22,9 @@
             <flux:columns>
                 <flux:column>ID</flux:column>
                 <flux:column sortable :sorted="$sortBy === 'name'" :direction="$sortDirection" wire:click="sort('name')">Name</flux:column>
+                <flux:column sortable :sorted="$sortBy === 'type'" :direction="$sortDirection" wire:click="sort('type')">Type</flux:column>
                 <flux:column>Data</flux:column>
+                <flux:column>Setting</flux:column>
             </flux:columns>
 
             <flux:rows>
@@ -30,9 +32,15 @@
                     <flux:row :key="$tile->id">
                         <flux:cell>{{ $tile->id }}</flux:cell>
                         <flux:cell>{{ $tile->name }}</flux:cell>
+                        <flux:cell>{{ $tile->type }}</flux:cell>
                         <flux:cell>
-                            <p class="text-ellipsis overflow-hidden w-96">
+                            <p class="text-ellipsis overflow-hidden max-w-64">
                                 {{ json_encode($tile->data) }}
+                            </p>
+                        </flux:cell>
+                        <flux:cell>
+                            <p class="text-ellipsis overflow-hidden max-w-64">
+                                {{ json_encode($tile->settings) }}
                             </p>
                         </flux:cell>
 
@@ -60,8 +68,25 @@
             </div>
 
             <flux:input wire:model="name" :label="__('Name')" aria-autocomplete="none" />
+            <flux:select wire:model.live="type" :label="__('Type')" placeholder="Select type">
+                <flux:option value="calendar">Calendar</flux:option>
+                <flux:option value="weather">Weather</flux:option>
+                <flux:option value="coworkers">Coworkers</flux:option>
+            </flux:select>
 
+            @if ($type === 'calendar')
+            <flux:input wire:model="settings.color" :label="__('Color')" />
+
+            @foreach ($settings['links'] as $index => $link)
+            <flux:input wire:model="settings.links.{{ $index }}" />
+            @endforeach
+
+            @elseif ($type === 'weather')
+            <flux:input wire:model="settings.lat" :label="__('Latitude')" />
+            <flux:input wire:model="settings.lon" :label="__('Longitude')" />
+            @elseif ($type === 'coworkers')
             <flux:textarea wire:model="data" :label="__('Data')" />
+            @endif
 
             <div class="flex">
                 <flux:spacer />

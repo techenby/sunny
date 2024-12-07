@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\EventController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -18,3 +19,5 @@ Route::post('user/status', function (Request $request) {
 Route::delete('user/status', function (Request $request) {
     $request->user()->update(['status' => null]);
 })->middleware('auth:sanctum');
+
+Route::get('events', EventController::class);

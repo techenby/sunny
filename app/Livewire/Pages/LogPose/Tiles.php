@@ -3,13 +3,13 @@
 namespace App\Livewire\Pages\LogPose;
 
 use App\Livewire\Concerns\WithDataTable;
+use App\Models\Tile;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Spatie\Dashboard\Models\Tile;
 
 class Tiles extends Component
 {
@@ -19,8 +19,14 @@ class Tiles extends Component
     #[Validate('required|min:3')]
     public $name = '';
 
+    #[Validate('required|min:3')]
+    public $type = '';
+
     #[Validate('nullable')]
-    public $data = '[]';
+    public $data = null;
+
+    #[Validate('nullable')]
+    public $settings = [];
 
     public $editingTile = null;
 
@@ -49,6 +55,8 @@ class Tiles extends Component
     {
         $this->editingTile = Tile::find($id);
         $this->name = $this->editingTile->name;
+        $this->type = $this->editingTile->type;
+        $this->settings = $this->editingTile->settings;
         $this->data = $this->editingTile->getRawOriginal('data');
 
         $this->modal('tile-form')->show();
@@ -57,16 +65,23 @@ class Tiles extends Component
     public function save(): void
     {
         $validated = $this->validate();
+        $validated['data'] = json_decode($validated['data'], true);
 
         if ($this->editingTile) {
-            $validated['data'] = json_decode($validated['data'], true);
             $this->editingTile->update($validated);
         } else {
             Tile::create($validated);
         }
 
-        $this->reset(['name', 'data']);
+        $this->reset(['name', 'type', 'data', 'settings']);
         unset($this->tiles);
         $this->modal('tile-form')->close();
+    }
+
+    public function updatedType()
+    {
+        if ($this->type === 'calendar') {
+            $this->settings = ['color' => '#', 'links' => ['']];
+        }
     }
 }

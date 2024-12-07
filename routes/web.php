@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\CurrentPayPeriod;
 use App\Livewire\Pages\Inventory\Bins;
 use App\Livewire\Pages\Inventory\Locations;
 use App\Livewire\Pages\Inventory\Things;
@@ -18,7 +19,11 @@ Route::get('log-pose', function () {
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::view('dashboard', 'dashboard')->name('dashboard');
+    Route::get('dashboard', function () {
+        $payPeriod = (new CurrentPayPeriod)();
+
+        return view('dashboard', ['payPeriod' => $payPeriod]);
+    })->name('dashboard');
     Route::view('profile', 'profile')->name('profile');
 
     Route::get('inventory/locations', Locations::class)->name('inventory.locations');
