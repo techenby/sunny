@@ -55,7 +55,7 @@ class Users extends Component
         $user = User::find($id);
         $this->apiToken = $user->createToken('Sunny')->plainTextToken;
 
-        $this->model('api-token')->show();
+        $this->modal('api-token')->show();
     }
 
     public function removeStatusFromList($index)

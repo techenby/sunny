@@ -197,3 +197,12 @@ test('can remove status from status list', function () {
         ->assertSet('form.status_list.1.emoji', '🧑🏻‍💻')
         ->assertSet('form.status_list.1.status', 'Coding - Sunny');
 });
+
+test('api token reset on close', function () {
+    $user = User::factory()->create();
+
+    Livewire::test(Users::class)
+        ->call('getToken', $user->id)
+        ->call('closeApiToken')
+        ->assertSet('apiToken', null);
+});
