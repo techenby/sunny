@@ -16,7 +16,12 @@ state([
     'email' => '',
     'status' => '',
     'apiToken' => '',
+    'status_list' => [],
 ]);
+
+$addStatusToList = function () {
+    $this->status_list[] = ['emoji' => '🙂', 'status' => ''];
+};
 
 $closeApiToken = function () {
     $this->modal('api-token')->close();
@@ -36,6 +41,7 @@ $edit = function ($id) {
     $this->name = $user->name;
     $this->email = $user->email;
     $this->status = $user->status;
+    $this->status_list = $user->status_list ?? [['emoji' => '🙂', 'status' => '']];
 
     $this->modal('edit-user')->show();
 };
@@ -47,11 +53,17 @@ $getToken = function ($id) {
     $this->modal('api-token')->show();
 };
 
+$removeStatusFromList = function ($index) {
+    unset($this->status_list[$index]);
+    $this->status_list = array_values($this->status_list);
+};
+
 $save = function () {
     $validated = $this->validate([
         'name' => ['required', 'string', 'max:255'],
         'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique(User::class)->ignore($this->editingUser->id)],
         'status' => ['nullable'],
+        'status_list' => ['nullable', 'array'],
     ]);
 
     if ($validated['status'] === '') {
@@ -83,12 +95,15 @@ $sort = function ($column) {
 
 $users = computed(function () {
     return User::query()
-        ->tap(fn ($query) => $this->sortBy ? $query->orderBy($this->sortBy, $this->sortDirection) : $query)
+        ->tap(fn($query) => $this->sortBy ? $query->orderBy($this->sortBy, $this->sortDirection) : $query)
         ->paginate(10);
 })
 
 ?>
 
+@push('head')
+<script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"></script>
+@endpush
 <flux:main class="space-y-6">
     <flux:heading size="xl" level="1">{{ __('Users') }}</flux:heading>
 
@@ -102,24 +117,24 @@ $users = computed(function () {
 
         <flux:rows>
             @foreach ($this->users as $user)
-                <flux:row :key="$user->id">
-                    <flux:cell>{{ $user->id }}</flux:cell>
-                    <flux:cell>{{ $user->name }}</flux:cell>
-                    <flux:cell>{{ $user->email }}</flux:cell>
-                    <flux:cell>{{ $user->status }}</flux:cell>
+            <flux:row :key="$user->id">
+                <flux:cell>{{ $user->id }}</flux:cell>
+                <flux:cell>{{ $user->name }}</flux:cell>
+                <flux:cell>{{ $user->email }}</flux:cell>
+                <flux:cell>{{ $user->status }}</flux:cell>
 
-                    <flux:cell>
-                        <flux:dropdown>
-                            <flux:button variant="ghost" size="sm" icon="ellipsis-horizontal" inset="top bottom"></flux:button>
+                <flux:cell>
+                    <flux:dropdown>
+                        <flux:button variant="ghost" size="sm" icon="ellipsis-horizontal" inset="top bottom"></flux:button>
 
-                            <flux:menu>
-                                <flux:menu.item icon="pencil-square" wire:click="edit({{ $user->id }})">Edit</flux:menu.item>
-                                <flux:menu.item variant="danger" icon="trash" wire:click="delete({{ $user->id }})">Delete</flux:menu.item>
-                                <flux:menu.item icon="code-bracket" wire:click="getToken({{ $user->id }})">GetToken</flux:menu.item>
-                            </flux:menu>
-                        </flux:dropdown>
-                    </flux:cell>
-                </flux:row>
+                        <flux:menu>
+                            <flux:menu.item icon="pencil-square" wire:click="edit({{ $user->id }})">Edit</flux:menu.item>
+                            <flux:menu.item variant="danger" icon="trash" wire:click="delete({{ $user->id }})">Delete</flux:menu.item>
+                            <flux:menu.item icon="code-bracket" wire:click="getToken({{ $user->id }})">GetToken</flux:menu.item>
+                        </flux:menu>
+                    </flux:dropdown>
+                </flux:cell>
+            </flux:row>
             @endforeach
         </flux:rows>
     </flux:table>
@@ -133,7 +148,23 @@ $users = computed(function () {
 
             <flux:input wire:model="name" :label="__('Name')" type="text" required autocomplete="name" />
             <flux:input wire:model="email" :label="__('Email')" type="email" required autocomplete="email" />
-            <flux:input wire:model="status" :label="__('Status')" type="text" clearable />
+            <flux:input wire:model="status" :label="__('Current Status')" type="text" clearable />
+
+            <flux:field>
+                <flux:label>Status List</flux:label>
+
+                <div class="space-y-2">
+                    @foreach ($status_list as $index => $item)
+                    <div class="flex space-x-2">
+                        <x-status wire:model="status_list.{{ $index }}" />
+                        <flux:button variant="subtle" icon="x-mark" wire:click="removeStatusFromList({{ $index }})"/>
+                    </div>
+                    @endforeach
+                    <flux:button size="xs" wire:click="addStatusToList">Add Status</flux:button>
+                </div>
+
+                <flux:error name="status_list" />
+            </flux:field>
 
             <div class="flex">
                 <flux:spacer />
