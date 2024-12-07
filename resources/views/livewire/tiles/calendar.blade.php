@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Support\Carbon;
-use Sabre\VObject\Reader;
 use App\Models\Tile;
 
 use function Livewire\Volt\{computed, state};
@@ -18,8 +17,9 @@ $events = computed(function () {
         ->sortBy('start')
         ->filter(fn ($event) => ! $event['past'])
         ->map(function ($event) {
-            $start = Carbon::parse($event['start'], $this->timezone);
-            $end = Carbon::parse($event['end']['date'], $this->timezone);
+            $start = Carbon::parse($event['start'])->tz('America/Chicago');
+            $end = Carbon::parse($event['end'])->tz('America/Chicago');
+
             return [
                 'name' => $event['name'],
                 'formatted' => $start->format($event['allDay'] ? 'D, M jS' : 'D, M jS g:i a'),
