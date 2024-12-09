@@ -1,3 +1,25 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@media (prefers-color-scheme: dark) {
+    .fc-toolbar-title,
+    .fc-col-header-cell-cushion,
+    .fc-scrollgrid-shrink-cushion,
+    .fc-daygrid-event,
+    .fc-daygrid-day-number {
+        @apply text-zinc-200;
+    }
+    :root {
+        --fc-border-color: #fff3;
+        --fc-page-bg-color: theme('colors.zinc.800');
+        --fc-button-bg-color: theme('colors.zinc.700');
+        --fc-button-border-color: theme('colors.zinc.600');
+        --fc-button-text-color: theme('colors.zinc.200');
+        --fc-button-hover-bg-color: theme('colors.zinc.600');
+        --fc-button-hover-border-color: theme('colors.zinc.600');
+        --fc-button-active-bg-color: theme('colors.zinc.600');
+        --fc-button-active-border-color: theme('colors.zinc.600');
+        --fc-button-active-text-color: theme('colors.zinc.200');
+    }
+}

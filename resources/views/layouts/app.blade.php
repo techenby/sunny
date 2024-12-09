@@ -15,9 +15,9 @@
 
     <!-- Scripts -->
     @fluxStyles
-    @vite('resources/css/app.css')
-
     @stack('head')
+
+    @vite('resources/css/app.css')
 </head>
 
 <body class="font-sans antialiased min-h-screen bg-white dark:bg-zinc-800">
