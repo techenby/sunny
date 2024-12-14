@@ -8,7 +8,7 @@ test('can get list of user statuses', function () {
             ['emoji' => '🍢', 'text' => 'Eating Oden'],
             ['emoji' => '🥋', 'text' => 'Fighting'],
             ['emoji' => '🕺🏻', 'text' => 'Dancing'],
-        ]
+        ],
     ]);
 
     $this->actingAs($user)
@@ -19,7 +19,7 @@ test('can get list of user statuses', function () {
         ->assertJson([
             '🍢 - Eating Oden',
             '🥋 - Fighting',
-            '🕺🏻 - Dancing'
+            '🕺🏻 - Dancing',
         ]);
 });
 
