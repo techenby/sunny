@@ -5,8 +5,8 @@ use App\Livewire\Pages\Inventory\Bins;
 use App\Livewire\Pages\Inventory\Locations;
 use App\Livewire\Pages\Inventory\Things;
 use App\Livewire\Pages\LogPose\Tiles;
+use App\Livewire\Pages\Users;
 use Illuminate\Support\Facades\Route;
-use Livewire\Volt\Volt;
 
 Route::view('/', 'welcome');
 
@@ -32,7 +32,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('log-pose/tiles', Tiles::class)->name('log-pose.tiles');
 
-    Volt::route('/users', 'pages.users')->name('users');
+    Route::get('users', Users::class)->name('users');
 });
 
 require __DIR__ . '/auth.php';

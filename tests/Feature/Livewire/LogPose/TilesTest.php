@@ -58,7 +58,7 @@ test('can edit tile', function () {
 test('can delete tile', function () {
     $tile = Tile::factory()->create([
         'name' => 'oden',
-        'type' => 'calendar'
+        'type' => 'calendar',
     ]);
 
     Livewire::test(Tiles::class)
