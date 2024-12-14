@@ -8,6 +8,11 @@ Route::get('user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
+Route::get('user/status', function (Request $request) {
+    return collect($request->user()->status_list)
+        ->map(fn ($item) => $item['emoji'] . ' - ' . $item['text']);
+})->middleware('auth:sanctum');
+
 Route::post('user/status', function (Request $request) {
     $data = $request->validate([
         'status' => 'required',

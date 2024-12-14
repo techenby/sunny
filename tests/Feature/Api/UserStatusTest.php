@@ -2,6 +2,27 @@
 
 use App\Models\User;
 
+test('can get list of user statuses', function () {
+    $user = User::factory()->create([
+        'status_list' => [
+            ['emoji' => '🍢', 'text' => 'Eating Oden'],
+            ['emoji' => '🥋', 'text' => 'Fighting'],
+            ['emoji' => '🕺🏻', 'text' => 'Dancing'],
+        ]
+    ]);
+
+    $this->actingAs($user)
+        ->getJson('/api/user/status', [
+            'status' => 'pairing',
+        ])
+        ->assertStatus(200)
+        ->assertJson([
+            '🍢 - Eating Oden',
+            '🥋 - Fighting',
+            '🕺🏻 - Dancing'
+        ]);
+});
+
 test('can add status of user', function () {
     $user = User::factory()->create();
 
