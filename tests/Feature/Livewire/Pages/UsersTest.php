@@ -158,7 +158,7 @@ describe('set status modal', function () {
                 ['emoji' => '🍢', 'text' => 'Eating Oden'],
                 ['emoji' => '🥋', 'text' => 'Fighting'],
                 ['emoji' => '🕺🏻', 'text' => 'Dancing'],
-            ]
+            ],
         ]);
 
         Livewire::test(Users::class)
