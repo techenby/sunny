@@ -10,7 +10,6 @@ class UserForm extends Form
 {
     public $name = '';
     public $email = '';
-    public $status = '';
     public $status_list = [];
 
     public $editingUser = null;
@@ -20,17 +19,12 @@ class UserForm extends Form
         $this->editingUser = $user;
         $this->name = $user->name;
         $this->email = $user->email;
-        $this->status = $user->status;
         $this->status_list = $user->status_list ?? [['emoji' => '🙂', 'status' => '']];
     }
 
     public function update(): void
     {
         $validated = $this->validate();
-
-        if ($validated['status'] === '') {
-            $validated['status'] = null;
-        }
 
         $this->editingUser->fill($validated);
 
@@ -48,7 +42,6 @@ class UserForm extends Form
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique(User::class)->ignore($this->editingUser->id)],
-            'status' => ['nullable'],
             'status_list' => ['nullable', 'array'],
         ];
     }

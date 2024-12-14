@@ -20,6 +20,9 @@ class Users extends Component
 
     public $apiToken;
 
+    public $status = ['emoji' => '🙂', 'text' => ''];
+    public $setStatusFor;
+
     #[Layout('layouts.app')]
     public function render()
     {
@@ -29,6 +32,12 @@ class Users extends Component
     public function addStatusToList()
     {
         $this->form->status_list[] = ['emoji' => '🙂', 'status' => ''];
+    }
+
+    public function clearStatus($id)
+    {
+        User::find($id)->update(['status' => null]);
+        unset($this->users);
     }
 
     public function closeApiToken()
@@ -56,6 +65,21 @@ class Users extends Component
         $this->apiToken = $user->createToken('Sunny')->plainTextToken;
 
         $this->modal('api-token')->show();
+    }
+
+    public function setStatus()
+    {
+        $this->setStatusFor->update([
+            'status' => is_string($this->status) ? $this->status : $this->status['emoji'] . ' - ' . $this->status['text'],
+        ]);
+        $this->reset(['status', 'setStatusFor']);
+        $this->modal('set-status')->close();
+    }
+
+    public function showStatusModal($id)
+    {
+        $this->setStatusFor = User::find($id);
+        $this->modal('set-status')->show();
     }
 
     public function removeStatusFromList($index)

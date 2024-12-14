@@ -29,7 +29,18 @@
                 <flux:cell>{{ $user->id }}</flux:cell>
                 <flux:cell>{{ $user->name }}</flux:cell>
                 <flux:cell>{{ $user->email }}</flux:cell>
-                <flux:cell>{{ $user->status }}</flux:cell>
+                <flux:cell>
+                    @if ($user->status)
+                    <div class="flex space-x-2">
+                        <div>{{ $user->status }}</div>
+                        <flux:button icon="x-mark" size="xs" variant="subtle" wire:click="clearStatus({{ $user->id }})" />
+                    </div>
+                    @else
+                    <flux:button variant="subtle" size="xs" wire:click="showStatusModal({{ $user->id }})">
+                        Set Status
+                    </flux:button>
+                    @endif
+                </flux:cell>
 
                 <flux:cell>
                     <flux:dropdown>
@@ -57,7 +68,6 @@
 
             <flux:input wire:model="form.name" :label="__('Name')" type="text" required autocomplete="name" />
             <flux:input wire:model="form.email" :label="__('Email')" type="email" required autocomplete="email" />
-            <flux:input wire:model="form.status" :label="__('Current Status')" type="text" clearable />
 
             <flux:field>
                 <flux:label>Status List</flux:label>
@@ -96,5 +106,27 @@
 
             <flux:button wire:click="closeApiToken" variant="primary">Close</flux:button>
         </div>
+    </flux:modal>
+
+    <flux:modal name="set-status">
+        <form wire:submit="setStatus" class="space-y-6">
+            <div>
+                <flux:heading size="lg">Set Status</flux:heading>
+            </div>
+
+            <x-status wire:model="status"  />
+
+            <flux:radio.group wire:model="status" label="Or Select Predifined Status">
+                @foreach ($setStatusFor->status_list ?? [] as $index => $item)
+                <flux:radio value="{{ $item['emoji'] }} - {{ $item['text'] }}" label="{{ $item['emoji'] }} - {{ $item['text'] }}" />
+                @endforeach
+            </flux:radio.group>
+
+            <div class="flex">
+                <flux:spacer />
+
+                <flux:button type="submit" variant="primary">Save changes</flux:button>
+            </div>
+        </form>
     </flux:modal>
 </flux:main>
