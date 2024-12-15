@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\CurrentPayPeriod;
+use App\Livewire\Pages\Cookbook\Recipes;
 use App\Livewire\Pages\Inventory\Bins;
 use App\Livewire\Pages\Inventory\Locations;
 use App\Livewire\Pages\Inventory\Things;
@@ -31,6 +32,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('inventory/things', Things::class)->name('inventory.things');
 
     Route::get('log-pose/tiles', Tiles::class)->name('log-pose.tiles');
+    Route::get('cookbook/recipes', Recipes::class)->name('cookbook.recipes');
 
     Route::get('users', Users::class)->name('users');
 });
