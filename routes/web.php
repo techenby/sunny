@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\CurrentPayPeriod;
+use App\Livewire\Pages\Cookbook\EditRecipe;
 use App\Livewire\Pages\Cookbook\Recipes;
 use App\Livewire\Pages\Cookbook\ShowRecipe;
 use App\Livewire\Pages\Inventory\Bins;
@@ -36,6 +37,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('cookbook/recipes', Recipes::class)->name('cookbook.recipes');
     Route::get('cookbook/recipes/{recipe}', ShowRecipe::class)->name('cookbook.recipes.show');
+    Route::get('cookbook/recipes/{recipe}/edit', EditRecipe::class)->name('cookbook.recipes.edit');
 
     Route::get('users', Users::class)->name('users');
 });
