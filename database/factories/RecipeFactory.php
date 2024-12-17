@@ -14,7 +14,6 @@ class RecipeFactory extends Factory
     {
         return [
             'name' => 'Mashed Potatoes',
-            'slug' => 'mashed-potatoes',
         ];
     }
 }

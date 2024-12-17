@@ -11,4 +11,11 @@ class Recipe extends Model
     use HasFactory;
 
     public $guarded = [];
+
+    protected static function booted(): void
+    {
+        static::saving(function (Recipe $recipe) {
+            $recipe->slug = str($recipe->name)->slug()->toString();
+        });
+    }
 }
