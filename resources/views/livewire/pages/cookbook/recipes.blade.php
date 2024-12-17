@@ -29,7 +29,11 @@
             <flux:rows>
                 @foreach ($this->recipes as $recipe)
                     <flux:row :key="$recipe->id">
-                        <flux:cell>{{ $recipe->name }}</flux:cell>
+                        <flux:cell>
+                            <flux:link variant="ghost" :href="route('cookbook.recipes.show', $recipe)">
+                                {{ $recipe->name }}
+                            </flux:link>
+                        </flux:cell>
                         <flux:cell>{{ $recipe->total_time }}</flux:cell>
                         <flux:cell>{{ $recipe->categories }}</flux:cell>
                         <flux:cell>{{ $recipe->source }}</flux:cell>
