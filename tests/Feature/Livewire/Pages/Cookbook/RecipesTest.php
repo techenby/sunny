@@ -1,7 +1,9 @@
 <?php
 
 use App\Livewire\Pages\Cookbook\Recipes;
+use App\Models\Recipe;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\Sequence;
 use Livewire\Livewire;
 
 test('can view page', function () {
@@ -14,6 +16,17 @@ test('can view page', function () {
 });
 
 test('can view component', function () {
+    Recipe::factory()
+        ->count(3)
+        ->state(new Sequence(
+            ['name' => 'Mac & Cheese'],
+            ['name' => 'Nut Cups'],
+            ['name' => 'Falafel'],
+        ))
+        ->create();
+
     Livewire::test(Recipes::class)
-        ->assertSee('Recipes');
+        ->assertOk()
+        ->assertSee('Recipes')
+        ->assertSee(['Mac & Cheese', 'Nut Cups', 'Falafel']);
 });
