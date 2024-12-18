@@ -29,4 +29,10 @@ class Recipes extends Component
             ->when($this->search, fn ($query) => $query->where('name', 'like', '%' . $this->search . '%'))
             ->paginate($this->perPage);
     }
+
+    public function delete($id)
+    {
+        Recipe::find($id)->delete();
+        unset($this->recipes);
+    }
 }

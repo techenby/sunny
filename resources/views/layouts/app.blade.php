@@ -76,6 +76,8 @@
 
     {{ $slot }}
 
+    <flux:toast />
+
     @fluxScripts
     @vite('resources/js/app.js')
 </body>

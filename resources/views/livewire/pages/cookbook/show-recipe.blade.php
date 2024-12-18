@@ -1,41 +1,71 @@
 <flux:main>
     <div class="flex h-full">
-        <div class="w-2/3 space-y-6 pr-2">
+        <div class="w-2/3 space-y-6 pr-4">
             <header class="flex">
                 <flux:heading size="xl" level="1">{{ $recipe->name }}</flux:heading>
                 <flux:spacer />
-                <flux:button size="sm" icon="pencil" icon-variant="outline"></flux:button>
+                <flux:button :href="route('cookbook.recipes.edit', $recipe)" size="sm" icon="pencil"
+                    icon-variant="outline" square></flux:button>
             </header>
 
-            <flux:card>
-                <dl class="grid grid-cols-1 sm:grid-cols-3">
-                    <div>
-                        <dd class="mt-1 text-sm/6 text-gray-700 sm:mt-2">{{ $recipe->prep_time }}</dd>
-                        <dt class="text-sm/6 font-medium text-gray-900">Prep</dt>
-                    </div>
-                    <div>
-                        <dd class="mt-1 text-sm/6 text-gray-700 sm:mt-2">{{ $recipe->cook_time }}</dd>
-                        <dt class="text-sm/6 font-medium text-gray-900">Cook</dt>
-                    </div>
-                    <div>
-                        <dd class="mt-1 text-sm/6 text-gray-700 sm:mt-2">{{ $recipe->total_time }}</dd>
-                        <dt class="text-sm/6 font-medium text-gray-900">Total</dt>
-                    </div>
-                </dl>
-                @if ($recipe->description)
-                <flux:separator />
-                {!! $recipe->description !!}
+            <dl class="text-sm flex divide-x divide-zinc-800/15 dark:divide-white/20">
+                @if ($recipe->source)
+                <div class="flex space-x-1 items-center pr-2">
+                    <dt><flux:icon.bookmark-square class="size-5" /></dt>
+                    <dd>{{ $recipe->shortened_source }}</dd>
+                </div>
                 @endif
-            </flux:card>
+                @if ($recipe->servings)
+                <div class="flex space-x-1 items-center px-2">
+                    <dt><flux:icon.users class="size-5" /></dt>
+                    <dd>{{ $recipe->servings }}</dd>
+                </div>
+                @endif
+                @if ($recipe->prep_time)
+                <div class="flex flex-col space-y-1 items-center px-2">
+                    <dt class="text-xs uppercase">Prep</dt>
+                    <dd class="order-first">{{ $recipe->prep_time }}</dd>
+                </div>
+                @endif
+                @if ($recipe->cook_time)
+                <div class="flex flex-col space-y-1 items-center px-2">
+                    <dt class="text-xs uppercase">Cook</dt>
+                    <dd class="order-first">{{ $recipe->cook_time }}</dd>
+                </div>
+                @endif
+                @if ($recipe->total_time)
+                <div class="flex flex-col space-y-1 items-center pl-2">
+                    <dt class="text-xs uppercase">Total</dt>
+                    <dd class="order-first">{{ $recipe->total_time }}</dd>
+                </div>
+                @endif
+            </dl>
 
+            @if ($recipe->description)
+                <div class="text-sm">
+                    {{ $recipe->description }}
+                </div>
+                <flux:separator />
+            @endif
 
-            {!! $recipe->instructions !!}
+            <div class="prose prose-zinc dark:prose-invert">
+                {!! $recipe->instructions !!}
+            </div>
+
+            @if ($recipe->notes)
+                <flux:separator />
+                <div class="text-sm">
+                    {{ $recipe->notes }}
+                </div>
+            @endif
         </div>
         <div class="w-1/3 space-y-6">
             <div class="h-48 bg-blue-100 rounded-md"></div>
             <flux:card>
-                {!! $recipe->ingredients !!}
-        </flux:card>
+                <div class="prose prose-zinc dark:prose-invert prose-li:my-0 prose-ul:pl-2 prose-li:pl-0">
+                    {!! $recipe->ingredients !!}
+                </div>
+            </flux:card>
         </div>
     </div>
 </flux:main>

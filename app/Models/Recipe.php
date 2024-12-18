@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -17,5 +18,18 @@ class Recipe extends Model
         static::saving(function (Recipe $recipe) {
             $recipe->slug = str($recipe->name)->slug()->toString();
         });
+    }
+
+    protected function shortenedSource(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                if (str_contains($this->source, 'http')) {
+                    return str($this->source)->after('//')->before('/')->after('.')->toString();
+                }
+
+                return $this->source;
+            },
+        );
     }
 }

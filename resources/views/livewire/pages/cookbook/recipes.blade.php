@@ -36,14 +36,15 @@
                         </flux:cell>
                         <flux:cell>{{ $recipe->total_time }}</flux:cell>
                         <flux:cell>{{ $recipe->categories }}</flux:cell>
-                        <flux:cell>{{ $recipe->source }}</flux:cell>
+                        <flux:cell>{{ $recipe->shortened_source }}</flux:cell>
 
                         <flux:cell>
                             <flux:dropdown>
                                 <flux:button variant="ghost" size="sm" icon="ellipsis-horizontal" inset="top bottom"></flux:button>
 
                                 <flux:menu>
-                                    <flux:menu.item icon="pencil-square" wire:click="edit({{ $recipe->id }})">Edit</flux:menu.item>
+                                    <flux:menu.item icon="eye" :href="route('cookbook.recipes.show', $recipe)">View</flux:menu.item>
+                                    <flux:menu.item icon="pencil-square" :href="route('cookbook.recipes.edit', $recipe)">Edit</flux:menu.item>
                                     <flux:menu.item variant="danger" icon="trash" wire:click="delete({{ $recipe->id }})">Delete</flux:menu.item>
                                 </flux:menu>
                             </flux:dropdown>
