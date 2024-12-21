@@ -5,11 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
-class Recipe extends Model
+class Recipe extends Model implements HasMedia
 {
     /** @use HasFactory<\Database\Factories\RecipeFactory> */
     use HasFactory;
+    use InteractsWithMedia;
 
     public $guarded = [];
 
@@ -18,6 +21,12 @@ class Recipe extends Model
         static::saving(function (Recipe $recipe) {
             $recipe->slug = str($recipe->name)->slug()->toString();
         });
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('thumb')
+            ->singleFile();
     }
 
     protected function shortenedSource(): Attribute

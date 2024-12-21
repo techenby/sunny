@@ -3,6 +3,8 @@
 namespace App\Livewire\Forms;
 
 use App\Models\Recipe;
+use Illuminate\Support\Arr;
+use Illuminate\Validation\Rules\File;
 use Livewire\Attributes\Validate;
 use Livewire\Form;
 
@@ -10,6 +12,7 @@ class RecipeForm extends Form
 {
     public ?string $name;
     public ?string $source;
+    public $image;
     public ?string $servings;
     public ?string $prep_time;
     public ?string $cook_time;
@@ -26,6 +29,7 @@ class RecipeForm extends Form
         $this->recipe = $recipe;
         $this->name = $recipe->name;
         $this->source = $recipe->source;
+        $this->image = $recipe->getFirstMedia('thumb');
         $this->prep_time = $recipe->prep_time;
         $this->cook_time = $recipe->cook_time;
         $this->total_time = $recipe->total_time;
@@ -40,7 +44,9 @@ class RecipeForm extends Form
     {
         $validated = $this->validate();
 
-        $this->recipe->update($validated);
+        $this->image = $this->recipe->addMedia($this->image)->toMediaCollection('thumb');
+
+        $this->recipe->update(Arr::except($validated, ['image']));
     }
 
     protected function rules()
@@ -49,6 +55,7 @@ class RecipeForm extends Form
             'name' => ['required', 'string', 'max:255'],
             'source' => ['nullable', 'string'],
             'servings' => ['nullable', 'string'],
+            'image' => ['nullable', File::image()],
             'prep_time' => ['nullable', 'string'],
             'cook_time' => ['nullable', 'string'],
             'total_time' => ['nullable', 'string'],

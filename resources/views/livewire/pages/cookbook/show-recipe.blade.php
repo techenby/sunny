@@ -8,7 +8,7 @@
                     icon-variant="outline" square></flux:button>
             </header>
 
-            <dl class="text-sm flex divide-x divide-zinc-800/15 dark:divide-white/20">
+            <dl class="text-sm flex divide-x text-zinc-900 dark:text-zinc-200 divide-zinc-800/15 dark:divide-white/20">
                 @if ($recipe->source)
                 <div class="flex space-x-1 items-center pr-2">
                     <dt><flux:icon.bookmark-square class="size-5" /></dt>
@@ -23,28 +23,28 @@
                 @endif
                 @if ($recipe->prep_time)
                 <div class="flex flex-col space-y-1 items-center px-2">
-                    <dt class="text-xs uppercase">Prep</dt>
+                    <dt class="text-[10px] text-zinc-700 dark:text-zinc-400 uppercase font-light">Prep</dt>
                     <dd class="order-first">{{ $recipe->prep_time }}</dd>
                 </div>
                 @endif
                 @if ($recipe->cook_time)
                 <div class="flex flex-col space-y-1 items-center px-2">
-                    <dt class="text-xs uppercase">Cook</dt>
+                    <dt class="text-[10px] text-zinc-700 dark:text-zinc-400 uppercase font-light">Cook</dt>
                     <dd class="order-first">{{ $recipe->cook_time }}</dd>
                 </div>
                 @endif
                 @if ($recipe->total_time)
                 <div class="flex flex-col space-y-1 items-center pl-2">
-                    <dt class="text-xs uppercase">Total</dt>
+                    <dt class="text-[10px] text-zinc-700 dark:text-zinc-400 uppercase font-light">Total</dt>
                     <dd class="order-first">{{ $recipe->total_time }}</dd>
                 </div>
                 @endif
             </dl>
 
             @if ($recipe->description)
-                <div class="text-sm">
+                <p class="text-sm text-zinc-900 dark:text-zinc-400">
                     {{ $recipe->description }}
-                </div>
+                </p>
                 <flux:separator />
             @endif
 

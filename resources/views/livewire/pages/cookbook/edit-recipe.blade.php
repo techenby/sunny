@@ -11,6 +11,23 @@
 
     <form wire:submit="save" id="recipe-form" class="space-y-6">
         <flux:input wire:model="form.name" type="text" label="Name" />
+
+        <flux:field>
+            <flux:label>Image</flux:label>
+
+            @if ($this->form->image)
+            <div class="relative mb-3">
+                <img src="{{ $this->previewUrl }}" alt="" class="object-cover h-48 w-96 rounded-md">
+                <div class="absolute bottom-1 left-1">
+                    <flux:button icon="x-mark" size="xs" inset variant="primary" wire:click="clear" />
+                </div>
+            </div>
+            @endif
+            <flux:input type="file" wire:model="form.image"/>
+
+            <flux:error name="image" />
+        </flux:field>
+
         <flux:input wire:model="form.source" type="text" label="Source" />
         <flux:input wire:model="form.servings" type="text" label="Servings" />
 
