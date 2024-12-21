@@ -60,7 +60,11 @@
             @endif
         </div>
         <div class="w-1/3 space-y-6">
-            <div class="h-48 bg-blue-100 rounded-md"></div>
+            @if ($url = $recipe->getFirstMediaUrl('thumb'))
+            <div class="relative bg-blue-100 dark:bg-blue-800">
+                <img src="{{ $url }}" alt="" class="object-cover h-48 w-96 rounded-md">
+            </div>
+            @endif
             <flux:card>
                 <div class="prose prose-zinc dark:prose-invert prose-li:my-0 prose-ul:pl-2 prose-li:pl-0">
                     {!! $recipe->ingredients !!}
