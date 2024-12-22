@@ -38,3 +38,22 @@ test('can create recipe', function () {
     expect($recipe->slug)->toBe('oden');
     expect($recipe->media)->not->toBeEmpty();
 });
+
+test('can clear image', function () {
+    Storage::fake();
+
+    $image = UploadedFile::fake()->image('image.jpg');
+
+    Livewire::test(CreateRecipe::class)
+        ->assertOk()
+        ->set('form.name', 'Oden')
+        ->set('form.image', $image)
+        ->call('clear')
+        ->assertSet('form.image', null);
+});
+
+test('previewUrl is null by default', function () {
+    Livewire::test(CreateRecipe::class)
+        ->assertOk()
+        ->assertSet('previewUrl', null);
+});
