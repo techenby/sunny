@@ -40,6 +40,17 @@ class RecipeForm extends Form
         $this->nutrution = $recipe->nutrution;
     }
 
+    public function create(): Recipe
+    {
+        $validated = $this->validate();
+
+        $recipe = Recipe::create(Arr::except($validated, ['image']));
+
+        $recipe->addMedia($this->image)->toMediaCollection('thumb');
+
+        return $recipe;
+    }
+
     public function update(): void
     {
         $validated = $this->validate();

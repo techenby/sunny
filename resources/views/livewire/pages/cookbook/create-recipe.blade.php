@@ -4,7 +4,7 @@
 
 <flux:main x-data x-init="Mousetrap.bind(['command+s','ctrl+s'], () => { $wire.save() })" class="space-y-6 max-w-prose">
     <header class="flex">
-        <flux:heading size="xl" level="1">Editing {{ $recipe->name }}</flux:heading>
+        <flux:heading size="xl" level="1">Create New Recipe</flux:heading>
         <flux:spacer />
         <flux:button type="submit" form="recipe-form">Save</flux:button>
     </header>
@@ -16,7 +16,7 @@
             <flux:label>Image</flux:label>
 
             @if ($this->form->image)
-            <div class="relative mb-3">
+            <div id="preview-image" class="relative mb-3">
                 <img src="{{ $this->previewUrl }}" alt="" class="object-cover h-48 w-96 rounded-md">
                 <div class="absolute bottom-1 left-1">
                     <flux:button icon="x-mark" size="xs" inset variant="primary" wire:click="clear" />

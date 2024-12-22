@@ -35,5 +35,5 @@ test('can attach image', function () {
         ->set('form.image', $image)
         ->call('save');
 
-    $this->assertNotEmpty($recipe->media);
+    expect($recipe->fresh()->media)->not->toBeEmpty();
 });
