@@ -30,3 +30,16 @@ test('can view component', function () {
         ->assertSee('Recipes')
         ->assertSee(['Mac & Cheese', 'Nut Cups', 'Falafel']);
 });
+
+test('can delete recipe', function () {
+    $recipe = Recipe::factory()->create(['name' => 'Oden']);
+
+    Livewire::test(Recipes::class)
+        ->assertSee('Oden')
+        ->call('delete', $recipe->id)
+        ->assertDontSee('Oden');
+
+    $this->assertDatabaseMissing('recipes', [
+        'name' => 'Oden',
+    ]);
+});

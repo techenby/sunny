@@ -34,7 +34,12 @@ class Recipe extends Model implements HasMedia
         return Attribute::make(
             get: function () {
                 if (str_contains($this->source, 'http')) {
-                    return str($this->source)->after('//')->before('/')->after('.')->toString();
+                    return str($this->source)
+                        ->after('//') // after http or https
+                        ->before('/') // before  slug
+                        ->when(substr_count($this->source, '.') > 1, fn ($str) => $str->after('.')) // after subdomains
+                        ->when(str_contains($this->source, '?'), fn ($str) => $str->before('?')) // after subdomains
+                        ->toString();
                 }
 
                 return $this->source;
