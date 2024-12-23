@@ -54,7 +54,7 @@
 
             @if ($recipe->notes)
                 <flux:separator />
-                <div class="text-sm">
+                <div class="prose prose-zinc dark:prose-invert prose-sm">
                     {{ $recipe->notes }}
                 </div>
             @endif

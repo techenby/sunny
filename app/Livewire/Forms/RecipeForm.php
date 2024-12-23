@@ -46,7 +46,9 @@ class RecipeForm extends Form
 
         $recipe = Recipe::create(Arr::except($validated, ['image']));
 
-        $recipe->addMedia($this->image)->toMediaCollection('thumb');
+        if ($this->image) {
+            $recipe->addMedia($this->image)->toMediaCollection('thumb');
+        }
 
         return $recipe;
     }
@@ -55,7 +57,9 @@ class RecipeForm extends Form
     {
         $validated = $this->validate();
 
-        $this->image = $this->recipe->addMedia($this->image)->toMediaCollection('thumb');
+        if ($this->image) {
+            $this->image = $this->recipe->addMedia($this->image)->toMediaCollection('thumb');
+        }
 
         $this->recipe->update(Arr::except($validated, ['image']));
     }

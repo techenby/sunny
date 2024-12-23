@@ -28,10 +28,10 @@ test('can create recipe', function () {
     $image = UploadedFile::fake()->image('image.jpg');
 
     Livewire::test(CreateRecipe::class)
-        ->assertOk()
         ->set('form.name', 'Oden')
         ->set('form.image', $image)
-        ->call('save');
+        ->call('save')
+        ->assertOk();
 
     $recipe = Recipe::firstWhere('name', 'Oden');
 
@@ -45,15 +45,26 @@ test('can clear image', function () {
     $image = UploadedFile::fake()->image('image.jpg');
 
     Livewire::test(CreateRecipe::class)
-        ->assertOk()
         ->set('form.name', 'Oden')
         ->set('form.image', $image)
         ->call('clear')
-        ->assertSet('form.image', null);
+        ->assertSet('form.image', null)
+        ->assertOk();
 });
 
-test('previewUrl is null by default', function () {
+test('preview is visable with image', function () {
+    Storage::fake();
+
+    $image = UploadedFile::fake()->image('image.jpg');
+
     Livewire::test(CreateRecipe::class)
-        ->assertOk()
-        ->assertSet('previewUrl', null);
+        ->set('form.image', $image)
+        ->assertSeeHtml('id="preview-image"')
+        ->assertOk();
+});
+
+test('preview is hidden without image', function () {
+    Livewire::test(CreateRecipe::class)
+        ->assertDontSeeHtml('id="preview-image"')
+        ->assertOk();
 });
