@@ -5,7 +5,6 @@ namespace App\Livewire\Forms;
 use App\Models\Recipe;
 use Illuminate\Support\Arr;
 use Illuminate\Validation\Rules\File;
-use Livewire\Attributes\Validate;
 use Livewire\Form;
 
 class RecipeForm extends Form
