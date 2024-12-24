@@ -33,12 +33,12 @@ class EditRecipe extends Component
     public function previewUrl(): ?string
     {
         if ($this->form->image instanceof Media) {
-            return $this->form->image->getUrl();
+            $url = $this->form->image->getUrl();
         } elseif ($this->form->image) {
-            return $this->form->image->temporaryUrl();
+            $url = $this->form->image->temporaryUrl();
         }
 
-        return null;
+        return $url ?? null;
     }
 
     public function clear()

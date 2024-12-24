@@ -15,8 +15,8 @@
         <flux:field>
             <flux:label>Image</flux:label>
 
-            @if ($this->form->image)
-            <div class="relative mb-3">
+            @if ($this->previewUrl)
+            <div id="preview-image" class="relative mb-3">
                 <img src="{{ $this->previewUrl }}" alt="" class="object-cover h-48 w-96 rounded-md">
                 <div class="absolute bottom-1 left-1">
                     <flux:button icon="x-mark" size="xs" inset variant="primary" wire:click="clear" />
