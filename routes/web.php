@@ -1,6 +1,10 @@
 <?php
 
 use App\Actions\CurrentPayPeriod;
+use App\Livewire\Pages\Cookbook\CreateRecipe;
+use App\Livewire\Pages\Cookbook\EditRecipe;
+use App\Livewire\Pages\Cookbook\Recipes;
+use App\Livewire\Pages\Cookbook\ShowRecipe;
 use App\Livewire\Pages\Inventory\Bins;
 use App\Livewire\Pages\Inventory\Locations;
 use App\Livewire\Pages\Inventory\Things;
@@ -31,6 +35,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('inventory/things', Things::class)->name('inventory.things');
 
     Route::get('log-pose/tiles', Tiles::class)->name('log-pose.tiles');
+
+    Route::get('cookbook/recipes', Recipes::class)->name('cookbook.recipes');
+    Route::get('cookbook/recipes/create', CreateRecipe::class)->name('cookbook.recipes.create');
+    Route::get('cookbook/recipes/{recipe}', ShowRecipe::class)->name('cookbook.recipes.show');
+    Route::get('cookbook/recipes/{recipe}/edit', EditRecipe::class)->name('cookbook.recipes.edit');
 
     Route::get('users', Users::class)->name('users');
 });

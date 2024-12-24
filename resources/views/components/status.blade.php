@@ -4,7 +4,7 @@
         this.status.emoji = $event.detail.unicode;
         $el.click();
     }
-    }">
+}">
     <flux:input.group>
         <flux:dropdown>
             <flux:button x-text="status.emoji"></flux:button>

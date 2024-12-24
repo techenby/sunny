@@ -40,6 +40,9 @@
             <flux:navlist.group heading="Log Pose" expandable>
                 <flux:navlist.item :href="route('log-pose.tiles')">{{ __('Tiles') }}</flux:navlist.item>
             </flux:navlist.group>
+            <flux:navlist.group heading="Cookbook" expandable>
+                <flux:navlist.item :href="route('cookbook.recipes')">{{ __('Recipes') }}</flux:navlist.item>
+            </flux:navlist.group>
         </flux:navlist>
 
         <flux:spacer />
@@ -72,6 +75,8 @@
     </flux:header>
 
     {{ $slot }}
+
+    <flux:toast />
 
     @fluxScripts
     @vite('resources/js/app.js')
