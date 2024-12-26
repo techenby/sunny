@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\LegoGroup;
+use App\Models\LegoPiece;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use InvalidArgumentException;
@@ -38,7 +39,7 @@ class ImportLegoPieces implements ShouldQueue
             }
         }
 
-        $pieces = LegoGroup::whereTrue('has_pieces')->get();
+        $pieces = LegoGroup::where('has_pieces', true)->get();
         foreach ($pieces as $group) {
             $this->getPiecesFor($group);
         }
@@ -95,6 +96,27 @@ class ImportLegoPieces implements ShouldQueue
 
     public function getPiecesFor($group)
     {
+        $html = file_get_contents($group->href);
 
+        $crawler = new Crawler($html);
+
+        try {
+            $description = $crawler->filter('.main .category_description')->html();
+            $group->update(['description' => $description]);
+        } catch (InvalidArgumentException $e) {}
+
+        $pieces = $crawler
+            ->filter(".parts_results a")
+            ->each(function ($node, $i) use ($group) {
+                return [
+                    'group_id' => $group->id,
+                    'part_number' => $node->filter('.partnum')->text(),
+                    'name' => $node->filter('.partname')->text(),
+                    'image' => $node->filter('img')->attr('src'),
+                    'href' => $node->attr('href'),
+                ];
+            });
+
+        LegoPiece::upsert($pieces, uniqueBy: ['part_number'], update: ['part_number', 'name', 'image', 'href']);
     }
 }

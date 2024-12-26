@@ -2,6 +2,7 @@
 
 use App\Jobs\ImportLegoPieces;
 use App\Models\LegoGroup;
+use App\Models\LegoPiece;
 
 test('can get categories', function () {
     (new ImportLegoPieces)->getCategories();
