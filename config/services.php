@@ -39,4 +39,8 @@ return [
         'key' => env('OPENWEATHER_KEY'),
     ],
 
+    'rebrickable' => [
+        'key' => env('REBRICKABLE_KEY'),
+    ],
+
 ];
