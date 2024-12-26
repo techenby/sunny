@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\CurrentPayPeriod;
+use App\Livewire\Pages\Collections\Lego;
 use App\Livewire\Pages\Cookbook\CreateRecipe;
 use App\Livewire\Pages\Cookbook\EditRecipe;
 use App\Livewire\Pages\Cookbook\Recipes;
@@ -40,6 +41,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('cookbook/recipes/create', CreateRecipe::class)->name('cookbook.recipes.create');
     Route::get('cookbook/recipes/{recipe}', ShowRecipe::class)->name('cookbook.recipes.show');
     Route::get('cookbook/recipes/{recipe}/edit', EditRecipe::class)->name('cookbook.recipes.edit');
+
+    Route::get('collections/lego', Lego::class)->name('collections.lego');
 
     Route::get('users', Users::class)->name('users');
 });
