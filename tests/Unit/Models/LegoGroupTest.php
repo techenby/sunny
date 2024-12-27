@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\LegoGroup;
-use App\Models\Recipe;
 
 test('get parents', function () {
     $basic = LegoGroup::factory()->create(['parent_id' => null, 'slug' => 'basic']);
