@@ -35,7 +35,7 @@
                         <flux:cell>
                             @foreach ($bin->pieces as $piece)
                             <flux:tooltip :content="$piece->name" :key="$bin->id . '-' . $piece->id">
-                                <img src="{{ $piece->image }}" alt="">
+                                <img src="{{ $piece->image }}" alt="" style="zoom: 50%; max-width: 192px; max-height: 64px;">
                             </flux:tooltip>
                             @endforeach
                         </flux:cell>
