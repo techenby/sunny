@@ -9,15 +9,12 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class LegoColorFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
+    /** @return array<string, mixed> */
     public function definition(): array
     {
         return [
-            //
+            'name' => 'Black',
+            'hex' => '000000',
         ];
     }
 }

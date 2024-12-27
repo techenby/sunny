@@ -16,7 +16,7 @@ class LegoColor extends Model
     {
         return [
             'is_trans' => 'boolean',
-            'external' => 'array'
+            'external' => 'array',
         ];
     }
 }

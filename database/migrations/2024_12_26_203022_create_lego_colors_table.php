@@ -12,8 +12,8 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('hex');
-            $table->boolean('is_trans');
-            $table->json('external');
+            $table->boolean('is_trans')->default(false);
+            $table->json('external')->nullable();
             $table->timestamps();
         });
     }

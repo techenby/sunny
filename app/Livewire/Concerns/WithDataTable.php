@@ -22,4 +22,9 @@ trait WithDataTable
             $this->sortDirection = 'desc';
         }
     }
+
+    public function updatedSearch()
+    {
+        $this->resetPage();
+    }
 }

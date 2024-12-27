@@ -14,6 +14,7 @@ class LegoGroupFactory extends Factory
     {
         return [
             'name' => 'DUPLO',
+            'slug' => 'duplo',
             'href' => 'https://brickarchitect.com/parts/category-89',
             'summary' => 'The larger bricks for younger kids are twice as big in each direction and compatible with regular LEGO bricks',
         ];

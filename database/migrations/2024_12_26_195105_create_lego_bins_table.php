@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('type');
             $table->string('location')->nullable();
-            $table->text('notes');
+            $table->text('notes')->nullable();
             $table->timestamps();
         });
     }

@@ -2,6 +2,7 @@
 
 use App\Http\Integrations\OpenWeather\OpenWeather;
 use App\Http\Integrations\OpenWeather\Requests\OneCall;
+use App\Jobs\ImportLegoPieces;
 use App\Models\LegoColor;
 use App\Models\Tile;
 use App\Models\User;
@@ -40,4 +41,8 @@ Artisan::command('lego:import-colors', function () {
                 'external' => $color['external_ids'],
             ]);
         });
+});
+
+Artisan::command('lego:import-pieces', function () {
+    ImportLegoPieces::dispatchSync();
 });

@@ -7,7 +7,6 @@ use App\Models\LegoPiece;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use InvalidArgumentException;
-use LogicException;
 use Symfony\Component\DomCrawler\Crawler;
 
 class ImportLegoPieces implements ShouldQueue
@@ -25,7 +24,7 @@ class ImportLegoPieces implements ShouldQueue
     {
         $this->getCategories();
 
-        foreach(LegoGroup::parents()->get() as $group) {
+        foreach (LegoGroup::parents()->get() as $group) {
             $this->getSubcategories($group);
 
             $categories = LegoGroup::forParent($group)->get();
@@ -52,6 +51,7 @@ class ImportLegoPieces implements ShouldQueue
         $categories = (new Crawler($html))->filter('.categorylistitem')
             ->each(function ($node, $i) {
                 $nameNode = $node->filter('.categorylistitem_name a');
+
                 return [
                     'name' => $name = str($nameNode->text())->after('. '),
                     'slug' => $name->slug(),
@@ -72,11 +72,13 @@ class ImportLegoPieces implements ShouldQueue
         try {
             $description = $crawler->filter('.main .category_description')->html();
             $category->update(['description' => $description]);
-        } catch (InvalidArgumentException $e) {}
+        } catch (InvalidArgumentException $e) {
+        }
 
         $categories = $crawler->filter('.part_category h2.partcategoryname')
             ->each(function ($node, $i) use ($category) {
                 $nameNode = $node->filter('a');
+
                 return [
                     'parent_id' => $category->id,
                     'name' => $name = $nameNode->text(),
@@ -88,6 +90,7 @@ class ImportLegoPieces implements ShouldQueue
 
         if (empty($categories)) {
             $category->update(['has_pieces' => true]);
+
             return;
         }
 
@@ -103,10 +106,11 @@ class ImportLegoPieces implements ShouldQueue
         try {
             $description = $crawler->filter('.main .category_description')->html();
             $group->update(['description' => $description]);
-        } catch (InvalidArgumentException $e) {}
+        } catch (InvalidArgumentException $e) {
+        }
 
         $pieces = $crawler
-            ->filter(".parts_results a")
+            ->filter('.parts_results a')
             ->each(function ($node, $i) use ($group) {
                 return [
                     'group_id' => $group->id,
