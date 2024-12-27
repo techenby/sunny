@@ -50,7 +50,7 @@
                         </flux:cell>
 
                         <flux:cell>
-                            <flux:button variant="ghost" size="sm" icon="ellipsis-horizontal" inset="top bottom">
+                            <flux:button wire:click="edit('{{ $bin->id }}')" variant="ghost" size="sm" icon="pencil" icon-variant="outline" inset="top bottom">
                             </flux:button>
                         </flux:cell>
                     </flux:row>
