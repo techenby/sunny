@@ -65,6 +65,7 @@ test('preview is visable with image', function () {
 
 test('preview is hidden without image', function () {
     Livewire::test(CreateRecipe::class)
+        ->assertSet('previewUrl', null)
         ->assertDontSeeHtml('id="preview-image"')
         ->assertOk();
 });

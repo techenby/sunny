@@ -43,6 +43,9 @@
             <flux:navlist.group heading="Cookbook" expandable>
                 <flux:navlist.item :href="route('cookbook.recipes')">{{ __('Recipes') }}</flux:navlist.item>
             </flux:navlist.group>
+            <flux:navlist.group heading="Collections" expandable>
+                <flux:navlist.item :href="route('collections.lego')">{{ __('LEGO') }}</flux:navlist.item>
+            </flux:navlist.group>
         </flux:navlist>
 
         <flux:spacer />

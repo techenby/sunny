@@ -11,6 +11,8 @@ trait WithDataTable
 
     public function sort($column)
     {
+        $this->resetPage();
+
         if ($this->sortBy === $column && $this->sortDirection === 'asc') {
             $this->reset('sortBy', 'sortDirection');
         } elseif ($this->sortBy === $column) {
@@ -19,5 +21,10 @@ trait WithDataTable
             $this->sortBy = $column;
             $this->sortDirection = 'desc';
         }
+    }
+
+    public function updatedSearch()
+    {
+        $this->resetPage();
     }
 }
