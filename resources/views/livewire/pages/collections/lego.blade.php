@@ -50,8 +50,14 @@
                         </flux:cell>
 
                         <flux:cell>
-                            <flux:button wire:click="edit('{{ $bin->id }}')" variant="ghost" size="sm" icon="pencil" icon-variant="outline" inset="top bottom">
-                            </flux:button>
+                            <flux:dropdown>
+                                <flux:button variant="ghost" size="sm" icon="ellipsis-horizontal" inset="top bottom"></flux:button>
+
+                                <flux:menu>
+                                    <flux:menu.item icon="pencil-square" wire:click="edit({{ $bin->id }})">Edit</flux:menu.item>
+                                    <flux:menu.item variant="danger" icon="trash" wire:click="delete({{ $bin->id }})">Delete</flux:menu.item>
+                                </flux:menu>
+                            </flux:dropdown>
                         </flux:cell>
                     </flux:row>
                 @endforeach
