@@ -7,11 +7,12 @@
         </flux:modal.trigger>
     </header>
 
-    <section>
-        <div class="flex justify-between gap-8 mb-2">
+    <section x-data="{showFilters: false}" class="space-y-3">
+        <div class="flex gap-4">
             <flux:input size="sm" wire:model.live="search" icon="magnifying-glass" class="max-w-sm"
                 placeholder="Search Bins" />
-
+            <flux:spacer />
+            <flux:button @click="showFilters = !showFilters" size="sm">Filter</flux:button>
             <flux:select size="sm" wire:model.blur="perPage" class="max-w-20" placeholder="Per Page">
                 <flux:option>5</flux:option>
                 <flux:option>10</flux:option>
@@ -19,6 +20,35 @@
                 <flux:option>50</flux:option>
             </flux:select>
         </div>
+
+        <flux:card x-show="showFilters" x-cloak class="grid grid-cols-2 gap-4">
+            <flux:select wire:model.live="filter.part" :label="__('Part')" variant="listbox" searchable clearable
+                placeholder="Choose part...">
+                @foreach ($this->parts as $part)
+                    <flux:option :value="$part->id">
+                        <div class="flex items-center gap-2">
+                            <div class="w-20 shrink-0 align-middle">
+                                <img src="{{ $part->image }}" loading="lazy" alt="" class="max-w-48 max-h-16"
+                                    style="zoom: 50%;">
+                            </div>
+                            <span>{{ $part->name }}</span>
+                        </div>
+                    </flux:option>
+                @endforeach
+            </flux:select>
+
+            <flux:select wire:model.live="filter.color" :label="__('Color')" variant="listbox" searchable clearable
+                placeholder="Choose color...">
+                @foreach ($this->colors as $color)
+                    <flux:option :value="$color->id">
+                        <div class="flex items-center gap-2">
+                            <span class="size-4 rounded-full" style="background: #{{ $color->hex }}"></span>
+                            <span>{{ $color->name }}</span>
+                        </div>
+                    </flux:option>
+                @endforeach
+            </flux:select>
+        </flux:card>
 
         <flux:table :paginate="$this->bins">
             <flux:columns>

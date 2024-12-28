@@ -21,6 +21,11 @@ class Lego extends Component
 
     public LegoBinForm $form;
 
+    public $filter = [
+        'part' => '',
+        'color' => '',
+    ];
+
     #[Layout('layouts.app')]
     public function render()
     {
@@ -30,21 +35,35 @@ class Lego extends Component
     #[Computed]
     public function colors(): Collection
     {
-        return LegoColor::select('id', 'name', 'hex')->get();
+        return LegoColor::select('id', 'name', 'hex')
+            ->join('lego_bin_color', 'lego_bin_color.color_id', '=', 'lego_colors.id')
+            ->groupBy('lego_colors.id')
+            ->get();
     }
 
     #[Computed]
     public function parts(): Collection
     {
-        return LegoPart::select('id', 'name', 'image')->get();
+        return LegoPart::select('id', 'name', 'image')
+            ->join('lego_bin_part', 'lego_bin_part.part_id', '=', 'lego_parts.id')
+            ->groupBy('lego_parts.id')
+            ->get();
     }
 
     #[Computed]
     public function bins(): LengthAwarePaginator
     {
         return LegoBin::query()
+            ->with(['colors', 'parts'])
             ->when($this->sortBy, fn ($query) => $query->orderBy($this->sortBy, $this->sortDirection))
             ->when($this->search, fn ($query) => $query->where('type', 'like', '%' . $this->search . '%'))
+            ->when($this->filter['part'] !== '' || $this->filter['color'], function ($query) {
+                $query->join('lego_bin_part', 'lego_bin_part.bin_id', '=', 'lego_bins.id')
+                    ->join('lego_bin_color', 'lego_bin_color.bin_id', '=', 'lego_bins.id')
+                    ->when($this->filter['part'] !== '', fn ($query) => $query->where('part_id', $this->filter['part']))
+                    ->when($this->filter['color'] !== '', fn ($query) => $query->where('color_id', $this->filter['color']))
+                    ->groupBy('lego_bins.id');
+            })
             ->paginate($this->perPage);
     }
 
