@@ -42,7 +42,7 @@
                 @foreach ($this->filterColors as $color)
                     <flux:option :value="$color->id">
                         <div class="flex items-center gap-2">
-                            <span class="size-4 rounded-full" style="background: #{{ $color->hex }}"></span>
+                            <x-lego.color :$color size="size-4" />
                             <span>{{ $color->name }}</span>
                         </div>
                     </flux:option>
@@ -73,7 +73,7 @@
                             <div class="isolate flex -space-x-2 overflow-hidden">
                                 @foreach ($bin->colors as $color)
                                 <flux:tooltip :content="$color->name" :key="$bin->id . '-' . $color->id">
-                                    <div class="relative inline-block size-6 rounded-full ring-2 ring-white dark:ring-zinc-800" style="background: #{{ $color->hex }}"></div>
+                                    <x-lego.color :$color />
                                 </flux:tooltip>
                                 @endforeach
                             </div>
@@ -131,7 +131,7 @@
                 @foreach ($this->colors as $color)
                     <flux:option :value="$color->id">
                         <div class="flex items-center gap-2">
-                            <span class="size-4 rounded-full" style="background: #{{ $color->hex }}"></span>
+                            <x-lego.color :$color size="size-4" />
                             <span>{{ $color->name }}</span>
                         </div>
                     </flux:option>
