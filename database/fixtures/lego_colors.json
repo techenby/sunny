@@ -1,0 +1,2414 @@
+[
+  {
+    "id": 1,
+    "name": "Assorted Colors",
+    "hex": "#000000",
+    "is_trans": "0",
+    "external": null,
+    "created_at": "2024-12-28 23:07:03",
+    "updated_at": "2024-12-28 23:07:03"
+  },
+  {
+    "id": 2,
+    "name": "[Unknown]",
+    "hex": "0033B2",
+    "is_trans": "0",
+    "external": "{\"BrickOwl\":{\"ext_ids\":[0,28,29,30,31,32,33,34,60,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,156,157,160,162,163,169],\"ext_descrs\":[[\"Not Applicable\"],[\"Modulex Medium Stone Gray\"],[\"Modulex Charcoal Gray\"],[\"Modulex Orange\"],[\"Modulex Ochre Yellow\"],[\"Modulex Olive Green\"],[\"Modulex Pastel Green\"],[\"Modulex Tile Blue\"],[\"Fabuland Orange\"],[\"Modulex Aqua Green\"],[\"Modulex Black\"],[\"Modulex Brown\"],[\"Modulex Buff\"],[\"Modulex Clear\"],[\"Modulex Lemon\"],[\"Modulex Light Gray\"],[\"Modulex Light Orange\"],[\"Modulex Light Yellow\"],[\"Modulex Medium Blue\"],[\"Modulex Pastel Blue\"],[\"Modulex Pink\"],[\"Modulex Pink Red\"],[\"Modulex Red\"],[\"Modulex Teal Blue\"],[\"Modulex Terracotta\"],[\"Modulex Tile Brown\"],[\"Modulex Tile Gray\"],[\"Modulex Violet\"],[\"Modulex White\"],[\"Warm Yellowish Orange\"],[\"Medium Yellowish Orange\"],[\"Dark Nougat\"],[\"Transparent Fire Yellow\"],[\"Transparent Light Royal Blue\"],[\"Curry\"]]},\"LEGO\":{\"ext_ids\":[125,158],\"ext_descrs\":[[\"Light Orange\"],[\"Tr. Flu. Red\"]]},\"Peeron\":{\"ext_ids\":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],\"ext_descrs\":[[\"blackgoldglitter\"],[\"curry\"],[\"dknougat\"],[\"ffred\"],[\"ffyellow\"],[\"fabulime\"],[\"fabuorange\"],[\"metalliccopper\"],[\"metallicwhite\"],[\"neonblue\"],[\"pearlgreen\"],[\"pearlescentpink\"],[\"redpink\"],[\"trltgreen\"],[\"trsalmon\"]]},\"LDraw\":{\"ext_ids\":[16,24,65,66,67,273,324,375,406,449,490,493,494,495,496,504,511],\"ext_descrs\":[[\"Main_Colour\"],[\"Edge_Colour\"],[\"Rubber_Yellow\"],[\"Rubber_Trans_Yellow\"],[\"Rubber_Trans_Clear\"],[\"Rubber_Blue\"],[\"Rubber_Red\"],[\"Rubber_Light_Gray\"],[\"Rubber_Dark_Blue\"],[\"Rubber_Purple\"],[\"Rubber_Lime\"],[\"Magnet\"],[\"Electric_Contact_Alloy\"],[\"Electric_Contact_Copper\"],[\"Rubber_Light_Bluish_Gray\"],[\"Rubber_Flat_Silver\"],[\"Rubber_White\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 3,
+    "name": "Black",
+    "hex": "05131D",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[11],\"ext_descrs\":[[\"Black\"]]},\"BrickOwl\":{\"ext_ids\":[38],\"ext_descrs\":[[\"Black\"]]},\"LEGO\":{\"ext_ids\":[26,342],\"ext_descrs\":[[\"Black\",\"BLACK\"],[\"CONDUCT. BLACK\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"black\"]]},\"LDraw\":{\"ext_ids\":[0,256],\"ext_descrs\":[[\"Black\"],[\"Rubber_Black\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 4,
+    "name": "Blue",
+    "hex": "0055BF",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[7],\"ext_descrs\":[[\"Blue\"]]},\"BrickOwl\":{\"ext_ids\":[39],\"ext_descrs\":[[\"Blue\"]]},\"LEGO\":{\"ext_ids\":[23],\"ext_descrs\":[[\"Bright Blue\",\"BR.BLUE\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"blue\"]]},\"LDraw\":{\"ext_ids\":[1],\"ext_descrs\":[[\"Blue\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 5,
+    "name": "Green",
+    "hex": "237841",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[6],\"ext_descrs\":[[\"Green\"]]},\"BrickOwl\":{\"ext_ids\":[61],\"ext_descrs\":[[\"Green\"]]},\"LEGO\":{\"ext_ids\":[28],\"ext_descrs\":[[\"Dark green\",\"DK.GREEN\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"green\"]]},\"LDraw\":{\"ext_ids\":[2],\"ext_descrs\":[[\"Green\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 6,
+    "name": "Dark Turquoise",
+    "hex": "008F9B",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[39],\"ext_descrs\":[[\"Dark Turquoise\"]]},\"BrickOwl\":{\"ext_ids\":[58],\"ext_descrs\":[[\"Dark Turquoise\"]]},\"LEGO\":{\"ext_ids\":[107],\"ext_descrs\":[[\"Bright bluish green\",\"BR.BLUEGREEN\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"teal\"]]},\"LDraw\":{\"ext_ids\":[3],\"ext_descrs\":[[\"Dark_Turquoise\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 7,
+    "name": "Red",
+    "hex": "C91A09",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[5],\"ext_descrs\":[[\"Red\"]]},\"BrickOwl\":{\"ext_ids\":[81],\"ext_descrs\":[[\"Red\"]]},\"LEGO\":{\"ext_ids\":[21],\"ext_descrs\":[[\"Bright red\",\"BR.RED\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"red\"]]},\"LDraw\":{\"ext_ids\":[4],\"ext_descrs\":[[\"Red\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 8,
+    "name": "Dark Pink",
+    "hex": "C870A0",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[47],\"ext_descrs\":[[\"Dark Pink\"]]},\"BrickOwl\":{\"ext_ids\":[17],\"ext_descrs\":[[\"Dark Pink\"]]},\"LEGO\":{\"ext_ids\":[221],\"ext_descrs\":[[\"Bright Purple\",\"BR. PURPLE\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"dkpink\"]]},\"LDraw\":{\"ext_ids\":[5],\"ext_descrs\":[[\"Dark_Pink\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 9,
+    "name": "Brown",
+    "hex": "583927",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[8],\"ext_descrs\":[[\"Brown\"]]},\"BrickOwl\":{\"ext_ids\":[46],\"ext_descrs\":[[\"Brown\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"oldbrown\"]]},\"LDraw\":{\"ext_ids\":[6],\"ext_descrs\":[[\"Brown\"]]},\"LEGO\":{\"ext_ids\":[25],\"ext_descrs\":[[\"Earth Orange\",\"EARTH-ORA\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 10,
+    "name": "Light Gray",
+    "hex": "9BA19D",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[9],\"ext_descrs\":[[\"Light Gray\"]]},\"BrickOwl\":{\"ext_ids\":[66],\"ext_descrs\":[[\"Light Gray\"]]},\"LEGO\":{\"ext_ids\":[2],\"ext_descrs\":[[\"Grey\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"oldgray\"]]},\"LDraw\":{\"ext_ids\":[7],\"ext_descrs\":[[\"Light_Gray\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 11,
+    "name": "Dark Gray",
+    "hex": "6D6E5C",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[10],\"ext_descrs\":[[\"Dark Gray\"]]},\"BrickOwl\":{\"ext_ids\":[53],\"ext_descrs\":[[\"Dark Gray\"]]},\"LEGO\":{\"ext_ids\":[27],\"ext_descrs\":[[\"Dark grey\",\"DK.GREY\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"olddkgray\"]]},\"LDraw\":{\"ext_ids\":[8],\"ext_descrs\":[[\"Dark_Gray\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 12,
+    "name": "Light Blue",
+    "hex": "B4D2E3",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[62],\"ext_descrs\":[[\"Light Blue\"]]},\"BrickOwl\":{\"ext_ids\":[63],\"ext_descrs\":[[\"Light Blue\"]]},\"LEGO\":{\"ext_ids\":[45],\"ext_descrs\":[[\"Light blue\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"ltblue\"]]},\"LDraw\":{\"ext_ids\":[9],\"ext_descrs\":[[\"Light_Blue\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 13,
+    "name": "Bright Green",
+    "hex": "4B9F4A",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[36],\"ext_descrs\":[[\"Bright Green\"]]},\"BrickOwl\":{\"ext_ids\":[41],\"ext_descrs\":[[\"Bright Green\"]]},\"LEGO\":{\"ext_ids\":[37],\"ext_descrs\":[[\"Bright Green\",\"BR.GREEN\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"btgreen\"]]},\"LDraw\":{\"ext_ids\":[10],\"ext_descrs\":[[\"Bright_Green\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 14,
+    "name": "Light Turquoise",
+    "hex": "55A5AF",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[40],\"ext_descrs\":[[\"Light Turquoise\"]]},\"BrickOwl\":{\"ext_ids\":[12],\"ext_descrs\":[[\"Light Turquoise\"]]},\"LEGO\":{\"ext_ids\":[116],\"ext_descrs\":[[\"Med. bluish green\",\"MD.BL-GREEN\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"ltteal\"]]},\"LDraw\":{\"ext_ids\":[11],\"ext_descrs\":[[\"Light_Turquoise\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 15,
+    "name": "Salmon",
+    "hex": "F2705E",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[25],\"ext_descrs\":[[\"Salmon\"]]},\"BrickOwl\":{\"ext_ids\":[84],\"ext_descrs\":[[\"Salmon\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"salmon\"]]},\"LDraw\":{\"ext_ids\":[12],\"ext_descrs\":[[\"Salmon\"]]},\"LEGO\":{\"ext_ids\":[101],\"ext_descrs\":[[\"Medium Red\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 16,
+    "name": "Pink",
+    "hex": "FC97AC",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[23],\"ext_descrs\":[[\"Pink\"]]},\"BrickOwl\":{\"ext_ids\":[3],\"ext_descrs\":[[\"Pink\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"pink\"]]},\"LDraw\":{\"ext_ids\":[13],\"ext_descrs\":[[\"Pink\"]]},\"LEGO\":{\"ext_ids\":[9],\"ext_descrs\":[[\"L.REDVIOL\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 17,
+    "name": "Yellow",
+    "hex": "F2CD37",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[3],\"ext_descrs\":[[\"Yellow\"]]},\"BrickOwl\":{\"ext_ids\":[93],\"ext_descrs\":[[\"Yellow\"]]},\"LEGO\":{\"ext_ids\":[24],\"ext_descrs\":[[\"Bright yellow\",\"BR.YEL\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"yellow\"]]},\"LDraw\":{\"ext_ids\":[14],\"ext_descrs\":[[\"Yellow\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 18,
+    "name": "White",
+    "hex": "FFFFFF",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[1],\"ext_descrs\":[[\"White\"]]},\"BrickOwl\":{\"ext_ids\":[92],\"ext_descrs\":[[\"White\"]]},\"LEGO\":{\"ext_ids\":[1],\"ext_descrs\":[[\"White\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"white\"]]},\"LDraw\":{\"ext_ids\":[15],\"ext_descrs\":[[\"White\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 19,
+    "name": "Light Green",
+    "hex": "C2DAB8",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[38],\"ext_descrs\":[[\"Light Green\"]]},\"BrickOwl\":{\"ext_ids\":[11],\"ext_descrs\":[[\"Light Green\"]]},\"LEGO\":{\"ext_ids\":[6],\"ext_descrs\":[[\"Light green\",\"L.GREEN\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"ltgreen\"]]},\"LDraw\":{\"ext_ids\":[17],\"ext_descrs\":[[\"Light_Green\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 20,
+    "name": "Light Yellow",
+    "hex": "FBE696",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[33],\"ext_descrs\":[[\"Light Yellow\"]]},\"BrickOwl\":{\"ext_ids\":[9],\"ext_descrs\":[[\"Light Yellow\"]]},\"LEGO\":{\"ext_ids\":[3],\"ext_descrs\":[[\"Light yellow\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"ltyellow\"]]},\"LDraw\":{\"ext_ids\":[18],\"ext_descrs\":[[\"Light_Yellow\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 21,
+    "name": "Tan",
+    "hex": "E4CD9E",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[2],\"ext_descrs\":[[\"Tan\"]]},\"BrickOwl\":{\"ext_ids\":[89],\"ext_descrs\":[[\"Tan\"]]},\"LEGO\":{\"ext_ids\":[5],\"ext_descrs\":[[\"Brick yellow\",\"BRICK-YEL\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"tan\"]]},\"LDraw\":{\"ext_ids\":[19],\"ext_descrs\":[[\"Tan\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 22,
+    "name": "Light Violet",
+    "hex": "C9CAE2",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[44],\"ext_descrs\":[[\"Light Violet\"]]},\"BrickOwl\":{\"ext_ids\":[16],\"ext_descrs\":[[\"Light Violet\"]]},\"LEGO\":{\"ext_ids\":[39],\"ext_descrs\":[[\"Light bluish violet\",\"L.BLUEVIOL\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"ltviolet\"]]},\"LDraw\":{\"ext_ids\":[20],\"ext_descrs\":[[\"Light_Violet\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 23,
+    "name": "Glow In Dark Opaque",
+    "hex": "D4D5C9",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[46],\"ext_descrs\":[[\"Glow In Dark Opaque\"]]},\"BrickOwl\":{\"ext_ids\":[127],\"ext_descrs\":[[\"Glow in the Dark Opaque\"]]},\"LEGO\":{\"ext_ids\":[50],\"ext_descrs\":[[\"Phosp. White\",\"PHOS.WHITE\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"glowinthedark\"]]},\"LDraw\":{\"ext_ids\":[21],\"ext_descrs\":[[\"Glow_In_Dark_Opaque\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 24,
+    "name": "Purple",
+    "hex": "81007B",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[24],\"ext_descrs\":[[\"Purple\"]]},\"BrickOwl\":{\"ext_ids\":[4],\"ext_descrs\":[[\"Purple\"]]},\"LEGO\":{\"ext_ids\":[104],\"ext_descrs\":[[\"Bright violet\",\"BR. VIOLET\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"purple\"]]},\"LDraw\":{\"ext_ids\":[22],\"ext_descrs\":[[\"Purple\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 25,
+    "name": "Dark Blue-Violet",
+    "hex": "2032B0",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[109],\"ext_descrs\":[[\"Dark Blue-Violet\"]]},\"BrickOwl\":{\"ext_ids\":[49],\"ext_descrs\":[[\"Dark Royal Blue\"]]},\"LEGO\":{\"ext_ids\":[196],\"ext_descrs\":[[\"Dark Royal blue\",\"DK. R.BLUE\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"dkroyalblue\"]]},\"LDraw\":{\"ext_ids\":[23],\"ext_descrs\":[[\"Dark_Blue_Violet\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 26,
+    "name": "Orange",
+    "hex": "FE8A18",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[4],\"ext_descrs\":[[\"Orange\"]]},\"BrickOwl\":{\"ext_ids\":[80],\"ext_descrs\":[[\"Orange\"]]},\"LEGO\":{\"ext_ids\":[106],\"ext_descrs\":[[\"Bright orange\",\"BR.ORANGE\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"orange\"]]},\"LDraw\":{\"ext_ids\":[25],\"ext_descrs\":[[\"Orange\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 27,
+    "name": "Magenta",
+    "hex": "923978",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[71],\"ext_descrs\":[[\"Magenta\"]]},\"BrickOwl\":{\"ext_ids\":[72],\"ext_descrs\":[[\"Magenta\"]]},\"LEGO\":{\"ext_ids\":[124],\"ext_descrs\":[[\"Bright reddish violet\",\"BR.RED-VIOL.\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"magenta\"]]},\"LDraw\":{\"ext_ids\":[26],\"ext_descrs\":[[\"Magenta\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 28,
+    "name": "Lime",
+    "hex": "BBE90B",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[34],\"ext_descrs\":[[\"Lime\"]]},\"BrickOwl\":{\"ext_ids\":[70],\"ext_descrs\":[[\"Lime\"]]},\"LEGO\":{\"ext_ids\":[119],\"ext_descrs\":[[\"Br. yellowish green\",\"BR.YEL-GREEN\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"lime\"]]},\"LDraw\":{\"ext_ids\":[27],\"ext_descrs\":[[\"Lime\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 29,
+    "name": "Dark Tan",
+    "hex": "958A73",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[69],\"ext_descrs\":[[\"Dark Tan\"]]},\"BrickOwl\":{\"ext_ids\":[57],\"ext_descrs\":[[\"Dark Tan\"]]},\"LEGO\":{\"ext_ids\":[138],\"ext_descrs\":[[\"Sand yellow\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"dktan\"]]},\"LDraw\":{\"ext_ids\":[28],\"ext_descrs\":[[\"Dark_Tan\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 30,
+    "name": "Bright Pink",
+    "hex": "E4ADC8",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[104],\"ext_descrs\":[[\"Bright Pink\"]]},\"BrickOwl\":{\"ext_ids\":[45],\"ext_descrs\":[[\"Bright Pink\"]]},\"LEGO\":{\"ext_ids\":[222],\"ext_descrs\":[[\"Light Purple\",\"LGH. PURPLE\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"btpink\"]]},\"LDraw\":{\"ext_ids\":[29],\"ext_descrs\":[[\"Bright_Pink\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 31,
+    "name": "Medium Lavender",
+    "hex": "AC78BA",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[157],\"ext_descrs\":[[\"Medium Lavender\"]]},\"BrickOwl\":{\"ext_ids\":[76],\"ext_descrs\":[[\"Medium Lavender\"]]},\"LEGO\":{\"ext_ids\":[324],\"ext_descrs\":[[\"Medium Lavender\",\"MEDIUM LAVENDEL\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"mdlavender\"]]},\"LDraw\":{\"ext_ids\":[30],\"ext_descrs\":[[\"Medium_Lavender\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 32,
+    "name": "Lavender",
+    "hex": "E1D5ED",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[154],\"ext_descrs\":[[\"Lavender\"]]},\"BrickOwl\":{\"ext_ids\":[36],\"ext_descrs\":[[\"Lavender\"]]},\"LEGO\":{\"ext_ids\":[325],\"ext_descrs\":[[\"Lavender\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"lavender\"]]},\"LDraw\":{\"ext_ids\":[31],\"ext_descrs\":[[\"Lavender\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 33,
+    "name": "Trans-Black IR Lens",
+    "hex": "635F52",
+    "is_trans": "1",
+    "external": "{\"LEGO\":{\"ext_ids\":[109,355],\"ext_descrs\":[[\"Black IR\"],[\"Tr.Black IR\"]]},\"LDraw\":{\"ext_ids\":[32],\"ext_descrs\":[[\"Trans_Black_IR_Lens\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 34,
+    "name": "Trans-Dark Blue",
+    "hex": "0020A0",
+    "is_trans": "1",
+    "external": "{\"BrickLink\":{\"ext_ids\":[14],\"ext_descrs\":[[\"Trans-Dark Blue\"]]},\"BrickOwl\":{\"ext_ids\":[98],\"ext_descrs\":[[\"Transparent Dark Blue\"]]},\"LEGO\":{\"ext_ids\":[43],\"ext_descrs\":[[\"Tr. Blue\",\"TR.BLUE\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"trblue\"]]},\"LDraw\":{\"ext_ids\":[33],\"ext_descrs\":[[\"Trans_Dark_Blue\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 35,
+    "name": "Trans-Green",
+    "hex": "84B68D",
+    "is_trans": "1",
+    "external": "{\"BrickLink\":{\"ext_ids\":[20],\"ext_descrs\":[[\"Trans-Green\"]]},\"BrickOwl\":{\"ext_ids\":[100],\"ext_descrs\":[[\"Transparent Green\"]]},\"LEGO\":{\"ext_ids\":[48],\"ext_descrs\":[[\"Tr. Green\",\"TR.GREEN\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"trgreen\"]]},\"LDraw\":{\"ext_ids\":[34],\"ext_descrs\":[[\"Trans_Green\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 36,
+    "name": "Trans-Bright Green",
+    "hex": "D9E4A7",
+    "is_trans": "1",
+    "external": "{\"BrickLink\":{\"ext_ids\":[108],\"ext_descrs\":[[\"Trans-Bright Green\"]]},\"BrickOwl\":{\"ext_ids\":[96],\"ext_descrs\":[[\"Transparent Bright Green\"]]},\"LEGO\":{\"ext_ids\":[311],\"ext_descrs\":[[\"Transparent Bright Green\",\"TR. BR. GREEN\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"trbtgreen\"]]},\"LDraw\":{\"ext_ids\":[35],\"ext_descrs\":[[\"Trans_Bright_Green\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 37,
+    "name": "Trans-Red",
+    "hex": "C91A09",
+    "is_trans": "1",
+    "external": "{\"BrickLink\":{\"ext_ids\":[17],\"ext_descrs\":[[\"Trans-Red\"]]},\"BrickOwl\":{\"ext_ids\":[108],\"ext_descrs\":[[\"Transparent Red\"]]},\"LEGO\":{\"ext_ids\":[41],\"ext_descrs\":[[\"Tr. Red\",\"TR.RED\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"trred\"]]},\"LDraw\":{\"ext_ids\":[36],\"ext_descrs\":[[\"Trans_Red\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 38,
+    "name": "Trans-Brown",
+    "hex": "635F52",
+    "is_trans": "1",
+    "external": "{\"BrickLink\":{\"ext_ids\":[13],\"ext_descrs\":[[\"Trans-Black\"]]},\"BrickOwl\":{\"ext_ids\":[95],\"ext_descrs\":[[\"Transparent Black\"]]},\"LEGO\":{\"ext_ids\":[111],\"ext_descrs\":[[\"Tr. Brown\",\"TR.BROWN\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"smoke\"]]},\"LDraw\":{\"ext_ids\":[40],\"ext_descrs\":[[\"Trans_Black\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 39,
+    "name": "Trans-Light Blue",
+    "hex": "AEEFEC",
+    "is_trans": "1",
+    "external": "{\"BrickLink\":{\"ext_ids\":[15],\"ext_descrs\":[[\"Trans-Light Blue\"]]},\"BrickOwl\":{\"ext_ids\":[101],\"ext_descrs\":[[\"Transparent Light Blue\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"trltblue\"]]},\"LDraw\":{\"ext_ids\":[43],\"ext_descrs\":[[\"Trans_Medium_Blue\"]]},\"LEGO\":{\"ext_ids\":[42],\"ext_descrs\":[[\"Tr. Lg blue\",\"TR.L.BLUE\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 40,
+    "name": "Trans-Neon Green",
+    "hex": "F8F184",
+    "is_trans": "1",
+    "external": "{\"BrickLink\":{\"ext_ids\":[16],\"ext_descrs\":[[\"Trans-Neon Green\"]]},\"BrickOwl\":{\"ext_ids\":[103],\"ext_descrs\":[[\"Transparent Neon Green\"]]},\"LEGO\":{\"ext_ids\":[49],\"ext_descrs\":[[\"Tr. Flu. Green\",\"TR.FL.GREEN\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"trneongreen\"]]},\"LDraw\":{\"ext_ids\":[42],\"ext_descrs\":[[\"Trans_Neon_Green\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 41,
+    "name": "Trans-Very Lt Blue",
+    "hex": "C1DFF0",
+    "is_trans": "1",
+    "external": "{\"BrickLink\":{\"ext_ids\":[113],\"ext_descrs\":[[\"Trans-Aqua\"]]},\"BrickOwl\":{\"ext_ids\":[25],\"ext_descrs\":[[\"Transparent Very Light Blue\"]]},\"LEGO\":{\"ext_ids\":[229],\"ext_descrs\":[[\"Transparent Light Bluish Green\",\"TR. LGH. BL. GR\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"triceblue\"]]},\"LDraw\":{\"ext_ids\":[39],\"ext_descrs\":[[\"Trans_Very_Light_Blue\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 42,
+    "name": "Trans-Dark Pink",
+    "hex": "DF6695",
+    "is_trans": "1",
+    "external": "{\"BrickLink\":{\"ext_ids\":[50],\"ext_descrs\":[[\"Trans-Dark Pink\"]]},\"BrickOwl\":{\"ext_ids\":[99],\"ext_descrs\":[[\"Transparent Dark Pink\"]]},\"LEGO\":{\"ext_ids\":[113],\"ext_descrs\":[[\"Tr. Medi. reddish violet\",\"TR.ML.R.VIOL\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"trpink\"]]},\"LDraw\":{\"ext_ids\":[37],\"ext_descrs\":[[\"Trans_Dark_Pink\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 43,
+    "name": "Trans-Yellow",
+    "hex": "F5CD2F",
+    "is_trans": "1",
+    "external": "{\"BrickLink\":{\"ext_ids\":[19],\"ext_descrs\":[[\"Trans-Yellow\"]]},\"BrickOwl\":{\"ext_ids\":[109],\"ext_descrs\":[[\"Transparent Yellow\"]]},\"LEGO\":{\"ext_ids\":[44],\"ext_descrs\":[[\"Tr. Yellow\",\"TR.YEL\"]]},\"Peeron\":{\"ext_ids\":[null,null],\"ext_descrs\":[[\"tryellow\"],[\"trltyellow\"]]},\"LDraw\":{\"ext_ids\":[46],\"ext_descrs\":[[\"Trans_Yellow\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 44,
+    "name": "Trans-Clear",
+    "hex": "FCFCFC",
+    "is_trans": "1",
+    "external": "{\"BrickLink\":{\"ext_ids\":[12],\"ext_descrs\":[[\"Trans-Clear\"]]},\"BrickOwl\":{\"ext_ids\":[97],\"ext_descrs\":[[\"Transparent\"]]},\"LEGO\":{\"ext_ids\":[40],\"ext_descrs\":[[\"Transparent\",\"TR.\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"clear\"]]},\"LDraw\":{\"ext_ids\":[47],\"ext_descrs\":[[\"Trans_Clear\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 45,
+    "name": "Trans-Purple",
+    "hex": "A5A5CB",
+    "is_trans": "1",
+    "external": "{\"BrickLink\":{\"ext_ids\":[51],\"ext_descrs\":[[\"Trans-Purple\"]]},\"BrickOwl\":{\"ext_ids\":[107],\"ext_descrs\":[[\"Transparent Purple\"]]},\"LEGO\":{\"ext_ids\":[126],\"ext_descrs\":[[\"Tr. Bright bluish violet\",\"TR.KL.BL.VIO\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"trpurple\"]]},\"LDraw\":{\"ext_ids\":[52],\"ext_descrs\":[[\"Trans_Purple\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 46,
+    "name": "Trans-Neon Yellow",
+    "hex": "DAB000",
+    "is_trans": "1",
+    "external": "{\"BrickLink\":{\"ext_ids\":[121],\"ext_descrs\":[[\"Trans-Neon Yellow\"]]},\"BrickOwl\":{\"ext_ids\":[104],\"ext_descrs\":[[\"Transparent Neon Yellow\"]]},\"LEGO\":{\"ext_ids\":[157],\"ext_descrs\":[[\"Transparent Fluorescent Yellow\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"trpeach\"]]},\"LDraw\":{\"ext_ids\":[54],\"ext_descrs\":[[\"Trans_Neon_Yellow\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 47,
+    "name": "Trans-Neon Orange",
+    "hex": "FF800D",
+    "is_trans": "1",
+    "external": "{\"BrickLink\":{\"ext_ids\":[18],\"ext_descrs\":[[\"Trans-Neon Orange\"]]},\"BrickOwl\":{\"ext_ids\":[161],\"ext_descrs\":[[\"Transparent Neon Reddish Orange\"]]},\"LEGO\":{\"ext_ids\":[47],\"ext_descrs\":[[\"Tr. Flu. Reddish orange\",\"TR.FL.REDORA\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"trneonorange\"]]},\"LDraw\":{\"ext_ids\":[38],\"ext_descrs\":[[\"Trans_Neon_Orange\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 48,
+    "name": "Chrome Antique Brass",
+    "hex": "645A4C",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[57],\"ext_descrs\":[[\"Chrome Antique Brass\"]]},\"BrickOwl\":{\"ext_ids\":[110],\"ext_descrs\":[[\"Chrome Brass\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"chromebrass\"]]},\"LDraw\":{\"ext_ids\":[60],\"ext_descrs\":[[\"Chrome_Antique_Brass\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 49,
+    "name": "Chrome Blue",
+    "hex": "6C96BF",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[52],\"ext_descrs\":[[\"Chrome Blue\"]]},\"BrickOwl\":{\"ext_ids\":[112],\"ext_descrs\":[[\"Chrome Blue\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"chromeblue\"]]},\"LDraw\":{\"ext_ids\":[61],\"ext_descrs\":[[\"Chrome_Blue\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 50,
+    "name": "Chrome Green",
+    "hex": "3CB371",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[64],\"ext_descrs\":[[\"Chrome Green\"]]},\"BrickOwl\":{\"ext_ids\":[113],\"ext_descrs\":[[\"Chrome Green\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"chromegreen\"]]},\"LDraw\":{\"ext_ids\":[62],\"ext_descrs\":[[\"Chrome_Green\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 51,
+    "name": "Chrome Pink",
+    "hex": "AA4D8E",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[82],\"ext_descrs\":[[\"Chrome Pink\"]]},\"BrickOwl\":{\"ext_ids\":[114],\"ext_descrs\":[[\"Chrome Pink\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"chromepink\"]]},\"LDraw\":{\"ext_ids\":[63],\"ext_descrs\":[[\"Chrome_Pink\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 52,
+    "name": "Chrome Black",
+    "hex": "1B2A34",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[122],\"ext_descrs\":[[\"Chrome Black\"]]},\"BrickOwl\":{\"ext_ids\":[111],\"ext_descrs\":[[\"Chrome Black\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"chromeblack\"]]},\"LDraw\":{\"ext_ids\":[64],\"ext_descrs\":[[\"Chrome_Black\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 53,
+    "name": "Very Light Orange",
+    "hex": "F3CF9B",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[96],\"ext_descrs\":[[\"Very Light Orange\"]]},\"BrickOwl\":{\"ext_ids\":[91],\"ext_descrs\":[[\"Very Light Orange\"]]},\"LEGO\":{\"ext_ids\":[36],\"ext_descrs\":[[\"Light Yellowish Orange\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"paleorange\"]]},\"LDraw\":{\"ext_ids\":[68],\"ext_descrs\":[[\"Very_Light_Orange\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 54,
+    "name": "Light Purple",
+    "hex": "CD6298",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[93],\"ext_descrs\":[[\"Light Purple\"]]},\"BrickOwl\":{\"ext_ids\":[69],\"ext_descrs\":[[\"Light Purple\"]]},\"LEGO\":{\"ext_ids\":[198],\"ext_descrs\":[[\"Bright Reddish Lilac\",\"BR. RED. LILAC\"]]},\"Peeron\":{\"ext_ids\":[null,null],\"ext_descrs\":[[\"ltpurple\"],[\"btpurple\"]]},\"LDraw\":{\"ext_ids\":[69],\"ext_descrs\":[[\"Light_Purple\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 55,
+    "name": "Reddish Brown",
+    "hex": "582A12",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[88],\"ext_descrs\":[[\"Reddish Brown\"]]},\"BrickOwl\":{\"ext_ids\":[82],\"ext_descrs\":[[\"Reddish Brown\"]]},\"LEGO\":{\"ext_ids\":[192],\"ext_descrs\":[[\"Reddish Brown\",\"RED. BROWN\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"redbrown\"]]},\"LDraw\":{\"ext_ids\":[70],\"ext_descrs\":[[\"Reddish_Brown\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 56,
+    "name": "Light Bluish Gray",
+    "hex": "A0A5A9",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[86],\"ext_descrs\":[[\"Light Bluish Gray\"]]},\"BrickOwl\":{\"ext_ids\":[64],\"ext_descrs\":[[\"Medium Stone Gray\"]]},\"LEGO\":{\"ext_ids\":[194],\"ext_descrs\":[[\"Medium stone grey\",\"MED. ST-GREY\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"mdstone\"]]},\"LDraw\":{\"ext_ids\":[71],\"ext_descrs\":[[\"Light_Bluish_Gray\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 57,
+    "name": "Dark Bluish Gray",
+    "hex": "6C6E68",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[85],\"ext_descrs\":[[\"Dark Bluish Gray\"]]},\"BrickOwl\":{\"ext_ids\":[50],\"ext_descrs\":[[\"Dark Stone Gray\"]]},\"LEGO\":{\"ext_ids\":[199],\"ext_descrs\":[[\"Dark stone grey\",\"DK. ST. GREY\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"dkstone\"]]},\"LDraw\":{\"ext_ids\":[72],\"ext_descrs\":[[\"Dark_Bluish_Gray\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 58,
+    "name": "Medium Blue",
+    "hex": "5A93DB",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[42],\"ext_descrs\":[[\"Medium Blue\"]]},\"BrickOwl\":{\"ext_ids\":[14],\"ext_descrs\":[[\"Medium Blue\"]]},\"LEGO\":{\"ext_ids\":[102],\"ext_descrs\":[[\"Medium blue\",\"MD.BLUE\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"mdblue\"]]},\"LDraw\":{\"ext_ids\":[73],\"ext_descrs\":[[\"Medium_Blue\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 59,
+    "name": "Medium Green",
+    "hex": "73DCA1",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[37],\"ext_descrs\":[[\"Medium Green\"]]},\"BrickOwl\":{\"ext_ids\":[10],\"ext_descrs\":[[\"Medium Green\"]]},\"LEGO\":{\"ext_ids\":[29],\"ext_descrs\":[[\"Medium green\",\"MD.GREEN\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"mdgreen\"]]},\"LDraw\":{\"ext_ids\":[74],\"ext_descrs\":[[\"Medium_Green\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 60,
+    "name": "Speckle Black-Copper",
+    "hex": "05131D",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[116],\"ext_descrs\":[[\"Speckle Black-Copper\"]]},\"BrickOwl\":{\"ext_ids\":[133],\"ext_descrs\":[[\"Speckle Black Copper\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"blackcopperglitter\"]]},\"LDraw\":{\"ext_ids\":[75],\"ext_descrs\":[[\"Speckle_Black_Copper\"]]},\"LEGO\":{\"ext_ids\":[306],\"ext_descrs\":[[\"COP. DIF.\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 61,
+    "name": "Speckle DBGray-Silver",
+    "hex": "6C6E68",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[117],\"ext_descrs\":[[\"Speckle DBGray-Silver\"]]},\"BrickOwl\":{\"ext_ids\":[134],\"ext_descrs\":[[\"Speckle Gray\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"dkstoneglitter\"]]},\"LDraw\":{\"ext_ids\":[76],\"ext_descrs\":[[\"Speckle_Dark_Bluish_Gray_Silver\"]]},\"LEGO\":{\"ext_ids\":[304],\"ext_descrs\":[[\"CO. SILVER DIF\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 62,
+    "name": "Light Pink",
+    "hex": "FECCCF",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[56],\"ext_descrs\":[[\"Light Pink\"]]},\"BrickOwl\":{\"ext_ids\":[68],\"ext_descrs\":[[\"Light Pink\"]]},\"LEGO\":{\"ext_ids\":[223,17],\"ext_descrs\":[[\"Light Pink\"],[\"Rose\"]]},\"Peeron\":{\"ext_ids\":[null,null],\"ext_descrs\":[[\"parapink\"],[\"ltpink\"]]},\"LDraw\":{\"ext_ids\":[77],\"ext_descrs\":[[\"Light_Pink\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 63,
+    "name": "Light Nougat",
+    "hex": "F6D7B3",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[90],\"ext_descrs\":[[\"Light Nougat\"]]},\"BrickOwl\":{\"ext_ids\":[65],\"ext_descrs\":[[\"Light Flesh\"]]},\"LEGO\":{\"ext_ids\":[283],\"ext_descrs\":[[\"Light Nougat\",\"L.NOUGAT\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"ltflesh\"]]},\"LDraw\":{\"ext_ids\":[78],\"ext_descrs\":[[\"Light_Flesh\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 64,
+    "name": "Milky White",
+    "hex": "FFFFFF",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[60],\"ext_descrs\":[[\"Milky White\"]]},\"BrickOwl\":{\"ext_ids\":[130],\"ext_descrs\":[[\"Translucent White\"]]},\"LEGO\":{\"ext_ids\":[20],\"ext_descrs\":[[\"Nature\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"trluwhite\"]]},\"LDraw\":{\"ext_ids\":[79],\"ext_descrs\":[[\"Milky_White\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 65,
+    "name": "Metallic Silver",
+    "hex": "A5A9B4",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[67],\"ext_descrs\":[[\"Metallic Silver\"]]},\"BrickOwl\":{\"ext_ids\":[126],\"ext_descrs\":[[\"Metallic Silver\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"metallicsilver\"]]},\"LDraw\":{\"ext_ids\":[80],\"ext_descrs\":[[\"Metallic_Silver\"]]},\"LEGO\":{\"ext_ids\":[336,298],\"ext_descrs\":[[\"SILVER INK\"],[\"C.SILVER, DR. L\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 66,
+    "name": "Metallic Green",
+    "hex": "899B5F",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[70],\"ext_descrs\":[[\"Metallic Green\"]]},\"BrickOwl\":{\"ext_ids\":[125],\"ext_descrs\":[[\"Metallic Green\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"metallicgreen\"]]},\"LDraw\":{\"ext_ids\":[81],\"ext_descrs\":[[\"Metallic_Green\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 67,
+    "name": "Metallic Gold",
+    "hex": "DBAC34",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[65],\"ext_descrs\":[[\"Metallic Gold\"]]},\"BrickOwl\":{\"ext_ids\":[124],\"ext_descrs\":[[\"Metallic Gold\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"metallicgold\"]]},\"LDraw\":{\"ext_ids\":[82],\"ext_descrs\":[[\"Metallic_Gold\"]]},\"LEGO\":{\"ext_ids\":[335,299],\"ext_descrs\":[[\"GOLD INK\"],[\"W.GOLD, DR.LA.\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 68,
+    "name": "Medium Nougat",
+    "hex": "AA7D55",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[150],\"ext_descrs\":[[\"Medium Nougat\"]]},\"BrickOwl\":{\"ext_ids\":[74],\"ext_descrs\":[[\"Medium Dark Flesh\"]]},\"LEGO\":{\"ext_ids\":[312],\"ext_descrs\":[[\"Medium Nougat\",\"M. NOUGAT\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"mddkflesh\"]]},\"LDraw\":{\"ext_ids\":[84],\"ext_descrs\":[[\"Medium_Nougat\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 69,
+    "name": "Dark Purple",
+    "hex": "3F3691",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[89],\"ext_descrs\":[[\"Dark Purple\"]]},\"BrickOwl\":{\"ext_ids\":[55],\"ext_descrs\":[[\"Dark Purple\"]]},\"LEGO\":{\"ext_ids\":[268],\"ext_descrs\":[[\"Medium Lilac\",\"M. LILAC\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"mdlilac\"]]},\"LDraw\":{\"ext_ids\":[85],\"ext_descrs\":[[\"Medium_Lilac\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 70,
+    "name": "Light Brown",
+    "hex": "7C503A",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[91],\"ext_descrs\":[[\"Light Brown\"]]},\"BrickOwl\":{\"ext_ids\":[52],\"ext_descrs\":[[\"Dark Flesh\"]]},\"LEGO\":{\"ext_ids\":[217],\"ext_descrs\":[[\"BROWN\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"dkflesh\"]]},\"LDraw\":{\"ext_ids\":[86],\"ext_descrs\":[[\"Light_Brown\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 71,
+    "name": "Royal Blue",
+    "hex": "4C61DB",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[97],\"ext_descrs\":[[\"Blue-Violet\"]]},\"LEGO\":{\"ext_ids\":[195],\"ext_descrs\":[[\"R. BLUE\"]]},\"LDraw\":{\"ext_ids\":[89],\"ext_descrs\":[[\"Blue_Violet\"]]},\"BrickOwl\":{\"ext_ids\":[40],\"ext_descrs\":[[\"Royal Blue\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 72,
+    "name": "Nougat",
+    "hex": "D09168",
+    "is_trans": "0",
+    "external": "{\"BrickOwl\":{\"ext_ids\":[6],\"ext_descrs\":[[\"Flesh\"]]},\"LEGO\":{\"ext_ids\":[18],\"ext_descrs\":[[\"Nougat\"]]},\"BrickLink\":{\"ext_ids\":[28],\"ext_descrs\":[[\"Nougat\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"flesh\"]]},\"LDraw\":{\"ext_ids\":[92],\"ext_descrs\":[[\"Nougat\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 73,
+    "name": "Light Salmon",
+    "hex": "FEBABD",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[26],\"ext_descrs\":[[\"Light Salmon\"]]},\"BrickOwl\":{\"ext_ids\":[5],\"ext_descrs\":[[\"Light Salmon\"]]},\"LEGO\":{\"ext_ids\":[100],\"ext_descrs\":[[\"Light red\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"ltsalmon\"]]},\"LDraw\":{\"ext_ids\":[100],\"ext_descrs\":[[\"Light_Salmon\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 74,
+    "name": "Violet",
+    "hex": "4354A3",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[43],\"ext_descrs\":[[\"Violet\"]]},\"BrickOwl\":{\"ext_ids\":[15],\"ext_descrs\":[[\"Violet\"]]},\"LEGO\":{\"ext_ids\":[110],\"ext_descrs\":[[\"Bright Bluish Violet\",\"BR.BLUEVIOL\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"violet\"]]},\"LDraw\":{\"ext_ids\":[110],\"ext_descrs\":[[\"Violet\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 75,
+    "name": "Medium Bluish Violet",
+    "hex": "6874CA",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[73],\"ext_descrs\":[[\"Medium Violet\"]]},\"LEGO\":{\"ext_ids\":[112,213],\"ext_descrs\":[[\"Medium Bluish Violet\",\"ML.BLUEVIOL\"],[\"Medium Royal Blue\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"royalblue\"]]},\"LDraw\":{\"ext_ids\":[112],\"ext_descrs\":[[\"Medium_Violet\"]]},\"BrickOwl\":{\"ext_ids\":[78],\"ext_descrs\":[[\"Medium Violet\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 76,
+    "name": "Glitter Trans-Dark Pink",
+    "hex": "DF6695",
+    "is_trans": "1",
+    "external": "{\"BrickLink\":{\"ext_ids\":[100],\"ext_descrs\":[[\"Glitter Trans-Dark Pink\"]]},\"BrickOwl\":{\"ext_ids\":[132],\"ext_descrs\":[[\"Transparent Pink Glitter\"]]},\"LEGO\":{\"ext_ids\":[114],\"ext_descrs\":[[\"Tr. Medium Reddish-Violet w. Glitter 2%\",\"TR.M.R.V.GLI\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"trpinkglitter\"]]},\"LDraw\":{\"ext_ids\":[114],\"ext_descrs\":[[\"Glitter_Trans_Dark_Pink\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 77,
+    "name": "Medium Lime",
+    "hex": "C7D23C",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[76],\"ext_descrs\":[[\"Medium Lime\"]]},\"BrickOwl\":{\"ext_ids\":[77],\"ext_descrs\":[[\"Medium Lime\"]]},\"LEGO\":{\"ext_ids\":[115],\"ext_descrs\":[[\"Med. yellowish green\",\"MD.YEL-GREEN\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"mdlime\"]]},\"LDraw\":{\"ext_ids\":[115],\"ext_descrs\":[[\"Medium_Lime\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 78,
+    "name": "Glitter Trans-Clear",
+    "hex": "FFFFFF",
+    "is_trans": "1",
+    "external": "{\"BrickLink\":{\"ext_ids\":[101],\"ext_descrs\":[[\"Glitter Trans-Clear\"]]},\"BrickOwl\":{\"ext_ids\":[131],\"ext_descrs\":[[\"Transparent Glitter\"]]},\"LEGO\":{\"ext_ids\":[117,122],\"ext_descrs\":[[\"Transparent Glitter\",\"TR.W.GLITTER\"],[\"Nature with Glitter\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"clearglitter\"]]},\"LDraw\":{\"ext_ids\":[117],\"ext_descrs\":[[\"Glitter_Trans_Clear\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 79,
+    "name": "Aqua",
+    "hex": "B3D7D1",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[41],\"ext_descrs\":[[\"Aqua\"]]},\"BrickOwl\":{\"ext_ids\":[13],\"ext_descrs\":[[\"Aqua\"]]},\"LEGO\":{\"ext_ids\":[118],\"ext_descrs\":[[\"Light bluish green\",\"L.BLUE-GREEN\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"aqua\"]]},\"LDraw\":{\"ext_ids\":[118],\"ext_descrs\":[[\"Aqua\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 80,
+    "name": "Light Lime",
+    "hex": "D9E4A7",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[35],\"ext_descrs\":[[\"Light Lime\"]]},\"BrickOwl\":{\"ext_ids\":[67],\"ext_descrs\":[[\"Light Lime\"]]},\"LEGO\":{\"ext_ids\":[120],\"ext_descrs\":[[\"Lig. yellowish green\",\"L.YEL-GREEN\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"ltlime\"]]},\"LDraw\":{\"ext_ids\":[120],\"ext_descrs\":[[\"Light_Lime\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 81,
+    "name": "Light Orange",
+    "hex": "F9BA61",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[32],\"ext_descrs\":[[\"Light Orange\"]]},\"BrickOwl\":{\"ext_ids\":[8],\"ext_descrs\":[[\"Light Orange\"]]},\"LEGO\":{\"ext_ids\":[121],\"ext_descrs\":[[\"Medium Yellowish Orange\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"ltorange\"]]},\"LDraw\":{\"ext_ids\":[125],\"ext_descrs\":[[\"Light_Orange\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 82,
+    "name": "Glitter Trans-Purple",
+    "hex": "A5A5CB",
+    "is_trans": "1",
+    "external": "{\"BrickLink\":{\"ext_ids\":[102],\"ext_descrs\":[[\"Glitter Trans-Purple\"]]},\"BrickOwl\":{\"ext_ids\":[22],\"ext_descrs\":[[\"Transparent Purple Glitter\"]]},\"LEGO\":{\"ext_ids\":[129],\"ext_descrs\":[[\"Tr. Bright Bluish Violet w. Glitter 2%\",\"TR.BR.BL.V.G\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"trpurpleglitter\"]]},\"LDraw\":{\"ext_ids\":[129],\"ext_descrs\":[[\"Glitter_Trans_Purple\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 83,
+    "name": "Speckle Black-Silver",
+    "hex": "05131D",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[111],\"ext_descrs\":[[\"Speckle Black-Silver\"]]},\"BrickOwl\":{\"ext_ids\":[24],\"ext_descrs\":[[\"Speckle Black\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"blackglitter\"]]},\"LDraw\":{\"ext_ids\":[132],\"ext_descrs\":[[\"Speckle_Black_Silver\"]]},\"LEGO\":{\"ext_ids\":[304],\"ext_descrs\":[[\"CO. SILVER DIF\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 84,
+    "name": "Speckle Black-Gold",
+    "hex": "05131D",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[151],\"ext_descrs\":[[\"Speckle Black-Gold\"]]},\"BrickOwl\":{\"ext_ids\":[35],\"ext_descrs\":[[\"Speckle Black Gold\"]]},\"LDraw\":{\"ext_ids\":[133],\"ext_descrs\":[[\"Speckle_Black_Gold\"]]},\"LEGO\":{\"ext_ids\":[305],\"ext_descrs\":[[\"Warm Gold, Diffuse\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 85,
+    "name": "Copper",
+    "hex": "AE7A59",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[84],\"ext_descrs\":[[\"Copper\"]]},\"BrickOwl\":{\"ext_ids\":[116],\"ext_descrs\":[[\"Copper\"]]},\"LEGO\":{\"ext_ids\":[139],\"ext_descrs\":[[\"Copper\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"pearlcopper\"]]},\"LDraw\":{\"ext_ids\":[134],\"ext_descrs\":[[\"Copper\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 86,
+    "name": "Pearl Light Gray",
+    "hex": "9CA3A8",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[66],\"ext_descrs\":[[\"Pearl Light Gray\"]]},\"BrickOwl\":{\"ext_ids\":[122],\"ext_descrs\":[[\"Pearl Light Gray\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"pearlltgray\"]]},\"LEGO\":{\"ext_ids\":[296,131],\"ext_descrs\":[[\"Cool silver\"],[\"Silver\"]]},\"LDraw\":{\"ext_ids\":[135],\"ext_descrs\":[[\"Pearl_Light_Gray\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 87,
+    "name": "Pearl Sand Blue",
+    "hex": "7988A1",
+    "is_trans": "0",
+    "external": "{\"BrickOwl\":{\"ext_ids\":[118],\"ext_descrs\":[[\"Metallic Blue\"]]},\"LEGO\":{\"ext_ids\":[145],\"ext_descrs\":[[\"Sand blue metallic\",\"MET.SAND.BLU\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"pearlblue\"]]},\"LDraw\":{\"ext_ids\":[137],\"ext_descrs\":[[\"Metal_Blue\"]]},\"BrickLink\":{\"ext_ids\":[78],\"ext_descrs\":[[\"Pearl Sand Blue\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 88,
+    "name": "Pearl Light Gold",
+    "hex": "DCBC81",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[61],\"ext_descrs\":[[\"Pearl Light Gold\"]]},\"BrickOwl\":{\"ext_ids\":[121],\"ext_descrs\":[[\"Pearl Light Gold\"]]},\"LEGO\":{\"ext_ids\":[127],\"ext_descrs\":[[\"Gold\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"pearlltgold\"]]},\"LDraw\":{\"ext_ids\":[142],\"ext_descrs\":[[\"Pearl_Light_Gold\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 89,
+    "name": "Trans-Medium Blue",
+    "hex": "CFE2F7",
+    "is_trans": "1",
+    "external": "{\"BrickLink\":{\"ext_ids\":[74],\"ext_descrs\":[[\"Trans-Medium Blue\"]]},\"BrickOwl\":{\"ext_ids\":[102],\"ext_descrs\":[[\"Transparent Medium Blue\"]]},\"LEGO\":{\"ext_ids\":[143],\"ext_descrs\":[[\"Tr. Flu. Blue\",\"TR.FL. BLUE\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"trmdblue\"]]},\"LDraw\":{\"ext_ids\":[41],\"ext_descrs\":[[\"Trans_Medium_Blue\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 90,
+    "name": "Pearl Dark Gray",
+    "hex": "575857",
+    "is_trans": "0",
+    "external": "{\"BrickOwl\":{\"ext_ids\":[119],\"ext_descrs\":[[\"Pearl Dark Gray\"]]},\"BrickLink\":{\"ext_ids\":[77],\"ext_descrs\":[[\"Pearl Dark Gray\"]]},\"LEGO\":{\"ext_ids\":[148],\"ext_descrs\":[[\"Mettalic Dark Grey\",\"MET.DK.GREY\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"pearldkgray\"]]},\"LDraw\":{\"ext_ids\":[148],\"ext_descrs\":[[\"Pearl_Dark_Gray\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 91,
+    "name": "Pearl Very Light Gray",
+    "hex": "ABADAC",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[119],\"ext_descrs\":[[\"Pearl Very Light Gray\"]]},\"BrickOwl\":{\"ext_ids\":[27],\"ext_descrs\":[[\"Pearl Very Light Gray\"]]},\"LEGO\":{\"ext_ids\":[150],\"ext_descrs\":[[\"Metallic Light Gray\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"pearlvlgray\"]]},\"LDraw\":{\"ext_ids\":[150],\"ext_descrs\":[[\"Pearl_Very_Light_Grey\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 92,
+    "name": "Very Light Bluish Gray",
+    "hex": "E6E3E0",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[99],\"ext_descrs\":[[\"Very Light Bluish Gray\"]]},\"BrickOwl\":{\"ext_ids\":[90],\"ext_descrs\":[[\"Light Stone Gray\"]]},\"LEGO\":{\"ext_ids\":[208],\"ext_descrs\":[[\"Light stone grey\",\"LGH. ST. GREY\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"ltstone\"]]},\"LDraw\":{\"ext_ids\":[151],\"ext_descrs\":[[\"Very_Light_Bluish_Gray\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 93,
+    "name": "Yellowish Green",
+    "hex": "DFEEA5",
+    "is_trans": "0",
+    "external": "{\"LDraw\":{\"ext_ids\":[326],\"ext_descrs\":[[\"Yellowish_Green\"]]},\"BrickLink\":{\"ext_ids\":[158],\"ext_descrs\":[[\"Yellowish Green\"]]},\"BrickOwl\":{\"ext_ids\":[94],\"ext_descrs\":[[\"Yellowish Green\"]]},\"LEGO\":{\"ext_ids\":[326],\"ext_descrs\":[[\"Spring Yellow Green\",\"SPR. YELL. GREE\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 94,
+    "name": "Flat Dark Gold",
+    "hex": "B48455",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[81],\"ext_descrs\":[[\"Flat Dark Gold\"]]},\"BrickOwl\":{\"ext_ids\":[21],\"ext_descrs\":[[\"Flat Dark Gold\"]]},\"LEGO\":{\"ext_ids\":[147],\"ext_descrs\":[[\"Gold Metallic\",\"MET.SAND.YEL\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"pearldkgold\"]]},\"LDraw\":{\"ext_ids\":[178],\"ext_descrs\":[[\"Pearl_Yellow\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 95,
+    "name": "Flat Silver",
+    "hex": "898788",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[95],\"ext_descrs\":[[\"Flat Silver\"]]},\"BrickOwl\":{\"ext_ids\":[117],\"ext_descrs\":[[\"Flat Silver\"]]},\"LEGO\":{\"ext_ids\":[315],\"ext_descrs\":[[\"Silver Metallic\",\"SILVER MET.\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"pearlsilver\"]]},\"LDraw\":{\"ext_ids\":[179],\"ext_descrs\":[[\"Pearl_Silver\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 96,
+    "name": "Trans-Orange",
+    "hex": "F08F1C",
+    "is_trans": "1",
+    "external": "{\"BrickLink\":{\"ext_ids\":[98],\"ext_descrs\":[[\"Trans-Orange\"]]},\"BrickOwl\":{\"ext_ids\":[105],\"ext_descrs\":[[\"Transparent Orange\"]]},\"LEGO\":{\"ext_ids\":[182],\"ext_descrs\":[[\"Tr. Bright Orange\",\"TR. BR. ORANGE\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"trdkorange\"]]},\"LDraw\":{\"ext_ids\":[57],\"ext_descrs\":[[\"Trans_Orange\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 97,
+    "name": "Pearl White",
+    "hex": "F2F3F2",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[83],\"ext_descrs\":[[\"Pearl White\"]]},\"BrickOwl\":{\"ext_ids\":[123],\"ext_descrs\":[[\"Pearlescent\"]]},\"LEGO\":{\"ext_ids\":[183],\"ext_descrs\":[[\"Metallic White\",\"MET. WHITE\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"pearlescent\"]]},\"LDraw\":{\"ext_ids\":[183],\"ext_descrs\":[[\"Pearl_White\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 98,
+    "name": "Bright Light Orange",
+    "hex": "F8BB3D",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[110],\"ext_descrs\":[[\"Bright Light Orange\"]]},\"BrickOwl\":{\"ext_ids\":[43],\"ext_descrs\":[[\"Bright Light Orange\"]]},\"LEGO\":{\"ext_ids\":[191],\"ext_descrs\":[[\"Flame yellowish orange\",\"FL. YELL-ORA\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"btltorange\"]]},\"LDraw\":{\"ext_ids\":[191],\"ext_descrs\":[[\"Bright_Light_Orange\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 99,
+    "name": "Bright Light Blue",
+    "hex": "9FC3E9",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[105],\"ext_descrs\":[[\"Bright Light Blue\"]]},\"BrickOwl\":{\"ext_ids\":[42],\"ext_descrs\":[[\"Bright Light Blue\"]]},\"LEGO\":{\"ext_ids\":[212],\"ext_descrs\":[[\"Light Royal blue\",\"LGH. ROY. BLUE\"]]},\"Peeron\":{\"ext_ids\":[null,null],\"ext_descrs\":[[\"ltroyalblue\"],[\"btltblue\"]]},\"LDraw\":{\"ext_ids\":[212],\"ext_descrs\":[[\"Bright_Light_Blue\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 100,
+    "name": "Rust",
+    "hex": "B31004",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[27],\"ext_descrs\":[[\"Rust\"]]},\"BrickOwl\":{\"ext_ids\":[83],\"ext_descrs\":[[\"Rust\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"rust\"]]},\"LDraw\":{\"ext_ids\":[216],\"ext_descrs\":[[\"Rust\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 101,
+    "name": "Bright Light Yellow",
+    "hex": "FFF03A",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[103],\"ext_descrs\":[[\"Bright Light Yellow\"]]},\"BrickOwl\":{\"ext_ids\":[44],\"ext_descrs\":[[\"Bright Light Yellow\"]]},\"LEGO\":{\"ext_ids\":[226],\"ext_descrs\":[[\"Cool Yellow\",\"COOL YEL.\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"coolyellow\"]]},\"LDraw\":{\"ext_ids\":[226],\"ext_descrs\":[[\"Bright_Light_Yellow\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 102,
+    "name": "Trans-Pink",
+    "hex": "E4ADC8",
+    "is_trans": "1",
+    "external": "{\"BrickLink\":{\"ext_ids\":[107],\"ext_descrs\":[[\"Trans-Pink\"]]},\"BrickOwl\":{\"ext_ids\":[106],\"ext_descrs\":[[\"Transparent Pink\"]]},\"LEGO\":{\"ext_ids\":[230],\"ext_descrs\":[[\"TR. BR. PURPLE\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"trltpink\"]]},\"LDraw\":{\"ext_ids\":[45],\"ext_descrs\":[[\"Trans_Pink\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 103,
+    "name": "Sky Blue",
+    "hex": "7DBFDD",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[87],\"ext_descrs\":[[\"Sky Blue\"]]},\"BrickOwl\":{\"ext_ids\":[88],\"ext_descrs\":[[\"Sky Blue\"]]},\"LEGO\":{\"ext_ids\":[232],\"ext_descrs\":[[\"Dove blue\",\"DO. BLUE\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"doveblue\"]]},\"LDraw\":{\"ext_ids\":[232],\"ext_descrs\":[[\"Sky_Blue\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 104,
+    "name": "Trans-Light Purple",
+    "hex": "96709F",
+    "is_trans": "1",
+    "external": "{\"BrickLink\":{\"ext_ids\":[114],\"ext_descrs\":[[\"Trans-Light Purple\"]]},\"BrickOwl\":{\"ext_ids\":[26],\"ext_descrs\":[[\"Transparent Light Purple\"]]},\"LEGO\":{\"ext_ids\":[284],\"ext_descrs\":[[\"TR. RED-LILAC\",\"TR. RE-LILAC\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"trlilac\"]]},\"LDraw\":{\"ext_ids\":[44,284],\"ext_descrs\":[[\"Trans_Light_Purple\"],[\"Trans_Light_Purple\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 105,
+    "name": "Dark Blue",
+    "hex": "0A3463",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[63],\"ext_descrs\":[[\"Dark Blue\"]]},\"BrickOwl\":{\"ext_ids\":[48],\"ext_descrs\":[[\"Dark Blue\"]]},\"LEGO\":{\"ext_ids\":[140],\"ext_descrs\":[[\"Earth blue\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"navyblue\"]]},\"LDraw\":{\"ext_ids\":[272],\"ext_descrs\":[[\"Dark_Blue\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 106,
+    "name": "Dark Green",
+    "hex": "184632",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[80],\"ext_descrs\":[[\"Dark Green\"]]},\"BrickOwl\":{\"ext_ids\":[20],\"ext_descrs\":[[\"Dark Green\"]]},\"LEGO\":{\"ext_ids\":[141],\"ext_descrs\":[[\"Earth Green\",\"EARTH GREEN\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"dkgreen\"]]},\"LDraw\":{\"ext_ids\":[288],\"ext_descrs\":[[\"Dark_Green\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 107,
+    "name": "Glow In Dark Trans",
+    "hex": "BDC6AD",
+    "is_trans": "1",
+    "external": "{\"BrickLink\":{\"ext_ids\":[118],\"ext_descrs\":[[\"Glow In Dark Trans\"]]},\"BrickOwl\":{\"ext_ids\":[128],\"ext_descrs\":[[\"Glow in the Dark Transparent\"]]},\"LEGO\":{\"ext_ids\":[294],\"ext_descrs\":[[\"Phosphorescent Green\",\"PH.GREEN\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"trglowinthedark\"]]},\"LDraw\":{\"ext_ids\":[294],\"ext_descrs\":[[\"Glow_In_Dark_Trans\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 108,
+    "name": "Pearl Gold",
+    "hex": "AA7F2E",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[115],\"ext_descrs\":[[\"Pearl Gold\"]]},\"BrickOwl\":{\"ext_ids\":[120],\"ext_descrs\":[[\"Pearl Gold\"]]},\"LEGO\":{\"ext_ids\":[297],\"ext_descrs\":[[\"Warm Gold\",\"W.GOLD\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"pearlgold\"]]},\"LDraw\":{\"ext_ids\":[297],\"ext_descrs\":[[\"Pearl_Gold\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 109,
+    "name": "Dark Brown",
+    "hex": "352100",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[120],\"ext_descrs\":[[\"Dark Brown\"]]},\"BrickOwl\":{\"ext_ids\":[51],\"ext_descrs\":[[\"Dark Brown\"]]},\"LEGO\":{\"ext_ids\":[308],\"ext_descrs\":[[\"Dark Brown\",\"DK. BROWN\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"dkbrown\"]]},\"LDraw\":{\"ext_ids\":[308],\"ext_descrs\":[[\"Dark_Brown\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 110,
+    "name": "Maersk Blue",
+    "hex": "3592C3",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[72],\"ext_descrs\":[[\"Maersk Blue\"]]},\"BrickOwl\":{\"ext_ids\":[71],\"ext_descrs\":[[\"Maersk Blue\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"maerskblue\"]]},\"LDraw\":{\"ext_ids\":[313],\"ext_descrs\":[[\"Maersk_Blue\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 111,
+    "name": "Dark Red",
+    "hex": "720E0F",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[59],\"ext_descrs\":[[\"Dark Red\"]]},\"BrickOwl\":{\"ext_ids\":[56],\"ext_descrs\":[[\"Dark Red\"]]},\"LEGO\":{\"ext_ids\":[154],\"ext_descrs\":[[\"Dark red\",\"NEW DARK RED\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"dkred\"]]},\"LDraw\":{\"ext_ids\":[320],\"ext_descrs\":[[\"Dark_Red\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 112,
+    "name": "Dark Azure",
+    "hex": "078BC9",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[153],\"ext_descrs\":[[\"Dark Azure\"]]},\"BrickOwl\":{\"ext_ids\":[47],\"ext_descrs\":[[\"Dark Azure\"]]},\"LEGO\":{\"ext_ids\":[321],\"ext_descrs\":[[\"Dark Azur\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"dkazure\"]]},\"LDraw\":{\"ext_ids\":[321],\"ext_descrs\":[[\"Dark_Azure\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 113,
+    "name": "Medium Azure",
+    "hex": "36AEBF",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[156],\"ext_descrs\":[[\"Medium Azure\"]]},\"BrickOwl\":{\"ext_ids\":[73],\"ext_descrs\":[[\"Medium Azure\"]]},\"LEGO\":{\"ext_ids\":[322],\"ext_descrs\":[[\"Medium Azure\",\"MEDIUM AZUR\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"mdazure\"]]},\"LDraw\":{\"ext_ids\":[322],\"ext_descrs\":[[\"Medium_Azure\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 114,
+    "name": "Light Aqua",
+    "hex": "ADC3C0",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[152],\"ext_descrs\":[[\"Light Aqua\"]]},\"BrickOwl\":{\"ext_ids\":[62],\"ext_descrs\":[[\"Light Aqua\"]]},\"LEGO\":{\"ext_ids\":[323],\"ext_descrs\":[[\"Aqua\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"ltaqua\"]]},\"LDraw\":{\"ext_ids\":[323],\"ext_descrs\":[[\"Light_Aqua\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 115,
+    "name": "Olive Green",
+    "hex": "9B9A5A",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[155],\"ext_descrs\":[[\"Olive Green\"]]},\"BrickOwl\":{\"ext_ids\":[79],\"ext_descrs\":[[\"Olive Green\"]]},\"LEGO\":{\"ext_ids\":[330],\"ext_descrs\":[[\"Olive Green\",\"OLIVE GREEN\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"olivegreen\"]]},\"LDraw\":{\"ext_ids\":[330],\"ext_descrs\":[[\"Olive_Green\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 116,
+    "name": "Chrome Gold",
+    "hex": "BBA53D",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[21],\"ext_descrs\":[[\"Chrome Gold\"]]},\"BrickOwl\":{\"ext_ids\":[2],\"ext_descrs\":[[\"Chrome Gold\"]]},\"LEGO\":{\"ext_ids\":[310],\"ext_descrs\":[[\"Metalized Gold\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"chromegold\"]]},\"LDraw\":{\"ext_ids\":[334],\"ext_descrs\":[[\"Chrome_Gold\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 117,
+    "name": "Sand Red",
+    "hex": "D67572",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[58],\"ext_descrs\":[[\"Sand Red\"]]},\"BrickOwl\":{\"ext_ids\":[87],\"ext_descrs\":[[\"Sand Red\"]]},\"LEGO\":{\"ext_ids\":[153],\"ext_descrs\":[[\"Sand red\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"sandred\"]]},\"LDraw\":{\"ext_ids\":[335],\"ext_descrs\":[[\"Sand_Red\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 118,
+    "name": "Medium Dark Pink",
+    "hex": "F785B1",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[94],\"ext_descrs\":[[\"Medium Dark Pink\"]]},\"BrickOwl\":{\"ext_ids\":[75],\"ext_descrs\":[[\"Medium Dark Pink\"]]},\"LEGO\":{\"ext_ids\":[22],\"ext_descrs\":[[\"Medium Reddish Violet\",\"MD.REDVIOL\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"duplorose\"]]},\"LDraw\":{\"ext_ids\":[351],\"ext_descrs\":[[\"Medium_Dark_Pink\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 119,
+    "name": "Earth Orange",
+    "hex": "FA9C1C",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[29],\"ext_descrs\":[[\"Earth Orange\"]]},\"BrickOwl\":{\"ext_ids\":[59],\"ext_descrs\":[[\"Earth Orange\"]]},\"LEGO\":{\"ext_ids\":[12],\"ext_descrs\":[[\"L.ORABROWN\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"earthorange\"]]},\"LDraw\":{\"ext_ids\":[366],\"ext_descrs\":[[\"Earth_Orange\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 120,
+    "name": "Sand Purple",
+    "hex": "845E84",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[54],\"ext_descrs\":[[\"Sand Purple\"]]},\"BrickOwl\":{\"ext_ids\":[86],\"ext_descrs\":[[\"Sand Purple\"]]},\"LEGO\":{\"ext_ids\":[136],\"ext_descrs\":[[\"Sand violet\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"sandpurple\"]]},\"LDraw\":{\"ext_ids\":[373],\"ext_descrs\":[[\"Sand_Purple\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 121,
+    "name": "Sand Green",
+    "hex": "A0BCAC",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[48],\"ext_descrs\":[[\"Sand Green\"]]},\"BrickOwl\":{\"ext_ids\":[18],\"ext_descrs\":[[\"Sand Green\"]]},\"LEGO\":{\"ext_ids\":[151],\"ext_descrs\":[[\"Sand green\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"sandgreen\"]]},\"LDraw\":{\"ext_ids\":[378],\"ext_descrs\":[[\"Sand_Green\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 122,
+    "name": "Sand Blue",
+    "hex": "6074A1",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[55],\"ext_descrs\":[[\"Sand Blue\"]]},\"BrickOwl\":{\"ext_ids\":[85],\"ext_descrs\":[[\"Sand Blue\"]]},\"LEGO\":{\"ext_ids\":[135],\"ext_descrs\":[[\"Sand blue\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"sandblue\"]]},\"LDraw\":{\"ext_ids\":[379],\"ext_descrs\":[[\"Sand_Blue\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 123,
+    "name": "Chrome Silver",
+    "hex": "E0E0E0",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[22],\"ext_descrs\":[[\"Chrome Silver\"]]},\"BrickOwl\":{\"ext_ids\":[115],\"ext_descrs\":[[\"Chrome Silver\"]]},\"LEGO\":{\"ext_ids\":[309],\"ext_descrs\":[[\"Metalized Silver\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"chromesilver\"]]},\"LDraw\":{\"ext_ids\":[383],\"ext_descrs\":[[\"Chrome_Silver\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 124,
+    "name": "Fabuland Brown",
+    "hex": "B67B50",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[106],\"ext_descrs\":[[\"Fabuland Brown\"]]},\"BrickOwl\":{\"ext_ids\":[23],\"ext_descrs\":[[\"Fabuland Brown\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"fabubrown\"]]},\"LDraw\":{\"ext_ids\":[450],\"ext_descrs\":[[\"Fabuland_Brown\"]]},\"LEGO\":{\"ext_ids\":[4],\"ext_descrs\":[[\"Brick Red\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 125,
+    "name": "Medium Orange",
+    "hex": "FFA70B",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[31],\"ext_descrs\":[[\"Medium Orange\"]]},\"BrickOwl\":{\"ext_ids\":[7],\"ext_descrs\":[[\"Medium Orange\"]]},\"LEGO\":{\"ext_ids\":[105],\"ext_descrs\":[[\"Br. yellowish orange\",\"BR.YELORA\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"mdorange\"]]},\"LDraw\":{\"ext_ids\":[462],\"ext_descrs\":[[\"Medium_Orange\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 126,
+    "name": "Dark Orange",
+    "hex": "A95500",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[68],\"ext_descrs\":[[\"Dark Orange\"]]},\"BrickOwl\":{\"ext_ids\":[54],\"ext_descrs\":[[\"Dark Orange\"]]},\"LEGO\":{\"ext_ids\":[38],\"ext_descrs\":[[\"Dark Orange\",\"DK.ORA\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"dkorange\"]]},\"LDraw\":{\"ext_ids\":[484],\"ext_descrs\":[[\"Dark_Orange\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 127,
+    "name": "Very Light Gray",
+    "hex": "E6E3DA",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[49],\"ext_descrs\":[[\"Very Light Gray\"]]},\"BrickOwl\":{\"ext_ids\":[19],\"ext_descrs\":[[\"Very Light Gray\"]]},\"LEGO\":{\"ext_ids\":[103],\"ext_descrs\":[[\"Light grey\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"scalagray\"]]},\"LDraw\":{\"ext_ids\":[503],\"ext_descrs\":[[\"Very_Light_Gray\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 128,
+    "name": "Glow in Dark White",
+    "hex": "D9D9D9",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[159],\"ext_descrs\":[[\"Glow in Dark White\"]]},\"BrickOwl\":{\"ext_ids\":[129],\"ext_descrs\":[[\"Glow in the Dark White\"]]},\"LEGO\":{\"ext_ids\":[329],\"ext_descrs\":[[\"WHITE GLOW\"]]},\"LDraw\":{\"ext_ids\":[329],\"ext_descrs\":[[\"Glow_In_Dark_White\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 129,
+    "name": "Medium Violet",
+    "hex": "9391E4",
+    "is_trans": "0",
+    "external": "{\"LEGO\":{\"ext_ids\":[219],\"ext_descrs\":[[\"Lilac\"]]},\"Peeron\":{\"ext_ids\":[null],\"ext_descrs\":[[\"mdviolet\"]]},\"LDraw\":{\"ext_ids\":[219,112],\"ext_descrs\":[[\"Lilac\"],[\"Medium_Violet\"]]},\"BrickLink\":{\"ext_ids\":[245],\"ext_descrs\":[[\"Lilac\"]]},\"BrickOwl\":{\"ext_ids\":[221],\"ext_descrs\":[[\"Lilac\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 130,
+    "name": "Glitter Trans-Neon Green",
+    "hex": "C0F500",
+    "is_trans": "1",
+    "external": "{\"BrickLink\":{\"ext_ids\":[163],\"ext_descrs\":[[\"Glitter Trans-Neon Green\"]]},\"BrickOwl\":{\"ext_ids\":[167],\"ext_descrs\":[[\"Transparent Neon Green Glitter\"]]},\"LEGO\":{\"ext_ids\":[339],\"ext_descrs\":[[\"TR.FL.GRE W\\/GLI\"]]},\"LDraw\":{\"ext_ids\":[339],\"ext_descrs\":[[\"Glitter_Trans_Neon_Green\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 131,
+    "name": "Glitter Trans-Light Blue",
+    "hex": "68BCC5",
+    "is_trans": "1",
+    "external": "{\"BrickLink\":{\"ext_ids\":[162],\"ext_descrs\":[[\"Glitter Trans-Light Blue\"]]},\"BrickOwl\":{\"ext_ids\":[165],\"ext_descrs\":[[\"Transparent Light Blue Glitter\"]]},\"LDraw\":{\"ext_ids\":[302],\"ext_descrs\":[[\"Glitter_Trans_Light_Blue\"]]},\"LEGO\":{\"ext_ids\":[302],\"ext_descrs\":[[\"PCTR LI.BLUE W\\/\",\"TR LI.BLUE W\\/\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 132,
+    "name": "Trans-Flame Yellowish Orange",
+    "hex": "FCB76D",
+    "is_trans": "1",
+    "external": "{\"BrickLink\":{\"ext_ids\":[164],\"ext_descrs\":[[\"Trans Light Orange\"]]},\"LEGO\":{\"ext_ids\":[231],\"ext_descrs\":[[\"TR. FL. YEL ORA\"]]},\"LDraw\":{\"ext_ids\":[231],\"ext_descrs\":[[\"Trans_Bright_Light_Orange\"]]},\"BrickOwl\":{\"ext_ids\":[171],\"ext_descrs\":[[\"Transparent Light Orange\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 133,
+    "name": "Trans-Fire Yellow",
+    "hex": "FBE890",
+    "is_trans": "1",
+    "external": "{\"LDraw\":{\"ext_ids\":[234],\"ext_descrs\":[[\"Trans_Fire_Yellow\"]]},\"LEGO\":{\"ext_ids\":[234],\"ext_descrs\":[[\"TR. FIRE YELL\"]]},\"BrickOwl\":{\"ext_ids\":[162],\"ext_descrs\":[[\"Transparent Fire Yellow\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 134,
+    "name": "Trans-Light Royal Blue",
+    "hex": "B4D4F7",
+    "is_trans": "1",
+    "external": "{\"LEGO\":{\"ext_ids\":[293],\"ext_descrs\":[[\"TR. L.ROYAL BLUE\",\"TR.L.ROYAL BLUE\"]]},\"LDraw\":{\"ext_ids\":[293],\"ext_descrs\":[[\"Trans_Light_Blue_Violet\"]]},\"BrickOwl\":{\"ext_ids\":[163],\"ext_descrs\":[[\"Transparent Light Royal Blue\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 135,
+    "name": "Reddish Lilac",
+    "hex": "8E5597",
+    "is_trans": "0",
+    "external": "{\"LEGO\":{\"ext_ids\":[218],\"ext_descrs\":[[\"RED. LILAC\"]]},\"BrickLink\":{\"ext_ids\":[227],\"ext_descrs\":[[\"Clikits Lavender\"]]},\"BrickOwl\":{\"ext_ids\":[223],\"ext_descrs\":[[\"Very Light Purple\"]]},\"LDraw\":{\"ext_ids\":[218],\"ext_descrs\":[[\"Reddish_Lilac\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 136,
+    "name": "Vintage Blue",
+    "hex": "039CBD",
+    "is_trans": "0",
+    "external": "[]",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 137,
+    "name": "Vintage Green",
+    "hex": "1E601E",
+    "is_trans": "0",
+    "external": "[]",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 138,
+    "name": "Vintage Red",
+    "hex": "CA1F08",
+    "is_trans": "0",
+    "external": "[]",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 139,
+    "name": "Vintage Yellow",
+    "hex": "F3C305",
+    "is_trans": "0",
+    "external": "[]",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 140,
+    "name": "Fabuland Orange",
+    "hex": "EF9121",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[160],\"ext_descrs\":[[\"Fabuland Orange\"]]},\"LDraw\":{\"ext_ids\":[509],\"ext_descrs\":[[\"Fabuland_Orange\"]]},\"LEGO\":{\"ext_ids\":[19],\"ext_descrs\":[[\"Light Brown\"]]},\"BrickOwl\":{\"ext_ids\":[60],\"ext_descrs\":[[\"Fabuland Orange\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 141,
+    "name": "Modulex White",
+    "hex": "F4F4F4",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[123],\"ext_descrs\":[[\"Mx White\"]]},\"BrickOwl\":{\"ext_ids\":[154],\"ext_descrs\":[[\"Modulex White\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 142,
+    "name": "Modulex Light Bluish Gray",
+    "hex": "AfB5C7",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[124],\"ext_descrs\":[[\"Mx Light Bluish Gray\"]]},\"BrickOwl\":{\"ext_ids\":[28],\"ext_descrs\":[[\"Modulex Medium Stone Gray\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 143,
+    "name": "Modulex Light Gray",
+    "hex": "9C9C9C",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[125],\"ext_descrs\":[[\"Mx Light Gray\"]]},\"BrickOwl\":{\"ext_ids\":[141],\"ext_descrs\":[[\"Modulex Light Gray\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 144,
+    "name": "Modulex Charcoal Gray",
+    "hex": "595D60",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[126],\"ext_descrs\":[[\"Mx Charcoal Gray\"]]},\"BrickOwl\":{\"ext_ids\":[29],\"ext_descrs\":[[\"Modulex Charcoal Gray\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 145,
+    "name": "Modulex Tile Gray",
+    "hex": "6B5A5A",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[127],\"ext_descrs\":[[\"Mx Tile Gray\"]]},\"BrickOwl\":{\"ext_ids\":[152],\"ext_descrs\":[[\"Modulex Tile Gray\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 146,
+    "name": "Modulex Black",
+    "hex": "4D4C52",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[128],\"ext_descrs\":[[\"Mx Black\"]]},\"BrickOwl\":{\"ext_ids\":[136],\"ext_descrs\":[[\"Modulex Black\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 147,
+    "name": "Modulex Tile Brown",
+    "hex": "330000",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[131],\"ext_descrs\":[[\"Mx Tile Brown\"]]},\"BrickOwl\":{\"ext_ids\":[151],\"ext_descrs\":[[\"Modulex Tile Brown\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 148,
+    "name": "Modulex Terracotta",
+    "hex": "5C5030",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[134],\"ext_descrs\":[[\"Mx Terracotta\"]]},\"BrickOwl\":{\"ext_ids\":[150],\"ext_descrs\":[[\"Modulex Terracotta\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 149,
+    "name": "Modulex Brown",
+    "hex": "907450",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[132],\"ext_descrs\":[[\"Mx Brown\"]]},\"BrickOwl\":{\"ext_ids\":[137],\"ext_descrs\":[[\"Modulex Brown\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 150,
+    "name": "Modulex Buff",
+    "hex": "DEC69C",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[133],\"ext_descrs\":[[\"Mx Buff\"]]},\"BrickOwl\":{\"ext_ids\":[138],\"ext_descrs\":[[\"Modulex Buff\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 151,
+    "name": "Modulex Red",
+    "hex": "B52C20",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[129],\"ext_descrs\":[[\"Mx Red\"]]},\"BrickOwl\":{\"ext_ids\":[148],\"ext_descrs\":[[\"Modulex Red\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 152,
+    "name": "Modulex Pink Red",
+    "hex": "F45C40",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[130],\"ext_descrs\":[[\"Mx Pink Red\"]]},\"BrickOwl\":{\"ext_ids\":[147],\"ext_descrs\":[[\"Modulex Pink Red\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 153,
+    "name": "Modulex Orange",
+    "hex": "F47B30",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[135],\"ext_descrs\":[[\"Mx Orange\"]]},\"BrickOwl\":{\"ext_ids\":[30],\"ext_descrs\":[[\"Modulex Orange\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 154,
+    "name": "Modulex Light Orange",
+    "hex": "F7AD63",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[136],\"ext_descrs\":[[\"Mx Light Orange\"]]},\"BrickOwl\":{\"ext_ids\":[142],\"ext_descrs\":[[\"Modulex Light Orange\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 155,
+    "name": "Modulex Light Yellow",
+    "hex": "FFE371",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[137],\"ext_descrs\":[[\"Mx Light Yellow\"]]},\"BrickOwl\":{\"ext_ids\":[143],\"ext_descrs\":[[\"Modulex Light Yellow\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 156,
+    "name": "Modulex Ochre Yellow",
+    "hex": "FED557",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[138],\"ext_descrs\":[[\"Mx Ochre Yellow\"]]},\"BrickOwl\":{\"ext_ids\":[31],\"ext_descrs\":[[\"Modulex Ochre Yellow\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 157,
+    "name": "Modulex Lemon",
+    "hex": "BDC618",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[139],\"ext_descrs\":[[\"Mx Lemon\"]]},\"BrickOwl\":{\"ext_ids\":[140],\"ext_descrs\":[[\"Modulex Lemon\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 158,
+    "name": "Modulex Pastel Green",
+    "hex": "7DB538",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[141],\"ext_descrs\":[[\"Mx Pastel Green\"]]},\"BrickOwl\":{\"ext_ids\":[33],\"ext_descrs\":[[\"Modulex Pastel Green\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 159,
+    "name": "Modulex Olive Green",
+    "hex": "7C9051",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[140],\"ext_descrs\":[[\"Mx Olive Green\"]]},\"BrickOwl\":{\"ext_ids\":[32],\"ext_descrs\":[[\"Modulex Olive Green\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 160,
+    "name": "Modulex Aqua Green",
+    "hex": "27867E",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[142],\"ext_descrs\":[[\"Mx Aqua Green\"]]},\"BrickOwl\":{\"ext_ids\":[135],\"ext_descrs\":[[\"Modulex Aqua Green\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 161,
+    "name": "Modulex Teal Blue",
+    "hex": "467083",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[146],\"ext_descrs\":[[\"Mx Teal Blue\"]]},\"BrickOwl\":{\"ext_ids\":[149],\"ext_descrs\":[[\"Modulex Teal Blue\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 162,
+    "name": "Modulex Tile Blue",
+    "hex": "0057A6",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[143],\"ext_descrs\":[[\"Mx Tile Blue\"]]},\"BrickOwl\":{\"ext_ids\":[34],\"ext_descrs\":[[\"Modulex Tile Blue\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 163,
+    "name": "Modulex Medium Blue",
+    "hex": "61AFFF",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[144],\"ext_descrs\":[[\"Mx Medium Blue\"]]},\"BrickOwl\":{\"ext_ids\":[144],\"ext_descrs\":[[\"Modulex Medium Blue\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 164,
+    "name": "Modulex Pastel Blue",
+    "hex": "68AECE",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[145],\"ext_descrs\":[[\"Mx Pastel Blue\"]]},\"BrickOwl\":{\"ext_ids\":[145],\"ext_descrs\":[[\"Modulex Pastel Blue\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 165,
+    "name": "Modulex Violet",
+    "hex": "BD7D85",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[147],\"ext_descrs\":[[\"Mx Violet\"]]},\"BrickOwl\":{\"ext_ids\":[153],\"ext_descrs\":[[\"Modulex Violet\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 166,
+    "name": "Modulex Pink",
+    "hex": "F785B1",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[148],\"ext_descrs\":[[\"Mx Pink\"]]},\"BrickOwl\":{\"ext_ids\":[146],\"ext_descrs\":[[\"Modulex Pink\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 167,
+    "name": "Modulex Clear",
+    "hex": "FFFFFF",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[149],\"ext_descrs\":[[\"Mx Clear\"]]},\"BrickOwl\":{\"ext_ids\":[139],\"ext_descrs\":[[\"Modulex Clear\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 168,
+    "name": "Modulex Foil Dark Gray",
+    "hex": "595D60",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[210],\"ext_descrs\":[[\"Mx Foil Dark Gray\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 169,
+    "name": "Modulex Foil Light Gray",
+    "hex": "9C9C9C",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[211],\"ext_descrs\":[[\"Mx Foil Light Gray\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 170,
+    "name": "Modulex Foil Dark Green",
+    "hex": "006400",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[212],\"ext_descrs\":[[\"Mx Foil Dark Green\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 171,
+    "name": "Modulex Foil Light Green",
+    "hex": "7DB538",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[213],\"ext_descrs\":[[\"Mx Foil Light Green\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 172,
+    "name": "Modulex Foil Dark Blue",
+    "hex": "0057A6",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[214],\"ext_descrs\":[[\"Mx Foil Dark Blue\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 173,
+    "name": "Modulex Foil Light Blue",
+    "hex": "68AECE",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[215],\"ext_descrs\":[[\"Mx Foil Light Blue\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 174,
+    "name": "Modulex Foil Violet",
+    "hex": "4B0082",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[216],\"ext_descrs\":[[\"Mx Foil Violet\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 175,
+    "name": "Modulex Foil Red",
+    "hex": "8B0000",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[217],\"ext_descrs\":[[\"Mx Foil Red\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 176,
+    "name": "Modulex Foil Yellow",
+    "hex": "FED557",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[218],\"ext_descrs\":[[\"Mx Foil Yellow\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 177,
+    "name": "Modulex Foil Orange",
+    "hex": "F7AD63",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[219],\"ext_descrs\":[[\"Mx Foil Orange\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 178,
+    "name": "Coral",
+    "hex": "FF698F",
+    "is_trans": "0",
+    "external": "{\"BrickOwl\":{\"ext_ids\":[173],\"ext_descrs\":[[\"Coral\"]]},\"BrickLink\":{\"ext_ids\":[220],\"ext_descrs\":[[\"Coral\"]]},\"LDraw\":{\"ext_ids\":[353],\"ext_descrs\":[[\"Coral\"]]},\"LEGO\":{\"ext_ids\":[353],\"ext_descrs\":[[\"Coral\",\"Vibrant Coral\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 179,
+    "name": "Pastel Blue",
+    "hex": "5AC4DA",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[72],\"ext_descrs\":[[\"Maersk Blue\"]]},\"LEGO\":{\"ext_ids\":[11],\"ext_descrs\":[[\"Pastel Blue\",\"PASTBLU\"]]},\"BrickOwl\":{\"ext_ids\":[71],\"ext_descrs\":[[\"Maersk Blue\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 180,
+    "name": "Glitter Trans-Orange",
+    "hex": "F08F1C",
+    "is_trans": "1",
+    "external": "{\"LDraw\":{\"ext_ids\":[341],\"ext_descrs\":[[\"Glitter_Trans_Orange\"]]},\"BrickLink\":{\"ext_ids\":[222],\"ext_descrs\":[[\"Glitter Trans-Orange\"]]},\"LEGO\":{\"ext_ids\":[341],\"ext_descrs\":[[\"TR.BR:ORA W\\/GLI\"]]},\"BrickOwl\":{\"ext_ids\":[179],\"ext_descrs\":[[\"Transparent Orange with Glitter\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 181,
+    "name": "Opal Trans-Light Blue",
+    "hex": "68BCC5",
+    "is_trans": "1",
+    "external": "{\"BrickLink\":{\"ext_ids\":[223],\"ext_descrs\":[[\"Satin Trans-Light Blue\"]]},\"LDraw\":{\"ext_ids\":[362],\"ext_descrs\":[[\"Opal_Trans_Light_Blue\"]]},\"BrickOwl\":{\"ext_ids\":[175],\"ext_descrs\":[[\"Transparent Blue Opal\"]]},\"LEGO\":{\"ext_ids\":[362],\"ext_descrs\":[[\"Transparent Blue Opal\",\"TR.BLUE OPAL\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 182,
+    "name": "Opal Trans-Dark Pink",
+    "hex": "CE1D9B",
+    "is_trans": "1",
+    "external": "{\"BrickLink\":{\"ext_ids\":[224],\"ext_descrs\":[[\"Satin Trans-Dark Pink\"]]},\"LDraw\":{\"ext_ids\":[364],\"ext_descrs\":[[\"Opal_Trans_Dark_Pink\"]]},\"BrickOwl\":{\"ext_ids\":[199],\"ext_descrs\":[[\"Transparent Dark Pink Opal\"]]},\"LEGO\":{\"ext_ids\":[364],\"ext_descrs\":[[\"Transparent Medium Reddish Violet with Opalescence\",\"Tr.M.Violet Opa\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 183,
+    "name": "Opal Trans-Clear",
+    "hex": "FCFCFC",
+    "is_trans": "1",
+    "external": "{\"BrickLink\":{\"ext_ids\":[228],\"ext_descrs\":[[\"Satin White\"]]},\"LEGO\":{\"ext_ids\":[360],\"ext_descrs\":[[\"Transparent with Opalescence\",\"Tr. Opalescence\"]]},\"LDraw\":{\"ext_ids\":[360],\"ext_descrs\":[[\"Opal_Trans_Clear\"]]},\"BrickOwl\":{\"ext_ids\":[193],\"ext_descrs\":[[\"Transparent Opal\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 184,
+    "name": "Opal Trans-Brown",
+    "hex": "583927",
+    "is_trans": "1",
+    "external": "{\"BrickLink\":{\"ext_ids\":[229],\"ext_descrs\":[[\"Satin Trans-Black\"]]},\"BrickOwl\":{\"ext_ids\":[201],\"ext_descrs\":[[\"Transparent Black Opal\"]]},\"LEGO\":{\"ext_ids\":[363],\"ext_descrs\":[[\"Transparent Brown With Opalescence\"]]},\"LDraw\":{\"ext_ids\":[363],\"ext_descrs\":[[\"Opal_Trans_Black\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 185,
+    "name": "Trans-Light Bright Green",
+    "hex": "C9E788",
+    "is_trans": "1",
+    "external": "{\"BrickLink\":{\"ext_ids\":[226],\"ext_descrs\":[[\"Trans-Light Bright Green\"]]},\"LEGO\":{\"ext_ids\":[227],\"ext_descrs\":[[\"Transparent Bright Yellowish Green\",\"TR. BR. YEL GR\"]]},\"BrickOwl\":{\"ext_ids\":[205],\"ext_descrs\":[[\"Transparent Light Bright Green\"]]},\"LDraw\":{\"ext_ids\":[227],\"ext_descrs\":[[\"Trans_Bright_Light_Green\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 186,
+    "name": "Trans-Light Green",
+    "hex": "94E5AB",
+    "is_trans": "1",
+    "external": "{\"BrickLink\":{\"ext_ids\":[221],\"ext_descrs\":[[\"Trans-Light Green\"]]},\"LEGO\":{\"ext_ids\":[285],\"ext_descrs\":[[\"Transparent Light Green\"]]},\"LDraw\":{\"ext_ids\":[285],\"ext_descrs\":[[\"TranS_Light_Green\"]]},\"BrickOwl\":{\"ext_ids\":[191],\"ext_descrs\":[[\"Transparent Light Green\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 187,
+    "name": "Opal Trans-Purple",
+    "hex": "8320B7",
+    "is_trans": "1",
+    "external": "{\"BrickOwl\":{\"ext_ids\":[203],\"ext_descrs\":[[\"Transparent Purple Opal\"]]},\"BrickLink\":{\"ext_ids\":[230],\"ext_descrs\":[[\"Satin Trans-Purple\"]]},\"LEGO\":{\"ext_ids\":[365],\"ext_descrs\":[[\"Tr.Violet Opal\"]]},\"LDraw\":{\"ext_ids\":[365],\"ext_descrs\":[[\"Opal_Trans_Purple\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 188,
+    "name": "Opal Trans-Bright Green",
+    "hex": "84B68D",
+    "is_trans": "1",
+    "external": "{\"BrickLink\":{\"ext_ids\":[233],\"ext_descrs\":[[\"Satin Trans-Bright Green\"]]},\"BrickOwl\":{\"ext_ids\":[207],\"ext_descrs\":[[\"Transparent Green Opal\"]]},\"LEGO\":{\"ext_ids\":[367],\"ext_descrs\":[[\"Transparent Green With Opalescence\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 189,
+    "name": "Opal Trans-Dark Blue",
+    "hex": "0020A0",
+    "is_trans": "1",
+    "external": "{\"BrickLink\":{\"ext_ids\":[232],\"ext_descrs\":[[\"Satin Trans-Dark Blue\"]]},\"BrickOwl\":{\"ext_ids\":[209],\"ext_descrs\":[[\"Transparent Dark Blue Opal\"]]},\"LEGO\":{\"ext_ids\":[366],\"ext_descrs\":[[\"Transparent Blue With Opalescence\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 190,
+    "name": "Vibrant Yellow",
+    "hex": "EBD800",
+    "is_trans": "0",
+    "external": "{\"LDraw\":{\"ext_ids\":[368],\"ext_descrs\":[[\"Vibrant_Yellow\"]]},\"LEGO\":{\"ext_ids\":[368],\"ext_descrs\":[[\"Vibrant Yellow\"]]},\"BrickLink\":{\"ext_ids\":[236],\"ext_descrs\":[[\"Neon Yellow\"]]},\"BrickOwl\":{\"ext_ids\":[211],\"ext_descrs\":[[\"Vibrant Yellow\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 191,
+    "name": "Pearl Copper",
+    "hex": "B46A00",
+    "is_trans": "0",
+    "external": "{\"LEGO\":{\"ext_ids\":[346],\"ext_descrs\":[[\"Copper Metallic\"]]},\"BrickLink\":{\"ext_ids\":[249],\"ext_descrs\":[[\"Reddish Copper\"]]},\"BrickOwl\":{\"ext_ids\":[227],\"ext_descrs\":[[\"Reddish Copper\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 192,
+    "name": "Fabuland Red",
+    "hex": "FF8014",
+    "is_trans": "0",
+    "external": "{\"LDraw\":{\"ext_ids\":[508],\"ext_descrs\":[[\"Fabuland_Red\"]]},\"LEGO\":{\"ext_ids\":[13],\"ext_descrs\":[[\"Red Orange\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 193,
+    "name": "Reddish Gold",
+    "hex": "AC8247",
+    "is_trans": "0",
+    "external": "{\"LEGO\":{\"ext_ids\":[189],\"ext_descrs\":[[\"Reddish Gold\",\"Gold Metallic\"]]},\"BrickLink\":{\"ext_ids\":[235],\"ext_descrs\":[[\"Reddish Gold\"]]},\"LDraw\":{\"ext_ids\":[189],\"ext_descrs\":[[\"Reddish_Gold\"]]},\"BrickOwl\":{\"ext_ids\":[215],\"ext_descrs\":[[\"Reddish Gold\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 194,
+    "name": "Curry",
+    "hex": "DD982E",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[161],\"ext_descrs\":[[\"Dark Yellow\"]]},\"LEGO\":{\"ext_ids\":[180],\"ext_descrs\":[[\"Curry\"]]},\"BrickOwl\":{\"ext_ids\":[169],\"ext_descrs\":[[\"Curry\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 195,
+    "name": "Dark Nougat",
+    "hex": "AD6140",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[225],\"ext_descrs\":[[\"Dark Nougat\"]]},\"LEGO\":{\"ext_ids\":[128],\"ext_descrs\":[[\"Dark Nougat\",\"DARK NOUGAT\"]]},\"LDraw\":{\"ext_ids\":[128],\"ext_descrs\":[[\"Dark_Nougat\"]]},\"BrickOwl\":{\"ext_ids\":[160],\"ext_descrs\":[[\"Dark Nougat\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 196,
+    "name": "Bright Reddish Orange",
+    "hex": "EE5434",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[231],\"ext_descrs\":[[\"Dark Salmon\"]]},\"LEGO\":{\"ext_ids\":[123],\"ext_descrs\":[[\"Bright Reddish Orange\"]]},\"BrickOwl\":{\"ext_ids\":[158],\"ext_descrs\":[[\"Bright Reddish Orange\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 197,
+    "name": "Pearl Red",
+    "hex": "D60026",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[252],\"ext_descrs\":[[\"Pearl Red\"]]},\"LEGO\":{\"ext_ids\":[184],\"ext_descrs\":[[\"Metallic Bright Red\",\"MET. BR. RED\"]]},\"LDraw\":{\"ext_ids\":[184],\"ext_descrs\":[[\"Metallic_Bright_Red\"]]},\"BrickOwl\":{\"ext_ids\":[181],\"ext_descrs\":[[\"Pearl Red\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 198,
+    "name": "Pearl Blue",
+    "hex": "0059A3",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[254],\"ext_descrs\":[[\"Pearl Blue\"]]},\"LEGO\":{\"ext_ids\":[185],\"ext_descrs\":[[\"Metallic Bright Blue\",\"MET. BR. BLUE\"]]},\"BrickOwl\":{\"ext_ids\":[189],\"ext_descrs\":[[\"Pearl Blue\"]]},\"LDraw\":{\"ext_ids\":[185],\"ext_descrs\":[[\"Metallic_Bright_Blue\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 199,
+    "name": "Pearl Green",
+    "hex": "008E3C",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[253],\"ext_descrs\":[[\"Pearl Green\"]]},\"LEGO\":{\"ext_ids\":[186],\"ext_descrs\":[[\"Metallic Dark Green\",\"MET. DK. GREEN\"]]},\"LDraw\":{\"ext_ids\":[186],\"ext_descrs\":[[\"Metallic_Dark_Green\"]]},\"BrickOwl\":{\"ext_ids\":[183],\"ext_descrs\":[[\"Pearl Green\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 200,
+    "name": "Pearl Brown",
+    "hex": "57392C",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[255],\"ext_descrs\":[[\"Pearl Brown\"]]},\"LEGO\":{\"ext_ids\":[187],\"ext_descrs\":[[\"Metallic Earth Orange\",\"MET. EAR.ORA\"]]},\"BrickOwl\":{\"ext_ids\":[219],\"ext_descrs\":[[\"Pearl Brown\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 201,
+    "name": "Pearl Black",
+    "hex": "0A1327",
+    "is_trans": "0",
+    "external": "{\"LEGO\":{\"ext_ids\":[149],\"ext_descrs\":[[\"Metallic Black\",\"MET.BLACK\"]]},\"BrickOwl\":{\"ext_ids\":[185],\"ext_descrs\":[[\"Pearl Black\"]]},\"BrickLink\":{\"ext_ids\":[244],\"ext_descrs\":[[\"Pearl Black\"]]},\"LDraw\":{\"ext_ids\":[83],\"ext_descrs\":[[\"Pearl_Black\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 202,
+    "name": "Duplo Blue",
+    "hex": "009ECE",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[247],\"ext_descrs\":[[\"Little Robots Blue\"]]},\"LEGO\":{\"ext_ids\":[188],\"ext_descrs\":[[\"Tiny Blue\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 203,
+    "name": "Duplo Medium Blue",
+    "hex": "3E95B6",
+    "is_trans": "0",
+    "external": "{\"LEGO\":{\"ext_ids\":[269],\"ext_descrs\":[[\"Tiny-Medium Blue\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 204,
+    "name": "Duplo Lime",
+    "hex": "FFF230",
+    "is_trans": "0",
+    "external": "{\"LEGO\":{\"ext_ids\":[15],\"ext_descrs\":[[\"Lemon\"]]},\"BrickOwl\":{\"ext_ids\":[67],\"ext_descrs\":[[\"Light Lime\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 205,
+    "name": "Fabuland Lime",
+    "hex": "78FC78",
+    "is_trans": "0",
+    "external": "{\"LDraw\":{\"ext_ids\":[510],\"ext_descrs\":[[\"Fabuland_Pastel_Green\"]]},\"LEGO\":{\"ext_ids\":[14],\"ext_descrs\":[[\"Pastel Green\"]]},\"BrickLink\":{\"ext_ids\":[248],\"ext_descrs\":[[\"Fabuland Lime\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 206,
+    "name": "Duplo Medium Green",
+    "hex": "468A5F",
+    "is_trans": "0",
+    "external": "{\"LEGO\":{\"ext_ids\":[210],\"ext_descrs\":[[\"Faded Green\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 207,
+    "name": "Duplo Light Green",
+    "hex": "60BA76",
+    "is_trans": "0",
+    "external": "{\"LEGO\":{\"ext_ids\":[233],\"ext_descrs\":[[\"Light Faded Green\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 208,
+    "name": "Light Tan",
+    "hex": "F3C988",
+    "is_trans": "0",
+    "external": "{\"LEGO\":{\"ext_ids\":[224],\"ext_descrs\":[[\"Light Brick Yellow\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 209,
+    "name": "Rust Orange",
+    "hex": "872B17",
+    "is_trans": "0",
+    "external": "{\"LEGO\":{\"ext_ids\":[216],\"ext_descrs\":[[\"Rust\"]]},\"LDraw\":{\"ext_ids\":[216],\"ext_descrs\":[[\"Rust\"]]},\"BrickOwl\":{\"ext_ids\":[83],\"ext_descrs\":[[\"Rust\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 210,
+    "name": "Clikits Pink",
+    "hex": "FE78B0",
+    "is_trans": "0",
+    "external": "{\"LDraw\":{\"ext_ids\":[295],\"ext_descrs\":[[\"Flamingo_Pink\"]]},\"LEGO\":{\"ext_ids\":[295],\"ext_descrs\":[[\"Flamingo Pink\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 211,
+    "name": "Two-tone Copper",
+    "hex": "945148",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[273],\"ext_descrs\":[[\"Bionicle Copper\"]]},\"LEGO\":{\"ext_ids\":[176],\"ext_descrs\":[[\"Red Flip\\/Flop\"]]},\"BrickOwl\":{\"ext_ids\":[233],\"ext_descrs\":[[\"Bionicle Copper\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 212,
+    "name": "Two-tone Gold",
+    "hex": "AB673A",
+    "is_trans": "0",
+    "external": "{\"LEGO\":{\"ext_ids\":[178],\"ext_descrs\":[[\"Yellow Flip\\/Flop\"]]},\"BrickLink\":{\"ext_ids\":[238],\"ext_descrs\":[[\"Bionicle Gold\"]]},\"BrickOwl\":{\"ext_ids\":[231],\"ext_descrs\":[[\"Bionicle Gold\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 213,
+    "name": "Two-tone Silver",
+    "hex": "737271",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[239],\"ext_descrs\":[[\"Bionicle Silver\"]]},\"LEGO\":{\"ext_ids\":[179],\"ext_descrs\":[[\"Silver Flip\\/Flop\"]]},\"BrickOwl\":{\"ext_ids\":[229],\"ext_descrs\":[[\"Bionicle Silver\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 214,
+    "name": "Pearl Lime",
+    "hex": "6A7944",
+    "is_trans": "0",
+    "external": "{\"LEGO\":{\"ext_ids\":[200],\"ext_descrs\":[[\"Lemon Metallic\"]]},\"BrickOwl\":{\"ext_ids\":[125],\"ext_descrs\":[[\"Metallic Green\"]]},\"LDraw\":{\"ext_ids\":[200],\"ext_descrs\":[[\"Lemon_Metallic\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 215,
+    "name": "Duplo Pink",
+    "hex": "FF879C",
+    "is_trans": "0",
+    "external": "{\"LEGO\":{\"ext_ids\":[16],\"ext_descrs\":[[\"Pink\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 216,
+    "name": "Medium Brown",
+    "hex": "755945",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[240],\"ext_descrs\":[[\"Medium Brown\"]]},\"LEGO\":{\"ext_ids\":[370],\"ext_descrs\":[[\"Medium Brown\"]]},\"LDraw\":{\"ext_ids\":[370],\"ext_descrs\":[[\"Medium_Brown\"]]},\"BrickOwl\":{\"ext_ids\":[213],\"ext_descrs\":[[\"Medium Brown\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 217,
+    "name": "Warm Tan",
+    "hex": "CCA373",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[241],\"ext_descrs\":[[\"Medium Tan\"]]},\"BrickOwl\":{\"ext_ids\":[217],\"ext_descrs\":[[\"Warm Tan\"]]},\"LEGO\":{\"ext_ids\":[371],\"ext_descrs\":[[\"Warm Tan\"]]},\"LDraw\":{\"ext_ids\":[371],\"ext_descrs\":[[\"Medium_Tan\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 218,
+    "name": "Duplo Turquoise",
+    "hex": "3FB69E",
+    "is_trans": "0",
+    "external": "[]",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 219,
+    "name": "Warm Yellowish Orange",
+    "hex": "FFCB78",
+    "is_trans": "0",
+    "external": "{\"LEGO\":{\"ext_ids\":[225],\"ext_descrs\":[[\"Warm Yellowish Orange\"]]},\"BrickOwl\":{\"ext_ids\":[8],\"ext_descrs\":[[\"Light Orange\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 220,
+    "name": "Metallic Copper",
+    "hex": "764D3B",
+    "is_trans": "0",
+    "external": "{\"LEGO\":{\"ext_ids\":[300,334],\"ext_descrs\":[[\"COPPER, DR.LA.\"],[\"COPPER INK\"]]},\"BrickLink\":{\"ext_ids\":[250],\"ext_descrs\":[[\"Metallic Copper\"]]},\"BrickOwl\":{\"ext_ids\":[225],\"ext_descrs\":[[\"Metallic Copper\"]]},\"LDraw\":{\"ext_ids\":[300],\"ext_descrs\":[[\"Metallic_Copper\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 221,
+    "name": "Light Lilac",
+    "hex": "9195CA",
+    "is_trans": "0",
+    "external": "{\"LEGO\":{\"ext_ids\":[220],\"ext_descrs\":[[\"Light Lilac\"]]},\"BrickLink\":{\"ext_ids\":[246],\"ext_descrs\":[[\"Light Lilac\"]]},\"BrickOwl\":{\"ext_ids\":[16],\"ext_descrs\":[[\"Light Violet\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 222,
+    "name": "Trans-Medium Purple",
+    "hex": "8D73B3",
+    "is_trans": "0",
+    "external": "{\"LEGO\":{\"ext_ids\":[236],\"ext_descrs\":[[\"Transparent Bright Reddish Lilac\"]]},\"BrickLink\":{\"ext_ids\":[234],\"ext_descrs\":[[\"Trans-Medium Purple\"]]},\"BrickOwl\":{\"ext_ids\":[107],\"ext_descrs\":[[\"Transparent Purple\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 223,
+    "name": "Trans-Black",
+    "hex": "635F52",
+    "is_trans": "1",
+    "external": "{\"LDraw\":{\"ext_ids\":[10375],\"ext_descrs\":[[\"Trans_Black\"]]},\"LEGO\":{\"ext_ids\":[375],\"ext_descrs\":[[\"Tr. Black\"]]},\"BrickLink\":{\"ext_ids\":[251],\"ext_descrs\":[[\"Trans-Black (2023)\"]]},\"BrickOwl\":{\"ext_ids\":[235],\"ext_descrs\":[[\"Transparent Black (New)\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 224,
+    "name": "Glitter Trans-Bright Green",
+    "hex": "D9E4A7",
+    "is_trans": "1",
+    "external": "{\"LEGO\":{\"ext_ids\":[351],\"ext_descrs\":[[\"Transparent Bright Green w\\/ Glitter\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 225,
+    "name": "Glitter Trans-Medium Purple",
+    "hex": "8D73B3",
+    "is_trans": "1",
+    "external": "{\"LEGO\":{\"ext_ids\":[303],\"ext_descrs\":[[\"Trans Br Reddish Lilac w\\/ Glitter\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 226,
+    "name": "Glitter Trans-Green",
+    "hex": "84B68D",
+    "is_trans": "1",
+    "external": "{\"LEGO\":{\"ext_ids\":[155,175],\"ext_descrs\":[[\"Transparent Green with Glitter\"],[\"Transparent Green with Glitter\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 227,
+    "name": "Glitter Trans-Pink",
+    "hex": "E4ADC8",
+    "is_trans": "1",
+    "external": "{\"LEGO\":{\"ext_ids\":[301],\"ext_descrs\":[[\"Trans Bright Purple w\\/ Glitter\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 228,
+    "name": "Clikits Yellow",
+    "hex": "FFCF0B",
+    "is_trans": "0",
+    "external": "{\"LEGO\":{\"ext_ids\":[190],\"ext_descrs\":[[\"Fire Yellow\"]]},\"BrickOwl\":{\"ext_ids\":[93],\"ext_descrs\":[[\"Yellow\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 229,
+    "name": "Duplo Dark Purple",
+    "hex": "5F27AA",
+    "is_trans": "0",
+    "external": "{\"LEGO\":{\"ext_ids\":[197],\"ext_descrs\":[[\"Bright Lilac\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 230,
+    "name": "Trans-Neon Red",
+    "hex": "FF0040",
+    "is_trans": "1",
+    "external": "{\"LEGO\":{\"ext_ids\":[158],\"ext_descrs\":[[\"Transparent Fluorescent Red\"]]},\"LDraw\":{\"ext_ids\":[158],\"ext_descrs\":[[\"Trans_Neon_Red\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 231,
+    "name": "Pearl Titanium",
+    "hex": "3E3C39",
+    "is_trans": "0",
+    "external": "{\"LEGO\":{\"ext_ids\":[316],\"ext_descrs\":[[\"Titanium Metallic\",\"TITAN. METAL.\"]]},\"LDraw\":{\"ext_ids\":[87],\"ext_descrs\":[[\"Metallic_Dark_Gray\"]]},\"BrickOwl\":{\"ext_ids\":[119],\"ext_descrs\":[[\"Pearl Dark Gray\"]]},\"BrickLink\":{\"ext_ids\":[77],\"ext_descrs\":[[\"Pearl Dark Gray\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 232,
+    "name": "HO Aqua",
+    "hex": "B3D7D1",
+    "is_trans": "0",
+    "external": "[]",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 233,
+    "name": "HO Azure",
+    "hex": "1591cb",
+    "is_trans": "0",
+    "external": "[]",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 234,
+    "name": "HO Blue-gray",
+    "hex": "354e5a",
+    "is_trans": "0",
+    "external": "[]",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 235,
+    "name": "HO Cyan",
+    "hex": "5b98b3",
+    "is_trans": "0",
+    "external": "[]",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 236,
+    "name": "HO Dark Aqua",
+    "hex": "a7dccf",
+    "is_trans": "0",
+    "external": "[]",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 237,
+    "name": "HO Dark Blue",
+    "hex": "0A3463",
+    "is_trans": "0",
+    "external": "[]",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 238,
+    "name": "HO Dark Gray",
+    "hex": "6D6E5C",
+    "is_trans": "0",
+    "external": "[]",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 239,
+    "name": "HO Dark Green",
+    "hex": "184632",
+    "is_trans": "0",
+    "external": "[]",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 240,
+    "name": "HO Dark Lime",
+    "hex": "b2b955",
+    "is_trans": "0",
+    "external": "[]",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 241,
+    "name": "HO Dark Red",
+    "hex": "631314",
+    "is_trans": "0",
+    "external": "[]",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 242,
+    "name": "HO Dark Sand Green",
+    "hex": "627a62",
+    "is_trans": "0",
+    "external": "[]",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 243,
+    "name": "HO Dark Turquoise",
+    "hex": "10929d",
+    "is_trans": "0",
+    "external": "[]",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 244,
+    "name": "HO Earth Orange",
+    "hex": "bb771b",
+    "is_trans": "0",
+    "external": "[]",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 245,
+    "name": "HO Gold",
+    "hex": "b4a774",
+    "is_trans": "0",
+    "external": "[]",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 246,
+    "name": "HO Light Aqua",
+    "hex": "a3d1c0",
+    "is_trans": "0",
+    "external": "[]",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 247,
+    "name": "HO Light Brown",
+    "hex": "965336",
+    "is_trans": "0",
+    "external": "[]",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 248,
+    "name": "HO Light Gold",
+    "hex": "cdc298",
+    "is_trans": "0",
+    "external": "[]",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 249,
+    "name": "HO Light Tan",
+    "hex": "f9f1c7",
+    "is_trans": "0",
+    "external": "[]",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 250,
+    "name": "HO Light Yellow",
+    "hex": "f5fab7",
+    "is_trans": "0",
+    "external": "[]",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 251,
+    "name": "HO Medium Blue",
+    "hex": "7396c8",
+    "is_trans": "0",
+    "external": "[]",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 252,
+    "name": "HO Medium Red",
+    "hex": "c01111",
+    "is_trans": "0",
+    "external": "[]",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 253,
+    "name": "HO Metallic Blue",
+    "hex": "0d4763",
+    "is_trans": "0",
+    "external": "[]",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 254,
+    "name": "HO Metallic Dark Gray",
+    "hex": "5e5e5e",
+    "is_trans": "0",
+    "external": "[]",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 255,
+    "name": "HO Metallic Green",
+    "hex": "879867",
+    "is_trans": "0",
+    "external": "[]",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 256,
+    "name": "HO Metallic Sand Blue",
+    "hex": "5f7d8c",
+    "is_trans": "0",
+    "external": "[]",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 257,
+    "name": "HO Olive Green",
+    "hex": "9B9A5A",
+    "is_trans": "0",
+    "external": "[]",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 258,
+    "name": "HO Rose",
+    "hex": "d06262",
+    "is_trans": "0",
+    "external": "[]",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 259,
+    "name": "HO Sand Blue",
+    "hex": "6e8aa6",
+    "is_trans": "0",
+    "external": "[]",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 260,
+    "name": "HO Sand Green",
+    "hex": "A0BCAC",
+    "is_trans": "0",
+    "external": "[]",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 261,
+    "name": "HO Tan",
+    "hex": "E4CD9E",
+    "is_trans": "0",
+    "external": "[]",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 262,
+    "name": "HO Titanium",
+    "hex": "616161",
+    "is_trans": "0",
+    "external": "[]",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 263,
+    "name": "Metal",
+    "hex": "A5ADB4",
+    "is_trans": "0",
+    "external": "[]",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 264,
+    "name": "Reddish Orange",
+    "hex": "CA4C0B",
+    "is_trans": "0",
+    "external": "{\"LDraw\":{\"ext_ids\":[402],\"ext_descrs\":[[\"Reddish_Orange\"]]},\"LEGO\":{\"ext_ids\":[402],\"ext_descrs\":[[\"Red. Orange\"]]},\"BrickLink\":{\"ext_ids\":[167],\"ext_descrs\":[[\"Reddish Orange\"]]},\"BrickOwl\":{\"ext_ids\":[241],\"ext_descrs\":[[\"Reddish Orange\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 265,
+    "name": "Sienna Brown",
+    "hex": "915C3C",
+    "is_trans": "0",
+    "external": "{\"LDraw\":{\"ext_ids\":[422],\"ext_descrs\":[[\"Sienna_Brown\"]]},\"BrickOwl\":{\"ext_ids\":[245],\"ext_descrs\":[[\"Sienna Brown\"]]},\"BrickLink\":{\"ext_ids\":[169],\"ext_descrs\":[[\"Sienna\"]]},\"LEGO\":{\"ext_ids\":[422],\"ext_descrs\":[[\"Sienna Brown\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 266,
+    "name": "Umber Brown",
+    "hex": "5E3F33",
+    "is_trans": "0",
+    "external": "{\"LDraw\":{\"ext_ids\":[423],\"ext_descrs\":[[\"Umber_Brown\"]]},\"BrickLink\":{\"ext_ids\":[168],\"ext_descrs\":[[\"Umber\"]]},\"BrickOwl\":{\"ext_ids\":[243],\"ext_descrs\":[[\"Umber Brown\"]]},\"LEGO\":{\"ext_ids\":[423],\"ext_descrs\":[[\"Umber Brown\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 267,
+    "name": "Opal Trans-Yellow",
+    "hex": "F5CD2F",
+    "is_trans": "1",
+    "external": "{\"BrickLink\":{\"ext_ids\":[170],\"ext_descrs\":[[\"Satin Trans-Yellow\"]]},\"BrickOwl\":{\"ext_ids\":[247],\"ext_descrs\":[[\"Transparent Yellow Opal\"]]},\"LEGO\":{\"ext_ids\":[376],\"ext_descrs\":[[\"Tr. Yellow Opal\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  },
+  {
+    "id": 268,
+    "name": "[No Color/Any Color]",
+    "hex": "05131D",
+    "is_trans": "0",
+    "external": "{\"BrickLink\":{\"ext_ids\":[0],\"ext_descrs\":[[\"(Not Applicable)\"]]}}",
+    "created_at": "2024-12-28 23:07:04",
+    "updated_at": "2024-12-28 23:07:04"
+  }
+]

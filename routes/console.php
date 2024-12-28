@@ -28,6 +28,12 @@ Artisan::command('app:fetch-weather', function () {
 Schedule::command('app:fetch-calendar-events')->everyFiveMinutes();
 
 Artisan::command('lego:import-colors', function () {
+    LegoColor::create([
+        'name' => 'Assorted Colors',
+        'hex' => '#000000',
+        'is_trans' => false,
+    ]);
+
     Http::withHeaders([
         'Authorization' => 'key ' . config('services.rebrickable.key'),
     ])
