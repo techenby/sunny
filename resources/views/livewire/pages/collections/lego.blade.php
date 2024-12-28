@@ -65,7 +65,15 @@
                 <flux:heading size="lg">Bin</flux:heading>
             </div>
 
-            <flux:input wire:model="form.type" :label="__('Type')" aria-autocomplete="none" />
+            <flux:autocomplete wire:model="form.type" :label="__('Type')">
+                <flux:autocomplete.item>Gridfinity 1×1</flux:autocomplete.item>
+                <flux:autocomplete.item>Gridfinity 1×2</flux:autocomplete.item>
+                <flux:autocomplete.item>Gridfinity 1×3</flux:autocomplete.item>
+                <flux:autocomplete.item>Gridfinity 2×2</flux:autocomplete.item>
+                <flux:autocomplete.item>Bag</flux:autocomplete.item>
+                <flux:autocomplete.item>Bin</flux:autocomplete.item>
+                <flux:autocomplete.item>Drawer</flux:autocomplete.item>
+            </flux:autocomplete>
 
             <flux:select wire:model="form.pieces" :label="__('Pieces')" variant="listbox" searchable multiple
                 placeholder="Choose pieces...">

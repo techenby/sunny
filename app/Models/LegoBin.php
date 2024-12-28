@@ -15,11 +15,11 @@ class LegoBin extends Model
 
     public function colors(): BelongsToMany
     {
-        return $this->belongsToMany(LegoColor::class, 'lego_bin_color', 'color_id', 'bin_id');
+        return $this->belongsToMany(LegoColor::class, 'lego_bin_color', 'bin_id', 'color_id');
     }
 
     public function pieces(): BelongsToMany
     {
-        return $this->belongsToMany(LegoPiece::class, 'lego_bin_piece', 'piece_id', 'bin_id');
+        return $this->belongsToMany(LegoPiece::class, 'lego_bin_piece', 'bin_id', 'piece_id');
     }
 }
