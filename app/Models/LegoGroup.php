@@ -26,7 +26,7 @@ class LegoGroup extends Model
     protected function casts()
     {
         return [
-            'has_pieces' => 'boolean',
+            'has_parts' => 'boolean',
         ];
     }
 }

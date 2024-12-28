@@ -24,7 +24,7 @@
             <flux:columns>
                 <flux:column sortable :sorted="$sortBy === 'type'" :direction="$sortDirection"
                     wire:click="sort('type')">Type</flux:column>
-                <flux:column>Pieces</flux:column>
+                <flux:column>Parts</flux:column>
                 <flux:column>Colors</flux:column>
             </flux:columns>
 
@@ -33,9 +33,9 @@
                     <flux:row :key="$bin->id">
                         <flux:cell>{{ $bin->type }}</flux:cell>
                         <flux:cell>
-                            @foreach ($bin->pieces as $piece)
-                            <flux:tooltip :content="$piece->name" :key="$bin->id . '-' . $piece->id">
-                                <img src="{{ $piece->image }}" alt="" loading="lazy" style="zoom: 50%; max-width: 192px; max-height: 64px;">
+                            @foreach ($bin->parts as $part)
+                            <flux:tooltip :content="$part->name" :key="$bin->id . '-' . $part->id">
+                                <img src="{{ $part->image }}" alt="" loading="lazy" style="zoom: 50%; max-width: 192px; max-height: 64px;">
                             </flux:tooltip>
                             @endforeach
                         </flux:cell>
@@ -75,16 +75,16 @@
                 <flux:autocomplete.item>Drawer</flux:autocomplete.item>
             </flux:autocomplete>
 
-            <flux:select wire:model="form.pieces" :label="__('Pieces')" variant="listbox" searchable multiple
-                placeholder="Choose pieces...">
-                @foreach ($this->pieces as $piece)
-                    <flux:option :value="$piece->id">
+            <flux:select wire:model="form.parts" :label="__('Parts')" variant="listbox" searchable multiple
+                placeholder="Choose parts...">
+                @foreach ($this->parts as $part)
+                    <flux:option :value="$part->id">
                         <div class="flex items-center gap-2">
                             <div class="w-20 shrink-0 align-middle">
-                                <img src="{{ $piece->image }}" loading="lazy" alt="" class="max-w-48 max-h-16"
+                                <img src="{{ $part->image }}" loading="lazy" alt="" class="max-w-48 max-h-16"
                                     style="zoom: 50%;">
                             </div>
-                            <span>{{ $piece->name }}</span>
+                            <span>{{ $part->name }}</span>
                         </div>
                     </flux:option>
                 @endforeach

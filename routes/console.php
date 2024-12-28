@@ -2,7 +2,7 @@
 
 use App\Http\Integrations\OpenWeather\OpenWeather;
 use App\Http\Integrations\OpenWeather\Requests\OneCall;
-use App\Jobs\ImportLegoPieces;
+use App\Jobs\ImportLegoParts;
 use App\Models\LegoColor;
 use App\Models\Tile;
 use App\Models\User;
@@ -43,6 +43,6 @@ Artisan::command('lego:import-colors', function () {
         });
 });
 
-Artisan::command('lego:import-pieces', function () {
-    ImportLegoPieces::dispatchSync();
+Artisan::command('lego:import-parts', function () {
+    ImportLegoParts::dispatchSync();
 });

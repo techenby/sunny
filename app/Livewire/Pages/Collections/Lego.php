@@ -6,7 +6,7 @@ use App\Livewire\Concerns\WithDataTable;
 use App\Livewire\Forms\LegoBinForm;
 use App\Models\LegoBin;
 use App\Models\LegoColor;
-use App\Models\LegoPiece;
+use App\Models\LegoPart;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Livewire\Attributes\Computed;
@@ -34,9 +34,9 @@ class Lego extends Component
     }
 
     #[Computed]
-    public function pieces(): Collection
+    public function parts(): Collection
     {
-        return LegoPiece::select('id', 'name', 'image')->get();
+        return LegoPart::select('id', 'name', 'image')->get();
     }
 
     #[Computed]
@@ -52,7 +52,7 @@ class Lego extends Component
     {
         $bin = LegoBin::find($id);
 
-        $bin->pieces()->detach();
+        $bin->parts()->detach();
         $bin->colors()->detach();
 
         $bin->delete();
