@@ -43,7 +43,7 @@
                             <div class="isolate flex -space-x-2 overflow-hidden">
                                 @foreach ($bin->colors as $color)
                                 <flux:tooltip :content="$color->name" :key="$bin->id . '-' . $color->id">
-                                    <div class="relative inline-block size-6 rounded-full ring-2 ring-white dark:ring-zinc-900" style="background: #{{ $color->hex }}"></div>
+                                    <div class="relative inline-block size-6 rounded-full ring-2 ring-white dark:ring-zinc-800" style="background: #{{ $color->hex }}"></div>
                                 </flux:tooltip>
                                 @endforeach
                             </div>
