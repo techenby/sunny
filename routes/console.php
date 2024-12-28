@@ -31,7 +31,7 @@ Artisan::command('lego:import-colors', function () {
     Http::withHeaders([
         'Authorization' => 'key ' . config('services.rebrickable.key'),
     ])
-        ->get('https://rebrickable.com/api/v3/lego/colors')
+        ->get('https://rebrickable.com/api/v3/lego/colors?page_size=1000')
         ->collect('results')
         ->each(function ($color) {
             LegoColor::create([
