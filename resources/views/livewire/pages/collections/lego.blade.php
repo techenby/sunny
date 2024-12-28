@@ -27,10 +27,7 @@
                 @foreach ($this->filterParts as $part)
                     <flux:option :value="$part->id">
                         <div class="flex items-center gap-2">
-                            <div class="w-20 shrink-0 align-middle">
-                                <img src="{{ $part->image }}" loading="lazy" alt="" class="max-w-48 max-h-16"
-                                    style="zoom: 50%;">
-                            </div>
+                            <x-lego.part :$part />
                             <span>{{ $part->name }}</span>
                         </div>
                     </flux:option>
@@ -65,7 +62,7 @@
                         <flux:cell>
                             @foreach ($bin->parts as $part)
                             <flux:tooltip :content="$part->name" :key="$bin->id . '-' . $part->id">
-                                <img src="{{ $part->image }}" alt="" loading="lazy" style="zoom: 50%; max-width: 192px; max-height: 64px;">
+                                <x-lego.part :$part />
                             </flux:tooltip>
                             @endforeach
                         </flux:cell>
@@ -116,10 +113,7 @@
                 @foreach ($this->parts as $part)
                     <flux:option :value="$part->id">
                         <div class="flex items-center gap-2">
-                            <div class="w-20 shrink-0 align-middle">
-                                <img src="{{ $part->image }}" loading="lazy" alt="" class="max-w-48 max-h-16"
-                                    style="zoom: 50%;">
-                            </div>
+                            <x-lego.part :$part />
                             <span>{{ $part->name }}</span>
                         </div>
                     </flux:option>
