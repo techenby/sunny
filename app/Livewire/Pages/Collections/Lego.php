@@ -35,6 +35,12 @@ class Lego extends Component
     #[Computed]
     public function colors(): Collection
     {
+        return LegoColor::select('id', 'name', 'hex')->get();
+    }
+
+    #[Computed]
+    public function filterColors(): Collection
+    {
         return LegoColor::select('id', 'name', 'hex')
             ->join('lego_bin_color', 'lego_bin_color.color_id', '=', 'lego_colors.id')
             ->groupBy('lego_colors.id')
@@ -42,12 +48,18 @@ class Lego extends Component
     }
 
     #[Computed]
-    public function parts(): Collection
+    public function filterParts(): Collection
     {
         return LegoPart::select('id', 'name', 'image')
             ->join('lego_bin_part', 'lego_bin_part.part_id', '=', 'lego_parts.id')
             ->groupBy('lego_parts.id')
             ->get();
+    }
+
+    #[Computed]
+    public function parts(): Collection
+    {
+        return LegoPart::select('id', 'name', 'image')->get();
     }
 
     #[Computed]

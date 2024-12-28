@@ -24,7 +24,7 @@
         <flux:card x-show="showFilters" x-cloak class="grid grid-cols-2 gap-4">
             <flux:select wire:model.live="filter.part" :label="__('Part')" variant="listbox" searchable clearable
                 placeholder="Choose part...">
-                @foreach ($this->parts as $part)
+                @foreach ($this->filterParts as $part)
                     <flux:option :value="$part->id">
                         <div class="flex items-center gap-2">
                             <div class="w-20 shrink-0 align-middle">
@@ -39,7 +39,7 @@
 
             <flux:select wire:model.live="filter.color" :label="__('Color')" variant="listbox" searchable clearable
                 placeholder="Choose color...">
-                @foreach ($this->colors as $color)
+                @foreach ($this->filterColors as $color)
                     <flux:option :value="$color->id">
                         <div class="flex items-center gap-2">
                             <span class="size-4 rounded-full" style="background: #{{ $color->hex }}"></span>
