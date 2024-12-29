@@ -8,6 +8,7 @@
         "php": "^8.2",
         "laravel/framework": "^11.9",
         "laravel/sanctum": "^4.0",
+        "laravel/scout": "^10.11",
         "laravel/tinker": "^2.9",
         "livewire/flux": "^1.0",
         "livewire/flux-pro": "^1.0",
@@ -18,7 +19,8 @@
         "saloonphp/saloon": "^3.0",
         "spatie/laravel-dashboard": "^3.1",
         "spatie/laravel-medialibrary": "^11.11",
-        "symfony/dom-crawler": "^7.2"
+        "symfony/dom-crawler": "^7.2",
+        "typesense/typesense-php": "^4.9"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.14",

@@ -6,11 +6,13 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Laravel\Scout\Searchable;
 
 class LegoPart extends Model
 {
     /** @use HasFactory<\Database\Factories\LegoPieceFactory> */
     use HasFactory;
+    use Searchable;
 
     protected $guarded = [];
 
@@ -22,5 +24,16 @@ class LegoPart extends Model
     public function group(): BelongsTo
     {
         return $this->belongsTo(LegoGroup::class, 'group_id');
+    }
+
+    /** @return array<string, mixed> */
+    public function toSearchableArray()
+    {
+        return [
+            'id' => (string) $this->id,
+            'name' => $this->name,
+            'image' => $this->image,
+            'created_at' => $this->created_at->timestamp,
+        ];
     }
 }
