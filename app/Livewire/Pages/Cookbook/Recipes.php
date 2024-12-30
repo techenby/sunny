@@ -7,6 +7,7 @@ use App\Models\Recipe;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -16,6 +17,7 @@ class Recipes extends Component
     use WithPagination;
 
     #[Layout('layouts.app')]
+    #[Title('Recipes')]
     public function render()
     {
         return view('livewire.pages.cookbook.recipes');

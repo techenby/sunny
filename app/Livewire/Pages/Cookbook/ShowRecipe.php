@@ -4,6 +4,7 @@ namespace App\Livewire\Pages\Cookbook;
 
 use App\Models\Recipe;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Title;
 use Livewire\Component;
 
 class ShowRecipe extends Component
@@ -13,6 +14,7 @@ class ShowRecipe extends Component
     #[Layout('layouts.app')]
     public function render()
     {
-        return view('livewire.pages.cookbook.show-recipe');
+        return view('livewire.pages.cookbook.show-recipe')
+            ->title($this->recipe->name);
     }
 }
