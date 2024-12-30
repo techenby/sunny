@@ -12,7 +12,15 @@ test('can view page', function () {
     $this->actingAs($user)
         ->get('/cookbook/recipes')
         ->assertOk()
-        ->assertSee('Recipes');
+        ->assertSee('Recipes')
+        ->assertSee('Create');
+});
+
+test('can view page as guest', function () {
+    $this->get('/cookbook/recipes')
+        ->assertOk()
+        ->assertSee('Recipes')
+        ->assertDontSee('Create');
 });
 
 test('can view component', function () {
