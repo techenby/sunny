@@ -30,12 +30,14 @@ test('can create recipe', function () {
     Livewire::test(CreateRecipe::class)
         ->set('form.name', 'Oden')
         ->set('form.image', $image)
+        ->set('form.servings', 1)
         ->call('save')
         ->assertOk();
 
     $recipe = Recipe::firstWhere('name', 'Oden');
 
     expect($recipe->slug)->toBe('oden');
+    expect($recipe->servings)->toBe('1');
     expect($recipe->media)->not->toBeEmpty();
 });
 

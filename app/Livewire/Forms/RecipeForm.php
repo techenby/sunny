@@ -28,6 +28,7 @@ class RecipeForm extends Form
         $this->recipe = $recipe;
         $this->name = $recipe->name;
         $this->source = $recipe->source;
+        $this->servings = $recipe->servings;
         $this->image = $recipe->getFirstMedia('thumb');
         $this->prep_time = $recipe->prep_time;
         $this->cook_time = $recipe->cook_time;

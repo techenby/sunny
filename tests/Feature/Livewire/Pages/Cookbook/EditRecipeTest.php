@@ -103,3 +103,17 @@ test('can replace image', function () {
     expect($recipe->fresh()->media)->not->toBeEmpty();
     expect($recipe->fresh()->media)->toHaveCount(1);
 });
+
+test('can update servings', function () {
+
+    $recipe = Recipe::factory()->create(['name' => 'Oden', 'servings' => 2]);
+
+    Livewire::test(EditRecipe::class, ['recipe' => $recipe])
+        ->assertSet('form.name', 'Oden')
+        ->assertSet('form.servings', '2')
+        ->set('form.servings', 1)
+        ->call('save')
+        ->assertOk();
+
+    expect($recipe->fresh()->servings)->toBe('1');
+});
