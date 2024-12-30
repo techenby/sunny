@@ -4,8 +4,10 @@
             <header class="flex">
                 <flux:heading size="xl" level="1">{{ $recipe->name }}</flux:heading>
                 <flux:spacer />
+                @auth
                 <flux:button :href="route('cookbook.recipes.edit', $recipe)" size="sm" icon="pencil"
                     icon-variant="outline" square></flux:button>
+                @endauth
             </header>
 
             <dl class="text-sm flex divide-x text-zinc-900 dark:text-zinc-200 divide-zinc-800/15 dark:divide-white/20">

@@ -2,7 +2,9 @@
     <header class="flex">
         <flux:heading size="xl" level="1">{{ __('Recipes') }}</flux:heading>
         <flux:spacer />
+        @auth
         <flux:button :href="route('cookbook.recipes.create')">Create</flux:button>
+        @endauth
     </header>
 
     <section>
