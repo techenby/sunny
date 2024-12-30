@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\LegoColor;
 use App\Models\LegoPart;
 
 return [
@@ -191,6 +192,36 @@ return [
                         [
                             'name' => 'image',
                             'type' => 'string',
+                        ],
+                        [
+                            'name' => 'created_at',
+                            'type' => 'int64',
+                        ],
+                    ],
+                    'default_sorting_field' => 'created_at',
+                ],
+                'search-parameters' => [
+                    'query_by' => 'name'
+                ],
+            ],
+            LegoColor::class => [
+                'collection-schema' => [
+                    'fields' => [
+                        [
+                            'name' => 'id',
+                            'type' => 'string',
+                        ],
+                        [
+                            'name' => 'name',
+                            'type' => 'string',
+                        ],
+                        [
+                            'name' => 'hex',
+                            'type' => 'string',
+                        ],
+                        [
+                            'name' => 'is_trans',
+                            'type' => 'bool',
                         ],
                         [
                             'name' => 'created_at',
