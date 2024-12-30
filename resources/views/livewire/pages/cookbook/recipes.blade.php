@@ -36,7 +36,15 @@
                         </flux:cell>
                         <flux:cell>{{ $recipe->total_time }}</flux:cell>
                         <flux:cell>{{ $recipe->categories }}</flux:cell>
-                        <flux:cell>{{ $recipe->shortened_source }}</flux:cell>
+                        <flux:cell>
+                            @if (str_contains($recipe->source, 'http'))
+                            <flux:link variant="ghost" :href="$recipe->source">
+                                {{ $recipe->shortened_source }}
+                            </flux:link>
+                            @else
+                            {{ $recipe->shortened_source }}
+                            @endif
+                        </flux:cell>
 
                         <flux:cell>
                             <flux:dropdown>

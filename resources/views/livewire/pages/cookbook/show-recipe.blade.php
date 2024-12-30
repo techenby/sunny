@@ -15,7 +15,15 @@
                 @if ($recipe->source)
                 <div class="flex space-x-1 items-center pr-2">
                     <dt><flux:icon.bookmark-square class="size-5" /></dt>
-                    <dd>{{ $recipe->shortened_source }}</dd>
+                    <dd>
+                        @if (str_contains($recipe->source, 'http'))
+                        <flux:link variant="ghost" :href="$recipe->source">
+                            {{ $recipe->shortened_source }}
+                        </flux:link>
+                        @else
+                        {{ $recipe->shortened_source }}
+                        @endif
+                    </dd>
                 </div>
                 @endif
                 @if ($recipe->servings)
