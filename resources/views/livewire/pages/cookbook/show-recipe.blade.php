@@ -6,7 +6,8 @@
                 <flux:spacer />
                 @auth
                 <flux:button :href="route('cookbook.recipes.edit', $recipe)" size="sm" icon="pencil"
-                    icon-variant="outline" square></flux:button>
+                    icon-variant="outline" square>
+                <span class="sr-only">Edit</span></flux:button>
                 @endauth
             </header>
 

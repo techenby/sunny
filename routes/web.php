@@ -15,9 +15,6 @@ use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome');
 
-Route::get('cookbook/recipes', Recipes::class)->name('cookbook.recipes');
-Route::get('cookbook/recipes/{recipe}', ShowRecipe::class)->name('cookbook.recipes.show');
-
 Route::get('log-pose', function () {
     if (! app()->environment('local')) {
         abort_if(request()->query('token') !== config('dashboard.token', false), 404);
@@ -47,5 +44,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('users', Users::class)->name('users');
 });
+
+Route::get('cookbook/recipes', Recipes::class)->name('cookbook.recipes');
+Route::get('cookbook/recipes/{recipe}', ShowRecipe::class)->name('cookbook.recipes.show');
 
 require __DIR__ . '/auth.php';

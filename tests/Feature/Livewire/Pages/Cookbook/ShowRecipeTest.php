@@ -12,7 +12,17 @@ test('can view page', function () {
     $this->actingAs($user)
         ->get('/cookbook/recipes/' . $recipe->id)
         ->assertOk()
-        ->assertSee('Oden');
+        ->assertSee('Oden')
+        ->assertSee('Edit');
+});
+
+test('can view page as guest', function () {
+    $recipe = Recipe::factory()->create(['name' => 'Oden']);
+
+    $this->get('/cookbook/recipes/' . $recipe->id)
+        ->assertOk()
+        ->assertSee('Oden')
+        ->assertDontSee('Edit');
 });
 
 test('can view component', function () {
