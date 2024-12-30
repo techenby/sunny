@@ -4,7 +4,6 @@ namespace App\Livewire\Pages\Cookbook;
 
 use App\Models\Recipe;
 use Livewire\Attributes\Layout;
-use Livewire\Attributes\Title;
 use Livewire\Component;
 
 class ShowRecipe extends Component
