@@ -31,6 +31,13 @@ class Recipe extends Model implements HasMedia
             ->singleFile();
     }
 
+    protected function categories(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->tags->implode('name', ', '),
+        );
+    }
+
     protected function shortenedSource(): Attribute
     {
         return Attribute::make(
