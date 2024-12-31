@@ -14,14 +14,6 @@ class LegoColor extends Model
 
     protected $guarded = [];
 
-    protected function casts()
-    {
-        return [
-            'is_trans' => 'boolean',
-            'external' => 'array',
-        ];
-    }
-
     /** @return array<string, mixed> */
     public function toSearchableArray()
     {
@@ -31,6 +23,14 @@ class LegoColor extends Model
             'hex' => $this->hex,
             'is_trans' => $this->is_trans,
             'created_at' => $this->created_at->timestamp,
+        ];
+    }
+
+    protected function casts()
+    {
+        return [
+            'is_trans' => 'boolean',
+            'external' => 'array',
         ];
     }
 }
