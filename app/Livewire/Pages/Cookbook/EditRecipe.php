@@ -9,7 +9,6 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\WithFileUploads;
-use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class EditRecipe extends Component
 {
@@ -32,10 +31,10 @@ class EditRecipe extends Component
     #[Computed]
     public function previewUrl(): ?string
     {
-        if ($this->form->image instanceof Media) {
-            $url = $this->form->image->getUrl();
-        } elseif ($this->form->image) {
+        if ($this->form->image) {
             $url = $this->form->image->temporaryUrl();
+        } elseif ($image = $this->recipe->getFirstMedia('thumb')) {
+            $url = $image->getUrl();
         }
 
         return $url ?? null;
@@ -43,7 +42,13 @@ class EditRecipe extends Component
 
     public function clear()
     {
+        $this->recipe->getFirstMedia('thumb')?->delete();
         $this->form->reset(['image']);
+
+        // @todo see if there's different way to do this
+        // needed to make the preview image reutrn `null`
+        $this->recipe = $this->recipe->fresh();
+        unset($this->previewUrl);
     }
 
     public function save()

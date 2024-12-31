@@ -12,6 +12,7 @@ class RecipeForm extends Form
     public ?string $name;
     public ?string $source;
     public $image;
+    public $categories = [];
     public ?string $servings;
     public ?string $prep_time;
     public ?string $cook_time;
@@ -28,7 +29,8 @@ class RecipeForm extends Form
         $this->recipe = $recipe;
         $this->name = $recipe->name;
         $this->source = $recipe->source;
-        $this->image = $recipe->getFirstMedia('thumb');
+        $this->servings = $recipe->servings;
+        $this->categories = $recipe->tags->pluck('name')->toArray();
         $this->prep_time = $recipe->prep_time;
         $this->cook_time = $recipe->cook_time;
         $this->total_time = $recipe->total_time;
@@ -43,10 +45,14 @@ class RecipeForm extends Form
     {
         $validated = $this->validate();
 
-        $recipe = Recipe::create(Arr::except($validated, ['image']));
+        $recipe = Recipe::create(Arr::except($validated, ['image', 'categories']));
 
         if ($this->image) {
             $recipe->addMedia($this->image)->toMediaCollection('thumb');
+        }
+
+        if ($this->categories) {
+            $recipe->attachTags($this->categories);
         }
 
         return $recipe;
@@ -55,12 +61,14 @@ class RecipeForm extends Form
     public function update(): void
     {
         $validated = $this->validate();
+        $this->recipe->update(Arr::except($validated, ['image', 'categories']));
 
         if ($this->image) {
-            $this->image = $this->recipe->addMedia($this->image)->toMediaCollection('thumb');
+            $this->recipe->addMedia($this->image)->toMediaCollection('thumb');
+            $this->reset(['image']);
         }
 
-        $this->recipe->update(Arr::except($validated, ['image']));
+        $this->recipe->syncTags($this->categories);
     }
 
     protected function rules()
@@ -70,6 +78,7 @@ class RecipeForm extends Form
             'source' => ['nullable', 'string'],
             'servings' => ['nullable', 'string'],
             'image' => ['nullable', File::image()],
+            'categories' => ['nullable', 'array'],
             'prep_time' => ['nullable', 'string'],
             'cook_time' => ['nullable', 'string'],
             'total_time' => ['nullable', 'string'],
