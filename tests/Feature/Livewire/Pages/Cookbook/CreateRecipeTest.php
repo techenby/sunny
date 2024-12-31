@@ -71,3 +71,16 @@ test('preview is hidden without image', function () {
         ->assertDontSeeHtml('id="preview-image"')
         ->assertOk();
 });
+
+test('can add categories', function () {
+    Livewire::test(CreateRecipe::class)
+        ->set('form.name', 'Drunken Chicken – J Gumbo Inspired')
+        ->set('form.categories', ['Slow Cooker', 'Dinner'])
+        ->call('save')
+        ->assertOk();
+
+    $recipe = Recipe::firstWhere('name', 'Drunken Chicken – J Gumbo Inspired');
+
+    expect($recipe->tags)->not->toBeEmpty();
+    expect($recipe->tags->pluck('name'))->toContain('Slow Cooker', 'Dinner');
+});

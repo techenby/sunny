@@ -105,7 +105,6 @@ test('can replace image', function () {
 });
 
 test('can update servings', function () {
-
     $recipe = Recipe::factory()->create(['name' => 'Oden', 'servings' => 2]);
 
     Livewire::test(EditRecipe::class, ['recipe' => $recipe])
@@ -116,4 +115,21 @@ test('can update servings', function () {
         ->assertOk();
 
     expect($recipe->fresh()->servings)->toBe('1');
+});
+
+test('can edit categories', function () {
+    $recipe = Recipe::factory()->create(['name' => 'Drunken Chicken – J Gumbo Inspired']);
+    $recipe->attachTags(['Slow Cooker', 'Dinner']);
+
+    Livewire::test(EditRecipe::class, ['recipe' => $recipe])
+        ->assertSet('form.name', 'Drunken Chicken – J Gumbo Inspired')
+        ->assertSet('form.categories', ['Slow Cooker', 'Dinner'])
+        ->set('form.categories', ['Slow Cooker', 'Supper'])
+        ->call('save')
+        ->assertOk();
+
+    $recipe = Recipe::firstWhere('name', 'Drunken Chicken – J Gumbo Inspired');
+
+    expect($recipe->tags)->not->toBeEmpty();
+    expect($recipe->tags->pluck('name'))->toContain('Slow Cooker', 'Supper');
 });
