@@ -29,7 +29,23 @@
         </flux:field>
 
         <flux:input wire:model="form.source" type="text" label="Source" />
-        <flux:input wire:model="form.servings" type="text" label="Servings" />
+
+        <div class="grid grid-cols-2 gap-6">
+            <flux:input wire:model="form.servings" type="text" label="Servings" />
+            <flux:select wire:model="form.categories" variant="listbox" label="Categories" multiple searchable placeholder="Choose categories...">
+                <flux:option>Breakfast</flux:option>
+                <flux:option>Lunch</flux:option>
+                <flux:option>Dinner</flux:option>
+                <flux:option>Dessert</flux:option>
+                <flux:option>Meal</flux:option>
+                <flux:option>Gluten Free</flux:option>
+                <flux:option>Dairy Free</flux:option>
+                <flux:option>Vegetarian</flux:option>
+                <flux:option>Vegan</flux:option>
+                <flux:option>Overnight</flux:option>
+                <flux:option>Slow Cooker</flux:option>
+            </flux:select>
+        </div>
 
         <div class="grid grid-cols-3 gap-6">
             <flux:input wire:model="form.prep_time" type="text" label="Prep Time" />

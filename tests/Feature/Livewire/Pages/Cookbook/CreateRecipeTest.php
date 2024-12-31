@@ -30,12 +30,14 @@ test('can create recipe', function () {
     Livewire::test(CreateRecipe::class)
         ->set('form.name', 'Oden')
         ->set('form.image', $image)
+        ->set('form.servings', 1)
         ->call('save')
         ->assertOk();
 
     $recipe = Recipe::firstWhere('name', 'Oden');
 
     expect($recipe->slug)->toBe('oden');
+    expect($recipe->servings)->toBe('1');
     expect($recipe->media)->not->toBeEmpty();
 });
 
@@ -68,4 +70,17 @@ test('preview is hidden without image', function () {
         ->assertSet('previewUrl', null)
         ->assertDontSeeHtml('id="preview-image"')
         ->assertOk();
+});
+
+test('can add categories', function () {
+    Livewire::test(CreateRecipe::class)
+        ->set('form.name', 'Drunken Chicken – J Gumbo Inspired')
+        ->set('form.categories', ['Slow Cooker', 'Dinner'])
+        ->call('save')
+        ->assertOk();
+
+    $recipe = Recipe::firstWhere('name', 'Drunken Chicken – J Gumbo Inspired');
+
+    expect($recipe->tags)->not->toBeEmpty();
+    expect($recipe->tags->pluck('name'))->toContain('Slow Cooker', 'Dinner');
 });
