@@ -9,7 +9,6 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\WithFileUploads;
-use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class EditRecipe extends Component
 {
@@ -43,7 +42,13 @@ class EditRecipe extends Component
 
     public function clear()
     {
+        $this->recipe->getFirstMedia('thumb')?->delete();
         $this->form->reset(['image']);
+
+        // @todo see if there's different way to do this
+        // needed to make the preview image reutrn `null`
+        $this->recipe = $this->recipe->fresh();
+        unset($this->previewUrl);
     }
 
     public function save()

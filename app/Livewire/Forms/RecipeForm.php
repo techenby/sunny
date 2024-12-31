@@ -64,12 +64,11 @@ class RecipeForm extends Form
         $this->recipe->update(Arr::except($validated, ['image', 'categories']));
 
         if ($this->image) {
-            $this->image = $this->recipe->addMedia($this->image)->toMediaCollection('thumb');
+            $this->recipe->addMedia($this->image)->toMediaCollection('thumb');
+            $this->reset(['image']);
         }
 
-        if ($this->categories) {
-            $this->recipe->syncTags($this->categories);
-        }
+        $this->recipe->syncTags($this->categories);
     }
 
     protected function rules()

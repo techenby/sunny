@@ -32,6 +32,12 @@
                     <dd>{{ $recipe->servings }}</dd>
                 </div>
                 @endif
+                @if ($recipe->categories)
+                <div class="flex space-x-1 items-center px-2">
+                    <dt><flux:icon.tag class="size-5" /></dt>
+                    <dd>{{ $recipe->categories }}</dd>
+                </div>
+                @endif
                 @if ($recipe->prep_time)
                 <div class="flex flex-col space-y-1 items-center px-2">
                     <dt class="text-[10px] text-zinc-700 dark:text-zinc-400 uppercase font-light">Prep</dt>

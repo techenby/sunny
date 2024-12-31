@@ -32,7 +32,7 @@
 
         <div class="grid grid-cols-2 gap-6">
             <flux:input wire:model="form.servings" type="text" label="Servings" />
-            <flux:select wire:model="form.categories" variant="listbox" label="Categories" multiple searchable placeholder="Choose categories...">
+            <flux:select wire:model="form.categories" variant="listbox" label="Categories" multiple searchable clearable placeholder="Choose categories...">
                 <flux:option>Breakfast</flux:option>
                 <flux:option>Lunch</flux:option>
                 <flux:option>Dinner</flux:option>
