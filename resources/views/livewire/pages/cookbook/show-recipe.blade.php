@@ -10,9 +10,9 @@
             @endauth
         </div>
 
-        <dl class="text-sm flex divide-x text-zinc-900 dark:text-zinc-200 divide-zinc-800/15 dark:divide-white/20">
+        <dl class="text-sm flex flex-wrap divide-x text-zinc-900 dark:text-zinc-200 divide-zinc-800/15 dark:divide-white/20">
             @if ($recipe->source)
-            <div class="flex space-x-1 items-center pr-2">
+            <div class="flex space-x-1 items-center px-2 py-1">
                 <dt><flux:icon.bookmark-square class="size-5" /></dt>
                 <dd>
                     @if (str_contains($recipe->source, 'http'))
@@ -25,32 +25,32 @@
                 </dd>
             </div>
             @endif
-            @if ($recipe->servings)
-            <div class="flex space-x-1 items-center px-2">
-                <dt><flux:icon.users class="size-5" /></dt>
-                <dd>{{ $recipe->servings }}</dd>
-            </div>
-            @endif
             @if ($recipe->categories)
-            <div class="flex space-x-1 items-center px-2">
+            <div class="flex space-x-1 items-center px-2 py-1">
                 <dt><flux:icon.tag class="size-5" /></dt>
                 <dd>{{ $recipe->categories }}</dd>
             </div>
             @endif
+            @if ($recipe->servings)
+            <div class="flex space-x-1 items-center px-2 py-1">
+                <dt><flux:icon.users class="size-5" /></dt>
+                <dd>{{ $recipe->servings }}</dd>
+            </div>
+            @endif
             @if ($recipe->prep_time)
-            <div class="flex flex-col space-y-1 items-center px-2">
+            <div class="flex flex-col space-y-1 items-center px-2 py-1">
                 <dt class="text-[10px] text-zinc-700 dark:text-zinc-400 uppercase font-light">Prep</dt>
                 <dd class="order-first">{{ $recipe->prep_time }}</dd>
             </div>
             @endif
             @if ($recipe->cook_time)
-            <div class="flex flex-col space-y-1 items-center px-2">
+            <div class="flex flex-col space-y-1 items-center px-2 py-1">
                 <dt class="text-[10px] text-zinc-700 dark:text-zinc-400 uppercase font-light">Cook</dt>
                 <dd class="order-first">{{ $recipe->cook_time }}</dd>
             </div>
             @endif
             @if ($recipe->total_time)
-            <div class="flex flex-col space-y-1 items-center pl-2">
+            <div class="flex flex-col space-y-1 items-center px-2 py-1">
                 <dt class="text-[10px] text-zinc-700 dark:text-zinc-400 uppercase font-light">Total</dt>
                 <dd class="order-first">{{ $recipe->total_time }}</dd>
             </div>
