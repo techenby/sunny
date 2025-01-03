@@ -6,9 +6,9 @@ use App\Models\LegoGroup;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\LegoPiece>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\LegoPart>
  */
-class LegoPieceFactory extends Factory
+class LegoPartFactory extends Factory
 {
     /** @return array<string, mixed> */
     public function definition(): array

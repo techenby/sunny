@@ -1,7 +1,7 @@
 <?php
 
 use App\Models\LegoBin;
-use App\Models\LegoPiece;
+use App\Models\LegoPart;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -12,7 +12,7 @@ return new class extends Migration
     {
         Schema::create('lego_bin_piece', function (Blueprint $table) {
             $table->foreignIdFor(LegoBin::class, 'bin_id');
-            $table->foreignIdFor(LegoPiece::class, 'piece_id');
+            $table->foreignIdFor(LegoPart::class, 'piece_id');
         });
     }
 

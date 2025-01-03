@@ -1,11 +1,11 @@
 <?php
 
-use App\Jobs\ImportLegoPieces;
+use App\Jobs\ImportLegoParts;
 use App\Models\LegoGroup;
-use App\Models\LegoPiece;
+use App\Models\LegoPart;
 
 test('can get categories', function () {
-    (new ImportLegoPieces)->getCategories();
+    (new ImportLegoParts)->getCategories();
 
     expect(LegoGroup::count())->toBe(14);
 
@@ -20,7 +20,7 @@ test('can get categories', function () {
 test('can get subcategories for category', function () {
     $category = LegoGroup::factory()->create(['name' => 'Basic', 'slug' => 'basic', 'href' => 'https://brickarchitect.com/parts/category-1']);
 
-    (new ImportLegoPieces)->getSubcategories($category);
+    (new ImportLegoParts)->getSubcategories($category);
 
     $basicSubCategories = LegoGroup::where('parent_id', $category->id)->get()->pluck('slug');
     expect($basicSubCategories)->toHaveCount(5)
@@ -37,7 +37,7 @@ test('can get sub-subcategories for category', function () {
     $parent = LegoGroup::factory()->create(['name' => 'Basic', 'slug' => 'basic', 'href' => 'https://brickarchitect.com/parts/category-1']);
     $category = LegoGroup::factory()->create(['parent_id' => $parent->id, 'name' => 'Brick', 'slug' => 'basic-brick', 'href' => 'https://brickarchitect.com/parts/category-15']);
 
-    (new ImportLegoPieces)->getSubcategories($category);
+    (new ImportLegoParts)->getSubcategories($category);
 
     $brickSubCategories = LegoGroup::where('parent_id', $category->id)->get()->pluck('slug');
     expect($brickSubCategories)->toHaveCount(4)
@@ -49,36 +49,36 @@ test('can get sub-subcategories for category', function () {
         );
 });
 
-test('has_pieces is true for group without subcategories', function () {
+test('has_parts is true for group without subcategories', function () {
     $parent = LegoGroup::factory()->create(['name' => 'Wall', 'slug' => 'wall']);
     $category = LegoGroup::factory()->create(['parent_id' => $parent->id, 'name' => 'Fence', 'slug' => 'wall-fence', 'href' => 'https://brickarchitect.com/parts/category-20']);
 
-    (new ImportLegoPieces)->getSubcategories($category);
+    (new ImportLegoParts)->getSubcategories($category);
 
     expect(LegoGroup::forParent($category)->exists())->toBeFalse();
-    expect($category->fresh()->has_pieces)->toBeTrue();
+    expect($category->fresh()->has_parts)->toBeTrue();
 });
 
 test('description is null for group without one', function () {
     $parent = LegoGroup::factory()->create(['name' => 'Wall', 'slug' => 'wall']);
     $category = LegoGroup::factory()->create(['parent_id' => $parent->id, 'name' => 'Fence', 'slug' => 'wall-fence', 'href' => 'https://brickarchitect.com/parts/category-20']);
 
-    (new ImportLegoPieces)->getSubcategories($category);
+    (new ImportLegoParts)->getSubcategories($category);
 
     expect($category->fresh()->description)->toBeNull();
 });
 
-test('get pieces for group', function () {
+test('get parts for group', function () {
     $group = LegoGroup::factory()->create([
         'name' => '1× Brick',
         'slug' => 'basic-brick-1-brick',
-        'has_pieces' => true,
+        'has_parts' => true,
         'href' => 'https://brickarchitect.com/parts/category-27',
     ]);
 
-    (new ImportLegoPieces)->getPiecesFor($group);
+    (new ImportLegoParts)->getPartsFor($group);
 
-    $pieces = LegoPiece::forGroup($group)->pluck('name');
+    $parts = LegoPart::forGroup($group)->pluck('name');
 
-    expect($pieces)->toHaveCount(10);
+    expect($parts)->toHaveCount(10);
 });

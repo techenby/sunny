@@ -3,13 +3,13 @@
 namespace App\Jobs;
 
 use App\Models\LegoGroup;
-use App\Models\LegoPiece;
+use App\Models\LegoPart;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use InvalidArgumentException;
 use Symfony\Component\DomCrawler\Crawler;
 
-class ImportLegoPieces implements ShouldQueue
+class ImportLegoParts implements ShouldQueue
 {
     use Queueable;
 
@@ -38,9 +38,9 @@ class ImportLegoPieces implements ShouldQueue
             }
         }
 
-        $pieces = LegoGroup::where('has_pieces', true)->get();
-        foreach ($pieces as $group) {
-            $this->getPiecesFor($group);
+        $parts = LegoGroup::where('has_parts', true)->get();
+        foreach ($parts as $group) {
+            $this->getPartsFor($group);
         }
     }
 
@@ -89,7 +89,7 @@ class ImportLegoPieces implements ShouldQueue
             });
 
         if (empty($categories)) {
-            $category->update(['has_pieces' => true]);
+            $category->update(['has_parts' => true]);
 
             return;
         }
@@ -97,7 +97,7 @@ class ImportLegoPieces implements ShouldQueue
         LegoGroup::upsert($categories, uniqueBy: ['slug'], update: ['name', 'href', 'slug', 'summary']);
     }
 
-    public function getPiecesFor($group)
+    public function getPartsFor($group)
     {
         $html = file_get_contents($group->href);
 
@@ -109,7 +109,7 @@ class ImportLegoPieces implements ShouldQueue
         } catch (InvalidArgumentException $e) {
         }
 
-        $pieces = $crawler
+        $parts = $crawler
             ->filter('.parts_results a')
             ->each(function ($node, $i) use ($group) {
                 return [
@@ -121,6 +121,6 @@ class ImportLegoPieces implements ShouldQueue
                 ];
             });
 
-        LegoPiece::upsert($pieces, uniqueBy: ['part_number'], update: ['part_number', 'name', 'image', 'href']);
+        LegoPart::upsert($parts, uniqueBy: ['part_number'], update: ['part_number', 'name', 'image', 'href']);
     }
 }

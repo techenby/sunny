@@ -2,7 +2,7 @@
 
 use App\Http\Integrations\OpenWeather\OpenWeather;
 use App\Http\Integrations\OpenWeather\Requests\OneCall;
-use App\Jobs\ImportLegoPieces;
+use App\Jobs\ImportLegoParts;
 use App\Models\LegoColor;
 use App\Models\Tile;
 use App\Models\User;
@@ -28,10 +28,16 @@ Artisan::command('app:fetch-weather', function () {
 Schedule::command('app:fetch-calendar-events')->everyFiveMinutes();
 
 Artisan::command('lego:import-colors', function () {
+    LegoColor::create([
+        'name' => 'Assorted Colors',
+        'hex' => '#000000',
+        'is_trans' => false,
+    ]);
+
     Http::withHeaders([
         'Authorization' => 'key ' . config('services.rebrickable.key'),
     ])
-        ->get('https://rebrickable.com/api/v3/lego/colors')
+        ->get('https://rebrickable.com/api/v3/lego/colors?page_size=1000')
         ->collect('results')
         ->each(function ($color) {
             LegoColor::create([
@@ -43,6 +49,6 @@ Artisan::command('lego:import-colors', function () {
         });
 });
 
-Artisan::command('lego:import-pieces', function () {
-    ImportLegoPieces::dispatchSync();
+Artisan::command('lego:import-parts', function () {
+    ImportLegoParts::dispatchSync();
 });
