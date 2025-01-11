@@ -108,8 +108,11 @@
                 <flux:autocomplete.item>Drawer</flux:autocomplete.item>
             </flux:autocomplete>
 
-            <flux:select wire:model="form.parts" :label="__('Parts')" variant="listbox" searchable multiple
-                placeholder="Choose parts...">
+            <flux:select wire:model="form.parts" :label="__('Parts')" variant="listbox" searchable multiple :filter="false" placeholder="Choose parts...">
+                <x-slot name="search">
+                    <flux:select.search wire:model.live="partKeyword" class="px-4" placeholder="Search parts..." />
+                </x-slot>
+
                 @foreach ($this->parts as $part)
                     <flux:option :value="$part->id">
                         <div class="flex items-center gap-2">
@@ -120,8 +123,12 @@
                 @endforeach
             </flux:select>
 
-            <flux:select wire:model="form.colors" :label="__('Colors')" variant="listbox" searchable multiple
+            <flux:select wire:model="form.colors" :label="__('Colors')" variant="listbox" searchable multiple :filter="false"
                 placeholder="Choose colors...">
+                <x-slot name="search">
+                    <flux:select.search wire:model.live="colorKeyword" class="px-4" placeholder="Search colors..." />
+                </x-slot>
+
                 @foreach ($this->colors as $color)
                     <flux:option :value="$color->id">
                         <div class="flex items-center gap-2">

@@ -21,6 +21,9 @@ class Lego extends Component
 
     public LegoBinForm $form;
 
+    public $colorKeyword = '';
+    public $partKeyword = '';
+
     public $filter = [
         'part' => '',
         'color' => '',
@@ -35,7 +38,7 @@ class Lego extends Component
     #[Computed]
     public function colors(): Collection
     {
-        return LegoColor::select('id', 'name', 'hex')->get();
+        return LegoColor::search($this->colorKeyword)->take(10)->get();
     }
 
     #[Computed]
@@ -59,7 +62,7 @@ class Lego extends Component
     #[Computed]
     public function parts(): Collection
     {
-        return LegoPart::select('id', 'name', 'image')->get();
+        return LegoPart::search($this->partKeyword)->take(10)->get();
     }
 
     #[Computed]
