@@ -38,7 +38,7 @@ class Lego extends Component
     #[Computed]
     public function colors(): Collection
     {
-        return LegoColor::search($this->colorKeyword)->take(10)->get();
+        return LegoColor::search($this->colorKeyword)->take(100)->get();
     }
 
     #[Computed]
@@ -62,7 +62,7 @@ class Lego extends Component
     #[Computed]
     public function parts(): Collection
     {
-        return LegoPart::search($this->partKeyword)->take(10)->get();
+        return LegoPart::search($this->partKeyword)->take(100)->get();
     }
 
     #[Computed]
