@@ -36,6 +36,11 @@ class ImportLegoParts implements ShouldQueue
             foreach ($subCategories as $subSubCategory) {
                 $this->getSubcategories($subSubCategory);
             }
+
+            $subSubCategories = LegoGroup::whereIn('parent_id', $subCategories->pluck('id'))->get();
+            foreach ($subSubCategories as $subSubSubCategory) {
+                $this->getSubcategories($subSubSubCategory);
+            }
         }
 
         $parts = LegoGroup::where('has_parts', true)->get();

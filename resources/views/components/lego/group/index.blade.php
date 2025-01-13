@@ -1,9 +1,6 @@
 @props(['level' => 2, 'group', 'list', 'parts'])
 
 <div class="relative">
-    <div class="bg-gray-400 p-1 m-1">
-        Group: {{ $group->name }}, Level: {{ $level }}, Has Parts: {{ $group->has_parts ? 'true' : 'false' }}
-    </div>
     <x-lego.group.heading :$level :$group />
 
     @if ($group->has_parts)
