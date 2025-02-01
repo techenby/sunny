@@ -2,6 +2,7 @@
 
 use App\Actions\CurrentPayPeriod;
 use App\Livewire\Collections\Lego\PartList;
+use App\Livewire\Pages\Berries\Subscriptions;
 use App\Livewire\Pages\Collections\Lego;
 use App\Livewire\Pages\Cookbook\CreateRecipe;
 use App\Livewire\Pages\Cookbook\EditRecipe;
@@ -31,6 +32,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return view('dashboard', ['payPeriod' => $payPeriod]);
     })->name('dashboard');
     Route::view('profile', 'profile')->name('profile');
+
+    Route::get('berries/subscriptions', Subscriptions::class)->name('berries.subscriptions');
 
     Route::get('inventory/locations', Locations::class)->name('inventory.locations');
     Route::get('inventory/bins', Bins::class)->name('inventory.bins');

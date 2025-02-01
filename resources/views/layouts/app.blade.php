@@ -33,17 +33,24 @@
             <flux:navlist.item icon="home" :href="route('dashboard')">{{ __('Home') }}</flux:navlist.item>
             <flux:navlist.item icon="users" :href="route('users')">{{ __('Users') }}</flux:navlist.item>
 
+            <flux:navlist.group heading="Berries" expandable>
+                <flux:navlist.item :href="route('berries.subscriptions')">{{ __('Subscriptions') }}</flux:navlist.item>
+            </flux:navlist.group>
+
             <flux:navlist.group heading="Inventory" expandable>
                 <flux:navlist.item :href="route('inventory.locations')">{{ __('Locations') }}</flux:navlist.item>
                 <flux:navlist.item :href="route('inventory.bins')">{{ __('Bins') }}</flux:navlist.item>
                 <flux:navlist.item :href="route('inventory.things')">{{ __('Things') }}</flux:navlist.item>
             </flux:navlist.group>
+
             <flux:navlist.group heading="Log Pose" expandable>
                 <flux:navlist.item :href="route('log-pose.tiles')">{{ __('Tiles') }}</flux:navlist.item>
             </flux:navlist.group>
+
             <flux:navlist.group heading="Cookbook" expandable>
                 <flux:navlist.item :href="route('cookbook.recipes')">{{ __('Recipes') }}</flux:navlist.item>
             </flux:navlist.group>
+
             <flux:navlist.group heading="Collections" expandable>
                 <flux:navlist.item :href="route('collections.lego')">{{ __('LEGO') }}</flux:navlist.item>
             </flux:navlist.group>
