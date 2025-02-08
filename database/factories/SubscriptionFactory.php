@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\BillingFrequency;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -15,7 +16,7 @@ class SubscriptionFactory extends Factory
         return [
             'name' => 'Forge',
             'amount' => 19.99,
-            'frequency' => 'monthly',
+            'frequency' => BillingFrequency::MONTHLY,
             'billed_at' => now(),
         ];
     }

@@ -1,5 +1,6 @@
 <?php
 
+use App\BillingFrequency;
 use App\Livewire\Pages\Berries\Subscriptions;
 use App\Livewire\Pages\Collections\Lego;
 use App\Models\Subscription;
@@ -31,11 +32,24 @@ test('can view component', function () {
         ->assertSee(['Netflix', 'Crunchyroll', 'Disney+']);
 });
 
-test('can create subscription', function () {
+test('can see create form', function () {
+    Livewire::test(Subscriptions::class)
+        ->set('form.name', 'Netflix')
+        ->set('form.frequency', BillingFrequency::MONTHLY)
+        ->set('form.amount', '9.99')
+        ->call('create')
+        ->assertSee('Create New Subscription')
+        ->assertSet('form.name', '')
+        ->assertSet('form.frequency', '')
+        ->assertSet('form.amount', '')
+        ->assertSet('form.billed_at', '');
+});
+
+test('can store subscription', function () {
     Livewire::test(Subscriptions::class)
         ->assertSee('Create')
         ->set('form.name', 'Netflix')
-        ->set('form.frequency', 'monthly')
+        ->set('form.frequency', BillingFrequency::MONTHLY)
         ->set('form.amount', '9.99')
         ->set('form.billed_at', now())
         ->call('save')
@@ -46,14 +60,30 @@ test('can create subscription', function () {
 
     $subscription = Subscription::firstWhere('name', 'Netflix');
 
-    expect($subscription->frequency)->toBe('monthly')
+    expect($subscription->frequency)->toBe(BillingFrequency::MONTHLY)
         ->and($subscription->amount)->toBe(9.99);
 });
 
-test('can edit subscription', function () {
+test('can see edit form', function () {
     $subscription = Subscription::factory()->create([
         'name' => 'Netflix',
-        'frequency' => 'monthly',
+        'frequency' => BillingFrequency::MONTHLY,
+        'amount' => '9.99',
+        'billed_at' => now(),
+    ]);
+
+    Livewire::test(Subscriptions::class)
+        ->call('edit', $subscription->id)
+        ->assertSee('Edit Subscription')
+        ->assertSet('form.name', 'Netflix')
+        ->assertSet('form.frequency', BillingFrequency::MONTHLY)
+        ->assertSet('form.amount', '9.99');
+});
+
+test('can update subscription', function () {
+    $subscription = Subscription::factory()->create([
+        'name' => 'Netflix',
+        'frequency' => BillingFrequency::MONTHLY,
         'amount' => '9.99',
         'billed_at' => now(),
     ]);
@@ -61,8 +91,7 @@ test('can edit subscription', function () {
     Livewire::test(Subscriptions::class)
         ->assertSee('Netflix')
         ->call('edit', $subscription->id)
-        ->assertSet('form.name', 'Netflix')
-        ->set('form.frequency', 'monthly')
+        ->set('form.frequency', BillingFrequency::MONTHLY)
         ->set('form.amount', '15.99')
         ->set('form.billed_at', now()->addDay())
         ->call('save')
@@ -80,7 +109,7 @@ test('can edit subscription', function () {
 test('can delete bin', function () {
     $subscription = Subscription::factory()->create([
         'name' => 'Netflix',
-        'frequency' => 'monthly',
+        'frequency' => BillingFrequency::MONTHLY,
         'amount' => '9.99',
         'billed_at' => now(),
     ]);

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Pages\Berries;
 
+use App\BillingFrequency;
 use App\Livewire\Concerns\WithDataTable;
 use App\Livewire\Forms\SubscriptionForm;
 use App\Models\Subscription;
@@ -21,7 +22,10 @@ class Subscriptions extends Component
     #[Layout('layouts.app')]
     public function render()
     {
-        return view('livewire.pages.berries.subscriptions');
+        return view('livewire.pages.berries.subscriptions')
+            ->with([
+                'frequencies' =>  BillingFrequency::cases(),
+            ]);
     }
 
     #[Computed]

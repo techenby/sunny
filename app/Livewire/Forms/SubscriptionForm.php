@@ -2,7 +2,9 @@
 
 namespace App\Livewire\Forms;
 
+use App\BillingFrequency;
 use App\Models\Subscription;
+use Illuminate\Validation\Rule;
 use Livewire\Form;
 
 class SubscriptionForm extends Form
@@ -10,7 +12,7 @@ class SubscriptionForm extends Form
     public ?Subscription $subscription;
 
     public $name;
-    public $frequency;
+    public $frequency = '';
     public $amount;
     public $billed_at;
     public $due_at;
@@ -22,8 +24,8 @@ class SubscriptionForm extends Form
         $this->name = $subscription->name;
         $this->frequency = $subscription->frequency;
         $this->amount = $subscription->amount;
-        $this->billed_at = $subscription->billed_at;
-        $this->due_at = $subscription->due_at;
+        $this->billed_at = $subscription->billed_at->format('Y-m-d');
+        $this->due_at = $subscription->due_at?->format('Y-m-d');
         $this->notes = $subscription->notes;
     }
 
@@ -49,7 +51,7 @@ class SubscriptionForm extends Form
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'frequency' => ['required', 'string'],
+            'frequency' => ['required', Rule::enum(BillingFrequency::class)],
             'amount' => ['required', 'numeric'],
             'billed_at' => ['required', 'date'],
             'due_at' => ['nullable', 'date'],
