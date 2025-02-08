@@ -24,7 +24,7 @@ class Subscriptions extends Component
     {
         return view('livewire.pages.berries.subscriptions')
             ->with([
-                'frequencies' =>  BillingFrequency::cases(),
+                'frequencies' => BillingFrequency::cases(),
             ]);
     }
 

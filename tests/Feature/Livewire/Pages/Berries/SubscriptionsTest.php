@@ -2,7 +2,6 @@
 
 use App\BillingFrequency;
 use App\Livewire\Pages\Berries\Subscriptions;
-use App\Livewire\Pages\Collections\Lego;
 use App\Models\Subscription;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Sequence;
