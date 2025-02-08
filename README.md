@@ -143,6 +143,7 @@ erDiagram
     "BIN_PART††" ||--|{ PART: ""
     BIN ||--|{ "BIN_COLOR††": "bin belongsToMany colors<br/>color belongsToMany bins<br/>`bin_color` is the pivot"
     "BIN_COLOR††" ||--|{ COLOR: ""
+    GROUP |o--|| GROUP: "might have parent group"
     PART {
         bigint id PK
         bigint group_id FK
@@ -160,7 +161,7 @@ erDiagram
     }
     GROUP {
         bigint id PK
-        bigint parent_id FK "nullable, uses single table inheritance so the `parent_id` will be another group"
+        bigint parent_id FK "nullable"
         string name
         string slug
         bool has_parts "default: `false`"
