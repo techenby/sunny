@@ -139,10 +139,10 @@ Models in this section are prefixed with `Lego` i.e. `LegoBin`. This is to diffe
 ```mermaid
 erDiagram
     PART }|--|| GROUP: "part belongsTo group<br/>group hasMany parts"
-    BIN ||--|{ "BIN_PART*": "bin belongsToMany parts<br/>part belongsToMany bins<br/>`bin_part` is the pivot"
-    "BIN_PART*" ||--|{ PART: ""
-    BIN ||--|{ "BIN_COLOR*": "bin belongsToMany colors<br/>color belongsToMany bins<br/>`bin_color` is the pivot"
-    "BIN_COLOR*" ||--|{ COLOR: ""
+    BIN ||--|{ "BIN_PART††": "bin belongsToMany parts<br/>part belongsToMany bins<br/>`bin_part` is the pivot"
+    "BIN_PART††" ||--|{ PART: ""
+    BIN ||--|{ "BIN_COLOR††": "bin belongsToMany colors<br/>color belongsToMany bins<br/>`bin_color` is the pivot"
+    "BIN_COLOR††" ||--|{ COLOR: ""
     PART {
         bigint id PK
         bigint group_id FK
@@ -174,14 +174,14 @@ erDiagram
         string location "nullable"
         text notes
     }
-    "BIN_COLOR*" {
+    "BIN_COLOR††" {
         bigint bin_id
         bigint color_id
     }
-    "BIN_PART*" {
+    "BIN_PART††" {
         bigint bin_id
         bigint part_id
     }
 ```
 
-* `bin_color` and `bin_part` are pivot tables, and do not have `id`, `created_at` or `updated_at` columns.
+†† `bin_color` and `bin_part` are pivot tables, and do not have `id`, `created_at` or `updated_at` columns.
