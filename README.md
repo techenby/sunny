@@ -2,7 +2,7 @@
 
 This application is one that I am building for my spouse and I to manage our lives/household. I am not striving for this app to be perfect, but as a playground for me to play with new technologies, packages and approaches. You can listen to more about this side project on the [Side Project podcast](https://sideprojectpodcast.com/episodes/sunny-with-andy-newhouse).
 
-I do hope that this repo can be used as a resource for how I approach bulding data models, Livewire components, and testing.
+I do hope that this repo can be used as a resource for how I approach building data models, Livewire components, and testing.
 
 App Sections:
 - Berries
@@ -92,7 +92,7 @@ erDiagram
         text ingredients "nullable"
         text instructions "nullable"
         text notes "nullable"
-        text nutrution "nullable"
+        text nutrition "nullable"
     }
     "MEDIA†" {
         bigint id PK
