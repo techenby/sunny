@@ -40,6 +40,7 @@
                 <flux:option>Meal</flux:option>
                 <flux:option>Gluten Free</flux:option>
                 <flux:option>Dairy Free</flux:option>
+                <flux:option>Diabetes-Friendly</flux:option>
                 <flux:option>Vegetarian</flux:option>
                 <flux:option>Vegan</flux:option>
                 <flux:option>Overnight</flux:option>
