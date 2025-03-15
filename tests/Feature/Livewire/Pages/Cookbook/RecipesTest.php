@@ -39,6 +39,20 @@ test('can view component', function () {
         ->assertSee(['Mac & Cheese', 'Nut Cups', 'Falafel']);
 });
 
+test('can remix recipe', function () {
+    $recipe = Recipe::factory()->create(['name' => 'Oden']);
+
+    Livewire::test(Recipes::class)
+        ->assertSee('Oden')
+        ->call('remix', $recipe->id)
+        ->assertRedirect();
+
+    $this->assertDatabaseHas('recipes', [
+        'parent_id' => $recipe->id,
+        'name' => 'Oden (Remix)',
+    ]);
+});
+
 test('can delete recipe', function () {
     $recipe = Recipe::factory()->create(['name' => 'Oden']);
 

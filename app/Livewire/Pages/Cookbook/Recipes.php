@@ -37,4 +37,14 @@ class Recipes extends Component
         Recipe::find($id)->delete();
         unset($this->recipes);
     }
+
+    public function remix($id)
+    {
+        $recipe = Recipe::find($id)->replicate();
+        $recipe->parent_id = $id;
+        $recipe->name .= ' (Remix)';
+        $recipe->save();
+
+        return to_route('cookbook.recipes.edit', $recipe);
+    }
 }
