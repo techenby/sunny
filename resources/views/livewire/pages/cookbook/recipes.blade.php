@@ -56,7 +56,7 @@
                                 <flux:menu>
                                     <flux:menu.item icon="eye" :href="route('cookbook.recipes.show', $recipe)">View</flux:menu.item>
                                     <flux:menu.item icon="pencil-square" :href="route('cookbook.recipes.edit', $recipe)">Edit</flux:menu.item>
-                                    <flux:menu.item icon="arrow-path-rounded-square" wire:click="remix">Remix</flux:menu.item>
+                                    <flux:menu.item icon="arrow-path-rounded-square" wire:click="remix({{ $recipe->id }})">Remix</flux:menu.item>
                                     <flux:menu.item variant="danger" icon="trash" wire:click="delete({{ $recipe->id }})">Delete</flux:menu.item>
                                 </flux:menu>
                             </flux:dropdown>
