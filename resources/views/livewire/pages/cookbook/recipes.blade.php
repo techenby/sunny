@@ -24,6 +24,7 @@
                 <flux:column sortable :sorted="$sortBy === 'total_time'" :direction="$sortDirection" wire:click="sort('total_time')">Total Time</flux:column>
                 <flux:column sortable :sorted="$sortBy === 'categories'" :direction="$sortDirection" wire:click="sort('categories')">Categories</flux:column>
                 <flux:column sortable :sorted="$sortBy === 'source'" :direction="$sortDirection" wire:click="sort('source')">Source</flux:column>
+                <flux:column sortable :sorted="$sortBy === 'created_at'" :direction="$sortDirection" wire:click="sort('created_at')">Created</flux:column>
             </flux:columns>
 
             <flux:rows>
@@ -45,6 +46,7 @@
                             {{ $recipe->shortened_source }}
                             @endif
                         </flux:cell>
+                        <flux:cell>{{ $recipe->created_at->diffForHumans() }}</flux:cell>
 
                         @auth
                         <flux:cell>
@@ -54,6 +56,7 @@
                                 <flux:menu>
                                     <flux:menu.item icon="eye" :href="route('cookbook.recipes.show', $recipe)">View</flux:menu.item>
                                     <flux:menu.item icon="pencil-square" :href="route('cookbook.recipes.edit', $recipe)">Edit</flux:menu.item>
+                                    <flux:menu.item icon="arrow-path-rounded-square" wire:click="remix">Remix</flux:menu.item>
                                     <flux:menu.item variant="danger" icon="trash" wire:click="delete({{ $recipe->id }})">Delete</flux:menu.item>
                                 </flux:menu>
                             </flux:dropdown>
