@@ -10,7 +10,7 @@
             <flux:input size="sm" wire:model.live="search" icon="magnifying-glass" class="max-w-sm"
                 placeholder="Search..." />
             <flux:spacer />
-            <flux:select size="sm" wire:model.blur="perPage" class="max-w-20" placeholder="Per Page">
+            <flux:select size="sm" wire:model.blur-sm="perPage" class="max-w-20" placeholder="Per Page">
                 <flux:option>5</flux:option>
                 <flux:option>10</flux:option>
                 <flux:option>25</flux:option>

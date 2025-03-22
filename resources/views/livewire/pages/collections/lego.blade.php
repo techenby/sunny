@@ -13,7 +13,7 @@
                 placeholder="Search Bins" />
             <flux:spacer />
             <flux:button @click="showFilters = !showFilters" size="sm">Filter</flux:button>
-            <flux:select size="sm" wire:model.blur="perPage" class="max-w-20" placeholder="Per Page">
+            <flux:select size="sm" wire:model.blur-sm="perPage" class="max-w-20" placeholder="Per Page">
                 <flux:option>5</flux:option>
                 <flux:option>10</flux:option>
                 <flux:option>25</flux:option>
