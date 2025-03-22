@@ -34,7 +34,7 @@ $logout = function (Logout $logout) {
     </flux:subheading>
 
     @if (session('status') == 'verification-link-sent')
-        <flux:heading class="mb-4 !text-green-600 !dark:text-green-400">
+        <flux:heading class="mb-4 text-green-600! !dark:text-green-400">
             {{ __('A new verification link has been sent to the email address you provided during registration.') }}
         </flux:heading>
     @endif
@@ -44,7 +44,7 @@ $logout = function (Logout $logout) {
             {{ __('Resend Verification Email') }}
         </flux:button>
 
-        <button wire:click="logout" type="submit" class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800">
+        <button wire:click="logout" type="submit" class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800">
             {{ __('Log Out') }}
         </button>
     </div>
