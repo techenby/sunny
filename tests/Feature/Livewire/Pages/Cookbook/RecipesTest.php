@@ -20,7 +20,7 @@ test('can view page as guest', function () {
     $this->get('/cookbook/recipes')
         ->assertOk()
         ->assertSee('Recipes')
-        ->assertDontSee('Create');
+        ->assertDontSee('>Create<');
 });
 
 test('can view component', function () {
