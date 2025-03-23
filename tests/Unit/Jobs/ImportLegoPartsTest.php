@@ -40,7 +40,7 @@ test('can get sub-subcategories for category', function () {
     (new ImportLegoParts)->getSubcategories($category);
 
     $brickSubCategories = LegoGroup::where('parent_id', $category->id)->get()->pluck('slug');
-    expect($brickSubCategories)->toHaveCount(4)
+    expect($brickSubCategories)->toHaveCount(6)
         ->toContain(
             'basic-brick-1-brick',
             'basic-brick-2-brick',

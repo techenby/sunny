@@ -72,7 +72,7 @@ class ImportLegoParts implements ShouldQueue
     {
         echo "Get subcategories for {$category->name} ({$category->id})\n";
 
-        $html = file_get_contents($category->href.'?retired=1');
+        $html = file_get_contents($category->href . '?retired=1');
 
         $crawler = new Crawler($html);
 

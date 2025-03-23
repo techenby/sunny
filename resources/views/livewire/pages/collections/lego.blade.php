@@ -140,6 +140,8 @@
                 @endforeach
             </flux:select>
 
+            <flux:input wire:model="form.baseplate" :label="__('Baseplate')" />
+            <flux:input wire:model="form.location" :label="__('Location')" />
             <flux:textarea wire:model="form.notes" :label="__('Notes')" />
 
             <div class="flex">
