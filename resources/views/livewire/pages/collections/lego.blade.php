@@ -5,6 +5,7 @@
         <flux:modal.trigger name="bin-form">
             <flux:button>Create</flux:button>
         </flux:modal.trigger>
+        <flux:button class="ml-2" :href="route('collections.lego.part-list')">Parts List</flux:button>
     </header>
 
     <section x-data="{showFilters: false}" class="space-y-3">

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\LegoPieceFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -10,7 +11,7 @@ use Laravel\Scout\Searchable;
 
 class LegoPart extends Model
 {
-    /** @use HasFactory<\Database\Factories\LegoPieceFactory> */
+    /** @use HasFactory<LegoPieceFactory> */
     use HasFactory;
     use Searchable;
 
