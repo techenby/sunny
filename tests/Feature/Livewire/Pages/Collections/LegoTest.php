@@ -78,6 +78,32 @@ test('can edit bin', function () {
     });
 });
 
+test('can add baseplate and location to bin', function () {
+    $bin = LegoBin::factory()
+        ->has(LegoPart::factory()->state(['name' => '1x2 Tile']), 'parts')
+        ->create(['type' => 'Gridfinity 2x2']);
+    $part = LegoPart::factory()
+        ->recycle($bin->parts->first()->group)
+        ->create(['name' => '1x1 Tile']);
+
+    Livewire::test(Lego::class)
+        ->assertSee('Gridfinity 2x2')
+        ->call('edit', $bin->id)
+        ->assertSet('form.type', 'Gridfinity 2x2')
+        ->set('form.baseplate', 'Gridfinity 4x5')
+        ->set('form.location', 'First drawer, white cabinet')
+        ->call('save')
+        ->assertHasNoErrors()
+        ->assertSet('form.type', null)
+        ->assertSet('form.parts', [])
+        ->assertSet('form.colors', []);
+
+    tap($bin->fresh(), function ($bin) {
+        expect($bin->baseplate)->toBe('Gridfinity 4x5');
+        expect($bin->location)->toBe('First drawer, white cabinet');
+    });
+});
+
 test('can delete bin', function () {
     $bin = LegoBin::factory()->has(LegoPart::factory(), 'parts')->create(['type' => 'Gridfinity 1x2']);
 

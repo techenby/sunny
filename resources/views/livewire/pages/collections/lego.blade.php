@@ -5,6 +5,7 @@
         <flux:modal.trigger name="bin-form">
             <flux:button>Create</flux:button>
         </flux:modal.trigger>
+        <flux:button class="ml-2" :href="route('collections.lego.part-list')">Parts List</flux:button>
     </header>
 
     <section x-data="{showFilters: false}" class="space-y-3">
@@ -139,6 +140,8 @@
                 @endforeach
             </flux:select>
 
+            <flux:input wire:model="form.baseplate" :label="__('Baseplate')" />
+            <flux:input wire:model="form.location" :label="__('Location')" />
             <flux:textarea wire:model="form.notes" :label="__('Notes')" />
 
             <div class="flex">

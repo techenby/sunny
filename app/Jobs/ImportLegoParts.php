@@ -70,13 +70,16 @@ class ImportLegoParts implements ShouldQueue
 
     public function getSubcategories($category)
     {
-        $html = file_get_contents($category->href);
+        echo "Get subcategories for {$category->name} ({$category->id})\n";
+
+        $html = file_get_contents($category->href . '?retired=1');
 
         $crawler = new Crawler($html);
 
         try {
             $description = $crawler->filter('.main .category_description')->html();
             $category->update(['description' => $description]);
+            echo "{$category->name} description updated\n";
         } catch (InvalidArgumentException $e) {
         }
 
@@ -84,12 +87,18 @@ class ImportLegoParts implements ShouldQueue
             ->each(function ($node, $i) use ($category) {
                 $nameNode = $node->filter('a');
 
+                try {
+                    $summary = $node->siblings()->filter('p')->text();
+                } catch (InvalidArgumentException $e) {
+                    $summary = null;
+                }
+
                 return [
                     'parent_id' => $category->id,
                     'name' => $name = $nameNode->text(),
                     'slug' => str($category->slug)->append(' ', $name)->slug(),
                     'href' => $nameNode->attr('href'),
-                    'summary' => $node->siblings()->filter('p')->text(),
+                    'summary' => $summary,
                 ];
             });
 
@@ -98,6 +107,8 @@ class ImportLegoParts implements ShouldQueue
 
             return;
         }
+
+        echo count($categories) . " categories added\n\n";
 
         LegoGroup::upsert($categories, uniqueBy: ['slug'], update: ['name', 'href', 'slug', 'summary']);
     }
