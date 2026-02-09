@@ -12,11 +12,7 @@ class CreateNewUser implements CreatesNewUsers
 {
     use PasswordValidationRules, ProfileValidationRules;
 
-    /**
-     * Validate and create a newly registered user.
-     *
-     * @param  array<string, string>  $input
-     */
+    /** @param  array<string, string>  $input */
     public function create(array $input): User
     {
         Validator::make($input, [
@@ -24,10 +20,14 @@ class CreateNewUser implements CreatesNewUsers
             'password' => $this->passwordRules(),
         ])->validate();
 
-        return User::create([
+        $user = User::create([
             'name' => $input['name'],
             'email' => $input['email'],
             'password' => $input['password'],
         ]);
+
+        $user->addCrew($user->name."'s Crew");
+
+        return $user;
     }
 }
