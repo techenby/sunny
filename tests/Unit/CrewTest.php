@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\Crew;
-use App\Models\CrewInvitation;
 use App\Models\User;
 
 test('has user returns true for member', function () {
