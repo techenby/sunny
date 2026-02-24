@@ -24,6 +24,8 @@ yarn-error.log
 
 # Laravel Boost
 /.claude
+AGENTS.md
 CLAUDE.md
 .mcp.json
 boost.json
+/.github/skills
