@@ -8,18 +8,16 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('crew_invitations', function (Blueprint $table) {
+        Schema::create('teams', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('crew_id')->constrained()->cascadeOnDelete();
-            $table->string('email');
+            $table->foreignId('user_id')->constrained();
+            $table->string('name');
             $table->timestamps();
-
-            $table->unique(['crew_id', 'email']);
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('crew_invitations');
+        Schema::dropIfExists('teams');
     }
 };

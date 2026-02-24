@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Database\Factories\CrewFactory;
+use Database\Factories\TeamFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Crew extends Model
+class Team extends Model
 {
-    /** @use HasFactory<CrewFactory> */
+    /** @use HasFactory<TeamFactory> */
     use HasFactory;
 
     /** @var list<string> */
@@ -33,10 +33,10 @@ class Crew extends Model
         return $this->belongsToMany(User::class)->withTimestamps();
     }
 
-    /** @return HasMany<CrewInvitation, $this> */
+    /** @return HasMany<TeamInvitation, $this> */
     public function invitations(): HasMany
     {
-        return $this->hasMany(CrewInvitation::class);
+        return $this->hasMany(TeamInvitation::class);
     }
 
     public function hasUser(User $user): bool
@@ -51,11 +51,11 @@ class Crew extends Model
 
     public function purge(): void
     {
-        $this->owner()->where('current_crew_id', $this->id)
-            ->update(['current_crew_id' => null]);
+        $this->owner()->where('current_team_id', $this->id)
+            ->update(['current_team_id' => null]);
 
-        $this->users()->where('current_crew_id', $this->id)
-            ->update(['current_crew_id' => null]);
+        $this->users()->where('current_team_id', $this->id)
+            ->update(['current_team_id' => null]);
 
         $this->users()->detach();
 

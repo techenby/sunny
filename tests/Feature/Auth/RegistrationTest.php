@@ -22,7 +22,7 @@ test('new users can register', function () {
     $this->assertAuthenticated();
 });
 
-test('new users get a crew on registration', function () {
+test('new users get a team on registration', function () {
     $this->post(route('register.store'), [
         'name' => 'Monkey D. Luffy',
         'email' => 'luffy@example.com',
@@ -32,7 +32,7 @@ test('new users get a crew on registration', function () {
 
     $user = User::where('email', 'luffy@example.com')->first();
 
-    expect($user->ownedCrews)->toHaveCount(1)
-        ->and($user->ownedCrews->first()->name)->toBe("Monkey D. Luffy's Crew")
-        ->and($user->current_crew_id)->toBe($user->ownedCrews->first()->id);
+    expect($user->ownedTeams)->toHaveCount(1)
+        ->and($user->ownedTeams->first()->name)->toBe("Monkey D. Luffy's Team")
+        ->and($user->current_team_id)->toBe($user->ownedTeams->first()->id);
 });

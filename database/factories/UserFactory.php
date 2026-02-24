@@ -47,10 +47,10 @@ class UserFactory extends Factory
         ]);
     }
 
-    public function withCrew(): static
+    public function withTeam(): static
     {
         return $this->afterCreating(function ($user) {
-            $user->addCrew($user->name."'s Crew");
+            $user->addTeam($user->name."'s Team");
         });
     }
 }

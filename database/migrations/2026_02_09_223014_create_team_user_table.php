@@ -8,18 +8,18 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('crew_user', function (Blueprint $table) {
+        Schema::create('team_user', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('crew_id')->constrained();
+            $table->foreignId('team_id')->constrained();
             $table->foreignId('user_id')->constrained();
             $table->timestamps();
 
-            $table->unique(['crew_id', 'user_id']);
+            $table->unique(['team_id', 'user_id']);
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('crew_user');
+        Schema::dropIfExists('team_user');
     }
 };

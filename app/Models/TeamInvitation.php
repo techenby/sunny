@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Database\Factories\CrewInvitationFactory;
+use Database\Factories\TeamInvitationFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class CrewInvitation extends Model
+class TeamInvitation extends Model
 {
-    /** @use HasFactory<CrewInvitationFactory> */
+    /** @use HasFactory<TeamInvitationFactory> */
     use HasFactory;
 
     /** @var list<string> */
@@ -19,9 +19,9 @@ class CrewInvitation extends Model
         'email',
     ];
 
-    /** @return BelongsTo<Crew, $this> */
-    public function crew(): BelongsTo
+    /** @return BelongsTo<Team, $this> */
+    public function team(): BelongsTo
     {
-        return $this->belongsTo(Crew::class);
+        return $this->belongsTo(Team::class);
     }
 }
