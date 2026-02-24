@@ -28,7 +28,7 @@ class CreateNewUser implements CreatesNewUsers
             'password' => $input['password'],
         ]);
 
-        $user->addTeam($user->name."'s Team");
+        $user->addTeam($user->name . "'s Team");
 
         return $user;
     }

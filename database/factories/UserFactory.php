@@ -50,7 +50,7 @@ class UserFactory extends Factory
     public function withTeam(): static
     {
         return $this->afterCreating(function ($user) {
-            $user->addTeam($user->name."'s Team");
+            $user->addTeam($user->name . "'s Team");
         });
     }
 }
