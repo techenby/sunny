@@ -67,6 +67,7 @@ new class extends Component
         </flux:menu>
     </flux:dropdown>
 
+    @teleport('body')
     <flux:modal name="create-team" class="md:w-96">
         <form wire:submit="create" class="space-y-6">
             <flux:heading size="lg">Create new team</flux:heading>
@@ -79,4 +80,5 @@ new class extends Component
             </div>
         </form>
     </flux:modal>
+    @endteleport
 </div>
