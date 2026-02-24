@@ -33,6 +33,7 @@ test('new users get a team on registration', function () {
     $user = User::where('email', 'luffy@example.com')->first();
 
     expect($user->ownedTeams)->toHaveCount(1)
-        ->and($user->ownedTeams->first()->name)->toBe("Monkey D. Luffy's Team")
-        ->and($user->current_team_id)->toBe($user->ownedTeams->first()->id);
+        ->and($user->teams)->toHaveCount(1)
+        ->and($user->teams->first()->name)->toBe("Monkey D. Luffy's Team")
+        ->and($user->current_team_id)->toBe($user->teams->first()->id);
 });

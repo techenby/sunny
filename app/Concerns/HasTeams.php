@@ -8,7 +8,6 @@ use App\Models\Team;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Collection;
 
 trait HasTeams
 {
@@ -22,12 +21,6 @@ trait HasTeams
     public function teams(): BelongsToMany
     {
         return $this->belongsToMany(Team::class)->withTimestamps();
-    }
-
-    /** @return Collection<int, Team> */
-    public function allTeams(): Collection
-    {
-        return $this->ownedTeams->merge($this->teams);
     }
 
     /** @return BelongsTo<Team, $this> */
@@ -56,6 +49,8 @@ trait HasTeams
         $team = $this->ownedTeams()->create([
             'name' => $name,
         ]);
+
+        $this->teams()->attach($team);
 
         $this->switchTeam($team);
 
