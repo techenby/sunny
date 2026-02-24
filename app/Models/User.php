@@ -42,6 +42,13 @@ class User extends Authenticatable
             ->implode('');
     }
 
+    public function purge(): void
+    {
+        $this->ownedTeams->each->purge();
+        $this->teams()->detach();
+        $this->delete();
+    }
+
     /** @return array<string, string> */
     protected function casts(): array
     {

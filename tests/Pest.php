@@ -29,8 +29,8 @@ pest()->extend(TestCase::class)
 |
 */
 
-expect()->extend('toBeOne', function () {
-    return $this->toBe(1);
+expect()->extend('toHaveOne', function () {
+    return $this->toHaveCount(1);
 });
 
 /*
