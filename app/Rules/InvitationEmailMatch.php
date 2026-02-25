@@ -22,7 +22,13 @@ class InvitationEmailMatch implements ValidationRule
 
         $invitation = TeamInvitation::find(session()->get('team_invitation_id'));
 
-        if ($invitation && $invitation->email !== $value) {
+        if (! $invitation) {
+            session()->forget('team_invitation_id');
+
+            return;
+        }
+
+        if ($invitation->email !== $value) {
             $fail("The {$attribute} must match the {$attribute} on the invitation.");
         }
     }

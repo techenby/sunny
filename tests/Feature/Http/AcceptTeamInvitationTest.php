@@ -76,6 +76,32 @@ test('pending invitation is auto-accepted after registration', function () {
         ->and(TeamInvitation::find($invitation->id))->toBeNull();
 });
 
+test('deleted invitation clears session and allows registration', function () {
+    $this->withSession(['team_invitation_id' => 999])
+        ->post(route('register'), [
+            'name' => 'Roronoa Zoro',
+            'email' => 'zoro@strawhat.pirates',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ])
+        ->assertValid('email');
+
+    expect(session()->has('team_invitation_id'))->toBeFalse();
+});
+
+test('deleted invitation clears session and allows login', function () {
+    User::factory()->withTeam()->create(['email' => 'zoro@strawhat.pirates']);
+
+    $this->withSession(['team_invitation_id' => 999])
+        ->post(route('login'), [
+            'email' => 'zoro@strawhat.pirates',
+            'password' => 'password',
+        ])
+        ->assertValid('email');
+
+    expect(session()->has('team_invitation_id'))->toBeFalse();
+});
+
 test('cannot register with different email', function () {
     $luffy = User::factory()->withTeam()->create(['name' => 'luffy@strawhat.pirates']);
     $invitation = TeamInvitation::factory()->for($luffy->currentTeam)->create(['email' => 'zoro@strawhat.pirates']);
