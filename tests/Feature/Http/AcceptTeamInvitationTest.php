@@ -123,7 +123,7 @@ test('cannot login with different email than invitation', function () {
             'password' => 'password',
         ])
         ->assertInvalid(['email' => 'must match']);
-})->todo();
+});
 
 test('tampered signed url returns 403', function () {
     $luffy = User::factory()->withTeam()->create(['name' => 'luffy@strawhat.pirates']);

@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Concerns;
 
-use App\Models\TeamInvitation;
 use App\Models\User;
-use Closure;
+use App\Rules\InvitationEmailMatch;
 use Illuminate\Validation\Rule;
 
 trait ProfileValidationRules
@@ -37,15 +36,7 @@ trait ProfileValidationRules
             $userId === null
                 ? Rule::unique(User::class)
                 : Rule::unique(User::class)->ignore($userId),
-            function (string $attribute, mixed $value, Closure $fail) {
-                if (session()->has('team_invitation_id')) {
-                    $invitation = TeamInvitation::find(session()->get('team_invitation_id'));
-
-                    if ($invitation->email !== $value) {
-                        $fail("The {$attribute} must match the {$attribute} on the invitation.");
-                    }
-                }
-            },
+            new InvitationEmailMatch,
         ];
     }
 }
