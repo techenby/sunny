@@ -2,6 +2,8 @@
 
 use App\Models\TeamInvitation;
 use App\Models\User;
+use App\Notifications\TeamInvitationNotification;
+use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
 
 test('team settings page is displayed for team owners', function () {
@@ -35,17 +37,24 @@ test('non-owners get a 403 when attempting to render the team settings page', fu
 });
 
 test('owner can invite a member by email', function () {
-    $user = User::factory()->withTeam()->create();
+    Notification::fake();
+
+    $user = User::factory()->withTeam()->create(['name' => 'Monkey D. Luffy']);
 
     Livewire::actingAs($user)
         ->test('pages::settings.team')
-        ->set('email', 'newmember@example.com')
+        ->set('email', 'zoro@strawhat.pirates')
         ->call('inviteMember')
         ->assertHasNoErrors()
         ->assertSet('email', '');
 
-    expect($user->currentTeam->fresh()->invitations)->toHaveCount(1)
-        ->and($user->currentTeam->fresh()->invitations->first()->email)->toEqual('newmember@example.com');
+    $invitations = $user->currentTeam->fresh()->invitations;
+    expect($invitations)->toHaveCount(1)
+        ->and($invitations->first()->email)->toEqual('zoro@strawhat.pirates');
+
+    Notification::assertSentOnDemand(TeamInvitationNotification::class, function ($notification, $channels, $notifiable) {
+        return $notifiable->routes['mail'] === 'zoro@strawhat.pirates';
+    });
 });
 
 test('invite requires a valid email', function () {

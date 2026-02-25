@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\InviteTeamMember;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -59,13 +60,11 @@ new class extends Component {
             'email.unique' => __('This email has already been invited.'),
         ]);
 
-
-        $this->team->invitations()->create(['email' => $this->email]);
+        InviteTeamMember::handle($this->team, $this->email);
 
         $this->modal('invite-member')->close();
         $this->reset('email');
 
-        unset($this->members);
         unset($this->invitations);
     }
 
