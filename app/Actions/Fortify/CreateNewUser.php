@@ -7,7 +7,6 @@ namespace App\Actions\Fortify;
 use App\Actions\JoinTeam;
 use App\Concerns\PasswordValidationRules;
 use App\Concerns\ProfileValidationRules;
-use App\Models\TeamInvitation;
 use App\Models\User;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
