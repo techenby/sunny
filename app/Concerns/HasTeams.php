@@ -39,11 +39,6 @@ trait HasTeams
         return $this->ownsTeam($team) || $this->teams->contains($team);
     }
 
-    public function isCurrentTeam(Team $team): bool
-    {
-        return $this->current_team_id === $team->id;
-    }
-
     public function addTeam(string $name): Team
     {
         $team = $this->ownedTeams()->create([
