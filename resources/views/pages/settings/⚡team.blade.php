@@ -2,6 +2,7 @@
 
 use App\Actions\InviteTeamMember;
 use App\Models\Team;
+use App\Models\TeamInvitation;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -41,6 +42,8 @@ new class extends Component {
 
     public function inviteMember(): void
     {
+        abort_unless(Auth::user()->ownsTeam($this->team), 403);
+
         $this->validate([
             'email' => [
                 'required',
@@ -64,6 +67,20 @@ new class extends Component {
 
         $this->modal('invite-member')->close();
         $this->reset('email');
+
+        unset($this->invitations);
+    }
+
+    public function cancelInvitation(int $invitationId): void
+    {
+        abort_unless(Auth::user()->ownsTeam($this->team), 403);
+
+        $invitation = TeamInvitation::query()
+            ->where('id', $invitationId)
+            ->where('team_id', $this->team->id)
+            ->firstOrFail();
+
+        $invitation->delete();
 
         unset($this->invitations);
     }
@@ -121,6 +138,7 @@ new class extends Component {
                 <flux:table.column>{{ __('Name') }}</flux:table.column>
                 <flux:table.column>{{ __('Email') }}</flux:table.column>
                 <flux:table.column>{{ __('Status') }}</flux:table.column>
+                <flux:table.column></flux:table.column>
             </flux:table.columns>
 
             <flux:table.rows>
@@ -135,6 +153,7 @@ new class extends Component {
                                 <flux:badge size="sm" color="green">{{ __('Member') }}</flux:badge>
                             @endif
                         </flux:table.cell>
+                        <flux:table.cell></flux:table.cell>
                     </flux:table.row>
                 @endforeach
 
@@ -144,6 +163,11 @@ new class extends Component {
                         <flux:table.cell>{{ $invitation->email }}</flux:table.cell>
                         <flux:table.cell>
                             <flux:badge size="sm" color="yellow">{{ __('Invited') }}</flux:badge>
+                        </flux:table.cell>
+                        <flux:table.cell>
+                            <flux:button variant="ghost" size="sm" wire:click="cancelInvitation({{ $invitation->id }})" wire:confirm="{{ __('Are you sure you want to cancel this invitation?') }}">
+                                {{ __('Cancel') }}
+                            </flux:button>
                         </flux:table.cell>
                     </flux:table.row>
                 @endforeach

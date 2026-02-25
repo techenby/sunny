@@ -3,6 +3,7 @@
 use App\Models\TeamInvitation;
 use App\Models\User;
 use App\Notifications\TeamInvitationNotification;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
 
@@ -90,6 +91,41 @@ test('cannot invite someone who already has a pending invitation', function () {
         ->call('inviteMember')
         ->assertHasErrors(['email' => 'unique']);
 });
+
+test('owner can cancel a pending invitation', function () {
+    $owner = User::factory()->withTeam()->create();
+    $invitation = TeamInvitation::factory()->for($owner->currentTeam)->create(['email' => 'pending@example.com']);
+
+    Livewire::actingAs($owner)
+        ->test('pages::settings.team')
+        ->call('cancelInvitation', $invitation->id)
+        ->assertHasNoErrors();
+
+    expect(TeamInvitation::find($invitation->id))->toBeNull();
+});
+
+test('non-owner cannot cancel a pending invitation', function () {
+    $owner = User::factory()->withTeam()->create();
+    $member = User::factory()->create();
+    $owner->currentTeam->users()->attach($member);
+    $member->switchTeam($owner->currentTeam);
+
+    $invitation = TeamInvitation::factory()->for($owner->currentTeam)->create(['email' => 'pending@example.com']);
+
+    Livewire::actingAs($member)
+        ->test('pages::settings.team')
+        ->assertStatus(403);
+});
+
+test('cannot cancel invitation belonging to another team', function () {
+    $owner = User::factory()->withTeam()->create();
+    $otherOwner = User::factory()->withTeam()->create();
+    $invitation = TeamInvitation::factory()->for($otherOwner->currentTeam)->create(['email' => 'pending@example.com']);
+
+    Livewire::actingAs($owner)
+        ->test('pages::settings.team')
+        ->call('cancelInvitation', $invitation->id);
+})->throws(ModelNotFoundException::class);
 
 test('members table shows existing members and pending invitations', function () {
     $owner = User::factory()->withTeam()->create();
