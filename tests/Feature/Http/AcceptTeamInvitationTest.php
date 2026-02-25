@@ -137,6 +137,21 @@ test('expired signed url returns 403', function () {
         ->assertForbidden();
 });
 
+test('already a member gracefully handles duplicate join', function () {
+    $luffy = User::factory()->withTeam()->create(['name' => 'luffy@strawhat.pirates']);
+    $zoro = User::factory()->create(['name' => 'zoro@strawhat.pirates']);
+    $luffy->currentTeam->users()->attach($zoro);
+    $invitation = TeamInvitation::factory()->for($luffy->currentTeam)->create(['email' => $zoro->email]);
+
+    $acceptUrl = URL::signedRoute('invitation.accept', $invitation);
+
+    $this->actingAs($zoro)
+        ->get($acceptUrl)
+        ->assertRedirect(route('dashboard'));
+
+    expect(TeamInvitation::find($invitation->id))->toBeNull();
+});
+
 test('tampered signed url returns 403', function () {
     $luffy = User::factory()->withTeam()->create(['name' => 'luffy@strawhat.pirates']);
     $invitation = TeamInvitation::factory()->for($luffy->currentTeam)->create(['email' => 'zoro@strawhat.pirates']);

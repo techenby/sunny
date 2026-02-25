@@ -17,6 +17,12 @@ class JoinTeam
 
             abort_if($user->email !== $invitation->email, 403, __('This invitation belongs to a different email address.'));
 
+            if ($invitation->team->hasUser($user)) {
+                $invitation->delete();
+
+                return;
+            }
+
             $invitation->team->users()->attach($user);
             $user->switchTeam($invitation->team);
             $invitation->delete();
