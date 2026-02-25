@@ -6,6 +6,7 @@ namespace App\Listeners;
 
 use App\Actions\JoinTeam;
 use Illuminate\Auth\Events\Login;
+use Throwable;
 
 class AcceptPendingInvitation
 {
@@ -15,6 +16,11 @@ class AcceptPendingInvitation
             return;
         }
 
-        JoinTeam::handle($event->user, session()->pull('team_invitation_id'));
+        try {
+            JoinTeam::handle($event->user, session()->pull('team_invitation_id'));
+        } catch (Throwable) {
+            // Invitation may have been deleted or belong to a different email.
+            // Fail silently so the login is not interrupted.
+        }
     }
 }

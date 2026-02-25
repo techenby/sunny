@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Actions\Fortify;
 
-use App\Actions\JoinTeam;
 use App\Concerns\PasswordValidationRules;
 use App\Concerns\ProfileValidationRules;
 use App\Models\User;
@@ -31,17 +30,6 @@ class CreateNewUser implements CreatesNewUsers
 
         $user->addTeam($user->name . "'s Team");
 
-        $this->acceptPendingInvitation($user);
-
         return $user;
-    }
-
-    private function acceptPendingInvitation(User $user): void
-    {
-        if (! session()->has('team_invitation_id')) {
-            return;
-        }
-
-        JoinTeam::handle($user, session()->pull('team_invitation_id'));
     }
 }
