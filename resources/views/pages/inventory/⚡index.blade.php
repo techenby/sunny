@@ -28,19 +28,19 @@ new class extends Component {
     @include('pages.inventory.heading')
 
     <div class="grid gap-6 sm:grid-cols-3">
-        <div class="rounded-lg border border-zinc-200 p-6 dark:border-zinc-700">
+        <flux:card>
             <flux:subheading>{{ __('Containers') }}</flux:subheading>
             <flux:heading size="xl" class="mt-1">{{ $this->containerCount }}</flux:heading>
-        </div>
+        </flux:card>
 
-        <div class="rounded-lg border border-zinc-200 p-6 dark:border-zinc-700">
+        <flux:card>
             <flux:subheading>{{ __('Items') }}</flux:subheading>
             <flux:heading size="xl" class="mt-1">{{ $this->itemCount }}</flux:heading>
-        </div>
+        </flux:card>
 
-        <div class="rounded-lg border border-zinc-200 p-6 dark:border-zinc-700">
+        <flux:card>
             <flux:subheading>{{ __('Unassigned Items') }}</flux:subheading>
             <flux:heading size="xl" class="mt-1">{{ $this->unassignedItemCount }}</flux:heading>
-        </div>
+        </flux:card>
     </div>
 </section>
