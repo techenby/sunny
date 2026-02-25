@@ -12,6 +12,11 @@
                     <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
                         {{ __('Dashboard') }}
                     </flux:sidebar.item>
+                    @if (auth()->user()->ownsTeam(auth()->user()->currentTeam))
+                        <flux:sidebar.item icon="user-group" :href="route('team.edit')" :current="request()->routeIs('team.edit')" wire:navigate>
+                            {{ __('Team Settings') }}
+                        </flux:sidebar.item>
+                    @endif
                 </flux:sidebar.group>
             </flux:sidebar.nav>
 

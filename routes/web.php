@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AcceptTeamInvitation;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -9,5 +10,9 @@ Route::get('/', function () {
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
+
+Route::get('invitations/{invitation}/accept', AcceptTeamInvitation::class)
+    ->name('invitation.accept')
+    ->middleware('signed');
 
 require __DIR__ . '/settings.php';
