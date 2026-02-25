@@ -11,5 +11,5 @@ test('invitation notification contains accept url', function () {
 
     $mail = new TeamInvitationNotification($invitation)->toMail(new AnonymousNotifiable);
 
-    expect($mail->actionUrl)->toContain('team-invitations/' . $invitation->id . '/accept');
+    expect($mail->actionUrl)->toContain('invitations/' . $invitation->id . '/accept');
 });
