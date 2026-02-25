@@ -1,5 +1,7 @@
 <?php
 
+use App\Livewire\Traits\WithSorting;
+use App\Livewire\Traits\WithSearching;
 use App\Models\Container;
 use Illuminate\Support\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -11,13 +13,8 @@ use Livewire\WithPagination;
 
 new class extends Component {
     use WithPagination;
-
-    #[Url]
-    public string $search = '';
-
-    public string $sortBy = 'name';
-
-    public string $sortDirection = 'asc';
+    use WithSearching;
+    use WithSorting;
 
     #[Url]
     public ?int $parentId = null;
@@ -31,23 +28,6 @@ new class extends Component {
     public string $category = '';
 
     public mixed $containerId = null;
-
-    public function sort(string $column): void
-    {
-        if ($this->sortBy === $column) {
-            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
-        } else {
-            $this->sortBy = $column;
-            $this->sortDirection = 'asc';
-        }
-
-        $this->resetPage();
-    }
-
-    public function updatedSearch(): void
-    {
-        $this->resetPage();
-    }
 
     public function drillDown(int $containerId): void
     {
@@ -100,7 +80,7 @@ new class extends Component {
     }
 
     #[Computed]
-    public function parentContainers(): \Illuminate\Database\Eloquent\Collection
+    public function parentContainers(): Collection
     {
         return Auth::user()->currentTeam->containers()
             ->when($this->editingContainerId, fn ($query) => $query->where('id', '!=', $this->editingContainerId))
@@ -219,9 +199,10 @@ new class extends Component {
                 <flux:table.row :key="$container->id">
                     <flux:table.cell variant="strong">
                         @if ($container->children_count > 0)
-                            <flux:button variant="ghost" size="sm" wire:click="drillDown({{ $container->id }})" class="-ml-2">
-                                {{ $container->name }}
-                            </flux:button>
+                            <flux:link as="button" variant="ghost" wire:click="drillDown({{ $container->id }})" class="group">
+                                <span>{{ $container->name }}</span>
+                                <span class="invisible group-hover:visible">→</span>
+                            </flux:link>
                         @else
                             {{ $container->name }}
                         @endif
@@ -235,10 +216,14 @@ new class extends Component {
                     <flux:table.cell>{{ $container->children_count }}</flux:table.cell>
                     <flux:table.cell>{{ $container->items_count }}</flux:table.cell>
                     <flux:table.cell>
-                        <div class="flex justify-end gap-1">
-                            <flux:button variant="ghost" size="sm" icon="pencil" wire:click="editContainer({{ $container->id }})" />
-                            <flux:button variant="ghost" size="sm" icon="trash" wire:click="deleteContainer({{ $container->id }})" wire:confirm="{{ __('Are you sure you want to delete this container?') }}" />
-                        </div>
+                        <flux:dropdown>
+                            <flux:button variant="ghost" size="sm" icon="ellipsis-vertical" />
+
+                            <flux:menu>
+                                <flux:menu.item wire:click="edit({{ $container->id }})" icon="pencil">{{ __('Edit') }}</flux:menu.item>
+                                <flux:menu.item wire:click="delete({{ $container->id }})" variant="danger" icon="trash" wire:confirm="{{ __('Are you sure you want to delete this container?') }}">{{ __('Delete') }}</flux:menu.item>
+                            </flux:menu>
+                        </flux:dropdown>
                     </flux:table.cell>
                 </flux:table.row>
             @endforeach

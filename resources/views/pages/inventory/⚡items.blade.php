@@ -1,5 +1,7 @@
 <?php
 
+use App\Livewire\Traits\WithSorting;
+use App\Livewire\Traits\WithSearching;
 use App\Models\Item;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -11,36 +13,14 @@ use Livewire\WithPagination;
 
 new class extends Component {
     use WithPagination;
-
-    #[Url]
-    public string $search = '';
-
-    public string $sortBy = 'name';
-
-    public string $sortDirection = 'asc';
+    use WithSearching;
+    use WithSorting;
 
     public ?int $editingItemId = null;
 
     public string $name = '';
 
     public mixed $containerId = null;
-
-    public function sort(string $column): void
-    {
-        if ($this->sortBy === $column) {
-            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
-        } else {
-            $this->sortBy = $column;
-            $this->sortDirection = 'asc';
-        }
-
-        $this->resetPage();
-    }
-
-    public function updatedSearch(): void
-    {
-        $this->resetPage();
-    }
 
     #[Computed]
     public function items(): LengthAwarePaginator
