@@ -26,12 +26,14 @@ class TeamInvitationNotification extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         $teamName = $this->invitation->team->name;
-        $acceptUrl = URL::signedRoute('invitation.accept', $this->invitation);
+        $expiresAt = now()->addDays(7);
+        $acceptUrl = URL::temporarySignedRoute('invitation.accept', $expiresAt, $this->invitation);
 
         return (new MailMessage)
             ->subject(__("You've been invited to join :team", ['team' => $teamName]))
             ->line(__("You've been invited to join the :team team.", ['team' => $teamName]))
             ->action(__('Accept Invitation'), $acceptUrl)
+            ->line(__('This invitation will expire on :date.', ['date' => $expiresAt->toDayDateTimeString()]))
             ->line(__('If you did not expect to receive this invitation, you may discard this email.'));
     }
 }

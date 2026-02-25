@@ -125,6 +125,18 @@ test('cannot login with different email than invitation', function () {
         ->assertInvalid(['email' => 'must match']);
 });
 
+test('expired signed url returns 403', function () {
+    $luffy = User::factory()->withTeam()->create(['name' => 'luffy@strawhat.pirates']);
+    $zoro = User::factory()->create(['name' => 'zoro@strawhat.pirates']);
+    $invitation = TeamInvitation::factory()->for($luffy->currentTeam)->create(['email' => $zoro->email]);
+
+    $acceptUrl = URL::temporarySignedRoute('invitation.accept', now()->subDay(), $invitation);
+
+    $this->actingAs($zoro)
+        ->get($acceptUrl)
+        ->assertForbidden();
+});
+
 test('tampered signed url returns 403', function () {
     $luffy = User::factory()->withTeam()->create(['name' => 'luffy@strawhat.pirates']);
     $invitation = TeamInvitation::factory()->for($luffy->currentTeam)->create(['email' => 'zoro@strawhat.pirates']);
