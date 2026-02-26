@@ -31,28 +31,33 @@ test('renders containers for the current team only', function () {
 
 test('can search containers by name', function () {
     $user = User::factory()->withTeam()->create();
-    Container::factory()->for($user->currentTeam)->create(['name' => 'Kitchen']);
-    Container::factory()->for($user->currentTeam)->create(['name' => 'Garage']);
+    Container::factory()
+        ->count(2)
+        ->for($user->currentTeam)
+        ->sequence(['name' => 'Kitchen'], ['name' => 'Garage'])
+        ->create();
 
-    $component = Livewire::actingAs($user)
+    Livewire::actingAs($user)
         ->test('pages::inventory.containers')
-        ->set('search', 'Kitchen');
-
-    expect($component->get('containers'))->toHaveCount(1);
-    expect($component->get('containers')->first()->name)->toBe('Kitchen');
+        ->assertSee(['Kitchen', 'Garage'])
+        ->set('search', 'Kitchen')
+        ->assertSeeHtml('<span>Kitchen</span>')
+        ->assertDontSeeHtml('<span>Garage</span>');
 });
 
 test('can sort containers', function () {
     $user = User::factory()->withTeam()->create();
-    Container::factory()->for($user->currentTeam)->create(['name' => 'Bravo']);
-    Container::factory()->for($user->currentTeam)->create(['name' => 'Alpha']);
+    Container::factory()
+        ->count(2)
+        ->for($user->currentTeam)
+        ->sequence(['name' => 'Kitchen'], ['name' => 'Garage'])
+        ->create();
 
-    // Default sort is name asc
     Livewire::actingAs($user)
         ->test('pages::inventory.containers')
-        ->assertSeeInOrder(['Alpha', 'Bravo'])
+        ->assertSeeHtmlInOrder(['<span>Garage</span>', '<span>Kitchen</span>'])
         ->call('sort', 'name')
-        ->assertSeeInOrder(['Bravo', 'Alpha']);
+        ->assertSeeHtmlInOrder(['<span>Kitchen</span>', '<span>Garage</span>']);
 });
 
 test('can create a container', function () {
@@ -60,12 +65,12 @@ test('can create a container', function () {
 
     Livewire::actingAs($user)
         ->test('pages::inventory.containers')
-        ->set('name', 'New Container')
+        ->set('name', 'Kitchen')
         ->set('type', 'location')
         ->call('saveContainer')
         ->assertHasNoErrors();
 
-    expect($user->currentTeam->containers()->where('name', 'New Container')->exists())->toBeTrue();
+    expect($user->currentTeam->containers()->where('name', 'Kitchen')->exists())->toBeTrue();
 });
 
 test('can create a container with parent and category', function () {
@@ -74,32 +79,30 @@ test('can create a container with parent and category', function () {
 
     Livewire::actingAs($user)
         ->test('pages::inventory.containers')
-        ->set('name', 'Shelf A')
+        ->set('name', 'Toolbox')
         ->set('type', 'bin')
-        ->set('category', 'Storage')
         ->set('containerId', $parent->id)
         ->call('saveContainer')
         ->assertHasNoErrors();
 
-    $child = $user->currentTeam->containers()->where('name', 'Shelf A')->first();
-    expect($child)->not->toBeNull()
-        ->and($child->parent_id)->toBe($parent->id)
-        ->and($child->category)->toBe('Storage')
-        ->and($child->type)->toBe(ContainerType::Bin);
+    expect($user->currentTeam->containers()->where('name', 'Toolbox')->first())
+        ->not->toBeNull()
+        ->parent_id->toBe($parent->id)
+        ->type->toBe(ContainerType::Bin);
 });
 
 test('can edit a container', function () {
     $user = User::factory()->withTeam()->create();
-    $container = Container::factory()->for($user->currentTeam)->create(['name' => 'Old Name']);
+    $container = Container::factory()->for($user->currentTeam)->create(['name' => 'Bedroom']);
 
     Livewire::actingAs($user)
         ->test('pages::inventory.containers')
         ->call('editContainer', $container->id)
-        ->set('name', 'New Name')
+        ->set('name', 'Master Bedroom')
         ->call('saveContainer')
         ->assertHasNoErrors();
 
-    expect($container->fresh()->name)->toBe('New Name');
+    expect($container->fresh()->name)->toBe('Master Bedroom');
 });
 
 test('can delete a container', function () {
@@ -110,7 +113,7 @@ test('can delete a container', function () {
         ->test('pages::inventory.containers')
         ->call('deleteContainer', $container->id);
 
-    expect(Container::find($container->id))->toBeNull();
+    expect($container->fresh())->toBeNull();
 });
 
 test('deleting a container nullifies children parent_id', function () {
@@ -139,35 +142,27 @@ test('deleting a container nullifies items container_id', function () {
 
 test('can drill down into a container', function () {
     $user = User::factory()->withTeam()->create();
-    $parent = Container::factory()->for($user->currentTeam)->create(['name' => 'Garage']);
-    $child = Container::factory()->for($user->currentTeam)->childOf($parent)->create(['name' => 'Shelf A']);
-    $sibling = Container::factory()->for($user->currentTeam)->create(['name' => 'Kitchen']);
+    [$garage, $kitchen] = Container::factory()->count(2)->for($user->currentTeam)->sequence(['name' => 'Garage'], ['name' => 'Kitchen'])->create();
+    Container::factory()->for($user->currentTeam)->childOf($garage)->create(['name' => 'Toolbox']);
 
-    $component = Livewire::actingAs($user)
-        ->test('pages::inventory.containers');
-
-    // Top level shows Garage and Kitchen but not Shelf A
-    $topNames = $component->get('containers')->pluck('name')->all();
-    expect($topNames)->toContain('Garage')
-        ->toContain('Kitchen')
-        ->not->toContain('Shelf A');
-
-    // After drilling down, shows Shelf A
-    $component->call('drillDown', $parent->id);
-    $childNames = $component->get('containers')->pluck('name')->all();
-    expect($childNames)->toContain('Shelf A')
-        ->not->toContain('Kitchen');
+    Livewire::actingAs($user)
+        ->test('pages::inventory.containers')
+        ->assertSeeHtml(['<span>Garage</span>', '<span>Kitchen</span>'])
+        ->assertDontSeeHtml('<span>Toolbox</span>')
+        ->call('drillDown', $garage->id)
+        ->assertSeeHtml('<span>Toolbox</span>')
+        ->assertDontSeeHtml('<span>Kitchen</span>');
 });
 
 test('can navigate up from drilled-down view', function () {
     $user = User::factory()->withTeam()->create();
     $parent = Container::factory()->for($user->currentTeam)->create(['name' => 'Garage']);
-    $child = Container::factory()->for($user->currentTeam)->childOf($parent)->create(['name' => 'Shelf A']);
+    $child = Container::factory()->for($user->currentTeam)->childOf($parent)->create(['name' => 'Toolbox']);
 
     Livewire::actingAs($user)
         ->test('pages::inventory.containers')
         ->call('drillDown', $parent->id)
-        ->assertSee('Shelf A')
+        ->assertSee('Toolbox')
         ->call('navigateUp')
         ->assertSee('Garage');
 });

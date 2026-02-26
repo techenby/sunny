@@ -204,7 +204,7 @@ new class extends Component {
                                 <span class="invisible group-hover:visible">→</span>
                             </flux:link>
                         @else
-                            {{ $container->name }}
+                            <span>{{ $container->name }}</span>
                         @endif
                     </flux:table.cell>
                     <flux:table.cell>
