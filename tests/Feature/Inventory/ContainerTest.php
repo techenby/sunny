@@ -67,7 +67,7 @@ test('can create a container', function () {
         ->test('pages::inventory.containers')
         ->set('name', 'Kitchen')
         ->set('type', 'location')
-        ->call('saveContainer')
+        ->call('save')
         ->assertHasNoErrors();
 
     expect($user->currentTeam->containers()->where('name', 'Kitchen')->exists())->toBeTrue();
@@ -79,10 +79,16 @@ test('can create a container with parent and category', function () {
 
     Livewire::actingAs($user)
         ->test('pages::inventory.containers')
+        ->call('create')
+        ->assertSee('Add Container')
+        ->assertSet('name', '')
+        ->assertSet('type', 'location')
         ->set('name', 'Toolbox')
         ->set('type', 'bin')
         ->set('containerId', $parent->id)
-        ->call('saveContainer')
+        ->call('save')
+        ->assertSet('name', '')
+        ->assertSet('type', 'location')
         ->assertHasNoErrors();
 
     expect($user->currentTeam->containers()->where('name', 'Toolbox')->first())
@@ -97,9 +103,9 @@ test('can edit a container', function () {
 
     Livewire::actingAs($user)
         ->test('pages::inventory.containers')
-        ->call('editContainer', $container->id)
+        ->call('edit', $container->id)
         ->set('name', 'Master Bedroom')
-        ->call('saveContainer')
+        ->call('save')
         ->assertHasNoErrors();
 
     expect($container->fresh()->name)->toBe('Master Bedroom');
@@ -111,7 +117,7 @@ test('can delete a container', function () {
 
     Livewire::actingAs($user)
         ->test('pages::inventory.containers')
-        ->call('deleteContainer', $container->id);
+        ->call('delete', $container->id);
 
     expect($container->fresh())->toBeNull();
 });
@@ -123,7 +129,7 @@ test('deleting a container nullifies children parent_id', function () {
 
     Livewire::actingAs($user)
         ->test('pages::inventory.containers')
-        ->call('deleteContainer', $parent->id);
+        ->call('delete', $parent->id);
 
     expect($child->fresh()->parent_id)->toBeNull();
 });
@@ -135,7 +141,7 @@ test('deleting a container nullifies items container_id', function () {
 
     Livewire::actingAs($user)
         ->test('pages::inventory.containers')
-        ->call('deleteContainer', $container->id);
+        ->call('delete', $container->id);
 
     expect($item->fresh()->container_id)->toBeNull();
 });
@@ -173,7 +179,7 @@ test('cannot edit a container from another team', function () {
 
     Livewire::actingAs($user)
         ->test('pages::inventory.containers')
-        ->call('editContainer', $otherContainer->id);
+        ->call('edit', $otherContainer->id);
 })->throws(ModelNotFoundException::class);
 
 test('cannot delete a container from another team', function () {
@@ -182,5 +188,5 @@ test('cannot delete a container from another team', function () {
 
     Livewire::actingAs($user)
         ->test('pages::inventory.containers')
-        ->call('deleteContainer', $otherContainer->id);
+        ->call('delete', $otherContainer->id);
 })->throws(ModelNotFoundException::class);

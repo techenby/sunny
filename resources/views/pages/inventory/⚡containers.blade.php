@@ -88,7 +88,7 @@ new class extends Component {
             ->get();
     }
 
-    public function createContainer(): void
+    public function create(): void
     {
         $this->editingContainerId = null;
         $this->reset('name', 'type', 'category', 'containerId');
@@ -96,7 +96,7 @@ new class extends Component {
         $this->modal('container-form')->show();
     }
 
-    public function editContainer(int $id): void
+    public function edit(int $id): void
     {
         $container = Auth::user()->currentTeam->containers()->findOrFail($id);
 
@@ -109,7 +109,7 @@ new class extends Component {
         $this->modal('container-form')->show();
     }
 
-    public function saveContainer(): void
+    public function save(): void
     {
         $this->containerId = $this->containerId ?: null;
 
@@ -142,7 +142,7 @@ new class extends Component {
         unset($this->containers, $this->parentContainers);
     }
 
-    public function deleteContainer(int $id): void
+    public function delete(int $id): void
     {
         Auth::user()->currentTeam->containers()
             ->where('id', $id)
@@ -175,7 +175,7 @@ new class extends Component {
             </flux:breadcrumbs>
         </div>
 
-        <flux:button variant="primary" size="sm" wire:click="createContainer">
+        <flux:button variant="primary" size="sm" wire:click="create">
             {{ __('Add Container') }}
         </flux:button>
     </div>
@@ -232,7 +232,7 @@ new class extends Component {
 
     @teleport('body')
     <flux:modal name="container-form" class="md:w-96">
-        <form wire:submit="saveContainer" class="space-y-6">
+        <form wire:submit="save" class="space-y-6">
             <flux:heading size="lg">{{ $editingContainerId ? __('Edit Container') : __('Add Container') }}</flux:heading>
 
             <flux:input wire:model="name" :label="__('Name')" type="text" required />
