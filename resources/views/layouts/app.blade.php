@@ -12,16 +12,30 @@
                     <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
                         {{ __('Dashboard') }}
                     </flux:sidebar.item>
-                    @if (auth()->user()->ownsTeam(auth()->user()->currentTeam))
-                        <flux:sidebar.item icon="user-group" :href="route('team.edit')" :current="request()->routeIs('team.edit')" wire:navigate>
-                            {{ __('Team Settings') }}
-                        </flux:sidebar.item>
+
+                    @if (! request()->routeIs('inventory.*'))
+                    <flux:sidebar.item icon="archive-box" :href="route('inventory.index')" :current="request()->routeIs('inventory.*')" wire:navigate>
+                        {{ __('Inventory') }}
+                    </flux:sidebar.item>
+                    @else
+                    <flux:sidebar.group expandable heading="Inventory" icon="archive-box" :expanded="request()->routeIs('inventory.*')">
+                        <flux:sidebar.item :href="route('inventory.index')" wire:navigate>{{ __('Overview') }}</flux:sidebar.item>
+                        <flux:sidebar.item :href="route('inventory.containers')" wire:navigate>{{ __('Containers') }}</flux:sidebar.item>
+                        <flux:sidebar.item :href="route('inventory.items')" wire:navigate>{{ __('Items') }}</flux:sidebar.item>
+                    </flux:sidebar.group>
                     @endif
+
+
                 </flux:sidebar.group>
             </flux:sidebar.nav>
 
             <flux:spacer />
 
+            @if (auth()->user()->ownsTeam(auth()->user()->currentTeam))
+                <flux:sidebar.item icon="user-group" :href="route('team.edit')" :current="request()->routeIs('team.edit')" wire:navigate>
+                    {{ __('Team Settings') }}
+                </flux:sidebar.item>
+            @endif
             <x-desktop-user-menu class="hidden lg:block" :name="auth()->user()->name" />
         </flux:sidebar>
 
