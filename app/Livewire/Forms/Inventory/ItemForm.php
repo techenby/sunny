@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire\Forms\Inventory;
 
 use App\Models\Item;
@@ -19,7 +21,7 @@ class ItemForm extends Form
         $this->fill([
             'editingItem' => $item,
             'name' => $item->name,
-            'container_id' => $item->container_id
+            'container_id' => $item->container_id,
         ]);
     }
 
