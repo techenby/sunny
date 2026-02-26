@@ -116,7 +116,7 @@ new class extends Component {
             </flux:dropdown>
         </div>
         <div class="flex gap-2">
-            <flux:button variant="primary" wire:click="createItem">{{ __('Add Item') }}</flux:button>
+            <flux:button variant="primary" wire:click="create">{{ __('Add Item') }}</flux:button>
         </div>
     </div>
 
