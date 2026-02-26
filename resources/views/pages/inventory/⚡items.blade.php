@@ -7,6 +7,7 @@ use App\Models\Item;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Url;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -18,12 +19,21 @@ new class extends Component {
 
     public ItemForm $form;
 
+    #[Url]
+    public ?int $containerId = null;
+
+    public function updatedContainerId(): void
+    {
+        $this->resetPage();
+    }
+
     #[Computed]
     public function items(): LengthAwarePaginator
     {
         return Auth::user()->currentTeam->items()
             ->with('container')
             ->when($this->search, fn ($query) => $query->where('name', 'like', '%' . $this->search . '%'))
+            ->when($this->containerId, fn ($query) => $query->where('container_id', $this->containerId))
             ->orderBy($this->sortBy, $this->sortDirection)
             ->paginate(10);
     }
@@ -91,9 +101,21 @@ new class extends Component {
     @include('pages.inventory.heading')
 
     <div class="mb-4 flex items-center justify-between gap-4">
-        <div></div>
         <div class="flex gap-2">
             <flux:input wire:model.live.debounce.300ms="search" :placeholder="__('Search items...')" icon="magnifying-glass" />
+            <flux:dropdown>
+                <flux:button icon="funnel" square/>
+                <flux:menu class="p-2">
+                    <flux:select wire:model.live="containerId" :label="__('Filter by Container')">
+                        <flux:select.option value="">{{ __('All Containers') }}</flux:select.option>
+                        @foreach ($this->containers as $container)
+                            <flux:select.option :value="$container->id">{{ $container->name }}</flux:select.option>
+                        @endforeach
+                    </flux:select>
+                </flux:menu>
+            </flux:dropdown>
+        </div>
+        <div class="flex gap-2">
             <flux:button variant="primary" wire:click="createItem">{{ __('Add Item') }}</flux:button>
         </div>
     </div>

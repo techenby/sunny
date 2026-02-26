@@ -148,3 +148,20 @@ test('shows container path for items', function () {
         ->test('pages::inventory.items')
         ->assertSee('Garage / Toolbox');
 });
+
+test('can filter items by container', function () {
+    $user = User::factory()->withTeam()->create();
+    [$garage, $kitchen] = Container::factory()->count(2)->for($user->currentTeam)->sequence(['name' => 'Garage'], ['name' => 'Kitchen'])->create();
+
+    Item::factory()->for($user->currentTeam)->inContainer($garage)->create(['name' => 'Hammer']);
+    Item::factory()->for($user->currentTeam)->inContainer($kitchen)->create(['name' => 'Spatula']);
+
+    Livewire::actingAs($user)
+        ->test('pages::inventory.items')
+        ->assertSee(['Hammer', 'Spatula'])
+        ->set('containerId', $garage->id)
+        ->assertSee('Hammer')
+        ->assertDontSee('Spatula')
+        ->set('containerId', null)
+        ->assertSee(['Hammer', 'Spatula']);
+});
