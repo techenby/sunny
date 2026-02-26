@@ -39,14 +39,14 @@ new class extends Component {
             ->get();
     }
 
-    public function createItem(): void
+    public function create(): void
     {
         $this->editingItemId = null;
         $this->reset('name', 'containerId');
         $this->modal('item-form')->show();
     }
 
-    public function editItem(int $id): void
+    public function edit(int $id): void
     {
         $item = Auth::user()->currentTeam->items()->findOrFail($id);
 
@@ -57,7 +57,7 @@ new class extends Component {
         $this->modal('item-form')->show();
     }
 
-    public function saveItem(): void
+    public function save(): void
     {
         $this->containerId = $this->containerId ?: null;
 
@@ -86,7 +86,7 @@ new class extends Component {
         unset($this->items);
     }
 
-    public function deleteItem(int $id): void
+    public function delete(int $id): void
     {
         Auth::user()->currentTeam->items()
             ->where('id', $id)

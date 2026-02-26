@@ -19,19 +19,22 @@ test('authenticated users can visit the items page', function () {
 
 test('renders items for the current team only', function () {
     $user = User::factory()->withTeam()->create();
-    Item::factory()->for($user->currentTeam)->create(['name' => 'My Hammer']);
-    Item::factory()->create(['name' => 'Other Hammer']);
+    Item::factory()->for($user->currentTeam)->create(['name' => 'Brown Hammer']);
+    Item::factory()->create(['name' => 'Pink Hammer']);
 
     Livewire::actingAs($user)
         ->test('pages::inventory.items')
-        ->assertSee('My Hammer')
-        ->assertDontSee('Other Hammer');
+        ->assertSee('Brown Hammer')
+        ->assertDontSee('Pink Hammer');
 });
 
 test('can search items by name', function () {
     $user = User::factory()->withTeam()->create();
-    Item::factory()->for($user->currentTeam)->create(['name' => 'Hammer']);
-    Item::factory()->for($user->currentTeam)->create(['name' => 'Screwdriver']);
+    Item::factory()
+        ->count(2)
+        ->for($user->currentTeam)
+        ->sequence(['name' => 'Hammer'], ['name' => 'Screwdriver'])
+        ->create();
 
     Livewire::actingAs($user)
         ->test('pages::inventory.items')
@@ -42,16 +45,12 @@ test('can search items by name', function () {
 
 test('can sort items', function () {
     $user = User::factory()->withTeam()->create();
-    Item::factory()->for($user->currentTeam)->create(['name' => 'Bravo']);
-    Item::factory()->for($user->currentTeam)->create(['name' => 'Alpha']);
+    Item::factory()->count(2)->for($user->currentTeam)->sequence(['name' => 'Bravo'], ['name' => 'Alpha'])->create();
 
-    // Default sort is name asc, so Alpha comes first
-    $component = Livewire::actingAs($user)
+    Livewire::actingAs($user)
         ->test('pages::inventory.items')
-        ->assertSeeInOrder(['Alpha', 'Bravo']);
-
-    // Toggle to desc
-    $component->call('sort', 'name')
+        ->assertSeeInOrder(['Alpha', 'Bravo'])
+        ->call('sort', 'name')
         ->assertSeeInOrder(['Bravo', 'Alpha']);
 });
 
@@ -60,13 +59,14 @@ test('can create an item without a container', function () {
 
     Livewire::actingAs($user)
         ->test('pages::inventory.items')
-        ->set('name', 'New Item')
-        ->call('saveItem')
+        ->call('create')
+        ->set('name', 'Guitar')
+        ->call('save')
         ->assertHasNoErrors();
 
-    $item = $user->currentTeam->items()->where('name', 'New Item')->first();
-    expect($item)->not->toBeNull()
-        ->and($item->container_id)->toBeNull();
+    expect(Item::firstWhere('name', 'Guitar'))->not->toBeNull()
+        ->team_id->toBe($user->current_team_id)
+        ->container_id->toBeNull();
 });
 
 test('can create an item with a container', function () {
@@ -75,27 +75,29 @@ test('can create an item with a container', function () {
 
     Livewire::actingAs($user)
         ->test('pages::inventory.items')
-        ->set('name', 'New Item')
+        ->set('name', 'Guidar')
         ->set('containerId', $container->id)
-        ->call('saveItem')
+        ->call('save')
         ->assertHasNoErrors();
 
-    $item = $user->currentTeam->items()->where('name', 'New Item')->first();
-    expect($item->container_id)->toBe($container->id);
+    expect(Item::firstWhere('name', 'Guidar'))
+        ->team_id->toBe($user->current_team_id)
+        ->container_id->toBe($container->id);
 });
 
 test('can edit an item', function () {
     $user = User::factory()->withTeam()->create();
-    $item = Item::factory()->for($user->currentTeam)->create(['name' => 'Old Name']);
+    $item = Item::factory()->for($user->currentTeam)->create(['name' => 'Guitar']);
 
     Livewire::actingAs($user)
         ->test('pages::inventory.items')
-        ->call('editItem', $item->id)
-        ->set('name', 'New Name')
-        ->call('saveItem')
+        ->call('edit', $item->id)
+        ->assertSet('name', 'Guitar')
+        ->set('name', 'Yamaha Guitar')
+        ->call('save')
         ->assertHasNoErrors();
 
-    expect($item->fresh()->name)->toBe('New Name');
+    expect($item->fresh())->name->toBe('Yamaha Guitar');
 });
 
 test('can delete an item', function () {
@@ -104,9 +106,9 @@ test('can delete an item', function () {
 
     Livewire::actingAs($user)
         ->test('pages::inventory.items')
-        ->call('deleteItem', $item->id);
+        ->call('delete', $item->id);
 
-    expect(Item::find($item->id))->toBeNull();
+    expect($item->fresh())->toBeNull();
 });
 
 test('cannot edit an item from another team', function () {
@@ -115,25 +117,25 @@ test('cannot edit an item from another team', function () {
 
     Livewire::actingAs($user)
         ->test('pages::inventory.items')
-        ->call('editItem', $otherItem->id);
+        ->call('edit', $otherItem->id);
 })->throws(ModelNotFoundException::class);
 
 test('cannot delete an item from another team', function () {
     $user = User::factory()->withTeam()->create();
-    $otherItem = Item::factory()->create();
+    $item = Item::factory()->create();
 
     Livewire::actingAs($user)
         ->test('pages::inventory.items')
-        ->call('deleteItem', $otherItem->id);
+        ->call('delete', $item->id);
 })->throws(ModelNotFoundException::class);
 
 test('shows container path for items', function () {
     $user = User::factory()->withTeam()->create();
     $parent = Container::factory()->for($user->currentTeam)->create(['name' => 'Garage']);
-    $child = Container::factory()->for($user->currentTeam)->childOf($parent)->create(['name' => 'Shelf A']);
+    $child = Container::factory()->for($user->currentTeam)->childOf($parent)->create(['name' => 'Toolbox']);
     Item::factory()->for($user->currentTeam)->inContainer($child)->create(['name' => 'Hammer']);
 
     Livewire::actingAs($user)
         ->test('pages::inventory.items')
-        ->assertSee('Garage / Shelf A');
+        ->assertSee('Garage / Toolbox');
 });
