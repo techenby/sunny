@@ -109,7 +109,7 @@ new class extends Component {
         </flux:table.columns>
 
         <flux:table.rows>
-            @foreach ($this->items as $item)
+            @forelse ($this->items as $item)
                 <flux:table.row :key="$item->id">
                     <flux:table.cell variant="strong">{{ $item->name }}</flux:table.cell>
                     <flux:table.cell>{{ $this->containerPath($item) }}</flux:table.cell>
@@ -120,7 +120,13 @@ new class extends Component {
                         </div>
                     </flux:table.cell>
                 </flux:table.row>
-            @endforeach
+            @empty
+                <flux:table.row key="empty-item">
+                    <flux:table.cell colspan="6" class="text-center">
+                        <flux:text variant="subtle" size="xl">{{ __('No items found') }}</flux:text>
+                    </flux:table.cell>
+                </flux:table.row>
+            @endforelse
         </flux:table.rows>
     </flux:table>
 

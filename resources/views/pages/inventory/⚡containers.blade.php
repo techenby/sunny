@@ -137,9 +137,7 @@ new class extends Component {
             </flux:breadcrumbs>
         </div>
 
-        <flux:button variant="primary" size="sm" wire:click="create">
-            {{ __('Add Container') }}
-        </flux:button>
+        <flux:button variant="primary" size="sm" wire:click="create">{{ __('Add Container') }}</flux:button>
     </div>
 
     <div class="mb-4">
@@ -157,17 +155,13 @@ new class extends Component {
         </flux:table.columns>
 
         <flux:table.rows>
-            @foreach ($this->containers as $container)
+            @forelse ($this->containers as $container)
                 <flux:table.row :key="$container->id">
                     <flux:table.cell variant="strong">
-                        @if ($container->children_count > 0)
-                            <flux:link as="button" variant="ghost" wire:click="drillDown({{ $container->id }})" class="group">
-                                <span>{{ $container->name }}</span>
-                                <span class="invisible group-hover:visible">→</span>
-                            </flux:link>
-                        @else
+                        <flux:link as="button" variant="ghost" wire:click="drillDown({{ $container->id }})" class="group">
                             <span>{{ $container->name }}</span>
-                        @endif
+                            <span class="invisible group-hover:visible">→</span>
+                        </flux:link>
                     </flux:table.cell>
                     <flux:table.cell>
                         <flux:badge size="sm" :color="$container->type === \App\Enums\ContainerType::Location ? 'blue' : 'green'">
@@ -188,7 +182,13 @@ new class extends Component {
                         </flux:dropdown>
                     </flux:table.cell>
                 </flux:table.row>
-            @endforeach
+            @empty
+                <flux:table.row key="empty-container">
+                    <flux:table.cell colspan="6" class="text-center">
+                        <flux:text variant="subtle" size="xl">{{ __('No containers found') }}</flux:text>
+                    </flux:table.cell>
+                </flux:table.row>
+            @endforelse
         </flux:table.rows>
     </flux:table>
 
