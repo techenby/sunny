@@ -19,7 +19,7 @@ new class extends Component {
 
     public ContainerForm $form;
 
-    #[Url]
+    #[Url(history: true)]
     public ?int $parentId = null;
 
     public function drillDown(int $id): void

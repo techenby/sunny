@@ -19,7 +19,7 @@ new class extends Component {
 
     public ItemForm $form;
 
-    #[Url]
+    #[Url(history: true)]
     public ?int $containerId = null;
 
     public function updatedContainerId(): void
