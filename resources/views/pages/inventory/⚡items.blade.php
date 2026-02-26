@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Forms\Inventory\ItemForm;
 use App\Livewire\Traits\WithSorting;
 use App\Livewire\Traits\WithSearching;
 use App\Models\Item;
@@ -15,11 +16,7 @@ new class extends Component {
     use WithSearching;
     use WithSorting;
 
-    public ?int $editingItemId = null;
-
-    public string $name = '';
-
-    public mixed $containerId = null;
+    public ItemForm $form;
 
     #[Computed]
     public function items(): LengthAwarePaginator
@@ -41,47 +38,23 @@ new class extends Component {
 
     public function create(): void
     {
-        $this->editingItemId = null;
-        $this->reset('name', 'containerId');
         $this->modal('item-form')->show();
     }
 
     public function edit(int $id): void
     {
-        $item = Auth::user()->currentTeam->items()->findOrFail($id);
-
-        $this->editingItemId = $item->id;
-        $this->name = $item->name;
-        $this->containerId = $item->container_id;
+        $this->form->load(
+            Auth::user()->currentTeam->items()->findOrFail($id)
+        );
 
         $this->modal('item-form')->show();
     }
 
     public function save(): void
     {
-        $this->containerId = $this->containerId ?: null;
-
-        $this->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'containerId' => ['nullable', 'integer', 'exists:containers,id'],
-        ]);
-
-        $data = [
-            'name' => $this->name,
-            'container_id' => $this->containerId,
-        ];
-
-        if ($this->editingItemId) {
-            Auth::user()->currentTeam->items()
-                ->where('id', $this->editingItemId)
-                ->firstOrFail()
-                ->update($data);
-        } else {
-            Auth::user()->currentTeam->items()->create($data);
-        }
+        $this->form->save();
 
         $this->modal('item-form')->close();
-        $this->reset('name', 'containerId', 'editingItemId');
 
         unset($this->items);
     }
@@ -154,11 +127,11 @@ new class extends Component {
     @teleport('body')
     <flux:modal name="item-form" class="md:w-96">
         <form wire:submit="saveItem" class="space-y-6">
-            <flux:heading size="lg">{{ $editingItemId ? __('Edit Item') : __('Add Item') }}</flux:heading>
+            <flux:heading size="lg">{{ $form->editingItem ? __('Edit Item') : __('Add Item') }}</flux:heading>
 
-            <flux:input wire:model="name" :label="__('Name')" type="text" required />
+            <flux:input wire:model="form.name" :label="__('Name')" type="text" required />
 
-            <flux:select wire:model="containerId" :label="__('Container')">
+            <flux:select wire:model="form.container_id" :label="__('Container')">
                 <flux:select.option value="">{{ __('None') }}</flux:select.option>
                 @foreach ($this->containers as $container)
                     <flux:select.option :value="$container->id">{{ $container->name }}</flux:select.option>
@@ -170,7 +143,7 @@ new class extends Component {
                 <flux:modal.close>
                     <flux:button variant="ghost" class="mr-2">{{ __('Cancel') }}</flux:button>
                 </flux:modal.close>
-                <flux:button type="submit" variant="primary">{{ $editingItemId ? __('Update') : __('Create') }}</flux:button>
+                <flux:button type="submit" variant="primary">{{ $form->editingItem ? __('Update') : __('Create') }}</flux:button>
             </div>
         </form>
     </flux:modal>

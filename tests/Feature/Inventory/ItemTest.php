@@ -60,7 +60,7 @@ test('can create an item without a container', function () {
     Livewire::actingAs($user)
         ->test('pages::inventory.items')
         ->call('create')
-        ->set('name', 'Guitar')
+        ->set('form.name', 'Guitar')
         ->call('save')
         ->assertHasNoErrors();
 
@@ -75,10 +75,12 @@ test('can create an item with a container', function () {
 
     Livewire::actingAs($user)
         ->test('pages::inventory.items')
-        ->set('name', 'Guidar')
-        ->set('containerId', $container->id)
+        ->set('form.name', 'Guidar')
+        ->set('form.container_id', $container->id)
         ->call('save')
-        ->assertHasNoErrors();
+        ->assertHasNoErrors()
+        ->assertSet('form.name', '')
+        ->assertSet('form.container_id', null);
 
     expect(Item::firstWhere('name', 'Guidar'))
         ->team_id->toBe($user->current_team_id)
@@ -87,17 +89,24 @@ test('can create an item with a container', function () {
 
 test('can edit an item', function () {
     $user = User::factory()->withTeam()->create();
+    $container = Container::factory()->for($user->currentTeam)->create(['name' => 'Soft Shell Case']);
     $item = Item::factory()->for($user->currentTeam)->create(['name' => 'Guitar']);
 
     Livewire::actingAs($user)
         ->test('pages::inventory.items')
         ->call('edit', $item->id)
-        ->assertSet('name', 'Guitar')
-        ->set('name', 'Yamaha Guitar')
+        ->assertSet('form.name', 'Guitar')
+        ->assertSet('form.container_id', null)
+        ->set('form.name', 'Yamaha Guitar')
+        ->set('form.container_id', $container->id)
         ->call('save')
-        ->assertHasNoErrors();
+        ->assertHasNoErrors()
+        ->assertSet('form.name', '')
+        ->assertSet('form.container_id', null);
 
-    expect($item->fresh())->name->toBe('Yamaha Guitar');
+    expect($item->fresh())
+        ->name->toBe('Yamaha Guitar')
+        ->container_id->toBe($container->id);
 });
 
 test('can delete an item', function () {
