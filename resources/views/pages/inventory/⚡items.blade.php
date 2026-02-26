@@ -48,6 +48,7 @@ new class extends Component {
 
     public function create(): void
     {
+        $this->form->fill(['container_id' => $this->containerId]);
         $this->modal('item-form')->show();
     }
 
