@@ -137,11 +137,10 @@ new class extends Component {
             </flux:breadcrumbs>
         </div>
 
-        <flux:button variant="primary" size="sm" wire:click="create">{{ __('Add Container') }}</flux:button>
-    </div>
-
-    <div class="mb-4">
-        <flux:input wire:model.live.debounce.300ms="search" :placeholder="__('Search containers...')" icon="magnifying-glass" />
+        <div class="flex gap-2">
+            <flux:input wire:model.live.debounce.300ms="search" :placeholder="__('Search containers...')" icon="magnifying-glass" clearable />
+            <flux:button variant="primary" wire:click="create">{{ __('Add Container') }}</flux:button>
+        </div>
     </div>
 
     <flux:table :paginate="$this->containers">
