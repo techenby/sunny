@@ -133,10 +133,14 @@ new class extends Component {
                     <flux:table.cell variant="strong">{{ $item->name }}</flux:table.cell>
                     <flux:table.cell>{{ $this->containerPath($item) }}</flux:table.cell>
                     <flux:table.cell>
-                        <div class="flex justify-end gap-1">
-                            <flux:button variant="ghost" size="sm" icon="pencil" wire:click="editItem({{ $item->id }})" />
-                            <flux:button variant="ghost" size="sm" icon="trash" wire:click="deleteItem({{ $item->id }})" wire:confirm="{{ __('Are you sure you want to delete this item?') }}" />
-                        </div>
+                        <flux:dropdown>
+                            <flux:button variant="ghost" size="sm" icon="ellipsis-vertical" />
+
+                            <flux:menu>
+                                <flux:menu.item wire:click="edit({{ $item->id }})" icon="pencil">{{ __('Edit') }}</flux:menu.item>
+                                <flux:menu.item wire:click="delete({{ $item->id }})" variant="danger" icon="trash" wire:confirm="{{ __('Are you sure you want to delete this item?') }}">{{ __('Delete') }}</flux:menu.item>
+                            </flux:menu>
+                        </flux:dropdown>
                     </flux:table.cell>
                 </flux:table.row>
             @empty
