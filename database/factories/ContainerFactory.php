@@ -36,13 +36,6 @@ class ContainerFactory extends Factory
         ]);
     }
 
-    public function withCategory(string $category): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'category' => $category,
-        ]);
-    }
-
     public function childOf(Container $parent): static
     {
         return $this->state(fn (array $attributes) => [

@@ -22,7 +22,6 @@ class Container extends Model
         'parent_id',
         'type',
         'name',
-        'category',
     ];
 
     /** @return BelongsTo<Team, $this> */

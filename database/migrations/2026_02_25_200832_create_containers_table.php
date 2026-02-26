@@ -14,7 +14,6 @@ return new class extends Migration
             $table->foreignId('parent_id')->nullable()->constrained('containers')->nullOnDelete();
             $table->string('type');
             $table->string('name');
-            $table->string('category')->nullable();
             $table->timestamps();
 
             $table->index(['team_id', 'type']);

@@ -72,12 +72,11 @@ test('can create a container', function () {
 
     expect(Container::firstWhere('name', 'Kitchen'))
         ->type->toBe(ContainerType::Location)
-        ->category->toBeNull()
         ->parent_id->toBeNull()
         ->team_id->toBe($user->current_team_id);
 });
 
-test('can create a container with parent and category', function () {
+test('can create a container with parent', function () {
     $user = User::factory()->withTeam()->create();
     $parent = Container::factory()->for($user->currentTeam)->location()->create(['name' => 'Garage']);
 

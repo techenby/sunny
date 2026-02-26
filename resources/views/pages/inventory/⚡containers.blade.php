@@ -148,7 +148,6 @@ new class extends Component {
         <flux:table.columns>
             <flux:table.column sortable :sorted="$sortBy === 'name'" :direction="$sortDirection" wire:click="sort('name')">{{ __('Name') }}</flux:table.column>
             <flux:table.column sortable :sorted="$sortBy === 'type'" :direction="$sortDirection" wire:click="sort('type')">{{ __('Type') }}</flux:table.column>
-            <flux:table.column sortable :sorted="$sortBy === 'category'" :direction="$sortDirection" wire:click="sort('category')">{{ __('Category') }}</flux:table.column>
             <flux:table.column>{{ __('Children') }}</flux:table.column>
             <flux:table.column>{{ __('Items') }}</flux:table.column>
             <flux:table.column></flux:table.column>
@@ -168,7 +167,6 @@ new class extends Component {
                             {{ ucfirst($container->type->value) }}
                         </flux:badge>
                     </flux:table.cell>
-                    <flux:table.cell>{{ $container->category ?? '—' }}</flux:table.cell>
                     <flux:table.cell>{{ $container->children_count }}</flux:table.cell>
                     <flux:table.cell>{{ $container->items_count }}</flux:table.cell>
                     <flux:table.cell>
@@ -204,8 +202,6 @@ new class extends Component {
                     <flux:select.option :value="$containerType->value">{{ ucfirst($containerType->value) }}</flux:select.option>
                 @endforeach
             </flux:select>
-
-            <flux:input wire:model="form.category" :label="__('Category')" type="text" />
 
             <flux:select wire:model="form.parent_id" :label="__('Parent Container')">
                 <flux:select.option value="">{{ __('None') }}</flux:select.option>

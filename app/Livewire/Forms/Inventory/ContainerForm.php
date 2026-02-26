@@ -16,8 +16,6 @@ class ContainerForm extends Form
 
     public string $type = 'location';
 
-    public ?string $category = null;
-
     public mixed $parent_id = null;
 
     public function load(Container $container)
@@ -26,7 +24,6 @@ class ContainerForm extends Form
             'editingContainer' => $container,
             'name' => $container->name,
             'type' => $container->type->value,
-            'category' => $container->category ?? '',
             'parent_id' => $container->parent_id,
         ]);
     }
@@ -49,7 +46,6 @@ class ContainerForm extends Form
         return [
             'name' => ['required', 'string', 'max:255'],
             'type' => ['required', 'string', 'in:location,bin'],
-            'category' => ['nullable', 'string', 'max:255'],
             'parent_id' => ['nullable', 'integer', 'exists:containers,id'],
         ];
     }
