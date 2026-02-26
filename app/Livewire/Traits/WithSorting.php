@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire\Traits;
 
 trait WithSorting
@@ -19,5 +21,4 @@ trait WithSorting
 
         $this->resetPage();
     }
-
 }

@@ -20,8 +20,8 @@ test('authenticated users can visit the containers page', function () {
 
 test('renders containers for the current team only', function () {
     $user = User::factory()->withTeam()->create();
-    $teamContainer = Container::factory()->for($user->currentTeam)->create(['name' => 'My Garage']);
-    $otherContainer = Container::factory()->create(['name' => 'Other Garage']);
+    Container::factory()->for($user->currentTeam)->create(['name' => 'My Garage']);
+    Container::factory()->create(['name' => 'Other Garage']);
 
     Livewire::actingAs($user)
         ->test('pages::inventory.containers')
@@ -65,12 +65,16 @@ test('can create a container', function () {
 
     Livewire::actingAs($user)
         ->test('pages::inventory.containers')
-        ->set('name', 'Kitchen')
-        ->set('type', 'location')
+        ->set('form.name', 'Kitchen')
+        ->set('form.type', 'location')
         ->call('save')
         ->assertHasNoErrors();
 
-    expect($user->currentTeam->containers()->where('name', 'Kitchen')->exists())->toBeTrue();
+    expect(Container::firstWhere('name', 'Kitchen'))
+        ->type->toBe(ContainerType::Location)
+        ->category->toBeNull()
+        ->parent_id->toBeNull()
+        ->team_id->toBe($user->current_team_id);
 });
 
 test('can create a container with parent and category', function () {
@@ -81,20 +85,21 @@ test('can create a container with parent and category', function () {
         ->test('pages::inventory.containers')
         ->call('create')
         ->assertSee('Add Container')
-        ->assertSet('name', '')
-        ->assertSet('type', 'location')
-        ->set('name', 'Toolbox')
-        ->set('type', 'bin')
-        ->set('containerId', $parent->id)
+        ->assertSet('form.name', '')
+        ->assertSet('form.type', 'location')
+        ->set('form.name', 'Toolbox')
+        ->set('form.type', 'bin')
+        ->set('form.parent_id', $parent->id)
         ->call('save')
-        ->assertSet('name', '')
-        ->assertSet('type', 'location')
+        ->assertSet('form.name', '')
+        ->assertSet('form.type', 'location')
         ->assertHasNoErrors();
 
-    expect($user->currentTeam->containers()->where('name', 'Toolbox')->first())
+    expect(Container::firstWhere('name', 'Toolbox'))
         ->not->toBeNull()
         ->parent_id->toBe($parent->id)
-        ->type->toBe(ContainerType::Bin);
+        ->type->toBe(ContainerType::Bin)
+        ->team_id->toBe($user->current_team_id);
 });
 
 test('can edit a container', function () {
@@ -104,7 +109,9 @@ test('can edit a container', function () {
     Livewire::actingAs($user)
         ->test('pages::inventory.containers')
         ->call('edit', $container->id)
-        ->set('name', 'Master Bedroom')
+        ->assertSee('Edit Container')
+        ->assertSet('form.name', 'Bedroom')
+        ->set('form.name', 'Master Bedroom')
         ->call('save')
         ->assertHasNoErrors();
 
@@ -148,7 +155,11 @@ test('deleting a container nullifies items container_id', function () {
 
 test('can drill down into a container', function () {
     $user = User::factory()->withTeam()->create();
-    [$garage, $kitchen] = Container::factory()->count(2)->for($user->currentTeam)->sequence(['name' => 'Garage'], ['name' => 'Kitchen'])->create();
+    [$garage, $kitchen] = Container::factory()
+        ->count(2)
+        ->for($user->currentTeam)
+        ->sequence(['name' => 'Garage'], ['name' => 'Kitchen'])
+        ->create();
     Container::factory()->for($user->currentTeam)->childOf($garage)->create(['name' => 'Toolbox']);
 
     Livewire::actingAs($user)
@@ -163,7 +174,7 @@ test('can drill down into a container', function () {
 test('can navigate up from drilled-down view', function () {
     $user = User::factory()->withTeam()->create();
     $parent = Container::factory()->for($user->currentTeam)->create(['name' => 'Garage']);
-    $child = Container::factory()->for($user->currentTeam)->childOf($parent)->create(['name' => 'Toolbox']);
+    Container::factory()->for($user->currentTeam)->childOf($parent)->create(['name' => 'Toolbox']);
 
     Livewire::actingAs($user)
         ->test('pages::inventory.containers')

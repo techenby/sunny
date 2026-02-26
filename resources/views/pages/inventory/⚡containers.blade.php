@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Forms\Inventory\ContainerForm;
 use App\Livewire\Traits\WithSorting;
 use App\Livewire\Traits\WithSearching;
 use App\Models\Container;
@@ -16,22 +17,14 @@ new class extends Component {
     use WithSearching;
     use WithSorting;
 
+    public ContainerForm $form;
+
     #[Url]
     public ?int $parentId = null;
 
-    public ?int $editingContainerId = null;
-
-    public string $name = '';
-
-    public string $type = 'location';
-
-    public string $category = '';
-
-    public mixed $containerId = null;
-
-    public function drillDown(int $containerId): void
+    public function drillDown(int $id): void
     {
-        $this->parentId = $containerId;
+        $this->parentId = $id;
         $this->resetPage();
     }
 
@@ -83,61 +76,30 @@ new class extends Component {
     public function parentContainers(): Collection
     {
         return Auth::user()->currentTeam->containers()
-            ->when($this->editingContainerId, fn ($query) => $query->where('id', '!=', $this->editingContainerId))
+            ->when($this->form->editingContainer, fn ($query) => $query->where('id', '!=', $this->form->editingContainer->id))
             ->orderBy('name')
             ->get();
     }
 
     public function create(): void
     {
-        $this->editingContainerId = null;
-        $this->reset('name', 'type', 'category', 'containerId');
-        $this->containerId = $this->parentId;
+        $this->form->fill(['parent_id' => $this->parentId]);
         $this->modal('container-form')->show();
     }
 
     public function edit(int $id): void
     {
-        $container = Auth::user()->currentTeam->containers()->findOrFail($id);
-
-        $this->editingContainerId = $container->id;
-        $this->name = $container->name;
-        $this->type = $container->type->value;
-        $this->category = $container->category ?? '';
-        $this->containerId = $container->parent_id;
-
+        $this->form->load(
+            Auth::user()->currentTeam->containers()->findOrFail($id)
+        );
         $this->modal('container-form')->show();
     }
 
     public function save(): void
     {
-        $this->containerId = $this->containerId ?: null;
-
-        $this->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'type' => ['required', 'string', 'in:location,bin'],
-            'category' => ['nullable', 'string', 'max:255'],
-            'containerId' => ['nullable', 'integer', 'exists:containers,id'],
-        ]);
-
-        $data = [
-            'name' => $this->name,
-            'type' => $this->type,
-            'category' => $this->category ?: null,
-            'parent_id' => $this->containerId,
-        ];
-
-        if ($this->editingContainerId) {
-            Auth::user()->currentTeam->containers()
-                ->where('id', $this->editingContainerId)
-                ->firstOrFail()
-                ->update($data);
-        } else {
-            Auth::user()->currentTeam->containers()->create($data);
-        }
+        $this->form->save();
 
         $this->modal('container-form')->close();
-        $this->reset('name', 'type', 'category', 'containerId', 'editingContainerId');
 
         unset($this->containers, $this->parentContainers);
     }
@@ -233,19 +195,19 @@ new class extends Component {
     @teleport('body')
     <flux:modal name="container-form" class="md:w-96">
         <form wire:submit="save" class="space-y-6">
-            <flux:heading size="lg">{{ $editingContainerId ? __('Edit Container') : __('Add Container') }}</flux:heading>
+            <flux:heading size="lg">{{ $form->editingContainer ? __('Edit Container') : __('Add Container') }}</flux:heading>
 
-            <flux:input wire:model="name" :label="__('Name')" type="text" required />
+            <flux:input wire:model="form.name" :label="__('Name')" type="text" required />
 
-            <flux:select wire:model="type" :label="__('Type')">
+            <flux:select wire:model="form.type" :label="__('Type')">
                 @foreach (\App\Enums\ContainerType::cases() as $containerType)
                     <flux:select.option :value="$containerType->value">{{ ucfirst($containerType->value) }}</flux:select.option>
                 @endforeach
             </flux:select>
 
-            <flux:input wire:model="category" :label="__('Category')" type="text" />
+            <flux:input wire:model="form.category" :label="__('Category')" type="text" />
 
-            <flux:select wire:model="containerId" :label="__('Parent Container')">
+            <flux:select wire:model="form.parent_id" :label="__('Parent Container')">
                 <flux:select.option value="">{{ __('None') }}</flux:select.option>
                 @foreach ($this->parentContainers as $parentContainer)
                     <flux:select.option :value="$parentContainer->id">{{ $parentContainer->name }}</flux:select.option>
@@ -257,7 +219,7 @@ new class extends Component {
                 <flux:modal.close>
                     <flux:button variant="ghost" class="mr-2">{{ __('Cancel') }}</flux:button>
                 </flux:modal.close>
-                <flux:button type="submit" variant="primary">{{ $editingContainerId ? __('Update') : __('Create') }}</flux:button>
+                <flux:button type="submit" variant="primary">{{ $form->editingContainer ? __('Update') : __('Create') }}</flux:button>
             </div>
         </form>
     </flux:modal>
