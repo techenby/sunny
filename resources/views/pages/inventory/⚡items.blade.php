@@ -92,13 +92,10 @@ new class extends Component {
 
     <div class="mb-4 flex items-center justify-between gap-4">
         <div></div>
-        <flux:button variant="primary" size="sm" wire:click="createItem">
-            {{ __('Add Item') }}
-        </flux:button>
-    </div>
-
-    <div class="mb-4">
-        <flux:input wire:model.live.debounce.300ms="search" :placeholder="__('Search items...')" icon="magnifying-glass" />
+        <div class="flex gap-2">
+            <flux:input wire:model.live.debounce.300ms="search" :placeholder="__('Search items...')" icon="magnifying-glass" />
+            <flux:button variant="primary" wire:click="createItem">{{ __('Add Item') }}</flux:button>
+        </div>
     </div>
 
     <flux:table :paginate="$this->items">
