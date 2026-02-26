@@ -168,7 +168,17 @@ new class extends Component {
                         </flux:badge>
                     </flux:table.cell>
                     <flux:table.cell>{{ $container->children_count }}</flux:table.cell>
-                    <flux:table.cell>{{ $container->all_items_count }}</flux:table.cell>
+                    <flux:table.cell>
+                        @if ($container->all_items_count > 0)
+                            <flux:link :href="route('inventory.items', ['containerId' => $container->id])" variant="subtle" class="group">
+                                <span class="sr-only">{{ trans_choice('{1} View :count item|[2,*] View :count items', $container->all_items_count) }}</span>
+                                <span>{{ $container->all_items_count }}</span>
+                                <span class="invisible group-hover:visible">→</span>
+                            </flux:link>
+                        @else
+                        {{ $container->all_items_count }}
+                        @endif
+                    </flux:table.cell>
                     <flux:table.cell>
                         <flux:dropdown>
                             <flux:button variant="ghost" size="sm" icon="ellipsis-vertical" />
@@ -183,7 +193,12 @@ new class extends Component {
             @empty
                 <flux:table.row key="empty-container">
                     <flux:table.cell colspan="6" class="text-center">
+                        @if ($parentId)
+                        <flux:text variant="subtle" size="xl">{{ __('No child containers found') }}</flux:text>
+                        <flux:link :href="route('inventory.items', ['containerId' => $parentId])">{{ __('View items') }}</flux:link>
+                        @else
                         <flux:text variant="subtle" size="xl">{{ __('No containers found') }}</flux:text>
+                        @endif
                     </flux:table.cell>
                 </flux:table.row>
             @endforelse
