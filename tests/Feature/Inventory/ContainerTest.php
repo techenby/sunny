@@ -192,6 +192,19 @@ test('cannot edit a container from another team', function () {
         ->call('edit', $otherContainer->id);
 })->throws(ModelNotFoundException::class);
 
+test('item count includes items from child containers', function () {
+    $user = User::factory()->withTeam()->create();
+    $parent = Container::factory()->for($user->currentTeam)->create(['name' => 'Garage']);
+    $child = Container::factory()->for($user->currentTeam)->childOf($parent)->create(['name' => 'Toolbox']);
+
+    Item::factory()->for($user->currentTeam)->inContainer($parent)->create();
+    Item::factory()->count(2)->for($user->currentTeam)->inContainer($child)->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::inventory.containers')
+        ->assertSeeInOrder(['Garage', '3']);
+});
+
 test('cannot delete a container from another team', function () {
     $user = User::factory()->withTeam()->create();
     $otherContainer = Container::factory()->create();

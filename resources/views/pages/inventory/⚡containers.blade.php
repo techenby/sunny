@@ -67,7 +67,8 @@ new class extends Component {
             ->when($this->parentId, fn ($query) => $query->where('parent_id', $this->parentId))
             ->when(! $this->parentId, fn ($query) => $query->whereNull('parent_id'))
             ->when($this->search, fn ($query) => $query->where('name', 'like', '%' . $this->search . '%'))
-            ->withCount(['children', 'items'])
+            ->withCount('children')
+            ->withAllItemsCount()
             ->orderBy($this->sortBy, $this->sortDirection)
             ->paginate(10);
     }
@@ -167,7 +168,7 @@ new class extends Component {
                         </flux:badge>
                     </flux:table.cell>
                     <flux:table.cell>{{ $container->children_count }}</flux:table.cell>
-                    <flux:table.cell>{{ $container->items_count }}</flux:table.cell>
+                    <flux:table.cell>{{ $container->all_items_count }}</flux:table.cell>
                     <flux:table.cell>
                         <flux:dropdown>
                             <flux:button variant="ghost" size="sm" icon="ellipsis-vertical" />

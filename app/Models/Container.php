@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Enums\ContainerType;
 use Database\Factories\ContainerFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -46,6 +48,21 @@ class Container extends Model
     public function items(): HasMany
     {
         return $this->hasMany(Item::class);
+    }
+
+    /** @param Builder<self> $query */
+    #[Scope]
+    protected function withAllItemsCount(Builder $query): void
+    {
+        $query->selectRaw('containers.*, (
+            WITH RECURSIVE descendant_containers AS (
+                SELECT id FROM containers AS c WHERE c.id = containers.id
+                UNION ALL
+                SELECT ch.id FROM containers AS ch
+                INNER JOIN descendant_containers AS dc ON ch.parent_id = dc.id
+            )
+            SELECT COUNT(*) FROM items WHERE items.container_id IN (SELECT id FROM descendant_containers)
+        ) as all_items_count');
     }
 
     /** @return array<string, string> */
