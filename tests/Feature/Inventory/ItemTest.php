@@ -149,6 +149,23 @@ test('shows container path for items', function () {
         ->assertSee('Garage / Toolbox');
 });
 
+test('can filter items to show only unassigned', function () {
+    $user = User::factory()->withTeam()->create();
+    $container = Container::factory()->for($user->currentTeam)->create(['name' => 'Garage']);
+
+    Item::factory()->for($user->currentTeam)->inContainer($container)->create(['name' => 'Hammer']);
+    Item::factory()->for($user->currentTeam)->create(['name' => 'Loose Screw']);
+
+    Livewire::actingAs($user)
+        ->test('pages::inventory.items')
+        ->assertSee(['Hammer', 'Loose Screw'])
+        ->set('unassigned', true)
+        ->assertSee('Loose Screw')
+        ->assertDontSee('Hammer')
+        ->set('unassigned', false)
+        ->assertSee(['Hammer', 'Loose Screw']);
+});
+
 test('can filter items by container', function () {
     $user = User::factory()->withTeam()->create();
     [$garage, $kitchen] = Container::factory()->count(2)->for($user->currentTeam)->sequence(['name' => 'Garage'], ['name' => 'Kitchen'])->create();
