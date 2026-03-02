@@ -33,22 +33,16 @@ class Team extends Model
         return $this->belongsToMany(User::class)->withTimestamps();
     }
 
-    /** @return HasMany<Container, $this> */
-    public function containers(): HasMany
+    /** @return HasMany<Item, $this> */
+    public function items(): HasMany
     {
-        return $this->hasMany(Container::class);
+        return $this->hasMany(Item::class);
     }
 
     /** @return HasMany<TeamInvitation, $this> */
     public function invitations(): HasMany
     {
         return $this->hasMany(TeamInvitation::class);
-    }
-
-    /** @return HasMany<Item, $this> */
-    public function items(): HasMany
-    {
-        return $this->hasMany(Item::class);
     }
 
     public function hasUser(User $user): bool

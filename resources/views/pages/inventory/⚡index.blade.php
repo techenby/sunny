@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\ItemType;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
@@ -8,19 +9,26 @@ new class extends Component {
     #[Computed]
     public function containerCount(): int
     {
-        return Auth::user()->currentTeam->containers()->count();
+        return Auth::user()->currentTeam->items()
+            ->whereIn('type', [ItemType::Location, ItemType::Bin])
+            ->count();
     }
 
     #[Computed]
     public function itemCount(): int
     {
-        return Auth::user()->currentTeam->items()->count();
+        return Auth::user()->currentTeam->items()
+            ->where('type', ItemType::Item)
+            ->count();
     }
 
     #[Computed]
     public function unassignedItemCount(): int
     {
-        return Auth::user()->currentTeam->items()->whereNull('container_id')->count();
+        return Auth::user()->currentTeam->items()
+            ->where('type', ItemType::Item)
+            ->whereNull('parent_id')
+            ->count();
     }
 }; ?>
 
@@ -28,7 +36,7 @@ new class extends Component {
     @include('pages.inventory.heading')
 
     <div class="grid gap-6 sm:grid-cols-3">
-        <a href="{{ route('inventory.containers') }}" wire:navigate>
+        <a href="{{ route('inventory.items') }}" wire:navigate>
             <flux:card>
                 <flux:subheading>{{ __('Containers') }}</flux:subheading>
                 <flux:heading size="xl" class="mt-1">{{ $this->containerCount }}</flux:heading>
@@ -42,7 +50,7 @@ new class extends Component {
             </flux:card>
         </a>
 
-        <a href="{{ route('inventory.items', ['unassigned' => true]) }}" wire:navigate>
+        <a href="{{ route('inventory.items') }}" wire:navigate>
             <flux:card>
                 <flux:subheading>{{ __('Unassigned Items') }}</flux:subheading>
                 <flux:heading size="xl" class="mt-1">{{ $this->unassignedItemCount }}</flux:heading>

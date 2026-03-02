@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace App\Enums;
 
-enum ContainerType: string
+enum ItemType: string
 {
     case Location = 'location';
     case Bin = 'bin';
+    case Item = 'item';
 }

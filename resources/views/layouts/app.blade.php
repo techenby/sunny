@@ -20,7 +20,6 @@
                     @else
                     <flux:sidebar.group expandable heading="Inventory" icon="archive-box" :expanded="request()->routeIs('inventory.*')">
                         <flux:sidebar.item :href="route('inventory.index')" wire:navigate>{{ __('Overview') }}</flux:sidebar.item>
-                        <flux:sidebar.item :href="route('inventory.containers')" wire:navigate>{{ __('Containers') }}</flux:sidebar.item>
                         <flux:sidebar.item :href="route('inventory.items')" wire:navigate>{{ __('Items') }}</flux:sidebar.item>
                     </flux:sidebar.group>
                     @endif

@@ -14,18 +14,21 @@ class ItemForm extends Form
 
     public string $name = '';
 
-    public ?int $container_id = null;
+    public string $type = 'item';
 
-    public function load(Item $item)
+    public mixed $parent_id = null;
+
+    public function load(Item $item): void
     {
         $this->fill([
             'editingItem' => $item,
             'name' => $item->name,
-            'container_id' => $item->container_id,
+            'type' => $item->type->value,
+            'parent_id' => $item->parent_id,
         ]);
     }
 
-    public function save()
+    public function save(): void
     {
         $data = $this->validate();
 
@@ -38,11 +41,13 @@ class ItemForm extends Form
         $this->reset();
     }
 
+    /** @return array<string, array<int, mixed>> */
     protected function rules(): array
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'container_id' => ['nullable', 'integer', 'exists:containers,id'],
+            'type' => ['required', 'string', 'in:location,bin,item'],
+            'parent_id' => ['nullable', 'integer', 'exists:inventory_items,id'],
         ];
     }
 }
