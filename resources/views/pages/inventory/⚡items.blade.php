@@ -22,7 +22,15 @@ new class extends Component {
     #[Url(history: true)]
     public ?int $containerId = null;
 
+    #[Url(history: true)]
+    public bool $unassigned = false;
+
     public function updatedContainerId(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedUnassigned(): void
     {
         $this->resetPage();
     }
@@ -34,6 +42,7 @@ new class extends Component {
             ->with('container')
             ->when($this->search, fn ($query) => $query->where('name', 'like', '%' . $this->search . '%'))
             ->when($this->containerId, fn ($query) => $query->where('container_id', $this->containerId))
+            ->when($this->unassigned, fn ($query) => $query->whereNull('container_id'))
             ->orderBy($this->sortBy, $this->sortDirection)
             ->paginate(10);
     }
@@ -106,13 +115,15 @@ new class extends Component {
             <flux:input wire:model.live.debounce.300ms="search" :placeholder="__('Search items...')" icon="magnifying-glass" />
             <flux:dropdown>
                 <flux:button icon="funnel" square/>
-                <flux:menu class="p-2">
+                <flux:menu class="p-2 space-y-4">
                     <flux:select wire:model.live="containerId" :label="__('Filter by Container')">
                         <flux:select.option value="">{{ __('All Containers') }}</flux:select.option>
                         @foreach ($this->containers as $container)
                             <flux:select.option :value="$container->id">{{ $container->name }}</flux:select.option>
                         @endforeach
                     </flux:select>
+
+                    <flux:checkbox wire:model.live="unassigned" :label="__('Unassigned only')" />
                 </flux:menu>
             </flux:dropdown>
         </div>
