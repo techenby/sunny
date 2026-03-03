@@ -58,21 +58,21 @@ class Recipe extends Model implements HasMedia
 
         $existingSlugs = self::query()
             ->where('team_id', $this->team_id)
-            ->where('slug', 'like', $baseSlug.'%')
+            ->where('slug', 'like', $baseSlug . '%')
             ->when($this->exists, fn ($query) => $query->where('id', '!=', $this->id))
             ->pluck('slug');
 
-        if (! $existingSlugs->contains($baseSlug)) {
+        if ($existingSlugs->doesntContain($baseSlug)) {
             return $baseSlug;
         }
 
         $counter = 1;
 
-        while ($existingSlugs->contains($baseSlug.'-'.$counter)) {
+        while ($existingSlugs->contains($baseSlug . '-' . $counter)) {
             $counter++;
         }
 
-        return $baseSlug.'-'.$counter;
+        return $baseSlug . '-' . $counter;
     }
 
     /** @return BelongsTo<Team, $this> */
