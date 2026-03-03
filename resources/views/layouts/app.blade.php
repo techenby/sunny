@@ -25,6 +25,9 @@
                     </flux:sidebar.group>
                     @endif
 
+                    <flux:sidebar.item icon="book-open" :href="route('recipes.index')" :current="request()->routeIs('recipes.*')" wire:navigate>
+                        {{ __('Recipes') }}
+                    </flux:sidebar.item>
 
                 </flux:sidebar.group>
             </flux:sidebar.nav>
