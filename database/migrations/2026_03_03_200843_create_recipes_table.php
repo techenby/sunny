@@ -26,7 +26,7 @@ return new class extends Migration
             $table->text('nutrition')->nullable();
             $table->timestamps();
 
-            $table->index(['team_id', 'slug']);
+            $table->unique(['team_id', 'slug']);
             $table->index(['team_id', 'parent_id']);
         });
     }
