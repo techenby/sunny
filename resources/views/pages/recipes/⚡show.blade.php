@@ -132,7 +132,7 @@ new class extends Component {
                 </flux:card>
             @endif
 
-            @if ($recipe->remixes)
+            @if ($recipe->remixes->isNotEmpty())
                 <flux:card>
                     <flux:heading size="lg" class="mb-2">{{ __('Remixes') }}</flux:heading>
                     <ul class="list-disc ml-4 space-y-1">
