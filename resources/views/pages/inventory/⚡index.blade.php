@@ -32,6 +32,14 @@ new class extends Component {
     }
 }; ?>
 
+<x:slot:breadcrumbs>
+    <flux:breadcrumbs>
+        <flux:breadcrumbs.item :href="route('dashboard')" icon="home" />
+        <flux:breadcrumbs.item :href="route('inventory.index')">Inventory</flux:breadcrumbs.item>
+        <flux:breadcrumbs.item>Overview</flux:breadcrumbs.item>
+    </flux:breadcrumbs>
+</x:slot:breadcrumbs>
+
 <section class="w-full">
     @include('pages.inventory.heading')
 

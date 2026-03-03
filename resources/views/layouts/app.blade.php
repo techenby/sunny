@@ -94,6 +94,12 @@
             </flux:dropdown>
         </flux:header>
 
+        @isset($breadcrumbs)
+        <div class="px-8 py-4 border-b border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
+            {{ $breadcrumbs }}
+        </div>
+        @endisset
+
         <flux:main>
             {{ $slot }}
         </flux:main>
