@@ -37,12 +37,7 @@ new class extends Component {
         $recipe = Auth::user()->currentTeam->recipes()->findOrFail($id);
         $this->authorize('remix', $recipe);
 
-        $recipe->replicate()
-            ->fill([
-                'name' => $recipe->name . ' (Remix)',
-                'parent_id' => $recipe->id,
-            ])
-            ->save();
+        $recipe->createRemix();
 
         unset($this->recipes);
     }

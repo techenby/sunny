@@ -10,12 +10,9 @@ new class extends Component {
     {
         $this->authorize('remix', $this->recipe);
 
-        $newRecipe = $this->recipe->replicate();
-        $newRecipe->name = $this->recipe->name . ' (Remix)';
-        $newRecipe->parent_id = $this->recipe->id;
-        $newRecipe->save();
+        $recipe = $this->recipe->createRemix();
 
-        $this->redirect(route('recipes.show', $newRecipe), navigate: true);
+        $this->redirect(route('recipes.show', $recipe), navigate: true);
     }
 }; ?>
 
@@ -75,7 +72,7 @@ new class extends Component {
                         <div>
                             <dt class="text-sm font-medium text-zinc-500 dark:text-zinc-400">{{ __('Source') }}</dt>
                             <dd class="mt-1">
-                                @if (filter_var($recipe->source, FILTER_VALIDATE_URL))
+                                @if ($recipe->isSourceUrl())
                                     <a href="{{ $recipe->source }}" target="_blank" class="text-accent-600 hover:underline">
                                         {{ $recipe->shortenedSource() }}
                                     </a>
