@@ -65,16 +65,16 @@ new class extends Component {
             @forelse ($this->recipes as $recipe)
                 <flux:table.row :key="$recipe->id">
                     <flux:table.cell variant="strong">
-                        <a href="{{ route('recipes.show', $recipe) }}" wire:navigate class="hover:text-accent-600 hover:underline">
+                        <flux:link href="{{ route('recipes.show', $recipe) }}" wire:navigate>
                             {{ $recipe->name }}
-                        </a>
+                        </flux:link>
                     </flux:table.cell>
                     <flux:table.cell>
                         @if ($recipe->source)
                             @if (filter_var($recipe->source, FILTER_VALIDATE_URL))
-                                <a href="{{ $recipe->source }}" target="_blank" class="text-accent-600 hover:underline">
+                                <flux:link href="{{ $recipe->source }}" target="_blank">
                                     {{ $recipe->shortenedSource() }}
-                                </a>
+                                </flux:link>
                             @else
                                 {{ $recipe->source }}
                             @endif

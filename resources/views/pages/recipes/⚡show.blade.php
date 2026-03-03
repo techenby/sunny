@@ -73,9 +73,9 @@ new class extends Component {
                             <dt class="text-sm font-medium text-zinc-500 dark:text-zinc-400">{{ __('Source') }}</dt>
                             <dd class="mt-1">
                                 @if ($recipe->isSourceUrl())
-                                    <a href="{{ $recipe->source }}" target="_blank" class="text-accent-600 hover:underline">
+                                    <flux:link href="{{ $recipe->source }}" target="_blank">
                                         {{ $recipe->shortenedSource() }}
-                                    </a>
+                                    </flux:link>
                                 @else
                                     {{ $recipe->source }}
                                 @endif
@@ -125,9 +125,9 @@ new class extends Component {
             @if ($recipe->parent)
                 <flux:card>
                     <flux:heading size="lg" class="mb-2">{{ __('Remixed From') }}</flux:heading>
-                    <a href="{{ route('recipes.show', $recipe->parent) }}" wire:navigate class="text-accent-600 hover:underline">
+                    <flux:link href="{{ route('recipes.show', $recipe->parent) }}" wire:navigate>
                         {{ $recipe->parent->name }}
-                    </a>
+                    </flux:link>
                 </flux:card>
             @endif
 
