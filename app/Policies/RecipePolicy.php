@@ -33,4 +33,9 @@ class RecipePolicy
     {
         return $recipe->team_id === $user->current_team_id;
     }
+
+    public function remix(User $user, Recipe $recipe): bool
+    {
+        return $recipe->team_id === $user->current_team_id;
+    }
 }

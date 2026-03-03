@@ -8,6 +8,8 @@ new class extends Component {
 
     public function remix(): void
     {
+        $this->authorize('remix', $this->recipe);
+
         $newRecipe = $this->recipe->replicate();
         $newRecipe->name = $this->recipe->name . ' (Remix)';
         $newRecipe->parent_id = $this->recipe->id;

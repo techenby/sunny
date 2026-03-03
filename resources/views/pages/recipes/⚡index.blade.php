@@ -35,6 +35,7 @@ new class extends Component {
     public function remix(int $id): void
     {
         $recipe = Auth::user()->currentTeam->recipes()->findOrFail($id);
+        $this->authorize('remix', $recipe);
 
         $recipe->replicate()
             ->fill([
