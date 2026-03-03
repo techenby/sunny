@@ -24,10 +24,10 @@ new class extends Component {
 
     public function delete(int $id): void
     {
-        Auth::user()->currentTeam->recipes()
-        ->where('id', $id)
-        ->firstOrFail()
-        ->delete();
+        $recipe = Auth::user()->currentTeam->recipes()->findOrFail($id);
+        $this->authorize('delete', $recipe);
+
+        $recipe->delete();
 
         unset($this->recipes);
     }
