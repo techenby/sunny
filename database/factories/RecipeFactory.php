@@ -19,16 +19,6 @@ class RecipeFactory extends Factory
             'team_id' => Team::factory(),
             'name' => fake()->sentence(3),
             'slug' => fn (array $attributes) => Str::slug($attributes['name']),
-            'source' => fake()->optional()->url(),
-            'servings' => fake()->optional()->numberBetween(1, 12) . ' ' . fake()->optional()->randomElement(['people', 'servings', 'pieces']),
-            'prep_time' => fake()->optional()->randomElement(['15 min', '30 min', '1 hour', '2 hours']),
-            'cook_time' => fake()->optional()->randomElement(['15 min', '30 min', '1 hour', '2 hours']),
-            'total_time' => fake()->optional()->randomElement(['30 min', '1 hour', '2 hours', '3 hours']),
-            'description' => fake()->optional()->paragraph(),
-            'ingredients' => fake()->optional()->text(),
-            'instructions' => fake()->optional()->text(),
-            'notes' => fake()->optional()->text(),
-            'nutrition' => fake()->optional()->text(),
         ];
     }
 
