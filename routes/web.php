@@ -17,3 +17,4 @@ Route::get('invitations/{invitation}/accept', AcceptTeamInvitation::class)
 
 require __DIR__ . '/settings.php';
 require __DIR__ . '/inventory.php';
+require __DIR__ . '/recipes.php';

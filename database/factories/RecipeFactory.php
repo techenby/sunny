@@ -7,7 +7,6 @@ namespace Database\Factories;
 use App\Models\Recipe;
 use App\Models\Team;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
 
 /** @extends Factory<Recipe> */

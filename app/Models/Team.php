@@ -77,6 +77,8 @@ class Team extends Model
 
         $this->users()->detach();
 
+        $this->recipes()->delete();
+
         $this->delete();
     }
 }

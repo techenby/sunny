@@ -59,7 +59,7 @@ class Recipe extends Model
         return $this->belongsTo(self::class, 'parent_id');
     }
 
-    /** @return HasMany<self> */
+    /** @return HasMany<Recipe, $this> */
     public function remixes(): HasMany
     {
         return $this->hasMany(self::class, 'parent_id');
