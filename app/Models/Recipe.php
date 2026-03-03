@@ -10,11 +10,16 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\Tags\HasTags;
 
-class Recipe extends Model
+class Recipe extends Model implements HasMedia
 {
     /** @use HasFactory<RecipeFactory> */
     use HasFactory;
+    use HasTags;
+    use InteractsWithMedia;
 
     /** @var list<string> */
     protected $fillable = [
