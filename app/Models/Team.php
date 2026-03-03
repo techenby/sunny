@@ -51,6 +51,12 @@ class Team extends Model
         return $this->hasMany(Item::class);
     }
 
+    /** @return HasMany<Recipe, $this> */
+    public function recipes(): HasMany
+    {
+        return $this->hasMany(Recipe::class);
+    }
+
     public function hasUser(User $user): bool
     {
         return $this->users->contains($user) || $this->user_id === $user->id;
