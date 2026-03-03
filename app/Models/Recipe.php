@@ -42,14 +42,37 @@ class Recipe extends Model implements HasMedia
     protected static function booted(): void
     {
         static::creating(function ($recipe) {
-            $recipe->slug = Str::slug($recipe->name);
+            $recipe->slug = $recipe->generateUniqueSlug($recipe->name);
         });
 
         static::updating(function ($recipe) {
             if ($recipe->isDirty('name')) {
-                $recipe->slug = Str::slug($recipe->name);
+                $recipe->slug = $recipe->generateUniqueSlug($recipe->name);
             }
         });
+    }
+
+    public function generateUniqueSlug(string $name): string
+    {
+        $baseSlug = Str::slug($name);
+
+        $existingSlugs = self::query()
+            ->where('team_id', $this->team_id)
+            ->where('slug', 'like', $baseSlug.'%')
+            ->when($this->exists, fn ($query) => $query->where('id', '!=', $this->id))
+            ->pluck('slug');
+
+        if (! $existingSlugs->contains($baseSlug)) {
+            return $baseSlug;
+        }
+
+        $counter = 1;
+
+        while ($existingSlugs->contains($baseSlug.'-'.$counter)) {
+            $counter++;
+        }
+
+        return $baseSlug.'-'.$counter;
     }
 
     /** @return BelongsTo<Team, $this> */
