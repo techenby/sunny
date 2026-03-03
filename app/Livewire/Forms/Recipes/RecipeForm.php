@@ -14,25 +14,25 @@ class RecipeForm extends Form
 
     public string $name = '';
 
-    public ?string $source = '';
+    public ?string $source = null;
 
-    public ?string $servings = '';
+    public ?string $servings = null;
 
-    public ?string $prep_time = '';
+    public ?string $prep_time = null;
 
-    public ?string $cook_time = '';
+    public ?string $cook_time = null;
 
-    public ?string $total_time = '';
+    public ?string $total_time = null;
 
-    public ?string $description = '';
+    public ?string $description = null;
 
-    public ?string $ingredients = '';
+    public ?string $ingredients = null;
 
-    public ?string $instructions = '';
+    public ?string $instructions = null;
 
-    public ?string $notes = '';
+    public ?string $notes = null;
 
-    public ?string $nutrition = '';
+    public ?string $nutrition = null;
 
     public ?int $parent_id = null;
 
@@ -57,7 +57,9 @@ class RecipeForm extends Form
 
     public function save(): void
     {
-        $data = $this->validate();
+        $this->validate();
+
+        $data = $this->except(['editingRecipe', 'parent_id']);
 
         if ($this->editingRecipe) {
             $this->editingRecipe->update($data);
