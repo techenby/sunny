@@ -5,4 +5,5 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::livewire('inventory', 'pages::inventory.index')->name('inventory.index');
     Route::livewire('inventory/items', 'pages::inventory.items')->name('inventory.items');
+    Route::livewire('inventory/items-new', 'pages::inventory.items.index')->name('inventory.items.index');
 });

@@ -21,6 +21,7 @@
                     <flux:sidebar.group expandable heading="Inventory" icon="archive-box" :expanded="request()->routeIs('inventory.*')">
                         <flux:sidebar.item :href="route('inventory.index')" wire:navigate>{{ __('Overview') }}</flux:sidebar.item>
                         <flux:sidebar.item :href="route('inventory.items')" wire:navigate>{{ __('Items') }}</flux:sidebar.item>
+                        <flux:sidebar.item :href="route('inventory.items.index')" wire:navigate badge="New Layout">{{ __('Items') }}</flux:sidebar.item>
                     </flux:sidebar.group>
                     @endif
 
@@ -37,7 +38,6 @@
             @endif
             <x-desktop-user-menu class="hidden lg:block" :name="auth()->user()->name" />
         </flux:sidebar>
-
 
         <!-- Mobile User Menu -->
         <flux:header class="lg:hidden">
