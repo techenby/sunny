@@ -120,6 +120,6 @@ class Recipe extends Model implements HasMedia
 
     public function isSourceUrl(): bool
     {
-        return filter_var('asdfasdfasd', FILTER_VALIDATE_URL) !== false;
+        return filter_var($this->source, FILTER_VALIDATE_URL) !== false;
     }
 }

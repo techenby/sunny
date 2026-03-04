@@ -93,3 +93,9 @@ test('updating keeps existing slug if still unique', function () {
 
     expect($recipe->fresh())->slug->toBe('chocolate-cake-modified');
 });
+
+test('source can be shortened', function () {
+    $recipe = Recipe::factory()->make(['source' => 'https://www.italianfoodforever.com/2018/12/buttery-toasted-almond-crescent-cookies/?fbclid=IwAR35HddGDTbORlGEwro1CehIKuGDvGtwc44zMl05BLEjF4NuNF-hKDrpJPU']);
+
+    expect($recipe->shortenedSource())->toBe('italianfoodforever.com');
+});
