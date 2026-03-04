@@ -6,6 +6,7 @@ use App\Models\TeamInvitation;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\URL;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Illuminate\Support\Collection;
@@ -71,6 +72,17 @@ new class extends Component {
         unset($this->invitations);
     }
 
+    public function copyInvitationLink(int $invitationId): void
+    {
+        abort_unless(Auth::user()->ownsTeam($this->team), 403);
+
+        $invitation = $this->team()->invitations()->findOrFail($invitationId);
+
+        $url = URL::temporarySignedRoute('invitation.accept', now()->addDays(7), $invitation);
+
+        $this->dispatch('copy-to-clipboard', url: $url);
+    }
+
     public function cancelInvitation(int $invitationId): void
     {
         abort_unless(Auth::user()->ownsTeam($this->team), 403);
@@ -97,7 +109,7 @@ new class extends Component {
     }
 }; ?>
 
-<section class="w-full">
+<section class="w-full" x-on:copy-to-clipboard.window="navigator.clipboard.writeText($event.detail.url)">
     @include('pages.settings.heading')
 
     <flux:heading class="sr-only">{{ __('Team Settings') }}</flux:heading>
@@ -164,10 +176,9 @@ new class extends Component {
                         <flux:table.cell>
                             <flux:badge size="sm" color="yellow">{{ __('Invited') }}</flux:badge>
                         </flux:table.cell>
-                        <flux:table.cell>
-                            <flux:button variant="ghost" size="sm" wire:click="cancelInvitation({{ $invitation->id }})" wire:confirm="{{ __('Are you sure you want to cancel this invitation?') }}">
-                                {{ __('Cancel') }}
-                            </flux:button>
+                        <flux:table.cell class="flex justify-end gap-1">
+                            <flux:button variant="ghost" size="sm" wire:click="copyInvitationLink({{ $invitation->id }})" icon="clipboard-document" />
+                            <flux:button variant="ghost" size="sm" wire:click="cancelInvitation({{ $invitation->id }})" wire:confirm="{{ __('Are you sure you want to cancel this invitation?') }}" icon="trash" />
                         </flux:table.cell>
                     </flux:table.row>
                 @endforeach
