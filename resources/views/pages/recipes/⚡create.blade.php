@@ -1,10 +1,29 @@
 <?php
 
+use App\Actions\ImportRecipeFromUrl;
 use App\Livewire\Forms\Recipes\RecipeForm;
+use Flux\Flux;
 use Livewire\Component;
 
 new class extends Component {
     public RecipeForm $form;
+
+    public function import(): void
+    {
+        $this->validate([
+            'form.source' => ['required', 'url'],
+        ]);
+
+        try {
+            $data = (new ImportRecipeFromUrl)->handle($this->form->source);
+
+            $this->form->fill(array_filter($data));
+
+            Flux::toast(variant: 'success', heading: 'Recipe imported!', text: 'Review the fields below and click "Create Recipe" to save.');
+        } catch (\RuntimeException $e) {
+            Flux::toast(variant: 'danger', heading: 'Import failed', text: $e->getMessage());
+        }
+    }
 
     public function save(): void
     {

@@ -7,11 +7,13 @@
             required
         />
 
-        <flux:input
-            wire:model="form.source"
-            :label="__('Source (URL or text)')"
-            type="text"
-        />
+        <flux:input wire:model="form.source" :label="__('Source (URL or text)')" type="text">
+            <x-slot name="iconTrailing">
+                <flux:tooltip content="Import from URL">
+                    <flux:button wire:click="import" size="sm" variant="subtle" icon="arrow-down-tray" class="-mr-1" />
+                </flux:tooltip>
+            </x-slot>
+        </flux:input>
     </div>
 </flux:card>
 
