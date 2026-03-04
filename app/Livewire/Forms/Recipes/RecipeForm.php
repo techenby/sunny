@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Livewire\Forms\Recipes;
 
+use App\Actions\CreateRecipe;
+use App\Actions\UpdateRecipe;
 use App\Models\Recipe;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Form;
@@ -62,9 +64,9 @@ class RecipeForm extends Form
         $data = $this->except(['editingRecipe', 'parent_id']);
 
         if ($this->editingRecipe) {
-            $this->editingRecipe->update($data);
+            (new UpdateRecipe)->handle($this->editingRecipe, $data);
         } else {
-            Auth::user()->currentTeam->recipes()->create($data);
+            (new CreateRecipe)->handle(Auth::user()->currentTeam, $data);
         }
 
         $this->reset();

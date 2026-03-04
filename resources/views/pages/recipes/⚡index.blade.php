@@ -1,5 +1,7 @@
 <?php
 
+use App\Actions\DeleteRecipe;
+use App\Actions\RemixRecipe;
 use App\Livewire\Traits\WithSearching;
 use App\Livewire\Traits\WithSorting;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -27,7 +29,7 @@ new class extends Component {
         $recipe = Auth::user()->currentTeam->recipes()->findOrFail($id);
         $this->authorize('delete', $recipe);
 
-        $recipe->delete();
+        (new DeleteRecipe)->handle($recipe);
 
         unset($this->recipes);
     }
@@ -37,7 +39,7 @@ new class extends Component {
         $recipe = Auth::user()->currentTeam->recipes()->findOrFail($id);
         $this->authorize('remix', $recipe);
 
-        $recipe->createRemix();
+        (new RemixRecipe)->handle($recipe);
 
         unset($this->recipes);
     }

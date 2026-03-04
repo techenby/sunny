@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\RemixRecipe;
 use App\Models\Recipe;
 use Livewire\Component;
 
@@ -10,7 +11,7 @@ new class extends Component {
     {
         $this->authorize('remix', $this->recipe);
 
-        $recipe = $this->recipe->createRemix();
+        $recipe = (new RemixRecipe)->handle($this->recipe);
 
         $this->redirect(route('recipes.show', $recipe), navigate: true);
     }

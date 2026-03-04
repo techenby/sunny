@@ -93,16 +93,6 @@ class Recipe extends Model implements HasMedia
         return $this->hasMany(self::class, 'parent_id');
     }
 
-    public function createRemix(): self
-    {
-        $remix = $this->replicate();
-        $remix->name = $this->name . ' (Remix)';
-        $remix->parent_id = $this->id;
-        $remix->save();
-
-        return $remix;
-    }
-
     public function shortenedSource(): ?string
     {
         if (! $this->source) {
