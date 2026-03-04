@@ -34,6 +34,13 @@ class RecipeFactory extends Factory
         });
     }
 
+    public function shared(): static
+    {
+        return $this->state(fn () => [
+            'share_token' => Str::uuid()->toString(),
+        ]);
+    }
+
     public function remixOf(Recipe $parent): static
     {
         return $this->state(fn () => [
