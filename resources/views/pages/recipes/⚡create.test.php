@@ -60,7 +60,7 @@ test('can import recipe from url', function () {
 
     Livewire::actingAs($user)
         ->test('pages::recipes.create')
-        ->set('importUrl', 'https://example.com/recipe')
+        ->set('form.source', 'https://example.com/recipe')
         ->call('import')
         ->assertHasNoErrors()
         ->assertSet('form.name', 'Imported Recipe')
@@ -76,7 +76,7 @@ test('import validates url is required', function () {
 
     Livewire::actingAs($user)
         ->test('pages::recipes.create')
-        ->set('importUrl', 'not-a-url')
+        ->set('form.source', 'not-a-url')
         ->call('import')
-        ->assertHasErrors(['importUrl']);
+        ->assertHasErrors(['form.source']);
 });
