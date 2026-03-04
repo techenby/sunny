@@ -3,7 +3,6 @@
 use App\Actions\CreateRecipe;
 use App\Models\Recipe;
 use Illuminate\Support\Facades\Auth;
-use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -15,55 +14,33 @@ new #[Layout('layouts::guest')] class extends Component {
         $this->recipe = Recipe::where('share_token', $shareToken)->firstOrFail();
     }
 
-    #[Computed]
-    public function existingRecipe(): ?Recipe
-    {
-        if (! Auth::check()) {
-            return null;
-        }
-
-        $team = Auth::user()->currentTeam;
-
-        if ($this->recipe->team_id === $team->id) {
-            return $this->recipe;
-        }
-
-        return Recipe::where('team_id', $team->id)
-            ->where('source', route('recipes.shared', $this->recipe->share_token))
-            ->first();
-    }
-
     public function addToMyTeam(): void
     {
+        $source = route('recipes.shared', $this->recipe->share_token);
+
         if (! Auth::check()) {
             $this->redirect(route('login'));
 
             return;
-        }
-
-        $team = Auth::user()->currentTeam;
-        $shareUrl = route('recipes.shared', $this->recipe->share_token);
-
-        if ($this->recipe->team_id === $team->id) {
+        // check if user is owner of recipe
+        } else if ($this->recipe->team_id === Auth::user()->current_team_id) {
             $this->redirect(route('recipes.show', $this->recipe), navigate: true);
 
             return;
-        }
-
-        $existing = Recipe::where('team_id', $team->id)->where('source', $shareUrl)->first();
-
-        if ($existing) {
-            $this->redirect(route('recipes.show', $existing), navigate: true);
+        // check if user already saved it
+        } else if ($toRecipe = Auth::user()->currentTeam->recipes()->where('source', $source)->first()) {
+            $this->redirect(route('recipes.show', $toRecipe), navigate: true);
 
             return;
         }
 
-        $data = [
-            ...$this->recipe->toRecipeData(),
-            'source' => $shareUrl,
-        ];
-
-        $recipe = (new CreateRecipe)->handle($team, $data);
+        $recipe = (new CreateRecipe)->handle(Auth::user()->currentTeam, [
+            ...$this->recipe->only([
+                'name', 'source', 'servings', 'prep_time', 'cook_time', 'total_time',
+                'description', 'ingredients', 'instructions', 'notes', 'nutrition',
+            ]),
+            'source' => $source,
+        ]);
 
         $this->redirect(route('recipes.show', $recipe), navigate: true);
     }
@@ -74,11 +51,7 @@ new #[Layout('layouts::guest')] class extends Component {
         <flux:heading size="xl">{{ $recipe->name }}</flux:heading>
 
         @auth
-            @if ($this->existingRecipe)
-                <flux:button :href="route('recipes.show', $this->existingRecipe)" icon="arrow-right" wire:navigate>{{ __('Already in My Recipes') }}</flux:button>
-            @else
-                <flux:button wire:click="addToMyTeam" icon="plus">{{ __('Add to My Team') }}</flux:button>
-            @endif
+            <flux:button wire:click="addToMyTeam" icon="plus" :disabled="Auth::user()->current_team_id === $recipe->team_id">{{ __('Add to My Team') }}</flux:button>
         @endauth
     </div>
 

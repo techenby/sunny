@@ -128,13 +128,4 @@ class Recipe extends Model implements HasMedia
     {
         return ! is_null($this->share_token);
     }
-
-    /** @return array<string, mixed> */
-    public function toRecipeData(): array
-    {
-        return $this->only([
-            'name', 'source', 'servings', 'prep_time', 'cook_time', 'total_time',
-            'description', 'ingredients', 'instructions', 'notes', 'nutrition',
-        ]);
-    }
 }
