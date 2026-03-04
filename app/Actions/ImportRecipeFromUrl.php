@@ -66,21 +66,11 @@ class ImportRecipeFromUrl
     {
         preg_match_all('/<script[^>]*type=["\']application\/ld\+json["\'][^>]*>(.*?)<\/script>/si', $html, $matches);
 
-        foreach ($matches[1] as $json) {
-            $data = json_decode(trim($json), true);
-
-            if (! is_array($data)) {
-                continue;
-            }
-
-            $recipe = static::findRecipeInData($data);
-
-            if ($recipe) {
-                return $recipe;
-            }
-        }
-
-        return null;
+        return collect($matches[1])
+            ->map(fn (string $json) => json_decode(trim($json), true))
+            ->filter(fn ($item) => is_array($item))
+            ->map(fn (array $data) => static::findRecipeInData($data))
+            ->first(fn ($recipe) => $recipe !== null);
     }
 
     /**
@@ -89,40 +79,18 @@ class ImportRecipeFromUrl
      */
     protected static function findRecipeInData(array $data): ?array
     {
-        // Direct Recipe type
         $type = $data['@type'] ?? null;
 
         if ($type === 'Recipe' || (is_array($type) && in_array('Recipe', $type))) {
             return $data;
         }
 
-        // Search in @graph array
-        if (isset($data['@graph']) && is_array($data['@graph'])) {
-            foreach ($data['@graph'] as $item) {
-                if (is_array($item)) {
-                    $recipe = static::findRecipeInData($item);
+        $children = $data['@graph'] ?? (array_is_list($data) ? $data : []);
 
-                    if ($recipe) {
-                        return $recipe;
-                    }
-                }
-            }
-        }
-
-        // Search in flat array of objects
-        if (array_is_list($data)) {
-            foreach ($data as $item) {
-                if (is_array($item)) {
-                    $recipe = static::findRecipeInData($item);
-
-                    if ($recipe) {
-                        return $recipe;
-                    }
-                }
-            }
-        }
-
-        return null;
+        return collect($children)
+            ->filter(fn ($item) => is_array($item))
+            ->map(fn (array $item) => static::findRecipeInData($item))
+            ->first(fn ($recipe) => $recipe !== null);
     }
 
     /**
