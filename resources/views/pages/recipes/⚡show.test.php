@@ -70,3 +70,31 @@ test('parent shows remixes', function () {
         ->assertSee('Remixes')
         ->assertSee('Remixed Recipe');
 });
+
+test('owner can toggle sharing on recipe show page', function () {
+    $user = User::factory()->withTeam()->create();
+    $recipe = Recipe::factory()->create(['team_id' => $user->currentTeam->id]);
+
+    $this->actingAs($user);
+
+    Livewire::test('pages::recipes.show', ['recipe' => $recipe])
+        ->call('toggleSharing');
+
+    expect($recipe->fresh()->isShared())->toBeTrue();
+
+    Livewire::test('pages::recipes.show', ['recipe' => $recipe])
+        ->call('toggleSharing');
+
+    expect($recipe->fresh()->isShared())->toBeFalse();
+});
+
+test('non-owner cannot toggle sharing', function () {
+    $user = User::factory()->withTeam()->create();
+    $recipe = Recipe::factory()->create();
+
+    $this->actingAs($user);
+
+    Livewire::test('pages::recipes.show', ['recipe' => $recipe])
+        ->call('toggleSharing')
+        ->assertForbidden();
+});

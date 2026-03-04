@@ -99,3 +99,25 @@ test('source can be shortened', function () {
 
     expect($recipe->shortenedSource())->toBe('italianfoodforever.com');
 });
+
+test('enabling sharing generates a share token', function () {
+    $recipe = Recipe::factory()->create();
+
+    expect($recipe->isShared())->toBeFalse();
+
+    $recipe->enableSharing();
+
+    expect($recipe->isShared())->toBeTrue()
+        ->and($recipe->share_token)->not->toBeNull();
+});
+
+test('disabling sharing removes the share token', function () {
+    $recipe = Recipe::factory()->shared()->create();
+
+    expect($recipe->isShared())->toBeTrue();
+
+    $recipe->disableSharing();
+
+    expect($recipe->isShared())->toBeFalse()
+        ->and($recipe->share_token)->toBeNull();
+});

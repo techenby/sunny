@@ -27,6 +27,7 @@ class Recipe extends Model implements HasMedia
         'parent_id',
         'name',
         'slug',
+        'share_token',
         'source',
         'servings',
         'prep_time',
@@ -111,5 +112,29 @@ class Recipe extends Model implements HasMedia
     public function isSourceUrl(): bool
     {
         return filter_var($this->source, FILTER_VALIDATE_URL) !== false;
+    }
+
+    public function enableSharing(): void
+    {
+        $this->update(['share_token' => Str::uuid()->toString()]);
+    }
+
+    public function disableSharing(): void
+    {
+        $this->update(['share_token' => null]);
+    }
+
+    public function isShared(): bool
+    {
+        return ! is_null($this->share_token);
+    }
+
+    /** @return array<string, mixed> */
+    public function toRecipeData(): array
+    {
+        return $this->only([
+            'name', 'source', 'servings', 'prep_time', 'cook_time', 'total_time',
+            'description', 'ingredients', 'instructions', 'notes', 'nutrition',
+        ]);
     }
 }
