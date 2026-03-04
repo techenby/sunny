@@ -42,7 +42,6 @@ class ImportRecipeFromUrl
 
         return collect($matches[1])
             ->map(fn (string $json) => json_decode(trim($json), true))
-            ->filter(fn ($item) => is_array($item))
             ->map(fn (array $data) => static::findRecipeInData($data))
             ->first(fn ($recipe) => $recipe !== null);
     }
@@ -62,7 +61,6 @@ class ImportRecipeFromUrl
         $children = $data['@graph'] ?? (array_is_list($data) ? $data : []);
 
         return collect($children)
-            ->filter(fn ($item) => is_array($item))
             ->map(fn (array $item) => static::findRecipeInData($item))
             ->first(fn ($recipe) => $recipe !== null);
     }
