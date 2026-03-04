@@ -40,7 +40,7 @@ test('parses direct Recipe JSON-LD', function () {
         ])),
     ]);
 
-    $result = ImportRecipeFromUrl::handle('https://example.com/chocolate-cake');
+    $result = (new ImportRecipeFromUrl)->handle('https://example.com/chocolate-cake');
 
     expect($result)
         ->name->toBe('Chocolate Cake')
@@ -81,7 +81,7 @@ test('parses Recipe from @graph array', function () {
         ])),
     ]);
 
-    $result = ImportRecipeFromUrl::handle('https://example.com/applesauce');
+    $result = (new ImportRecipeFromUrl)->handle('https://example.com/applesauce');
 
     expect($result)
         ->name->toBe('Applesauce')
@@ -90,7 +90,7 @@ test('parses Recipe from @graph array', function () {
 });
 
 test('converts ISO 8601 durations to human-readable format', function (string $input, string $expected) {
-    expect(ImportRecipeFromUrl::formatDuration($input))->toBe($expected);
+    expect((new ImportRecipeFromUrl)->formatDuration($input))->toBe($expected);
 })->with([
     ['PT15M', '15m'],
     ['PT1H', '1h'],
@@ -106,7 +106,7 @@ test('throws exception when no recipe schema found', function () {
         'example.com/*' => Http::response('<html><body>No recipe here</body></html>'),
     ]);
 
-    ImportRecipeFromUrl::handle('https://example.com/no-recipe');
+    (new ImportRecipeFromUrl)->handle('https://example.com/no-recipe');
 })->throws(RuntimeException::class, 'No recipe data found on this page.');
 
 test('throws exception for failed HTTP request', function () {
@@ -114,7 +114,7 @@ test('throws exception for failed HTTP request', function () {
         'example.com/*' => Http::response('Not Found', 404),
     ]);
 
-    ImportRecipeFromUrl::handle('https://example.com/missing');
+    (new ImportRecipeFromUrl)->handle('https://example.com/missing');
 })->throws(RuntimeException::class, 'Failed to fetch the URL.');
 
 test('handles string instructions', function () {
@@ -127,7 +127,7 @@ test('handles string instructions', function () {
         ])),
     ]);
 
-    $result = ImportRecipeFromUrl::handle('https://example.com/simple');
+    $result = (new ImportRecipeFromUrl)->handle('https://example.com/simple');
 
     expect($result['instructions'])->toBe('<ol><li>Step one.</li><li>Step two.</li><li>Step three.</li></ol>');
 });
@@ -142,7 +142,7 @@ test('handles array recipeYield', function () {
         ])),
     ]);
 
-    $result = ImportRecipeFromUrl::handle('https://example.com/yield');
+    $result = (new ImportRecipeFromUrl)->handle('https://example.com/yield');
 
     expect($result['servings'])->toBe('4');
 });
@@ -174,7 +174,7 @@ test('handles HowToSection nested instructions', function () {
         ])),
     ]);
 
-    $result = ImportRecipeFromUrl::handle('https://example.com/applesauce');
+    $result = (new ImportRecipeFromUrl)->handle('https://example.com/applesauce');
 
     expect($result['instructions'])
         ->toContain('<strong>Make Applesauce</strong>')
@@ -193,7 +193,7 @@ test('uses recipe url from schema when available', function () {
         ])),
     ]);
 
-    $result = ImportRecipeFromUrl::handle('https://example.com/some-page');
+    $result = (new ImportRecipeFromUrl)->handle('https://example.com/some-page');
 
     expect($result['source'])->toBe('https://example.com/canonical-url');
 });

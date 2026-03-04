@@ -17,7 +17,7 @@ new class extends Component {
         ]);
 
         try {
-            $data = ImportRecipeFromUrl::handle($this->importUrl);
+            $data = (new ImportRecipeFromUrl)->handle($this->importUrl);
 
             $this->form->fill(array_filter($data, fn ($value) => $value !== null && $value !== ''));
 
