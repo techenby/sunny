@@ -71,7 +71,7 @@ new class extends Component {
                     </flux:table.cell>
                     <flux:table.cell>
                         @if ($recipe->source)
-                            @if (filter_var($recipe->source, FILTER_VALIDATE_URL))
+                            @if ($recipe->isSourceUrl())
                                 <flux:link href="{{ $recipe->source }}" target="_blank">
                                     {{ $recipe->shortenedSource() }}
                                 </flux:link>

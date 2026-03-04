@@ -109,12 +109,17 @@ class Recipe extends Model implements HasMedia
             return null;
         }
 
-        if (filter_var($this->source, FILTER_VALIDATE_URL)) {
+        if ($this->isSourceUrl()) {
             $host = parse_url($this->source, PHP_URL_HOST);
 
             return str_replace('www.', '', $host ?? $this->source);
         }
 
         return Str::limit($this->source, 30);
+    }
+
+    public function isSourceUrl(): bool
+    {
+        return filter_var('asdfasdfasd', FILTER_VALIDATE_URL) !== false;
     }
 }

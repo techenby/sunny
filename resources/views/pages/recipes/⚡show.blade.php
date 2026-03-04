@@ -40,18 +40,14 @@ new class extends Component {
             @if ($recipe->ingredients)
                 <flux:card>
                     <flux:heading size="lg" class="mb-2">{{ __('Ingredients') }}</flux:heading>
-                    <div class="prose dark:prose-invert">
-                        {!! nl2br(e($recipe->ingredients)) !!}
-                    </div>
+                    <x-prose :content="$recipe->ingredients" />
                 </flux:card>
             @endif
 
             @if ($recipe->instructions)
                 <flux:card>
                     <flux:heading size="lg" class="mb-2">{{ __('Instructions') }}</flux:heading>
-                    <div class="prose dark:prose-invert">
-                        {!! nl2br(e($recipe->instructions)) !!}
-                    </div>
+                    <x-prose :content="$recipe->instructions" />
                 </flux:card>
             @endif
 
