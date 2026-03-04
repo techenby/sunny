@@ -46,9 +46,9 @@ test('parses direct Recipe JSON-LD', function () {
         ->name->toBe('Chocolate Cake')
         ->source->toBe('https://example.com/chocolate-cake')
         ->servings->toBe('8 servings')
-        ->prep_time->toBe('15 min')
-        ->cook_time->toBe('45 min')
-        ->total_time->toBe('1 hr')
+        ->prep_time->toBe('15m')
+        ->cook_time->toBe('45m')
+        ->total_time->toBe('1h')
         ->description->toBe('A rich chocolate cake.')
         ->ingredients->toBe('<ul><li>2 cups flour</li><li>1 cup sugar</li><li>3 eggs</li></ul>')
         ->instructions->toBe('<ol><li>Mix dry ingredients.</li><li>Add wet ingredients.</li><li>Bake at 350F for 45 minutes.</li></ol>')
@@ -92,13 +92,13 @@ test('parses Recipe from @graph array', function () {
 test('converts ISO 8601 durations to human-readable format', function (string $input, string $expected) {
     expect(ImportRecipeFromUrl::formatDuration($input))->toBe($expected);
 })->with([
-    ['PT15M', '15 min'],
-    ['PT1H', '1 hr'],
-    ['PT1H30M', '1 hr 30 min'],
-    ['PT2H', '2 hrs'],
-    ['PT45M', '45 min'],
-    ['P1DT2H', '1 day 2 hrs'],
-    ['30 minutes', '30 minutes'],
+    ['PT15M', '15m'],
+    ['PT1H', '1h'],
+    ['PT1H30M', '1h 30m'],
+    ['PT2H', '2h'],
+    ['PT45M', '45m'],
+    ['P1DT2H', '1d 2h'],
+    ['30 minutes', '30m'],
 ]);
 
 test('throws exception when no recipe schema found', function () {

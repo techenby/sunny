@@ -18,9 +18,9 @@ test('can create a recipe', function () {
         ->test('pages::recipes.create')
         ->set('form.name', 'Chocolate Cake')
         ->set('form.servings', '8 people')
-        ->set('form.prep_time', '20 min')
-        ->set('form.cook_time', '40 min')
-        ->set('form.total_time', '1 hour')
+        ->set('form.prep_time', '20m')
+        ->set('form.cook_time', '40m')
+        ->set('form.total_time', '1h')
         ->set('form.ingredients', "Flour\nSugar\nCocoa\nEggs")
         ->set('form.instructions', "Mix ingredients\nBake at 350F")
         ->call('save')
@@ -31,9 +31,9 @@ test('can create a recipe', function () {
         ->team_id->toBe($user->current_team_id)
         ->slug->toBe('chocolate-cake')
         ->servings->toBe('8 people')
-        ->prep_time->toBe('20 min')
-        ->cook_time->toBe('40 min')
-        ->total_time->toBe('1 hour');
+        ->prep_time->toBe('20m')
+        ->cook_time->toBe('40m')
+        ->total_time->toBe('1h');
 });
 
 test('can import recipe from url', function () {
@@ -66,9 +66,9 @@ test('can import recipe from url', function () {
         ->assertSet('form.name', 'Imported Recipe')
         ->assertSet('form.description', 'A great recipe')
         ->assertSet('form.servings', '4 servings')
-        ->assertSet('form.prep_time', '20 min')
-        ->assertSet('form.cook_time', '40 min')
-        ->assertSet('form.total_time', '1 hr');
+        ->assertSet('form.prep_time', '20m')
+        ->assertSet('form.cook_time', '40m')
+        ->assertSet('form.total_time', '1h');
 });
 
 test('import validates url is required', function () {

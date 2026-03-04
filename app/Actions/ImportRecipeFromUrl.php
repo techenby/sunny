@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Actions;
 
-use DateInterval;
-use Exception;
+use Carbon\CarbonInterval;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
+use Throwable;
 
 class ImportRecipeFromUrl
 {
@@ -26,39 +26,13 @@ class ImportRecipeFromUrl
         return static::mapToFormFields($recipe, $url);
     }
 
-    /**
-     * Convert an ISO 8601 duration (e.g., PT1H30M) to a human-readable string.
-     */
     public static function formatDuration(string $duration): string
     {
-        // Already human-readable
-        if (! str_starts_with($duration, 'P')) {
-            return $duration;
-        }
-
         try {
-            $interval = new DateInterval($duration);
-        } catch (Exception) {
+            return CarbonInterval::make($duration)->forHumans(['short' => true]);
+        } catch (Throwable) {
             return $duration;
         }
-
-        $parts = [];
-
-        $days = $interval->d + ($interval->m * 30) + ($interval->y * 365);
-
-        if ($days > 0) {
-            $parts[] = $days === 1 ? '1 day' : "{$days} days";
-        }
-
-        if ($interval->h > 0) {
-            $parts[] = $interval->h === 1 ? '1 hr' : "{$interval->h} hrs";
-        }
-
-        if ($interval->i > 0) {
-            $parts[] = "{$interval->i} min";
-        }
-
-        return implode(' ', $parts) ?: $duration;
     }
 
     /** @return array<string, mixed>|null */
