@@ -1,14 +1,15 @@
 # Sunny
 
-**PHP:** 8.4
-**Laravel:** 12
-**Node:** 22
-**Asset Compiler:** Vite
-**Database:** Postgres 18
-**Frontend:** [Livewire v4](https://livewire.laravel.com/docs/quickstart)
-**Testing:** [Pest v4](https://pestphp.com/docs/installation)
-**Hosting:** Cloud
-**Monitoring:** Nightwatch
+**PHP:** 8.4  
+**Laravel:** 12  
+**Node:** 22  
+**Asset Compiler:** Vite  
+**Database:** Postgres 18  
+**Frontend:** [Livewire v4](https://livewire.laravel.com/docs/quickstart)  
+**Testing:** [Pest v4](https://pestphp.com/docs/installation)  
+**Hosting:** Cloud  
+**Monitoring:** Nightwatch  
+
 **Notible Composer Packages:**
 - [driftingly/rector-laravel](https://github.com/driftingly/rector-laravel)
 - [livewire/flux-pro](https://fluxui.dev/)
@@ -16,12 +17,19 @@
 - [nunomaduro/essentials](https://github.com/nunomaduro/essentials)
 - [spatie/laravel-medialibrary](https://spatie.be/docs/laravel-medialibrary/v11/introduction)
 - [spatie/laravel-tags](https://spatie.be/docs/laravel-tags/v4/installation-and-setup)
+
 **Notible NPM Packages:**
 - [playwright](https://github.com/microsoft/playwright)
 - [tailwindcss](https://tailwindcss.com/)
 - [tailwindcss/typography](https://github.com/tailwindlabs/tailwindcss-typography)
 
 ## ERD
+
+| Color | Meaning |
+| --- | --- |
+| Blue | Application tables |
+| Red Orange | Laravel default tables |
+| Gray | Package tables |
 
 ```mermaid
 ---
