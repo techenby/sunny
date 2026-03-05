@@ -168,6 +168,19 @@ erDiagram
 		datetime created_at  ""
 	}
 
+	personal_access_tokens {
+		integer id PK ""
+		varchar tokenable_type  ""
+		integer tokenable_id  ""
+		text name  ""
+		varchar token UK ""
+		text abilities  ""
+		datetime last_used_at  ""
+		datetime expires_at  ""
+		datetime created_at  ""
+		datetime updated_at  ""
+	}
+
 	users||--o{teams:"owns"
 	users||--o{team_user:"belongs to"
 	users||--o|teams:"current team"
@@ -187,6 +200,7 @@ erDiagram
 	taggables:::Package
 	media:::Package
 	password_reset_tokens:::Laravel
+	personal_access_tokens:::Laravel
 
 	classDef Rose :,stroke-width:1px, stroke-dasharray:none, stroke:#FF5978, fill:#FFDFE5, color:#8E2236
 	classDef Package :,stroke-width:1px, stroke-dasharray:none, stroke:#999999, fill:#EEEEEE, color:#000000
