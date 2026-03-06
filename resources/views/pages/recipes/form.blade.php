@@ -1,20 +1,33 @@
-<flux:card>
-    <div class="grid gap-6 md:grid-cols-2">
-        <flux:input
-            wire:model="form.name"
-            :label="__('Name')"
-            type="text"
-            required
-        />
+<flux:card class="grid gap-6 md:grid-cols-2">
+    <flux:input
+        wire:model="form.name"
+        :label="__('Name')"
+        type="text"
+        required
+    />
 
-        <flux:input wire:model="form.source" :label="__('Source (URL or text)')" type="text">
-            <x-slot name="iconTrailing">
-                <flux:tooltip content="Import from URL">
-                    <flux:button wire:click="import" size="sm" variant="subtle" icon="arrow-down-tray" class="-mr-1" />
-                </flux:tooltip>
-            </x-slot>
-        </flux:input>
-    </div>
+    <flux:input wire:model="form.source" :label="__('Source (URL or text)')" type="text">
+        <x-slot name="iconTrailing">
+            <flux:tooltip content="Import from URL">
+                <flux:button wire:click="import" size="sm" variant="subtle" icon="arrow-down-tray" class="-mr-1" />
+            </flux:tooltip>
+        </x-slot>
+    </flux:input>
+
+    <flux:pillbox wire:model="form.tags" label="Tags" multiple placeholder="Choose tags...">
+        <flux:pillbox.option>Breakfast</flux:pillbox.option>
+        <flux:pillbox.option>Lunch</flux:pillbox.option>
+        <flux:pillbox.option>Dinner</flux:pillbox.option>
+        <flux:pillbox.option>Dessert</flux:pillbox.option>
+        <flux:pillbox.option>Meal</flux:pillbox.option>
+        <flux:pillbox.option>Gluten Free</flux:pillbox.option>
+        <flux:pillbox.option>Dairy Free</flux:pillbox.option>
+        <flux:pillbox.option>Diabetes-Friendly</flux:pillbox.option>
+        <flux:pillbox.option>Vegetarian</flux:pillbox.option>
+        <flux:pillbox.option>Vegan</flux:pillbox.option>
+        <flux:pillbox.option>Overnight</flux:pillbox.option>
+        <flux:pillbox.option>Slow Cooker</flux:pillbox.option>
+    </flux:pillbox>
 </flux:card>
 
 <flux:card>

@@ -24,13 +24,13 @@ class RecipeFactory extends Factory
 
     public function withTags(array $tags = []): static
     {
-        return $this->afterCreating(function (Recipe $recipe) use ($tags) {
-            $tagsToAttach = $tags ?: fake()->randomElements(
-                ['Breakfast', 'Lunch', 'Dinner', 'Dessert', 'Vegetarian', 'Vegan', 'Gluten-Free'],
+        return $this->state(function () use ($tags) {
+            $tagsToUse = $tags ?: fake()->randomElements(
+                ['Breakfast', 'Lunch', 'Dinner', 'Dessert', 'Vegetarian', 'Vegan', 'Gluten Free'],
                 fake()->numberBetween(1, 3)
             );
 
-            $recipe->attachTags($tagsToAttach);
+            return ['tags' => $tagsToUse];
         });
     }
 

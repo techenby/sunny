@@ -88,6 +88,20 @@ test('owner can toggle sharing on recipe show page', function () {
     expect($recipe->fresh()->isShared())->toBeFalse();
 });
 
+test('shows tags on recipe', function () {
+    $user = User::factory()->withTeam()->create();
+    $recipe = Recipe::factory()->for($user->currentTeam)->create([
+        'description' => 'A delicious recipe',
+        'tags' => ['dinner', 'italian'],
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('recipes.show', $recipe))
+        ->assertOk()
+        ->assertSee('dinner')
+        ->assertSee('italian');
+});
+
 test('non-owner cannot toggle sharing', function () {
     $user = User::factory()->withTeam()->create();
     $recipe = Recipe::factory()->create();

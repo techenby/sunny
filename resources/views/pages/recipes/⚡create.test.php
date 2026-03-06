@@ -17,6 +17,7 @@ test('can create a recipe', function () {
     Livewire::actingAs($user)
         ->test('pages::recipes.create')
         ->set('form.name', 'Chocolate Cake')
+        ->set('form.tags', ['Dessert'])
         ->set('form.servings', '8 people')
         ->set('form.prep_time', '20m')
         ->set('form.cook_time', '40m')
@@ -30,6 +31,7 @@ test('can create a recipe', function () {
     expect(Recipe::firstWhere('name', 'Chocolate Cake'))->not->toBeNull()
         ->team_id->toBe($user->current_team_id)
         ->slug->toBe('chocolate-cake')
+        ->tags->toBe(['Dessert'])
         ->servings->toBe('8 people')
         ->prep_time->toBe('20m')
         ->cook_time->toBe('40m')
@@ -52,6 +54,8 @@ test('can import recipe from url', function () {
                 'recipeInstructions' => [
                     ['@type' => 'HowToStep', 'text' => 'Mix.'],
                 ],
+                'recipeCategory' => 'Dinner',
+                'keywords' => 'slow cooker, vegetarian',
             ]) . '</script></head><body></body></html>'
         ),
     ]);
@@ -68,7 +72,30 @@ test('can import recipe from url', function () {
         ->assertSet('form.servings', '4 servings')
         ->assertSet('form.prep_time', '20m')
         ->assertSet('form.cook_time', '40m')
-        ->assertSet('form.total_time', '1h');
+        ->assertSet('form.total_time', '1h')
+        ->assertSet('form.tags', ['Dinner', 'Slow Cooker', 'Vegetarian']);
+});
+
+test('import does not set tags when none match', function () {
+    Http::fake([
+        'example.com/*' => Http::response(
+            '<html><head><script type="application/ld+json">' . json_encode([
+                '@context' => 'https://schema.org',
+                '@type' => 'Recipe',
+                'name' => 'Imported Recipe',
+                'keywords' => 'some random tag, another tag',
+            ]) . '</script></head><body></body></html>'
+        ),
+    ]);
+
+    $user = User::factory()->withTeam()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::recipes.create')
+        ->set('form.source', 'https://example.com/recipe')
+        ->call('import')
+        ->assertHasNoErrors()
+        ->assertSet('form.tags', []);
 });
 
 test('import validates url is required', function () {

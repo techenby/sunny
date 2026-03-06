@@ -10,16 +10,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
-use Spatie\MediaLibrary\HasMedia;
-use Spatie\MediaLibrary\InteractsWithMedia;
-use Spatie\Tags\HasTags;
 
-class Recipe extends Model implements HasMedia
+class Recipe extends Model
 {
     /** @use HasFactory<RecipeFactory> */
     use HasFactory;
-    use HasTags;
-    use InteractsWithMedia;
 
     /** @var list<string> */
     protected $fillable = [
@@ -38,6 +33,8 @@ class Recipe extends Model implements HasMedia
         'instructions',
         'notes',
         'nutrition',
+        'tags',
+        'photo',
     ];
 
     protected static function booted(): void
@@ -127,5 +124,13 @@ class Recipe extends Model implements HasMedia
     public function isShared(): bool
     {
         return ! is_null($this->share_token);
+    }
+
+    /** @return array<string, mixed> */
+    protected function casts(): array
+    {
+        return [
+            'tags' => 'array',
+        ];
     }
 }

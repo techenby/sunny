@@ -15,8 +15,6 @@
 - [livewire/flux-pro](https://fluxui.dev/)
 - [laravel/boost](https://github.com/laravel/boost)
 - [nunomaduro/essentials](https://github.com/nunomaduro/essentials)
-- [spatie/laravel-medialibrary](https://spatie.be/docs/laravel-medialibrary/v11/introduction)
-- [spatie/laravel-tags](https://spatie.be/docs/laravel-tags/v4/installation-and-setup)
 
 **Notible NPM Packages:**
 - [playwright](https://github.com/microsoft/playwright)
@@ -29,7 +27,6 @@
 | --- | --- |
 | Blue | Application tables |
 | Red Orange | Laravel default tables |
-| Gray | Package tables |
 
 ```mermaid
 ---
@@ -92,6 +89,7 @@ erDiagram
 		integer parent_id FK ""
 		varchar name  ""
 		varchar slug UK ""
+		varchar share_token UK ""
 		varchar source  ""
 		varchar servings  ""
 		varchar prep_time  ""
@@ -102,6 +100,8 @@ erDiagram
 		text instructions  ""
 		text notes  ""
 		text nutrition  ""
+		json tags  ""
+		varchar photo  ""
 		datetime created_at  ""
 		datetime updated_at  ""
 	}
@@ -125,44 +125,7 @@ erDiagram
 		datetime updated_at  ""
 	}
 
-	tags {
-		integer id PK ""
-		text name  ""
-		text slug  ""
-		varchar type  ""
-		integer order_column  ""
-		datetime created_at  ""
-		datetime updated_at  ""
-	}
-
-	taggables {
-		integer tag_id FK ""
-		varchar taggable_type  ""
-		integer taggable_id  ""
-	}
-
-	media {
-		integer id PK ""
-		varchar model_type  ""
-		integer model_id  ""
-		varchar uuid UK ""
-		varchar collection_name  ""
-		varchar name  ""
-		varchar file_name  ""
-		varchar mime_type  ""
-		varchar disk  ""
-		varchar conversions_disk  ""
-		integer size  ""
-		text manipulations  ""
-		text custom_properties  ""
-		text generated_conversions  ""
-		text responsive_images  ""
-		integer order_column  ""
-		datetime created_at  ""
-		datetime updated_at  ""
-	}
-
-	password_reset_tokens {
+password_reset_tokens {
 		varchar email PK ""
 		varchar token  ""
 		datetime created_at  ""
@@ -193,16 +156,11 @@ erDiagram
 	recipes||--o{recipes:"remix of"
 	containers||--o{containers:"nested in"
 	containers||--o{items:"contains"
-	tags||--o{taggables:"tagged via"
 
 	sessions:::Laravel
-	tags:::Package
-	taggables:::Package
-	media:::Package
 	password_reset_tokens:::Laravel
 	personal_access_tokens:::Laravel
 
 	classDef Rose :,stroke-width:1px, stroke-dasharray:none, stroke:#FF5978, fill:#FFDFE5, color:#8E2236
-	classDef Package :,stroke-width:1px, stroke-dasharray:none, stroke:#999999, fill:#EEEEEE, color:#000000
 	classDef Laravel stroke:#FF2D20, fill:#FFD6D4, color:#BF2118
 ```

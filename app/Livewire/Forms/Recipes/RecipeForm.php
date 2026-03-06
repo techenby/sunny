@@ -16,6 +16,9 @@ class RecipeForm extends Form
 
     public string $name = '';
 
+    /** @var string[] */
+    public array $tags = [];
+
     public ?string $source = null;
 
     public ?string $servings = null;
@@ -43,6 +46,7 @@ class RecipeForm extends Form
         $this->fill([
             'editingRecipe' => $recipe,
             'name' => $recipe->name,
+            'tags' => $recipe->tags ?? [],
             'source' => $recipe->source,
             'servings' => $recipe->servings,
             'prep_time' => $recipe->prep_time,
@@ -77,6 +81,7 @@ class RecipeForm extends Form
     {
         return [
             'name' => ['required', 'string', 'max:255'],
+            'tags' => ['nullable', 'array'],
             'source' => ['nullable', 'string', 'max:500'],
             'servings' => ['nullable', 'string', 'max:50'],
             'prep_time' => ['nullable', 'string', 'max:50'],

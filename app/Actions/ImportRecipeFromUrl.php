@@ -72,13 +72,14 @@ class ImportRecipeFromUrl
 
     /**
      * @param  array<string, mixed>  $recipe
-     * @return array<string, string|null>
+     * @return array<string, mixed>
      */
     private function mapToFormFields(array $recipe, string $url): array
     {
         return [
             'name' => $recipe['name'] ?? null,
             'source' => $recipe['url'] ?? $url,
+            'tags' => $this->extractTags($recipe),
             'servings' => isset($recipe['recipeYield']) ? $this->normalizeYield($recipe['recipeYield']) : null,
             'prep_time' => isset($recipe['prepTime']) ? $this->formatDuration($recipe['prepTime']) : null,
             'cook_time' => isset($recipe['cookTime']) ? $this->formatDuration($recipe['cookTime']) : null,
@@ -88,6 +89,43 @@ class ImportRecipeFromUrl
             'instructions' => isset($recipe['recipeInstructions']) ? $this->formatInstructions($recipe['recipeInstructions']) : null,
             'nutrition' => isset($recipe['nutrition']) ? $this->formatNutrition($recipe['nutrition']) : null,
         ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $recipe
+     * @return string[]
+     */
+    private function extractTags(array $recipe): array
+    {
+        $knownTags = [
+            'Breakfast', 'Lunch', 'Dinner', 'Dessert', 'Meal',
+            'Gluten Free', 'Dairy Free', 'Diabetes-Friendly',
+            'Vegetarian', 'Vegan', 'Overnight', 'Slow Cooker',
+        ];
+
+        $candidates = collect();
+
+        if (isset($recipe['recipeCategory'])) {
+            $candidates = $candidates->merge((array) $recipe['recipeCategory']);
+        }
+
+        if (isset($recipe['keywords'])) {
+            $keywords = is_string($recipe['keywords'])
+                ? explode(',', $recipe['keywords'])
+                : (array) $recipe['keywords'];
+            $candidates = $candidates->merge($keywords);
+        }
+
+        $knownTagsLower = collect($knownTags)->mapWithKeys(fn (string $tag) => [mb_strtolower($tag) => $tag]);
+
+        return $candidates
+            ->map(fn (string $value) => trim($value))
+            ->filter()
+            ->map(fn (string $candidate) => $knownTagsLower->get(mb_strtolower($candidate)))
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
     }
 
     private function normalizeYield(mixed $yield): string

@@ -4,6 +4,14 @@
             <flux:card>
                 <flux:heading size="lg" class="mb-2">{{ __('Description') }}</flux:heading>
                 <flux:text>{{ $recipe->description }}</flux:text>
+
+                @if ($recipe->tags)
+                    <div class="mt-4 flex flex-wrap gap-2">
+                        @foreach ($recipe->tags as $tag)
+                            <flux:badge size="sm">{{ $tag }}</flux:badge>
+                        @endforeach
+                    </div>
+                @endif
             </flux:card>
         @endif
 
