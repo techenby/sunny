@@ -36,34 +36,40 @@ new class extends Component {
             <flux:button :href="route('recipes.index')" icon="arrow-left" variant="ghost" wire:navigate />
             <flux:heading size="xl">{{ $recipe->name }}</flux:heading>
         </div>
-        <div class="flex gap-2">
-            <flux:dropdown align="end">
-                <flux:button icon="share" :variant="$recipe->isShared() ? 'primary' : 'filled'">{{ __('Share') }}</flux:button>
-                <flux:popover class="w-80">
-                    <div class="space-y-4">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <flux:heading size="sm">{{ __('Public Link') }}</flux:heading>
-                                <flux:text size="sm">{{ __('Anyone with the link can view this recipe.') }}</flux:text>
-                            </div>
-                            <flux:switch wire:click="toggleSharing" :checked="$recipe->isShared()" />
-                        </div>
+        <flux:dropdown align="end">
+            <flux:button icon="ellipsis-vertical" variant="ghost" />
+            <flux:menu>
+                <flux:modal.trigger name="share-recipe">
+                    <flux:menu.item icon="share">{{ __('Share') }}</flux:menu.item>
+                </flux:modal.trigger>
+                <flux:menu.item icon="document-duplicate" wire:click="remix">{{ __('Remix') }}</flux:menu.item>
+                <flux:menu.item icon="pencil" :href="route('recipes.edit', $recipe)" wire:navigate>{{ __('Edit') }}</flux:menu.item>
+            </flux:menu>
+        </flux:dropdown>
 
-                        @if ($recipe->isShared())
-                            <div x-data="{ copied: false }">
-                                <flux:input
-                                    readonly
-                                    :value="route('recipes.shared', $recipe->share_token)"
-                                    copyable
-                                />
-                            </div>
-                        @endif
-                    </div>
-                </flux:popover>
-            </flux:dropdown>
-            <flux:button wire:click="remix" icon="document-duplicate">{{ __('Remix') }}</flux:button>
-            <flux:button :href="route('recipes.edit', $recipe)" icon="pencil" wire:navigate>{{ __('Edit') }}</flux:button>
-        </div>
+        @teleport('body')
+        <flux:modal name="share-recipe" class="md:w-96">
+            <div class="space-y-6">
+                <div>
+                    <flux:heading size="lg">{{ __('Share Recipe') }}</flux:heading>
+                    <flux:text class="mt-2">{{ __('Anyone with the link can view this recipe.') }}</flux:text>
+                </div>
+
+                <div class="flex items-center justify-between">
+                    <flux:text>{{ __('Public Link') }}</flux:text>
+                    <flux:switch wire:click="toggleSharing" :checked="$recipe->isShared()" />
+                </div>
+
+                @if ($recipe->isShared())
+                    <flux:input
+                        readonly
+                        :value="route('recipes.shared', $recipe->share_token)"
+                        copyable
+                    />
+                @endif
+            </div>
+        </flux:modal>
+        @endteleport
     </div>
 
     @include('pages.recipes.detail')
