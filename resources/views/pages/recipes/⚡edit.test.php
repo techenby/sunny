@@ -126,6 +126,35 @@ test('can remove a temporary uploaded photo', function () {
         ->assertDontSee('photo.png');
 });
 
+test('can remove existing photo then upload a new one', function () {
+    Storage::fake();
+
+    $user = User::factory()->withTeam()->create();
+    $recipe = Recipe::factory()->for($user->currentTeam)->create([
+        'name' => 'Chocolate Cake',
+        'photo_path' => "teams/{$user->current_team_id}/recipes/chocolate-cake.png",
+    ]);
+
+    Storage::put($recipe->photo_path, 'old photo contents');
+
+    Livewire::actingAs($user)
+        ->test('pages::recipes.edit', ['recipe' => $recipe])
+        ->assertSee('chocolate-cake.png')
+        ->call('removePhoto')
+        ->assertDontSee('chocolate-cake.png')
+        ->set('form.photo', UploadedFile::fake()->image('new-photo.jpg'))
+        ->assertSee('new-photo.jpg')
+        ->call('save')
+        ->assertHasNoErrors()
+        ->assertRedirect(route('recipes.show', $recipe));
+
+    expect($recipe->fresh())
+        ->photo_path->toBe("teams/{$user->current_team_id}/recipes/chocolate-cake.jpg");
+
+    Storage::assertMissing("teams/{$user->current_team_id}/recipes/chocolate-cake.png");
+    Storage::assertExists("teams/{$user->current_team_id}/recipes/chocolate-cake.jpg");
+});
+
 test('cannot edit a recipe from another team', function () {
     $user = User::factory()->withTeam()->create();
     $otherRecipe = Recipe::factory()->for(Team::factory())->create();

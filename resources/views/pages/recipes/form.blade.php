@@ -24,7 +24,7 @@
 
         <div class="mt-4 flex flex-col gap-2">
         @if ($this->form->photo)
-            <flux:file-item :heading="$this->form->photo->getClientOriginalName()" :image="$this->form->photo->temporaryUrl()" :size="$this->form->photo->getSize()">
+            <flux:file-item :heading="$this->form->photo->getClientOriginalName()" :image="$this->form->photo->isPreviewable() ? $this->form->photo->temporaryUrl() : null" :size="$this->form->photo->getSize()">
                 <x-slot name="actions">
                     <flux:button wire:click="removePhoto" variant="ghost" size="sm" icon="x-mark" />
                 </x-slot>

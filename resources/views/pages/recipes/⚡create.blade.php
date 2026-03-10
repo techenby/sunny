@@ -29,8 +29,10 @@ new class extends Component {
 
     public function removePhoto(): void
     {
-        $this->form->photo->delete();
-        $this->form->photo = null;
+        if ($this->form->photo) {
+            $this->form->photo->delete();
+            $this->form->photo = null;
+        }
     }
 
     public function save(): void

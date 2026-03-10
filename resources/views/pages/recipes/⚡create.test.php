@@ -131,6 +131,32 @@ test('can upload a photo to a recipe', function () {
     Storage::assertExists("teams/{$user->current_team_id}/recipes/chocolate-cake.png");
 });
 
+test('rejects non-image file uploads', function () {
+    Storage::fake();
+
+    $user = User::factory()->withTeam()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::recipes.create')
+        ->set('form.name', 'Chocolate Cake')
+        ->set('form.photo', UploadedFile::fake()->create('document.pdf', 100, 'application/pdf'))
+        ->call('save')
+        ->assertHasErrors(['form.photo']);
+});
+
+test('rejects photo exceeding 5MB', function () {
+    Storage::fake();
+
+    $user = User::factory()->withTeam()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::recipes.create')
+        ->set('form.name', 'Chocolate Cake')
+        ->set('form.photo', UploadedFile::fake()->image('large.png')->size(6000))
+        ->call('save')
+        ->assertHasErrors(['form.photo']);
+});
+
 test('can remove a temporary uploaded photo', function () {
     Storage::fake();
 
