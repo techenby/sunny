@@ -2,6 +2,7 @@
 
 use App\Models\Recipe;
 use App\Models\User;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
 test('can view a recipe', function () {
@@ -100,6 +101,36 @@ test('shows tags on recipe', function () {
         ->assertOk()
         ->assertSee('dinner')
         ->assertSee('italian');
+});
+
+test('displays photo when recipe has one', function () {
+    Storage::fake();
+
+    $user = User::factory()->withTeam()->create();
+    $recipe = Recipe::factory()->for($user->currentTeam)->create([
+        'name' => 'Chocolate Cake',
+        'photo_path' => "teams/{$user->current_team_id}/recipes/chocolate-cake.png",
+    ]);
+
+    Storage::put($recipe->photo_path, 'photo contents');
+
+    $this->actingAs($user)
+        ->get(route('recipes.show', $recipe))
+        ->assertOk()
+        ->assertSee(Storage::url($recipe->photo_path));
+});
+
+test('does not display photo when recipe has none', function () {
+    $user = User::factory()->withTeam()->create();
+    $recipe = Recipe::factory()->for($user->currentTeam)->create([
+        'name' => 'Chocolate Cake',
+        'photo_path' => null,
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('recipes.show', $recipe))
+        ->assertOk()
+        ->assertDontSee('<img');
 });
 
 test('non-owner cannot toggle sharing', function () {
