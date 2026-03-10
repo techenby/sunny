@@ -4,8 +4,10 @@ use App\Actions\ImportRecipeFromUrl;
 use App\Livewire\Forms\Recipes\RecipeForm;
 use App\Models\Recipe;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 new class extends Component {
+    use WithFileUploads;
     public Recipe $recipe;
 
     public RecipeForm $form;

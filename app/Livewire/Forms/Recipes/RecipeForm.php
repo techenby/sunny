@@ -8,6 +8,7 @@ use App\Actions\CreateRecipe;
 use App\Actions\UpdateRecipe;
 use App\Models\Recipe;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\Form;
 
 class RecipeForm extends Form
@@ -38,6 +39,8 @@ class RecipeForm extends Form
     public ?string $notes = null;
 
     public ?string $nutrition = null;
+
+    public ?TemporaryUploadedFile $photo = null;
 
     public ?int $parent_id = null;
 
@@ -92,6 +95,7 @@ class RecipeForm extends Form
             'instructions' => ['nullable', 'string'],
             'notes' => ['nullable', 'string'],
             'nutrition' => ['nullable', 'string'],
+            'photo' => ['nullable', 'image', 'max:5120'],
             'parent_id' => ['nullable', 'integer', 'exists:recipes,id'],
         ];
     }

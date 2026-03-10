@@ -2,7 +2,9 @@
 
 use App\Models\Recipe;
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
 test('can view page', function () {
@@ -106,4 +108,24 @@ test('import validates url is required', function () {
         ->set('form.source', 'not-a-url')
         ->call('import')
         ->assertHasErrors(['form.source']);
+});
+
+test('can upload a photo to a recipe', function () {
+    Storage::fake();
+
+    $user = User::factory()->withTeam()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::recipes.create')
+        ->set('form.name', 'Chocolate Cake')
+        ->set('form.photo', UploadedFile::fake()->image('download.png'))
+        ->call('save')
+        ->assertHasNoErrors()
+        ->assertRedirect(route('recipes.index'));
+
+    expect(Recipe::firstWhere('name', 'Chocolate Cake'))->not->toBeNull()
+        ->team_id->toBe($user->current_team_id)
+        ->photo_path->toBe("teams/{$user->current_team_id}/recipes/chocolate-cake.png");
+
+    Storage::assertExists("teams/{$user->current_team_id}/recipes/chocolate-cake.png");
 });
