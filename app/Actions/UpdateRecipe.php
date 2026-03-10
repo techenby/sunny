@@ -14,13 +14,19 @@ class UpdateRecipe
     /**
      * @param  array<string, mixed>  $data
      */
-    public function handle(Recipe $recipe, array $data): Recipe
+    public function handle(Recipe $recipe, array $data, bool $removePhoto = false): Recipe
     {
         $photo = Arr::pull($data, 'photo');
 
         $recipe->update($data);
 
-        if ($photo instanceof UploadedFile) {
+        if ($removePhoto && ! $photo instanceof UploadedFile) {
+            if ($recipe->photo_path) {
+                Storage::delete($recipe->photo_path);
+            }
+
+            $recipe->update(['photo_path' => null]);
+        } elseif ($photo instanceof UploadedFile) {
             if ($recipe->photo_path) {
                 Storage::delete($recipe->photo_path);
             }

@@ -24,9 +24,17 @@
 
         <div class="mt-4 flex flex-col gap-2">
         @if ($this->form->photo)
-            <flux:file-item :heading="$this->form->photo->getClientOriginalName()" :image="$this->form->photo->temporaryUrl()" :size="$this->form->photo->getSize()" />
+            <flux:file-item :heading="$this->form->photo->getClientOriginalName()" :image="$this->form->photo->temporaryUrl()" :size="$this->form->photo->getSize()">
+                <x-slot name="actions">
+                    <flux:button wire:click="removePhoto" variant="ghost" size="sm" icon="x-mark" />
+                </x-slot>
+            </flux:file-item>
         @elseif ($this->form->existingPhotoUrl)
-            <flux:file-item :heading="basename($this->form->editingRecipe->photo_path)" :image="$this->form->existingPhotoUrl" />
+            <flux:file-item :heading="basename($this->form->editingRecipe->photo_path)" :image="$this->form->existingPhotoUrl">
+                <x-slot name="actions">
+                    <flux:button wire:click="removePhoto" variant="ghost" size="sm" icon="x-mark" />
+                </x-slot>
+            </flux:file-item>
         @endif
         </div>
         <flux:error name="form.photo" />

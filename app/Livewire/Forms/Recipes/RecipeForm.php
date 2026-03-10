@@ -45,6 +45,8 @@ class RecipeForm extends Form
 
     public ?string $existingPhotoUrl = null;
 
+    public bool $removePhoto = false;
+
     public ?int $parent_id = null;
 
     public function load(Recipe $recipe): void
@@ -72,10 +74,10 @@ class RecipeForm extends Form
     {
         $this->validate();
 
-        $data = $this->except(['editingRecipe', 'parent_id', 'existingPhotoUrl']);
+        $data = $this->except(['editingRecipe', 'parent_id', 'existingPhotoUrl', 'removePhoto']);
 
         if ($this->editingRecipe) {
-            (new UpdateRecipe)->handle($this->editingRecipe, $data);
+            (new UpdateRecipe)->handle($this->editingRecipe, $data, $this->removePhoto);
         } else {
             (new CreateRecipe)->handle(Auth::user()->currentTeam, $data);
         }

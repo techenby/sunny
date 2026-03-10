@@ -130,3 +130,18 @@ test('can upload a photo to a recipe', function () {
 
     Storage::assertExists("teams/{$user->current_team_id}/recipes/chocolate-cake.png");
 });
+
+test('can remove a temporary uploaded photo', function () {
+    Storage::fake();
+
+    $user = User::factory()->withTeam()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::recipes.create')
+        ->set('form.name', 'Chocolate Cake')
+        ->set('form.photo', UploadedFile::fake()->image('download.png'))
+        ->assertSee('download.png')
+        ->call('removePhoto')
+        ->assertDontSee('download.png')
+        ->assertSet('form.photo', null);
+});
