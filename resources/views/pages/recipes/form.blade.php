@@ -18,8 +18,7 @@
         <flux:label>{{ __('Photo') }}</flux:label>
 
         <flux:file-upload wire:model="form.photo">
-
-            <flux:file-upload.dropzone :heading="__('Drop photo here or click to browse')" :text="__('JPG, PNG up to 5MB')" />
+            <flux:file-upload.dropzone :heading="__('Drop photo here or click to browse')" :text="__('JPG, PNG up to 5MB')" inline />
         </flux:file-upload>
 
         <div class="mt-4 flex flex-col gap-2">

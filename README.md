@@ -101,7 +101,7 @@ erDiagram
 		text notes  ""
 		text nutrition  ""
 		json tags  ""
-		varchar photo  ""
+		varchar photo_path  ""
 		datetime created_at  ""
 		datetime updated_at  ""
 	}
