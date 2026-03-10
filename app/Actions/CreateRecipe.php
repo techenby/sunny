@@ -6,6 +6,8 @@ namespace App\Actions;
 
 use App\Models\Recipe;
 use App\Models\Team;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Arr;
 
 class CreateRecipe
 {
@@ -14,6 +16,18 @@ class CreateRecipe
      */
     public function handle(Team $team, array $data): Recipe
     {
-        return $team->recipes()->create($data);
+        $photo = Arr::pull($data, 'photo');
+
+        $recipe = $team->recipes()->create($data);
+
+        if ($photo instanceof UploadedFile) {
+            $filename = "{$recipe->slug}.{$photo->getClientOriginalExtension()}";
+
+            $path = $photo->storeAs("teams/{$team->id}/recipes", $filename);
+
+            $recipe->update(['photo_path' => $path]);
+        }
+
+        return $recipe;
     }
 }

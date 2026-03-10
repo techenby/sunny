@@ -8,6 +8,8 @@ use App\Actions\CreateRecipe;
 use App\Actions\UpdateRecipe;
 use App\Models\Recipe;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\Form;
 
 class RecipeForm extends Form
@@ -39,6 +41,12 @@ class RecipeForm extends Form
 
     public ?string $nutrition = null;
 
+    public ?TemporaryUploadedFile $photo = null;
+
+    public ?string $existingPhotoUrl = null;
+
+    public bool $removePhoto = false;
+
     public ?int $parent_id = null;
 
     public function load(Recipe $recipe): void
@@ -58,6 +66,7 @@ class RecipeForm extends Form
             'notes' => $recipe->notes,
             'nutrition' => $recipe->nutrition,
             'parent_id' => $recipe->parent_id,
+            'existingPhotoUrl' => $recipe->photo_path ? Storage::temporaryUrl($recipe->photo_path, now()->addMinutes(30)) : null,
         ]);
     }
 
@@ -65,10 +74,10 @@ class RecipeForm extends Form
     {
         $this->validate();
 
-        $data = $this->except(['editingRecipe', 'parent_id']);
+        $data = $this->except(['editingRecipe', 'parent_id', 'existingPhotoUrl', 'removePhoto']);
 
         if ($this->editingRecipe) {
-            (new UpdateRecipe)->handle($this->editingRecipe, $data);
+            (new UpdateRecipe)->handle($this->editingRecipe, $data, $this->removePhoto);
         } else {
             (new CreateRecipe)->handle(Auth::user()->currentTeam, $data);
         }
@@ -92,6 +101,7 @@ class RecipeForm extends Form
             'instructions' => ['nullable', 'string'],
             'notes' => ['nullable', 'string'],
             'nutrition' => ['nullable', 'string'],
+            'photo' => ['nullable', 'image', 'max:5120'],
             'parent_id' => ['nullable', 'integer', 'exists:recipes,id'],
         ];
     }

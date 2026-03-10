@@ -34,7 +34,7 @@ class Recipe extends Model
         'notes',
         'nutrition',
         'tags',
-        'photo',
+        'photo_path',
     ];
 
     protected static function booted(): void

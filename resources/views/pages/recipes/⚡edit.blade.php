@@ -4,8 +4,10 @@ use App\Actions\ImportRecipeFromUrl;
 use App\Livewire\Forms\Recipes\RecipeForm;
 use App\Models\Recipe;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 new class extends Component {
+    use WithFileUploads;
     public Recipe $recipe;
 
     public RecipeForm $form;
@@ -29,6 +31,17 @@ new class extends Component {
             Flux::toast(variant: 'success', heading: 'Recipe imported!', text: 'Review the fields below and click "Update Recipe" to save.');
         } catch (\RuntimeException $e) {
             Flux::toast(variant: 'danger', heading: 'Import failed', text: $e->getMessage());
+        }
+    }
+
+    public function removePhoto(): void
+    {
+        if ($this->form->photo) {
+            $this->form->photo->delete();
+            $this->form->photo = null;
+        } elseif ($this->form->existingPhotoUrl) {
+            $this->form->existingPhotoUrl = null;
+            $this->form->removePhoto = true;
         }
     }
 

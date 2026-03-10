@@ -1,5 +1,8 @@
 <div class="grid gap-6 lg:grid-cols-3">
     <div class="space-y-6 lg:col-span-2">
+        @if ($recipe->photo_path)
+            <img src="{{ Storage::temporaryUrl($recipe->photo_path, now()->addMinutes(30)) }}" alt="{{ $recipe->name }}" class="w-full rounded-lg object-cover max-h-96" />
+        @endif
         @if ($recipe->description)
             <flux:card>
                 <flux:heading size="lg" class="mb-2">{{ __('Description') }}</flux:heading>

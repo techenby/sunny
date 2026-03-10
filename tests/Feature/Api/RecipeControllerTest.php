@@ -2,6 +2,7 @@
 
 use App\Models\Recipe;
 use App\Models\User;
+use Illuminate\Support\Facades\Storage;
 
 test('guests cannot access recipes', function () {
     $this->getJson(route('api.recipes.index'))->assertUnauthorized();
@@ -61,6 +62,32 @@ test('show returns a recipe', function () {
         ->assertOk()
         ->assertJsonPath('data.id', $recipe->id)
         ->assertJsonPath('data.name', $recipe->name);
+});
+
+test('show returns photo_url when recipe has a photo', function () {
+    Storage::fake();
+
+    $user = User::factory()->withTeam()->create();
+    $recipe = Recipe::factory()->for($user->currentTeam)->create([
+        'photo_path' => "teams/{$user->current_team_id}/recipes/cake.png",
+    ]);
+
+    $response = $this->actingAs($user)
+        ->getJson(route('api.recipes.show', $recipe))
+        ->assertOk()
+        ->assertJsonMissingPath('data.photo_path');
+
+    expect($response->json('data.photo_url'))->toBeString()->toContain('cake.png');
+});
+
+test('show returns null photo_url when recipe has no photo', function () {
+    $user = User::factory()->withTeam()->create();
+    $recipe = Recipe::factory()->for($user->currentTeam)->create(['photo_path' => null]);
+
+    $this->actingAs($user)
+        ->getJson(route('api.recipes.show', $recipe))
+        ->assertOk()
+        ->assertJsonPath('data.photo_url', null);
 });
 
 test('show returns 403 for another team recipe', function () {
