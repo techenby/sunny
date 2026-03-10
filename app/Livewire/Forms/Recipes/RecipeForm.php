@@ -66,7 +66,7 @@ class RecipeForm extends Form
             'notes' => $recipe->notes,
             'nutrition' => $recipe->nutrition,
             'parent_id' => $recipe->parent_id,
-            'existingPhotoUrl' => $recipe->photo_path ? Storage::url($recipe->photo_path) : null,
+            'existingPhotoUrl' => $recipe->photo_path ? Storage::temporaryUrl($recipe->photo_path, now()->addMinutes(30)) : null,
         ]);
     }
 

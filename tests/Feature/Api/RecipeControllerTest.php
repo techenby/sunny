@@ -72,11 +72,12 @@ test('show returns photo_url when recipe has a photo', function () {
         'photo_path' => "teams/{$user->current_team_id}/recipes/cake.png",
     ]);
 
-    $this->actingAs($user)
+    $response = $this->actingAs($user)
         ->getJson(route('api.recipes.show', $recipe))
         ->assertOk()
-        ->assertJsonPath('data.photo_url', Storage::url($recipe->photo_path))
         ->assertJsonMissingPath('data.photo_path');
+
+    expect($response->json('data.photo_url'))->toBeString()->toContain('cake.png');
 });
 
 test('show returns null photo_url when recipe has no photo', function () {

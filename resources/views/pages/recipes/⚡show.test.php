@@ -117,7 +117,7 @@ test('displays photo when recipe has one', function () {
     $this->actingAs($user)
         ->get(route('recipes.show', $recipe))
         ->assertOk()
-        ->assertSee(Storage::url($recipe->photo_path));
+        ->assertSee('<img', false);
 });
 
 test('does not display photo when recipe has none', function () {

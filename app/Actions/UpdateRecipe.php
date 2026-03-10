@@ -31,9 +31,9 @@ class UpdateRecipe
                 Storage::delete($recipe->photo_path);
             }
 
-            $path = "teams/{$recipe->team_id}/recipes/{$recipe->slug}.{$photo->getClientOriginalExtension()}";
+            $filename = "{$recipe->slug}.{$photo->getClientOriginalExtension()}";
 
-            Storage::put($path, $photo);
+            $path = $photo->storeAs("teams/{$recipe->team_id}/recipes", $filename);
 
             $recipe->update(['photo_path' => $path]);
         }
