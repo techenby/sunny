@@ -133,6 +133,28 @@ test('does not display photo when recipe has none', function () {
         ->assertDontSee('<img');
 });
 
+test('can delete a recipe from show page', function () {
+    $user = User::factory()->withTeam()->create();
+    $recipe = Recipe::factory()->for($user->currentTeam)->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::recipes.show', ['recipe' => $recipe])
+        ->call('delete')
+        ->assertRedirect(route('recipes.index'));
+
+    expect($recipe->fresh())->toBeNull();
+});
+
+test('non-owner cannot delete a recipe from show page', function () {
+    $user = User::factory()->withTeam()->create();
+    $recipe = Recipe::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::recipes.show', ['recipe' => $recipe])
+        ->call('delete')
+        ->assertForbidden();
+});
+
 test('non-owner cannot toggle sharing', function () {
     $user = User::factory()->withTeam()->create();
     $recipe = Recipe::factory()->create();

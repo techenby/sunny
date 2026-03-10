@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\DeleteRecipe;
 use App\Actions\RemixRecipe;
 use App\Models\Recipe;
 use Livewire\Component;
@@ -14,6 +15,15 @@ new class extends Component {
         $recipe = (new RemixRecipe)->handle($this->recipe);
 
         $this->redirect(route('recipes.show', $recipe), navigate: true);
+    }
+
+    public function delete(): void
+    {
+        $this->authorize('delete', $this->recipe);
+
+        (new DeleteRecipe)->handle($this->recipe);
+
+        $this->redirect(route('recipes.index'), navigate: true);
     }
 
     public function toggleSharing(): void
@@ -44,6 +54,7 @@ new class extends Component {
                 </flux:modal.trigger>
                 <flux:menu.item icon="document-duplicate" wire:click="remix">{{ __('Remix') }}</flux:menu.item>
                 <flux:menu.item icon="pencil" :href="route('recipes.edit', $recipe)" wire:navigate>{{ __('Edit') }}</flux:menu.item>
+                <flux:menu.item wire:click="delete" variant="danger" icon="trash" wire:confirm="{{ __('Are you sure you want to delete this recipe?') }}">{{ __('Delete') }}</flux:menu.item>
             </flux:menu>
         </flux:dropdown>
 
