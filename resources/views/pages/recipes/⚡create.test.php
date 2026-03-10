@@ -119,6 +119,7 @@ test('can upload a photo to a recipe', function () {
         ->test('pages::recipes.create')
         ->set('form.name', 'Chocolate Cake')
         ->set('form.photo', UploadedFile::fake()->image('download.png'))
+        ->assertSee('download.png')
         ->call('save')
         ->assertHasNoErrors()
         ->assertRedirect(route('recipes.index'));

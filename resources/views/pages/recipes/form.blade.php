@@ -14,6 +14,24 @@
         </x-slot>
     </flux:input>
 
+    <flux:field>
+        <flux:label>{{ __('Photo') }}</flux:label>
+
+        <flux:file-upload wire:model="form.photo">
+
+            <flux:file-upload.dropzone :heading="__('Drop photo here or click to browse')" :text="__('JPG, PNG up to 5MB')" />
+        </flux:file-upload>
+
+        <div class="mt-4 flex flex-col gap-2">
+        @if ($this->form->photo)
+            <flux:file-item :heading="$this->form->photo->getClientOriginalName()" :image="$this->form->photo->temporaryUrl()" :size="$this->form->photo->getSize()" />
+        @elseif ($this->form->existingPhotoUrl)
+            <flux:file-item :heading="basename($this->form->editingRecipe->photo_path)" :image="$this->form->existingPhotoUrl" />
+        @endif
+        </div>
+        <flux:error name="form.photo" />
+    </flux:field>
+
     <flux:pillbox wire:model="form.tags" label="Tags" multiple placeholder="Choose tags...">
         <flux:pillbox.option>Breakfast</flux:pillbox.option>
         <flux:pillbox.option>Lunch</flux:pillbox.option>

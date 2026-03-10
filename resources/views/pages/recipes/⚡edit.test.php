@@ -70,7 +70,9 @@ test('can replace a photo on a recipe', function () {
 
     Livewire::actingAs($user)
         ->test('pages::recipes.edit', ['recipe' => $recipe])
+        ->assertSee('chocolate-cake.png')
         ->set('form.photo', UploadedFile::fake()->image('new-photo.jpg'))
+        ->assertSee('new-photo.jpg')
         ->call('save')
         ->assertHasNoErrors()
         ->assertRedirect(route('recipes.show', $recipe));

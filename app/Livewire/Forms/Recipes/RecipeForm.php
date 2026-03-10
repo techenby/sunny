@@ -8,6 +8,7 @@ use App\Actions\CreateRecipe;
 use App\Actions\UpdateRecipe;
 use App\Models\Recipe;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\Form;
 
@@ -42,6 +43,8 @@ class RecipeForm extends Form
 
     public ?TemporaryUploadedFile $photo = null;
 
+    public ?string $existingPhotoUrl = null;
+
     public ?int $parent_id = null;
 
     public function load(Recipe $recipe): void
@@ -61,6 +64,7 @@ class RecipeForm extends Form
             'notes' => $recipe->notes,
             'nutrition' => $recipe->nutrition,
             'parent_id' => $recipe->parent_id,
+            'existingPhotoUrl' => $recipe->photo_path ? Storage::url($recipe->photo_path) : null,
         ]);
     }
 
@@ -68,7 +72,7 @@ class RecipeForm extends Form
     {
         $this->validate();
 
-        $data = $this->except(['editingRecipe', 'parent_id']);
+        $data = $this->except(['editingRecipe', 'parent_id', 'existingPhotoUrl']);
 
         if ($this->editingRecipe) {
             (new UpdateRecipe)->handle($this->editingRecipe, $data);
