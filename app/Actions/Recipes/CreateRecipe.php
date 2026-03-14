@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Actions;
+namespace App\Actions\Recipes;
 
 use App\Models\Recipe;
 use App\Models\Team;

@@ -1,6 +1,6 @@
 <?php
 
-use App\Actions\UpdateRecipe;
+use App\Actions\Recipes\UpdateRecipe;
 use App\Models\Recipe;
 
 test('it updates the recipe with the given data', function () {

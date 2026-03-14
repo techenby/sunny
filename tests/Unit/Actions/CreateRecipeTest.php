@@ -1,6 +1,6 @@
 <?php
 
-use App\Actions\CreateRecipe;
+use App\Actions\Recipes\CreateRecipe;
 use App\Models\Recipe;
 use App\Models\Team;
 
