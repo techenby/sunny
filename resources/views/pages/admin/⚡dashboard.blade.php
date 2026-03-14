@@ -2,15 +2,9 @@
 
 use App\Models\Team;
 use App\Models\User;
-use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 
 new class extends Component {
-    public function mount(): void
-    {
-        Gate::authorize('admin');
-    }
-
     public function with(): array
     {
         return [

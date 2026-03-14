@@ -31,9 +31,6 @@ class AppServiceProvider extends ServiceProvider
         $this->configureGates();
     }
 
-    /**
-     * Configure authorization gates.
-     */
     protected function configureGates(): void
     {
         Gate::define('admin', function (User $user): bool {
