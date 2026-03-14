@@ -97,7 +97,7 @@ new #[Title('Inventory')] class extends Component {
     {
         $this->form->save();
         $this->modal('item-form')->close();
-        unset($this->items, $this->parentItem);
+        unset($this->items, $this->parentItems);
     }
 };
 ?>
@@ -158,14 +158,14 @@ new #[Title('Inventory')] class extends Component {
                             <flux:button variant="ghost" size="sm" icon="ellipsis-vertical" />
 
                             <flux:menu>
-                                <flux:menu.item wire:click="edit({{ $item->id }})" icon="pencil" wire:navigate>{{ __('Edit') }}</flux:menu.item>
-                                <flux:menu.item wire:click="delete({{ $item->id }})" variant="danger" icon="trash" wire:confirm="{{ __('Are you sure you want to delete this recipe?') }}">{{ __('Delete') }}</flux:menu.item>
+                                <flux:menu.item wire:click="edit({{ $item->id }})" icon="pencil">{{ __('Edit') }}</flux:menu.item>
+                                <flux:menu.item wire:click="delete({{ $item->id }})" variant="danger" icon="trash" wire:confirm="{{ __('Are you sure you want to delete this item?') }}">{{ __('Delete') }}</flux:menu.item>
                             </flux:menu>
                         </flux:dropdown>
                     </flux:table.cell>
                 </flux:table.row>
             @empty
-                <flux:table.row key="empty-recipe">
+                <flux:table.row key="empty-item">
                     <flux:table.cell colspan="4" class="text-center">
                         <flux:text variant="subtle" size="xl">{{ __('No items found') }}</flux:text>
                     </flux:table.cell>

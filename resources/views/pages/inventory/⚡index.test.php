@@ -109,7 +109,7 @@ test('can edit an item', function () {
         ->call('save')
         ->assertHasNoErrors()
         ->assertSet('form.name', '')
-        ->assertSet('form.container_id', null);
+        ->assertSet('form.parent_id', null);
 
     expect($item->fresh())
         ->name->toBe('Yamaha Guitar')
