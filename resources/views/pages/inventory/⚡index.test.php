@@ -144,3 +144,82 @@ test('cannot delete an item from another team', function () {
         ->test('pages::inventory.index')
         ->call('delete', $item->id);
 })->throws(ModelNotFoundException::class);
+
+test('can navigate down into a child item', function () {
+    $user = User::factory()->withTeam()->create();
+    $parent = Item::factory()->for($user->currentTeam)->location()->create(['name' => 'Bedroom']);
+    Item::factory()->for($user->currentTeam)->bin()->childOf($parent)->create(['name' => 'Closet']);
+
+    Livewire::actingAs($user)
+        ->test('pages::inventory.index')
+        ->assertSeeHtml('<span>Bedroom</span>')
+        ->assertDontSeeHtml('<span>Closet</span>')
+        ->call('navigateDown', $parent->id)
+        ->assertSeeHtml('<span>Closet</span>')
+        ->assertSet('parentId', $parent->id);
+});
+
+test('can navigate up from a child item', function () {
+    $user = User::factory()->withTeam()->create();
+    $parent = Item::factory()->for($user->currentTeam)->location()->create(['name' => 'Bedroom']);
+    Item::factory()->for($user->currentTeam)->bin()->childOf($parent)->create(['name' => 'Closet']);
+
+    Livewire::actingAs($user)
+        ->test('pages::inventory.index')
+        ->call('navigateDown', $parent->id)
+        ->assertSee('Closet')
+        ->call('navigateUp')
+        ->assertSee('Bedroom');
+});
+
+test('breadcrumbs show full ancestor path', function () {
+    $user = User::factory()->withTeam()->create();
+    $bedroom = Item::factory()->for($user->currentTeam)->location()->create(['name' => 'Bedroom']);
+    $closet = Item::factory()->for($user->currentTeam)->bin()->childOf($bedroom)->create(['name' => 'Right Closet']);
+    $tote = Item::factory()->for($user->currentTeam)->bin()->childOf($closet)->create(['name' => 'Game Tote']);
+
+    Livewire::actingAs($user)
+        ->test('pages::inventory.index')
+        ->call('navigateDown', $bedroom->id)
+        ->call('navigateDown', $closet->id)
+        ->call('navigateDown', $tote->id)
+        ->assertSeeInOrder(['All', 'Bedroom', 'Right Closet', 'Game Tote']);
+});
+
+test('breadcrumbs are empty at root level', function () {
+    $user = User::factory()->withTeam()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::inventory.index')
+        ->assertSee('All')
+        ->assertSet('parentId', null);
+});
+
+test('clicking a breadcrumb navigates to that level', function () {
+    $user = User::factory()->withTeam()->create();
+    $bedroom = Item::factory()->for($user->currentTeam)->location()->create(['name' => 'Bedroom']);
+    $closet = Item::factory()->for($user->currentTeam)->bin()->childOf($bedroom)->create(['name' => 'Right Closet']);
+    Item::factory()->for($user->currentTeam)->bin()->childOf($closet)->create(['name' => 'Game Tote']);
+
+    Livewire::actingAs($user)
+        ->test('pages::inventory.index')
+        ->call('navigateDown', $bedroom->id)
+        ->call('navigateDown', $closet->id)
+        ->assertSeeHtml('<span>Game Tote</span>')
+        ->call('navigateDown', $bedroom->id)
+        ->assertSet('parentId', $bedroom->id)
+        ->assertSeeHtml('<span>Right Closet</span>')
+        ->assertDontSeeHtml('<span>Game Tote</span>');
+});
+
+test('deleting a parent nullifies children parent_id', function () {
+    $user = User::factory()->withTeam()->create();
+    $parent = Item::factory()->for($user->currentTeam)->location()->create();
+    $child = Item::factory()->for($user->currentTeam)->childOf($parent)->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::inventory.index')
+        ->call('delete', $parent->id);
+
+    expect($child->fresh()->parent_id)->toBeNull();
+});

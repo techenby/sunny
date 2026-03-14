@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Enums\ContainerType;
 use App\Enums\ItemType;
 use App\Models\Item;
 use App\Models\Team;
@@ -26,21 +25,21 @@ class ItemFactory extends Factory
     public function location(): static
     {
         return $this->state(fn (array $attributes) => [
-            'type' => ContainerType::Location,
+            'type' => ItemType::Location,
         ]);
     }
 
     public function bin(): static
     {
         return $this->state(fn (array $attributes) => [
-            'type' => ContainerType::Bin,
+            'type' => ItemType::Bin,
         ]);
     }
 
     public function container(): static
     {
         return $this->state(fn (array $attributes) => [
-            'type' => fake()->randomElement(ContainerType::cases()),
+            'type' => fake()->randomElement(ItemType::cases()),
         ]);
     }
 

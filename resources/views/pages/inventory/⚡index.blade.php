@@ -3,12 +3,15 @@
 use App\Livewire\Forms\Inventory\ItemForm;
 use App\Livewire\Traits\WithSearching;
 use App\Livewire\Traits\WithSorting;
+use App\Models\Item;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection as BaseCollection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -19,7 +22,24 @@ new #[Title('Inventory')] class extends Component {
 
     public ItemForm $form;
 
+    #[Url]
     public $parentId = null;
+
+    #[Computed]
+    public function breadcrumbs(): BaseCollection
+    {
+        $breadcrumbs = collect();
+        $current = $this->parentId
+            ? Auth::user()->currentTeam->items()->find($this->parentId)
+            : null;
+
+        while ($current) {
+            $breadcrumbs->prepend($current);
+            $current = $current->parent;
+        }
+
+        return $breadcrumbs;
+    }
 
     #[Computed]
     public function items()
@@ -60,10 +80,19 @@ new #[Title('Inventory')] class extends Component {
         $this->modal('item-form')->show();
     }
 
-    public function open(int $id): void
+    public function navigateDown(int $id): void
     {
         $this->parentId = $id;
-        unset($this->items, $this->parentItems);
+        unset($this->items, $this->parentItems, $this->breadcrumbs);
+    }
+
+    public function navigateUp(): void
+    {
+        if ($this->parentId) {
+            $parent = Auth::user()->currentTeam->items()->find($this->parentId);
+            $this->parentId = $parent?->parent_id;
+            unset($this->items, $this->parentItems, $this->breadcrumbs);
+        }
     }
 
     public function save(): void
@@ -83,7 +112,25 @@ new #[Title('Inventory')] class extends Component {
         </flux:modal.trigger>
     </div>
 
-    <div class="mb-4">
+    <div class="mb-4 flex items-center justify-between gap-4">
+        <div class="flex items-center gap-2">
+            @if ($this->parentId)
+                <flux:button variant="ghost" size="sm" icon="arrow-left" wire:click="navigateUp" />
+            @endif
+
+            <flux:breadcrumbs>
+                <flux:breadcrumbs.item wire:click="$set('parentId', null)" class="cursor-pointer">
+                    {{ __('All') }}
+                </flux:breadcrumbs.item>
+
+                @foreach ($this->breadcrumbs as $breadcrumb)
+                    <flux:breadcrumbs.item wire:click="navigateDown({{ $breadcrumb->id }})" class="cursor-pointer">
+                        {{ $breadcrumb->name }}
+                    </flux:breadcrumbs.item>
+                @endforeach
+            </flux:breadcrumbs>
+        </div>
+
         <flux:input wire:model.live.debounce.300ms="search" :placeholder="__('Search inventory...')" icon="magnifying-glass" class="max-w-sm" />
     </div>
 
@@ -99,7 +146,7 @@ new #[Title('Inventory')] class extends Component {
             @forelse ($this->items as $item)
                 <flux:table.row :key="$item->id">
                     <flux:table.cell>
-                        <flux:link wire:click="open({{ $item->id }})" inset="top bottom" class="!flex !items-center gap-3">
+                        <flux:link wire:click="navigateDown({{ $item->id }})" inset="top bottom" class="!flex !items-center gap-3">
                             <flux:avatar size="xs" :icon="$item->type->getIcon()" :color="$item->type->getIconColor()" icon:variant="outline" />
                             <span>{{ $item->name }}</span>
                         </flux:link>
