@@ -4,7 +4,16 @@ use App\Enums\ItemType;
 use App\Models\Item;
 use App\Models\User;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\UploadedFile;
 use Livewire\Livewire;
+
+function amazonFixtureUpload(): UploadedFile
+{
+    $tmp = tempnam(sys_get_temp_dir(), 'amazon_') . '.csv';
+    copy(base_path('tests/Fixtures/csv/amazon-import.csv'), $tmp);
+
+    return UploadedFile::fake()->createWithContent('amazon-import.csv', file_get_contents($tmp));
+}
 
 test('guests are redirected to the login page', function () {
     $this->get(route('inventory.index'))
@@ -388,5 +397,63 @@ describe('can add item metadata', function () {
             ->assertSet('form.metadata', [
                 ['key' => 'url', 'value' => 'https://example.com'],
             ]);
+    });
+});
+
+describe('can import items', function () {
+    test('can import items from amazon csv', function () {
+        $user = User::factory()->withTeam()->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->set('file', amazonFixtureUpload())
+            ->call('import')
+            ->assertHasNoErrors();
+
+        expect($user->currentTeam->items)->toHaveCount(5);
+    });
+
+    test('import assigns items to the current parent', function () {
+        $user = User::factory()->withTeam()->create();
+        $parent = Item::factory()->for($user->currentTeam)->location()->create(['name' => 'Office']);
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->call('navigateDown', $parent->id)
+            ->set('file', amazonFixtureUpload())
+            ->call('import')
+            ->assertHasNoErrors();
+
+        expect($user->currentTeam->items()->where('parent_id', $parent->id)->count())->toBe(5);
+    });
+
+    test('import resets file after completion', function () {
+        $user = User::factory()->withTeam()->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->set('file', amazonFixtureUpload())
+            ->call('import')
+            ->assertSet('file', null);
+    });
+
+    test('import requires a file', function () {
+        $user = User::factory()->withTeam()->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->call('import')
+            ->assertHasErrors('file');
+    });
+
+    test('import rejects non-csv files', function () {
+        $user = User::factory()->withTeam()->create();
+        $file = UploadedFile::fake()->image('photo.png');
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->set('file', $file)
+            ->call('import')
+            ->assertHasErrors('file');
     });
 });
