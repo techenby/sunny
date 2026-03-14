@@ -9,10 +9,10 @@ use Livewire\Livewire;
 
 function amazonFixtureUpload(): UploadedFile
 {
-    $tmp = tempnam(sys_get_temp_dir(), 'amazon_') . '.csv';
-    copy(base_path('tests/Fixtures/csv/amazon-import.csv'), $tmp);
-
-    return UploadedFile::fake()->createWithContent('amazon-import.csv', file_get_contents($tmp));
+    return UploadedFile::fake()->createWithContent(
+        'amazon-import.csv',
+        file_get_contents(base_path('tests/Fixtures/csv/amazon-import.csv')),
+    );
 }
 
 test('guests are redirected to the login page', function () {
