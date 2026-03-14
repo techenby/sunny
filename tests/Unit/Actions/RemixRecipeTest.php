@@ -1,6 +1,6 @@
 <?php
 
-use App\Actions\RemixRecipe;
+use App\Actions\Recipes\RemixRecipe;
 use App\Models\Recipe;
 
 test('it creates a remix of the recipe', function () {

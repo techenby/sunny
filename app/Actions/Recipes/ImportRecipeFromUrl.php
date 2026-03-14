@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Actions;
+namespace App\Actions\Recipes;
 
 use Carbon\CarbonInterval;
 use Illuminate\Support\Facades\Http;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Livewire\Forms\Recipes;
 
-use App\Actions\CreateRecipe;
-use App\Actions\UpdateRecipe;
+use App\Actions\Recipes\CreateRecipe;
+use App\Actions\Recipes\UpdateRecipe;
 use App\Models\Recipe;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;

@@ -1,8 +1,8 @@
 <?php
 
-use App\Actions\CopyRecipeToTeam;
-use App\Actions\DeleteRecipe;
-use App\Actions\RemixRecipe;
+use App\Actions\Recipes\CopyRecipeToTeam;
+use App\Actions\Recipes\DeleteRecipe;
+use App\Actions\Recipes\RemixRecipe;
 use App\Livewire\Traits\WithSearching;
 use App\Livewire\Traits\WithSorting;
 use App\Models\Team;

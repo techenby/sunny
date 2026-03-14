@@ -1,6 +1,6 @@
 <?php
 
-use App\Actions\ImportRecipeFromUrl;
+use App\Actions\Recipes\ImportRecipeFromUrl;
 use App\Livewire\Forms\Recipes\RecipeForm;
 use Flux\Flux;
 use Livewire\Component;

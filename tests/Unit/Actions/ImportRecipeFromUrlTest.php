@@ -1,6 +1,6 @@
 <?php
 
-use App\Actions\ImportRecipeFromUrl;
+use App\Actions\Recipes\ImportRecipeFromUrl;
 use Illuminate\Support\Facades\Http;
 
 function fakeRecipeHtml(array $schema): string

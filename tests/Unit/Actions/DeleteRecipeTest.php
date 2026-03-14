@@ -1,6 +1,6 @@
 <?php
 
-use App\Actions\DeleteRecipe;
+use App\Actions\Recipes\DeleteRecipe;
 use App\Models\Recipe;
 
 test('it deletes the recipe', function () {

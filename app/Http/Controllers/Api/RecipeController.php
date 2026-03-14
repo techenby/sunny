@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
-use App\Actions\CreateRecipe;
-use App\Actions\DeleteRecipe;
-use App\Actions\UpdateRecipe;
+use App\Actions\Recipes\CreateRecipe;
+use App\Actions\Recipes\DeleteRecipe;
+use App\Actions\Recipes\UpdateRecipe;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\StoreRecipeRequest;
 use App\Http\Requests\Api\UpdateRecipeRequest;
