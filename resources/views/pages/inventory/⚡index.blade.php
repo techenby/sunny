@@ -3,10 +3,8 @@
 use App\Livewire\Forms\Inventory\ItemForm;
 use App\Livewire\Traits\WithSearching;
 use App\Livewire\Traits\WithSorting;
-use App\Models\Item;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection as BaseCollection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
@@ -65,7 +63,7 @@ new #[Title('Inventory')] class extends Component {
     public function delete(int $id): void
     {
         $item = $this->items->firstWhere('id', $id);
-        throw_if($item === null, new ModelNotFoundException);
+        throw_if($item === null, ModelNotFoundException::class);
 
         $item->delete();
         unset($this->items, $this->parentItems);
@@ -74,7 +72,7 @@ new #[Title('Inventory')] class extends Component {
     public function edit(int $id): void
     {
         $item = $this->items->firstWhere('id', $id);
-        throw_if($item === null, new ModelNotFoundException);
+        throw_if($item === null, ModelNotFoundException::class);
 
         $this->form->load($item);
         $this->modal('item-form')->show();
@@ -112,26 +110,26 @@ new #[Title('Inventory')] class extends Component {
         </flux:modal.trigger>
     </div>
 
-    <div class="mb-4 flex items-center justify-between gap-4">
-        <div class="flex items-center gap-2">
-            @if ($this->parentId)
-                <flux:button variant="ghost" size="sm" icon="arrow-left" wire:click="navigateUp" />
-            @endif
-
-            <flux:breadcrumbs>
-                <flux:breadcrumbs.item wire:click="$set('parentId', null)" class="cursor-pointer">
-                    {{ __('All') }}
-                </flux:breadcrumbs.item>
-
-                @foreach ($this->breadcrumbs as $breadcrumb)
-                    <flux:breadcrumbs.item wire:click="navigateDown({{ $breadcrumb->id }})" class="cursor-pointer">
-                        {{ $breadcrumb->name }}
-                    </flux:breadcrumbs.item>
-                @endforeach
-            </flux:breadcrumbs>
-        </div>
-
+    <div class="mb-4">
         <flux:input wire:model.live.debounce.300ms="search" :placeholder="__('Search inventory...')" icon="magnifying-glass" class="max-w-sm" />
+    </div>
+
+    <div class="mb-4 flex items-center gap-2">
+        @if ($this->parentId)
+            <flux:button variant="ghost" size="sm" icon="arrow-left" wire:click="navigateUp" />
+        @endif
+
+        <flux:breadcrumbs>
+            <flux:breadcrumbs.item wire:click="$set('parentId', null)" class="cursor-pointer">
+                {{ __('All') }}
+            </flux:breadcrumbs.item>
+
+            @foreach ($this->breadcrumbs as $breadcrumb)
+                <flux:breadcrumbs.item wire:click="navigateDown({{ $breadcrumb->id }})" class="cursor-pointer">
+                    {{ $breadcrumb->name }}
+                </flux:breadcrumbs.item>
+            @endforeach
+        </flux:breadcrumbs>
     </div>
 
     <flux:table>
