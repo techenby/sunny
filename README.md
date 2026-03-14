@@ -106,20 +106,11 @@ erDiagram
 		datetime updated_at  ""
 	}
 
-	containers {
+	items {
 		integer id PK ""
 		integer team_id FK ""
 		integer parent_id FK ""
 		varchar type  ""
-		varchar name  ""
-		datetime created_at  ""
-		datetime updated_at  ""
-	}
-
-	items {
-		integer id PK ""
-		integer team_id FK ""
-		integer container_id FK ""
 		varchar name  ""
 		datetime created_at  ""
 		datetime updated_at  ""
@@ -151,11 +142,9 @@ password_reset_tokens {
 	teams||--o{team_user:"has members"
 	teams||--o{team_invitations:"has invitations"
 	teams||--o{recipes:"has"
-	teams||--o{containers:"has"
 	teams||--o{items:"has"
 	recipes||--o{recipes:"remix of"
-	containers||--o{containers:"nested in"
-	containers||--o{items:"contains"
+	items||--o{items:"nested in"
 
 	sessions:::Laravel
 	password_reset_tokens:::Laravel

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Models\Container;
+use App\Enums\ItemType;
 use App\Models\Item;
 use App\Models\Team;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -18,14 +18,29 @@ class ItemFactory extends Factory
         return [
             'team_id' => Team::factory(),
             'name' => fake()->word(),
+            'type' => ItemType::Item,
         ];
     }
 
-    public function inContainer(Container $container): static
+    public function location(): static
     {
         return $this->state(fn (array $attributes) => [
-            'team_id' => $container->team_id,
-            'container_id' => $container->id,
+            'type' => ItemType::Location,
+        ]);
+    }
+
+    public function bin(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'type' => ItemType::Bin,
+        ]);
+    }
+
+    public function childOf(Item $parent): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'team_id' => $parent->team_id,
+            'parent_id' => $parent->id,
         ]);
     }
 }
