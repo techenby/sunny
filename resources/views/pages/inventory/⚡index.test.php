@@ -345,6 +345,22 @@ describe('can add item metadata', function () {
         expect($item->metadata)->toBeNull();
     });
 
+    test('duplicate metadata keys are rejected', function () {
+        $user = User::factory()->withTeam()->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->call('create')
+            ->set('form.name', 'Dupe Keys Item')
+            ->set('form.type', ItemType::Item->value)
+            ->set('form.metadata', [
+                ['key' => 'color', 'value' => 'red'],
+                ['key' => 'color', 'value' => 'blue'],
+            ])
+            ->call('save')
+            ->assertHasErrors('form.metadata.1.key');
+    });
+
     test('editing an item loads existing metadata', function () {
         $user = User::factory()->withTeam()->create();
         $item = Item::factory()->for($user->currentTeam)->create([
