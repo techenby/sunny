@@ -16,3 +16,4 @@ Route::get('invitations/{invitation}/accept', AcceptTeamInvitation::class)
     ->middleware('signed');
 
 require __DIR__ . '/settings.php';
+require __DIR__ . '/admin.php';

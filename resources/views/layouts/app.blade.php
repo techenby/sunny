@@ -22,6 +22,11 @@
 
             <flux:spacer />
 
+            @can('admin')
+                <flux:sidebar.item icon="wrench-screwdriver" :href="route('admin.dashboard')" :current="request()->routeIs('admin.*')" wire:navigate>
+                    {{ __('Admin') }}
+                </flux:sidebar.item>
+            @endcan
             <x-desktop-user-menu class="hidden lg:block" :name="auth()->user()->name" />
         </flux:sidebar>
 
