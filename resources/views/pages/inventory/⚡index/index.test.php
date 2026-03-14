@@ -7,14 +7,6 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\UploadedFile;
 use Livewire\Livewire;
 
-function amazonFixtureUpload(): UploadedFile
-{
-    return UploadedFile::fake()->createWithContent(
-        'amazon-import.csv',
-        file_get_contents(base_path('tests/Fixtures/csv/amazon-import.csv')),
-    );
-}
-
 test('guests are redirected to the login page', function () {
     $this->get(route('inventory.index'))
         ->assertRedirect(route('login'));

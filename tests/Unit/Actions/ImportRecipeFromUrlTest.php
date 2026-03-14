@@ -3,17 +3,6 @@
 use App\Actions\Recipes\ImportRecipeFromUrl;
 use Illuminate\Support\Facades\Http;
 
-function fakeRecipeHtml(array $schema): string
-{
-    $json = json_encode($schema);
-
-    return <<<HTML
-    <html><head>
-    <script type="application/ld+json">{$json}</script>
-    </head><body></body></html>
-    HTML;
-}
-
 test('parses direct Recipe JSON-LD', function () {
     Http::fake([
         'example.com/*' => Http::response(fakeRecipeHtml([

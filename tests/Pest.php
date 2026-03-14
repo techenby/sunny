@@ -2,6 +2,7 @@
 
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 
 /*
 |--------------------------------------------------------------------------
@@ -44,7 +45,30 @@ expect()->extend('toHaveOne', function () {
 |
 */
 
-function something()
+function amazonFixture(): UploadedFile
 {
-    // ..
+    return new UploadedFile(
+        path: base_path('tests/Fixtures/csv/amazon-import.csv'),
+        originalName: 'amazon-import.csv',
+        test: true,
+    );
+}
+
+function amazonFixtureUpload(): UploadedFile
+{
+    return UploadedFile::fake()->createWithContent(
+        'amazon-import.csv',
+        file_get_contents(base_path('tests/Fixtures/csv/amazon-import.csv')),
+    );
+}
+
+function fakeRecipeHtml(array $schema): string
+{
+    $json = json_encode($schema);
+
+    return <<<HTML
+    <html><head>
+    <script type="application/ld+json">{$json}</script>
+    </head><body></body></html>
+    HTML;
 }

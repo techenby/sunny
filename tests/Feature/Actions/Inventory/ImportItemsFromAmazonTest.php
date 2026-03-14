@@ -2,16 +2,6 @@
 
 use App\Actions\Inventory\ImportItemsFromAmazonAction;
 use App\Models\Team;
-use Illuminate\Http\UploadedFile;
-
-function amazonFixture(): UploadedFile
-{
-    return new UploadedFile(
-        path: base_path('tests/Fixtures/csv/amazon-import.csv'),
-        originalName: 'amazon-import.csv',
-        test: true,
-    );
-}
 
 test('it imports items from amazon csv', function () {
     $team = Team::factory()->create();
