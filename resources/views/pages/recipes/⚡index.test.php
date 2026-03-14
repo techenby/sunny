@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Recipe;
+use App\Models\Team;
 use App\Models\User;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Livewire\Livewire;
@@ -105,4 +106,43 @@ test('can create a remix of a recipe', function () {
     expect($remix)->not->toBeNull()
         ->parent_id->toBe($original->id)
         ->team_id->toBe($user->current_team_id);
+});
+
+describe('copy to team feature', function () {
+    test('can copy recipe to another team', function () {
+        $otherTeam = Team::factory()->create();
+        $user = User::factory()->withTeam()->hasAttached($otherTeam)->create();
+
+        $recipe = Recipe::factory()->for($user->currentTeam)->create([
+            'name' => 'Pasta Carbonara',
+        ]);
+
+        Livewire::actingAs($user)
+            ->test('pages::recipes.index')
+            ->call('openCopyModal', $recipe->id)
+            ->assertSet('copyRecipeId', $recipe->id)
+            ->set('copyToTeamId', $otherTeam->id)
+            ->call('copyToTeam');
+
+        $copy = $otherTeam->recipes()->where('name', 'Pasta Carbonara')->first();
+
+        expect($copy)->not->toBeNull()
+            ->parent_id->toBe($recipe->id)
+            ->team_id->toBe($otherTeam->id)
+            ->share_token->toBeNull();
+    });
+
+    test('cannot copy recipe to a team user does not belong to', function () {
+        $user = User::factory()->withTeam()->create();
+        $otherTeam = Team::factory()->create();
+
+        $recipe = Recipe::factory()->for($user->currentTeam)->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::recipes.index')
+            ->call('openCopyModal', $recipe->id)
+            ->set('copyToTeamId', $otherTeam->id)
+            ->call('copyToTeam')
+            ->assertHasErrors('copyToTeamId');
+    });
 });

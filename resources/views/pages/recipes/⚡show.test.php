@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Recipe;
+use App\Models\Team;
 use App\Models\User;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
@@ -72,23 +73,6 @@ test('parent shows remixes', function () {
         ->assertSee('Remixed Recipe');
 });
 
-test('owner can toggle sharing on recipe show page', function () {
-    $user = User::factory()->withTeam()->create();
-    $recipe = Recipe::factory()->create(['team_id' => $user->currentTeam->id]);
-
-    $this->actingAs($user);
-
-    Livewire::test('pages::recipes.show', ['recipe' => $recipe])
-        ->call('toggleSharing');
-
-    expect($recipe->fresh()->isShared())->toBeTrue();
-
-    Livewire::test('pages::recipes.show', ['recipe' => $recipe])
-        ->call('toggleSharing');
-
-    expect($recipe->fresh()->isShared())->toBeFalse();
-});
-
 test('shows tags on recipe', function () {
     $user = User::factory()->withTeam()->create();
     $recipe = Recipe::factory()->for($user->currentTeam)->create([
@@ -155,13 +139,80 @@ test('non-owner cannot delete a recipe from show page', function () {
         ->assertForbidden();
 });
 
-test('non-owner cannot toggle sharing', function () {
-    $user = User::factory()->withTeam()->create();
-    $recipe = Recipe::factory()->create();
+describe('copy to team feature', function () {
+    test('can copy recipe to another team from show page', function () {
+        $otherTeam = Team::factory()->create();
+        $user = User::factory()->withTeam()->hasAttached($otherTeam)->create();
 
-    $this->actingAs($user);
+        $recipe = Recipe::factory()->for($user->currentTeam)->create([
+            'name' => 'Pasta Carbonara',
+        ]);
 
-    Livewire::test('pages::recipes.show', ['recipe' => $recipe])
-        ->call('toggleSharing')
-        ->assertForbidden();
+        Livewire::actingAs($user)
+            ->test('pages::recipes.show', ['recipe' => $recipe])
+            ->set('copyToTeamId', $otherTeam->id)
+            ->call('copyToTeam');
+
+        $copy = $otherTeam->recipes()->where('name', 'Pasta Carbonara')->first();
+
+        expect($copy)->not->toBeNull()
+            ->parent_id->toBe($recipe->id)
+            ->team_id->toBe($otherTeam->id)
+            ->share_token->toBeNull();
+    });
+
+    test('cannot copy recipe to a team user does not belong to', function () {
+        $user = User::factory()->withTeam()->create();
+        $otherTeam = Team::factory()->create();
+
+        $recipe = Recipe::factory()->for($user->currentTeam)->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::recipes.show', ['recipe' => $recipe])
+            ->set('copyToTeamId', $otherTeam->id)
+            ->call('copyToTeam')
+            ->assertHasErrors('copyToTeamId');
+    });
+
+    test('cannot copy recipe from team user does not belong to', function () {
+        $otherTeam = Team::factory()->create();
+        $user = User::factory()->withTeam()->hasAttached($otherTeam)->create();
+
+        $recipe = Recipe::factory()->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::recipes.show', ['recipe' => $recipe])
+            ->set('copyToTeamId', $otherTeam->id)
+            ->call('copyToTeam')
+            ->assertForbidden();
+    });
+});
+
+describe('sharing feature', function () {
+    test('can toggle sharing on recipe from team user does belong to', function () {
+        $user = User::factory()->withTeam()->create();
+        $recipe = Recipe::factory()->create(['team_id' => $user->currentTeam->id]);
+
+        $this->actingAs($user);
+
+        Livewire::test('pages::recipes.show', ['recipe' => $recipe])
+            ->call('toggleSharing');
+
+        expect($recipe->fresh()->isShared())->toBeTrue();
+
+        Livewire::test('pages::recipes.show', ['recipe' => $recipe])
+            ->call('toggleSharing');
+
+        expect($recipe->fresh()->isShared())->toBeFalse();
+    });
+
+    test('cannot toggle sharing on recipe from team user does not belong to', function () {
+        $user = User::factory()->withTeam()->create();
+        $recipe = Recipe::factory()->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::recipes.show', ['recipe' => $recipe])
+            ->call('toggleSharing')
+            ->assertForbidden();
+    });
 });

@@ -1,12 +1,26 @@
 <?php
 
+use App\Actions\CopyRecipeToTeam;
 use App\Actions\DeleteRecipe;
 use App\Actions\RemixRecipe;
 use App\Models\Recipe;
+use App\Models\Team;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Computed;
 use Livewire\Component;
 
 new class extends Component {
     public Recipe $recipe;
+
+    public ?int $copyToTeamId = null;
+
+    /** @return Collection<int, Team> */
+    #[Computed]
+    public function otherTeams(): Collection
+    {
+        return Auth::user()->teams->where('id', '!=', Auth::user()->current_team_id)->values();
+    }
 
     public function remix(): void
     {
@@ -24,6 +38,24 @@ new class extends Component {
         (new DeleteRecipe)->handle($this->recipe);
 
         $this->redirect(route('recipes.index'), navigate: true);
+    }
+
+    public function copyToTeam(): void
+    {
+        $this->validate([
+            'copyToTeamId' => ['required', 'integer', 'exists:team_user,team_id,user_id,' . Auth::id()],
+        ]);
+
+        $this->authorize('copy', $this->recipe);
+
+        $team = $this->otherTeams->firstWhere('id', $this->copyToTeamId);
+
+        (new CopyRecipeToTeam)->handle($this->recipe, $team);
+
+        $this->modal('copy-recipe')->close();
+        $this->reset('copyToTeamId');
+
+        Flux::toast(__('Recipe copied successfully.'));
     }
 
     public function toggleSharing(): void
@@ -53,6 +85,11 @@ new class extends Component {
                     <flux:menu.item icon="share">{{ __('Share') }}</flux:menu.item>
                 </flux:modal.trigger>
                 <flux:menu.item icon="document-duplicate" wire:click="remix">{{ __('Remix') }}</flux:menu.item>
+                @if ($this->otherTeams->isNotEmpty())
+                    <flux:modal.trigger name="copy-recipe">
+                        <flux:menu.item icon="arrow-up-tray">{{ __('Copy to Team') }}</flux:menu.item>
+                    </flux:modal.trigger>
+                @endif
                 <flux:menu.item icon="pencil" :href="route('recipes.edit', $recipe)" wire:navigate>{{ __('Edit') }}</flux:menu.item>
                 <flux:menu.item wire:click="delete" variant="danger" icon="trash" wire:confirm="{{ __('Are you sure you want to delete this recipe?') }}">{{ __('Delete') }}</flux:menu.item>
             </flux:menu>
@@ -79,6 +116,24 @@ new class extends Component {
                     />
                 @endif
             </div>
+        </flux:modal>
+
+        <flux:modal name="copy-recipe" class="md:w-96">
+            <form wire:submit="copyToTeam" class="space-y-6">
+                <div>
+                    <flux:heading size="lg">{{ __('Copy to Team') }}</flux:heading>
+                    <flux:text class="mt-2">{{ __('Copy this recipe to another team.') }}</flux:text>
+                </div>
+                <flux:select wire:model="copyToTeamId" :label="__('Team')" :placeholder="__('Select a team...')">
+                    @foreach ($this->otherTeams as $team)
+                        <flux:select.option :value="$team->id">{{ $team->name }}</flux:select.option>
+                    @endforeach
+                </flux:select>
+                <div class="flex">
+                    <flux:spacer />
+                    <flux:button type="submit" variant="primary">{{ __('Copy') }}</flux:button>
+                </div>
+            </form>
         </flux:modal>
         @endteleport
     </div>
