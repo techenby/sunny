@@ -345,6 +345,21 @@ describe('can add item metadata', function () {
         expect($item->metadata)->toBeNull();
     });
 
+    test('metadata value is required when key is present', function () {
+        $user = User::factory()->withTeam()->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->call('create')
+            ->set('form.name', 'Missing Value Item')
+            ->set('form.type', ItemType::Item->value)
+            ->set('form.metadata', [
+                ['key' => 'color', 'value' => ''],
+            ])
+            ->call('save')
+            ->assertHasErrors('form.metadata.0.value');
+    });
+
     test('duplicate metadata keys are rejected', function () {
         $user = User::factory()->withTeam()->create();
 

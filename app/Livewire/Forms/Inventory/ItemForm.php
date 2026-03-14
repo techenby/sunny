@@ -77,7 +77,7 @@ class ItemForm extends Form
             'parent_id' => ['nullable', 'integer', 'exists:items,id'],
             'metadata' => ['nullable', 'array'],
             'metadata.*.key' => ['nullable', 'string', 'max:255', 'distinct'],
-            'metadata.*.value' => ['nullable', 'string', 'max:255'],
+            'metadata.*.value' => ['required_with:metadata.*.key', 'nullable', 'string', 'max:255'],
         ];
     }
 }
