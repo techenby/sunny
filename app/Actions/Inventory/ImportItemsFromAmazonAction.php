@@ -24,7 +24,7 @@ final readonly class ImportItemsFromAmazonAction
         ];
 
         $toImport = SimpleExcelReader::create($file->getRealPath())->getRows()
-            ->reject(function (array $row) use ($stats) {
+            ->reject(function (array $row) use (&$stats) {
                 if ($row['Gift Message'] !== 'Not Available' || $row['Gift Recipient Contact'] !== 'Not Available' || $row['Gift Sender Name'] !== 'Not Available') {
                     $stats['skipped']++;
 
@@ -46,6 +46,8 @@ final readonly class ImportItemsFromAmazonAction
                     ],
                 ];
             });
+
+        $stats['imported'] = count($toImport);
 
         $team->items()->createMany($toImport);
 
