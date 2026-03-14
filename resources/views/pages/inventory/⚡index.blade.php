@@ -100,6 +100,16 @@ new #[Title('Inventory')] class extends Component {
         $this->modal('item-form')->show();
     }
 
+    public function addMetadata(): void
+    {
+        $this->form->addMetadata();
+    }
+
+    public function removeMetadata(int $index): void
+    {
+        $this->form->removeMetadata($index);
+    }
+
     public function save(): void
     {
         $this->form->save();
@@ -198,6 +208,22 @@ new #[Title('Inventory')] class extends Component {
                     <flux:select.option :value="$parentItem->id">{{ $parentItem->name }}</flux:select.option>
                 @endforeach
             </flux:select>
+
+            <div>
+                <flux:label class="mb-2">{{ __('Metadata') }}</flux:label>
+
+                <div class="space-y-2">
+                    @foreach ($form->metadata as $index => $pair)
+                        <div class="flex items-start gap-2">
+                            <flux:input wire:model="form.metadata.{{ $index }}.key" placeholder="{{ __('Key') }}" size="sm" />
+                            <flux:input wire:model="form.metadata.{{ $index }}.value" placeholder="{{ __('Value') }}" size="sm" />
+                            <flux:button variant="ghost" size="sm" icon="x-mark" wire:click="removeMetadata({{ $index }})" />
+                        </div>
+                    @endforeach
+                </div>
+
+                <flux:button variant="ghost" size="sm" icon="plus" wire:click="addMetadata" class="mt-2">{{ __('Add field') }}</flux:button>
+            </div>
 
             <div class="flex">
                 <flux:spacer />

@@ -22,6 +22,7 @@ class Item extends Model
         'parent_id',
         'type',
         'name',
+        'metadata',
     ];
 
     /** @return BelongsTo<Team, $this> */
@@ -47,6 +48,7 @@ class Item extends Model
     {
         return [
             'type' => ItemType::class,
+            'metadata' => 'array',
         ];
     }
 }
