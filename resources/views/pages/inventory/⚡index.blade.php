@@ -186,13 +186,13 @@ new #[Title('Inventory')] class extends Component {
 
             <flux:input wire:model="form.name" :label="__('Name')" type="text" required />
 
-            <flux:select wire:model="form.type" :label="__('Type')">
+            <flux:select wire:model="form.type" :label="__('Type')" placeholder="Select type" variant="listbox" searchable>
                 @foreach (\App\Enums\ItemType::cases() as $type)
                     <flux:select.option :value="$type->value">{{ ucfirst($type->value) }}</flux:select.option>
                 @endforeach
             </flux:select>
 
-            <flux:select wire:model="form.parent_id" :label="__('Parent')">
+            <flux:select wire:model="form.parent_id" :label="__('Parent')" variant="listbox" searchable>
                 <flux:select.option value="">{{ __('None') }}</flux:select.option>
                 @foreach ($this->parentItems as $parentItem)
                     <flux:select.option :value="$parentItem->id">{{ $parentItem->name }}</flux:select.option>
