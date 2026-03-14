@@ -36,7 +36,7 @@ final readonly class ImportItemsFromAmazonAction
         $parent = Item::find($parentId);
         abort_if($parent && $parent->team_id !== $team->id, 403);
 
-        $filterGifts = $filters['filterGifts'] ?? true;
+        $filterGifts = $filters['filterGifts'] ?? false;
         $filterConsumables = $filters['filterConsumables'] ?? false;
         $startDate = isset($filters['startDate']) ? Date::parse($filters['startDate']) : null;
         $endDate = isset($filters['endDate']) ? Date::parse($filters['endDate'])->endOfDay() : null;
