@@ -10,10 +10,13 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
+use Livewire\Attributes\Validate;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 
 new #[Title('Inventory')] class extends Component {
+    use WithFileUploads;
     use WithPagination;
     use WithSearching;
     use WithSorting;
@@ -22,6 +25,9 @@ new #[Title('Inventory')] class extends Component {
 
     #[Url]
     public ?int $parentId = null;
+
+    #[Validate('required|file|mimes:csv,txt')]
+    public $file = null;
 
     #[Computed]
     public function breadcrumbs(): BaseCollection

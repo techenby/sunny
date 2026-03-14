@@ -1,7 +1,24 @@
 <section class="w-full">
     <div class="mb-4 flex items-center justify-between">
         <flux:heading size="xl">{{ __('Inventory') }}</flux:heading>
-        <flux:button variant="primary" wire:click="create">{{ __('Add Item') }}</flux:button>
+        <div class="flex items-center gap-1">
+            <flux:button variant="primary" wire:click="create">{{ __('Add Item') }}</flux:button>
+            <flux:dropdown>
+                <flux:button icon="chevron-down" variant="ghost" />
+
+                <flux:menu>
+                    <div>
+                        <flux:modal.trigger name="import-items">
+                            <flux:menu.item icon="document-arrow-up">{{ __('Import') }}</flux:menu.item>
+                        </flux:modal.trigger>
+
+                        @teleport('body')
+                        @include('pages.inventory.modals.import-items')
+                        @endteleport
+                    </div>
+                </flux:menu>
+            </flux:dropdown>
+        </div>
     </div>
 
     <div class="mb-4">
