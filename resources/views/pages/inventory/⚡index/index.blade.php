@@ -57,7 +57,7 @@
                     <flux:table.cell>
                         <flux:link wire:click="navigateDown({{ $item->id }})" inset="top bottom" class="!flex !items-center gap-3">
                             <flux:avatar size="xs" :icon="$item->type->getIcon()" :color="$item->type->getIconColor()" icon:variant="outline" />
-                            <span>{{ $item->name }}</span>
+                            <span>{{ $item->truncated_name }}</span>
                         </flux:link>
                     </flux:table.cell>
                     <flux:table.cell>{{ $item->updated_at->diffForHumans() }}</flux:table.cell>

@@ -1,8 +1,10 @@
 <?php
 
+use App\Actions\Inventory\ImportItemsFromAmazonAction;
 use App\Livewire\Forms\Inventory\ItemForm;
 use App\Livewire\Traits\WithSearching;
 use App\Livewire\Traits\WithSorting;
+use Flux\Flux;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection as BaseCollection;
@@ -94,6 +96,30 @@ new #[Title('Inventory')] class extends Component {
             Auth::user()->currentTeam->items()->findOrFail($id)
         );
         $this->modal('item-form')->show();
+    }
+
+    public function import(): void
+    {
+        $this->validateOnly('file');
+
+        $result = app(ImportItemsFromAmazonAction::class)->handle(
+            $this->file,
+            Auth::user()->currentTeam,
+            $this->parentId,
+        );
+
+        $this->reset('file');
+        $this->modal('import-items')->close();
+        unset($this->items, $this->parentItems);
+
+        Flux::toast(
+            text: __('Imported :imported items, skipped :skipped.', [
+                'imported' => $result['imported'],
+                'skipped' => $result['skipped'],
+            ]),
+            heading: __('Import complete'),
+            variant: 'success',
+        );
     }
 
     public function navigateDown(int $id): void
