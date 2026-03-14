@@ -26,6 +26,12 @@
 
             <flux:spacer />
 
+            @can('admin')
+                <flux:sidebar.item icon="wrench-screwdriver" :href="route('admin.dashboard')" :current="request()->routeIs('admin.*')" wire:navigate>
+                    {{ __('Admin') }}
+                </flux:sidebar.item>
+            @endcan
+
             @if (auth()->user()->ownsTeam(auth()->user()->currentTeam))
                 <flux:sidebar.item icon="user-group" :href="route('team.edit')" :current="request()->routeIs('team.edit')" wire:navigate>
                     {{ __('Team Settings') }}
