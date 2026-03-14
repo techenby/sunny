@@ -7,13 +7,13 @@ namespace App\Actions\Inventory;
 use App\Enums\ItemType;
 use App\Models\Item;
 use App\Models\Team;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
-use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Spatie\SimpleExcel\SimpleExcelReader;
 
 final readonly class ImportItemsFromAmazonAction
 {
-    public function handle(TemporaryUploadedFile $file, Team $team, ?int $parentId = null): array
+    public function handle(UploadedFile $file, Team $team, ?int $parentId = null): array
     {
         $parent = Item::find($parentId);
         abort_if($parent && $parent->team_id !== $team->id, 403);
@@ -33,11 +33,11 @@ final readonly class ImportItemsFromAmazonAction
 
                 return false;
             })
-            ->map(function(array $row) use ($parent) {
+            ->map(function (array $row) use ($parent) {
                 return [
                     'type' => ItemType::Item,
                     'parent_id' => $parent?->id,
-                    'name' => $row['Product Name'],
+                    'name' => html_entity_decode($row['Product Name'], ENT_QUOTES | ENT_HTML5, 'UTF-8'),
                     'metadata' => [
                         'Amount Paid' => $row['Total Amount'],
                         'ASIN' => $row['ASIN'],
