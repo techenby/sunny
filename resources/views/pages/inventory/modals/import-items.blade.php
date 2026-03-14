@@ -2,7 +2,7 @@
     <form wire:submit="import" class="space-y-6">
         <flux:heading size="lg">{{ __('Import Items') }}</flux:heading>
 
-        <flux:text>{{ __('Upload your Amazon Order History CSV file. Food, drinks, supplements, and consumables will be automatically filtered out.') }}</flux:text>
+        <flux:text>{{ __('Upload your Amazon Order History CSV file.') }}</flux:text>
 
         <flux:file-upload wire:model="file" label="Upload file">
             <flux:file-upload.dropzone
@@ -20,6 +20,19 @@
                 </x-slot>
             </flux:file-item>
             @endif
+        </div>
+
+        <flux:separator />
+
+        <flux:heading size="sm">{{ __('Filters') }}</flux:heading>
+
+        <flux:checkbox wire:model="filterGifts" label="{{ __('Filter out gifts') }}" description="{{ __('Skip items marked as gifts.') }}" />
+
+        <flux:checkbox wire:model="filterConsumables" label="{{ __('Filter out consumables') }}" description="{{ __('Skip food, drinks, toiletries, and other consumable items.') }}" />
+
+        <div class="grid grid-cols-2 gap-4">
+            <flux:date-picker wire:model="startDate" label="{{ __('From') }}" clearable max="today" />
+            <flux:date-picker wire:model="endDate" label="{{ __('To') }}" clearable max="today" />
         </div>
 
         <div class="flex">

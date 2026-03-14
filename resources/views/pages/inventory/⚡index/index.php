@@ -32,6 +32,14 @@ new #[Title('Inventory')] class extends Component
     #[Validate('required|file|mimes:csv,txt')]
     public $file = null;
 
+    public bool $filterGifts = true;
+
+    public bool $filterConsumables = true;
+
+    public ?string $startDate = null;
+
+    public ?string $endDate = null;
+
     #[Computed]
     public function breadcrumbs(): BaseCollection
     {
@@ -107,9 +115,15 @@ new #[Title('Inventory')] class extends Component
             $this->file,
             Auth::user()->currentTeam,
             $this->parentId,
+            [
+                'filterGifts' => $this->filterGifts,
+                'filterConsumables' => $this->filterConsumables,
+                'startDate' => $this->startDate,
+                'endDate' => $this->endDate,
+            ],
         );
 
-        $this->reset('file');
+        $this->reset('file', 'filterGifts', 'filterConsumables', 'startDate', 'endDate');
         $this->modal('import-items')->close();
         unset($this->items, $this->parentItems);
 

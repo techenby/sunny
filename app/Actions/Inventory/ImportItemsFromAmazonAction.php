@@ -13,10 +13,33 @@ use Spatie\SimpleExcel\SimpleExcelReader;
 
 final readonly class ImportItemsFromAmazonAction
 {
-    public function handle(UploadedFile $file, Team $team, ?int $parentId = null): array
+    /** @var list<string> */
+    public const array CONSUMABLE_KEYWORDS = [
+        'diet coke', 'coca-cola', 'pepsi', 'soda', 'sparkling water', 'energy drink',
+        'shampoo', 'conditioner', 'body wash', 'soap', 'lotion', 'deodorant', 'toothpaste', 'toothbrush', 'mouthwash',
+        'toilet paper', 'paper towel', 'tissues', 'napkins', 'trash bags', 'laundry detergent', 'dish soap', 'cleaning',
+        'vitamins', 'supplements', 'protein powder', 'protein bar',
+        'coffee', 'tea bags', 'k-cup', 'creamer',
+        'snack', 'chips', 'crackers', 'cookies', 'candy', 'chocolate', 'gum',
+        'cat food', 'dog food', 'pet treats',
+        'batteries', 'light bulb',
+        'band-aid', 'bandage', 'first aid',
+        'razors', 'floss', 'cotton',
+    ];
+
+    /**
+     * @param  array{filterGifts?: bool, filterConsumables?: bool, startDate?: string|null, endDate?: string|null}  $filters
+     * @return array{imported: int, skipped: int}
+     */
+    public function handle(UploadedFile $file, Team $team, ?int $parentId = null, array $filters = []): array
     {
         $parent = Item::find($parentId);
         abort_if($parent && $parent->team_id !== $team->id, 403);
+
+        $filterGifts = $filters['filterGifts'] ?? true;
+        $filterConsumables = $filters['filterConsumables'] ?? false;
+        $startDate = isset($filters['startDate']) ? Date::parse($filters['startDate']) : null;
+        $endDate = isset($filters['endDate']) ? Date::parse($filters['endDate'])->endOfDay() : null;
 
         $stats = [
             'imported' => 0,
@@ -24,11 +47,34 @@ final readonly class ImportItemsFromAmazonAction
         ];
 
         $toImport = SimpleExcelReader::create($file->getRealPath())->getRows()
-            ->reject(function (array $row) use (&$stats) {
-                if ($row['Gift Message'] !== 'Not Available' || $row['Gift Recipient Contact'] !== 'Not Available' || $row['Gift Sender Name'] !== 'Not Available') {
+            ->collect()
+            ->reject(function (array $row) use (&$stats, $filterGifts, $filterConsumables, $startDate, $endDate) {
+                if ($filterGifts && $this->isGift($row)) {
                     $stats['skipped']++;
 
                     return true;
+                }
+
+                if ($filterConsumables && $this->isConsumable($row['Product Name'])) {
+                    $stats['skipped']++;
+
+                    return true;
+                }
+
+                if ($startDate || $endDate) {
+                    $orderDate = Date::parse($row['Order Date']);
+
+                    if ($startDate && $orderDate->isBefore($startDate)) {
+                        $stats['skipped']++;
+
+                        return true;
+                    }
+
+                    if ($endDate && $orderDate->isAfter($endDate)) {
+                        $stats['skipped']++;
+
+                        return true;
+                    }
                 }
 
                 return false;
@@ -52,5 +98,25 @@ final readonly class ImportItemsFromAmazonAction
         $team->items()->createMany($toImport);
 
         return $stats;
+    }
+
+    private function isGift(array $row): bool
+    {
+        return $row['Gift Message'] !== 'Not Available'
+            || $row['Gift Recipient Contact'] !== 'Not Available'
+            || $row['Gift Sender Name'] !== 'Not Available';
+    }
+
+    private function isConsumable(string $productName): bool
+    {
+        $name = mb_strtolower($productName);
+
+        foreach (self::CONSUMABLE_KEYWORDS as $keyword) {
+            if (str_contains($name, $keyword)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
