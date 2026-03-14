@@ -9,6 +9,7 @@ use App\Models\Item;
 use App\Models\Team;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Str;
 use Spatie\SimpleExcel\SimpleExcelReader;
 
 class ImportItemsFromAmazonAction
@@ -45,37 +46,9 @@ class ImportItemsFromAmazonAction
 
         $toImport = SimpleExcelReader::create($file->getRealPath())->getRows()
             ->collect()
-            ->reject(function (array $row) use ($filterGifts, $filterConsumables, $startDate, $endDate) {
-                if ($filterGifts && $this->isGift($row)) {
-                    $this->stats['skipped']++;
-
-                    return true;
-                }
-
-                if ($filterConsumables && $this->isConsumable($row['Product Name'])) {
-                    $this->stats['skipped']++;
-
-                    return true;
-                }
-
-                if ($startDate || $endDate) {
-                    $orderDate = Date::parse($row['Order Date']);
-
-                    if ($startDate && $orderDate->isBefore($startDate)) {
-                        $this->stats['skipped']++;
-
-                        return true;
-                    }
-
-                    if ($endDate && $orderDate->isAfter($endDate)) {
-                        $this->stats['skipped']++;
-
-                        return true;
-                    }
-                }
-
-                return false;
-            })
+            ->when($filterGifts, fn ($collection) => $this->rejectGifts($collection))
+            ->when($filterConsumables, fn ($collection) => $this->rejectConsumables($collection))
+            ->when($startDate || $endDate, fn ($collection) => $this->rejectOutsideDates($collection, $startDate, $endDate))
             ->map(function (array $row) use ($parent) {
                 return [
                     'type' => ItemType::Item,
@@ -97,23 +70,50 @@ class ImportItemsFromAmazonAction
         return $this->stats;
     }
 
-    private function isGift(array $row): bool
+    private function rejectConsumables($collection)
     {
-        return $row['Gift Message'] !== 'Not Available'
-            || $row['Gift Recipient Contact'] !== 'Not Available'
-            || $row['Gift Sender Name'] !== 'Not Available';
-    }
+        return $collection->reject(function ($row): bool {
+            if (Str::contains($row['Product Name'], self::CONSUMABLE_KEYWORDS, true)) {
+                $this->stats['skipped']++;
 
-    private function isConsumable(string $productName): bool
-    {
-        $name = mb_strtolower($productName);
-
-        foreach (self::CONSUMABLE_KEYWORDS as $keyword) {
-            if (str_contains($name, $keyword)) {
                 return true;
             }
-        }
 
-        return false;
+            return false;
+        });
+    }
+
+    private function rejectGifts($collection)
+    {
+        return $collection->reject(function ($row) {
+            if ($row['Gift Message'] !== 'Not Available'
+            || $row['Gift Recipient Contact'] !== 'Not Available'
+            || $row['Gift Sender Name'] !== 'Not Available') {
+                $this->stats['skipped']++;
+
+                return true;
+            }
+
+            return false;
+        });
+    }
+
+    private function rejectOutsideDates($collection, $startDate, $endDate)
+    {
+        return $collection->reject(function ($row) use ($startDate, $endDate) {
+            $orderDate = Date::parse($row['Order Date']);
+
+            if ($startDate && $orderDate->isBefore($startDate)) {
+                $this->stats['skipped']++;
+
+                return true;
+            }
+
+            if ($endDate && $orderDate->isAfter($endDate)) {
+                $this->stats['skipped']++;
+
+                return true;
+            }
+        });
     }
 }
