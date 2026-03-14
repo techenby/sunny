@@ -60,6 +60,18 @@ new #[Title('Inventory')] class extends Component {
             ->get();
     }
 
+    public function addMetadata(): void
+    {
+        $this->form->addMetadata();
+    }
+
+    public function create(): void
+    {
+        $this->form->reset();
+        $this->form->fill(['parent_id' => $this->parentId]);
+        $this->modal('item-form')->show();
+    }
+
     public function delete(int $id): void
     {
         Auth::user()->currentTeam->items()
@@ -91,18 +103,6 @@ new #[Title('Inventory')] class extends Component {
             $this->parentId = $parent?->parent_id;
             unset($this->items, $this->parentItems, $this->breadcrumbs);
         }
-    }
-
-    public function create(): void
-    {
-        $this->form->reset();
-        $this->form->fill(['parent_id' => $this->parentId]);
-        $this->modal('item-form')->show();
-    }
-
-    public function addMetadata(): void
-    {
-        $this->form->addMetadata();
     }
 
     public function removeMetadata(int $index): void
