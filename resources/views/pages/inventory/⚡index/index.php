@@ -17,7 +17,8 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 
-new #[Title('Inventory')] class extends Component {
+new #[Title('Inventory')] class extends Component
+{
     use WithFileUploads;
     use WithPagination;
     use WithSearching;
@@ -102,7 +103,7 @@ new #[Title('Inventory')] class extends Component {
     {
         $this->validateOnly('file');
 
-        $result = app(ImportItemsFromAmazonAction::class)->handle(
+        $result = resolve(ImportItemsFromAmazonAction::class)->handle(
             $this->file,
             Auth::user()->currentTeam,
             $this->parentId,

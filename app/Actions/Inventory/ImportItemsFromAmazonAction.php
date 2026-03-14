@@ -8,7 +8,7 @@ use App\Enums\ItemType;
 use App\Models\Item;
 use App\Models\Team;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Date;
 use Spatie\SimpleExcel\SimpleExcelReader;
 
 final readonly class ImportItemsFromAmazonAction
@@ -41,7 +41,7 @@ final readonly class ImportItemsFromAmazonAction
                     'metadata' => [
                         'Amount Paid' => $row['Total Amount'],
                         'ASIN' => $row['ASIN'],
-                        'Purchased On' => Carbon::parse($row['Order Date']),
+                        'Purchased On' => Date::parse($row['Order Date']),
                         'Website' => $row['Website'],
                     ],
                 ];
