@@ -93,6 +93,13 @@ new #[Title('Inventory')] class extends Component {
         }
     }
 
+    public function create(): void
+    {
+        $this->form->reset();
+        $this->form->fill(['parent_id' => $this->parentId]);
+        $this->modal('item-form')->show();
+    }
+
     public function save(): void
     {
         $this->form->save();
@@ -105,9 +112,7 @@ new #[Title('Inventory')] class extends Component {
 <section class="w-full">
     <div class="mb-4 flex items-center justify-between">
         <flux:heading size="xl">{{ __('Inventory') }}</flux:heading>
-        <flux:modal.trigger name="item-form">
-            <flux:button variant="primary">{{ __('Add Item') }}</flux:button>
-        </flux:modal.trigger>
+        <flux:button variant="primary" wire:click="create">{{ __('Add Item') }}</flux:button>
     </div>
 
     <div class="mb-4">

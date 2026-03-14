@@ -212,6 +212,41 @@ test('clicking a breadcrumb navigates to that level', function () {
         ->assertDontSeeHtml('<span>Game Tote</span>');
 });
 
+test('create pre-fills parent_id with current parentId', function () {
+    $user = User::factory()->withTeam()->create();
+    $parent = Item::factory()->for($user->currentTeam)->location()->create(['name' => 'Bedroom']);
+
+    Livewire::actingAs($user)
+        ->test('pages::inventory.index')
+        ->call('navigateDown', $parent->id)
+        ->call('create')
+        ->assertSet('form.parent_id', $parent->id);
+});
+
+test('create does not pre-fill parent_id at root level', function () {
+    $user = User::factory()->withTeam()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::inventory.index')
+        ->call('create')
+        ->assertSet('form.parent_id', null);
+});
+
+test('create resets form before pre-filling parent_id', function () {
+    $user = User::factory()->withTeam()->create();
+    $parent = Item::factory()->for($user->currentTeam)->location()->create(['name' => 'Bedroom']);
+    $item = Item::factory()->for($user->currentTeam)->childOf($parent)->create(['name' => 'Guitar']);
+
+    Livewire::actingAs($user)
+        ->test('pages::inventory.index')
+        ->call('navigateDown', $parent->id)
+        ->call('edit', $item->id)
+        ->assertSet('form.name', 'Guitar')
+        ->call('create')
+        ->assertSet('form.name', '')
+        ->assertSet('form.parent_id', $parent->id);
+});
+
 test('deleting a parent nullifies children parent_id', function () {
     $user = User::factory()->withTeam()->create();
     $parent = Item::factory()->for($user->currentTeam)->location()->create();
