@@ -42,9 +42,6 @@ class AppServiceProvider extends ServiceProvider
         });
     }
 
-    /**
-     * Configure default behaviors for production-ready applications.
-     */
     protected function configureDefaults(): void
     {
         Date::use(CarbonImmutable::class);
