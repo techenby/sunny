@@ -11,7 +11,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Date;
 use Spatie\SimpleExcel\SimpleExcelReader;
 
-final readonly class ImportItemsFromAmazonAction
+class ImportItemsFromAmazonAction
 {
     /** @var list<string> */
     public const array CONSUMABLE_KEYWORDS = [
@@ -27,6 +27,8 @@ final readonly class ImportItemsFromAmazonAction
         'razors', 'floss', 'cotton',
     ];
 
+    public $stats = ['skipped' => 0, 'imported' => 0];
+
     /**
      * @param  array{filterGifts?: bool, filterConsumables?: bool, startDate?: string|null, endDate?: string|null}  $filters
      * @return array{imported: int, skipped: int}
@@ -41,22 +43,17 @@ final readonly class ImportItemsFromAmazonAction
         $startDate = isset($filters['startDate']) ? Date::parse($filters['startDate']) : null;
         $endDate = isset($filters['endDate']) ? Date::parse($filters['endDate'])->endOfDay() : null;
 
-        $stats = [
-            'imported' => 0,
-            'skipped' => 0,
-        ];
-
         $toImport = SimpleExcelReader::create($file->getRealPath())->getRows()
             ->collect()
-            ->reject(function (array $row) use (&$stats, $filterGifts, $filterConsumables, $startDate, $endDate) {
+            ->reject(function (array $row) use ($filterGifts, $filterConsumables, $startDate, $endDate) {
                 if ($filterGifts && $this->isGift($row)) {
-                    $stats['skipped']++;
+                    $this->stats['skipped']++;
 
                     return true;
                 }
 
                 if ($filterConsumables && $this->isConsumable($row['Product Name'])) {
-                    $stats['skipped']++;
+                    $this->stats['skipped']++;
 
                     return true;
                 }
@@ -65,13 +62,13 @@ final readonly class ImportItemsFromAmazonAction
                     $orderDate = Date::parse($row['Order Date']);
 
                     if ($startDate && $orderDate->isBefore($startDate)) {
-                        $stats['skipped']++;
+                        $this->stats['skipped']++;
 
                         return true;
                     }
 
                     if ($endDate && $orderDate->isAfter($endDate)) {
-                        $stats['skipped']++;
+                        $this->stats['skipped']++;
 
                         return true;
                     }
@@ -93,11 +90,11 @@ final readonly class ImportItemsFromAmazonAction
                 ];
             });
 
-        $stats['imported'] = count($toImport);
+        $this->stats['imported'] = count($toImport);
 
         $team->items()->createMany($toImport);
 
-        return $stats;
+        return $this->stats;
     }
 
     private function isGift(array $row): bool
