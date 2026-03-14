@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\ItemType;
 use Database\Factories\ItemFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Item extends Model
 {
@@ -17,7 +19,8 @@ class Item extends Model
     /** @var list<string> */
     protected $fillable = [
         'team_id',
-        'container_id',
+        'parent_id',
+        'type',
         'name',
     ];
 
@@ -27,9 +30,23 @@ class Item extends Model
         return $this->belongsTo(Team::class);
     }
 
-    /** @return BelongsTo<Container, $this> */
-    public function container(): BelongsTo
+    /** @return BelongsTo<self, $this> */
+    public function parent(): BelongsTo
     {
-        return $this->belongsTo(Container::class);
+        return $this->belongsTo(self::class, 'parent_id');
+    }
+
+    /** @return HasMany<self, $this> */
+    public function children(): HasMany
+    {
+        return $this->hasMany(self::class, 'parent_id');
+    }
+
+    /** @return array<string, string> */
+    protected function casts(): array
+    {
+        return [
+            'type' => ItemType::class,
+        ];
     }
 }

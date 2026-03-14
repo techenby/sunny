@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Livewire\Forms\Inventory;
 
+use App\Enums\ItemType;
 use App\Models\Item;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Livewire\Form;
 
 class ItemForm extends Form
@@ -14,18 +16,21 @@ class ItemForm extends Form
 
     public string $name = '';
 
-    public ?int $container_id = null;
+    public ?string $type = null;
 
-    public function load(Item $item)
+    public ?int $parent_id = null;
+
+    public function load(Item $item): void
     {
         $this->fill([
             'editingItem' => $item,
             'name' => $item->name,
-            'container_id' => $item->container_id,
+            'type' => $item->type->value,
+            'parent_id' => $item->parent_id,
         ]);
     }
 
-    public function save()
+    public function save(): void
     {
         $data = $this->validate();
 
@@ -38,11 +43,13 @@ class ItemForm extends Form
         $this->reset();
     }
 
+    /** @return array<string, mixed> */
     protected function rules(): array
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'container_id' => ['nullable', 'integer', 'exists:containers,id'],
+            'type' => ['required', Rule::enum(ItemType::class)],
+            'parent_id' => ['nullable', 'integer', 'exists:items,id'],
         ];
     }
 }
