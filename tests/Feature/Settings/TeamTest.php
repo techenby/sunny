@@ -117,6 +117,39 @@ test('non-owner cannot cancel a pending invitation', function () {
         ->assertStatus(403);
 });
 
+test('owner can copy invitation link', function () {
+    $owner = User::factory()->withTeam()->create();
+    $invitation = TeamInvitation::factory()->for($owner->currentTeam)->create(['email' => 'pending@example.com']);
+
+    Livewire::actingAs($owner)
+        ->test('pages::settings.team')
+        ->call('copyInvitationLink', $invitation->id)
+        ->assertDispatched('copy-to-clipboard', fn ($name, $params) => str_contains($params['url'], '/invitations/' . $invitation->id . '/accept'));
+});
+
+test('non-owner cannot copy invitation link', function () {
+    $owner = User::factory()->withTeam()->create();
+    $member = User::factory()->create();
+    $owner->currentTeam->users()->attach($member);
+    $member->switchTeam($owner->currentTeam);
+
+    $invitation = TeamInvitation::factory()->for($owner->currentTeam)->create(['email' => 'pending@example.com']);
+
+    Livewire::actingAs($member)
+        ->test('pages::settings.team')
+        ->assertStatus(403);
+});
+
+test('cannot copy invitation link belonging to another team', function () {
+    $owner = User::factory()->withTeam()->create();
+    $otherOwner = User::factory()->withTeam()->create();
+    $invitation = TeamInvitation::factory()->for($otherOwner->currentTeam)->create(['email' => 'pending@example.com']);
+
+    Livewire::actingAs($owner)
+        ->test('pages::settings.team')
+        ->call('copyInvitationLink', $invitation->id);
+})->throws(ModelNotFoundException::class);
+
 test('cannot cancel invitation belonging to another team', function () {
     $owner = User::factory()->withTeam()->create();
     $otherOwner = User::factory()->withTeam()->create();

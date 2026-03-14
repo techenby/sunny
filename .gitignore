@@ -23,9 +23,11 @@ yarn-error.log
 /.zed
 
 # Laravel Boost
+/.agents
 /.claude
-AGENTS.md
-CLAUDE.md
+/.github/skills
+/.opencode
 .mcp.json
 boost.json
-/.github/skills
+AGENTS.md
+CLAUDE.md

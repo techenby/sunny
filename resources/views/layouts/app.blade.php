@@ -12,11 +12,15 @@
                     <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
                         {{ __('Dashboard') }}
                     </flux:sidebar.item>
-                    @if (auth()->user()->ownsTeam(auth()->user()->currentTeam))
-                        <flux:sidebar.item icon="user-group" :href="route('team.edit')" :current="request()->routeIs('team.edit')" wire:navigate>
-                            {{ __('Team Settings') }}
-                        </flux:sidebar.item>
-                    @endif
+
+                    <flux:sidebar.item icon="archive-box" :href="route('inventory.index')" :current="request()->routeIs('inventory.*')" wire:navigate>
+                        {{ __('Inventory') }}
+                    </flux:sidebar.item>
+
+                    <flux:sidebar.item icon="book-open" :href="route('recipes.index')" :current="request()->routeIs('recipes.*')" wire:navigate>
+                        {{ __('Recipes') }}
+                    </flux:sidebar.item>
+
                 </flux:sidebar.group>
             </flux:sidebar.nav>
 
@@ -27,6 +31,12 @@
                     {{ __('Admin') }}
                 </flux:sidebar.item>
             @endcan
+            
+            @if (auth()->user()->ownsTeam(auth()->user()->currentTeam))
+                <flux:sidebar.item icon="user-group" :href="route('team.edit')" :current="request()->routeIs('team.edit')" wire:navigate>
+                    {{ __('Team Settings') }}
+                </flux:sidebar.item>
+            @endif
             <x-desktop-user-menu class="hidden lg:block" :name="auth()->user()->name" />
         </flux:sidebar>
 
@@ -89,6 +99,10 @@
         <flux:main>
             {{ $slot }}
         </flux:main>
+
+        @persist('toast')
+            <flux:toast />
+        @endpersist
 
         @fluxScripts
     </body>

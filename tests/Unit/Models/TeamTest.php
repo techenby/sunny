@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Recipe;
 use App\Models\Team;
 use App\Models\User;
 
@@ -42,4 +43,14 @@ test('purge deletes team and clears current team references', function () {
     expect(Team::find($team->id))->toBeNull()
         ->and($owner->fresh()->current_team_id)->toBeNull()
         ->and($member->fresh()->current_team_id)->toBeNull();
+});
+
+test('purge deletes recipes from team', function () {
+    $user = User::factory()->withTeam()->create();
+    Recipe::factory()->for($user->currentTeam)->create();
+    $teamId = $user->currentTeam->id;
+
+    $user->currentTeam->purge();
+
+    expect(Recipe::where('team_id', $teamId)->count())->toBe(0);
 });

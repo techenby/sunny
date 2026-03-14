@@ -39,6 +39,18 @@ class Team extends Model
         return $this->hasMany(TeamInvitation::class);
     }
 
+    /** @return HasMany<Item, $this> */
+    public function items(): HasMany
+    {
+        return $this->hasMany(Item::class);
+    }
+
+    /** @return HasMany<Recipe, $this> */
+    public function recipes(): HasMany
+    {
+        return $this->hasMany(Recipe::class);
+    }
+
     public function hasUser(User $user): bool
     {
         return $this->users->contains($user) || $this->user_id === $user->id;
@@ -58,6 +70,8 @@ class Team extends Model
             ->update(['current_team_id' => null]);
 
         $this->users()->detach();
+
+        $this->recipes()->delete();
 
         $this->delete();
     }
