@@ -36,23 +36,11 @@ class ItemFactory extends Factory
         ]);
     }
 
-    public function container(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'type' => fake()->randomElement([ItemType::Location, ItemType::Bin]),
-        ]);
-    }
-
     public function childOf(Item $parent): static
     {
         return $this->state(fn (array $attributes) => [
             'team_id' => $parent->team_id,
             'parent_id' => $parent->id,
         ]);
-    }
-
-    public function inContainer(Item $container): static
-    {
-        return $this->childOf($container);
     }
 }

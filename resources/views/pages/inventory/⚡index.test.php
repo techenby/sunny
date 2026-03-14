@@ -96,7 +96,7 @@ test('can create an item with a parent', function () {
 
 test('can edit an item', function () {
     $user = User::factory()->withTeam()->create();
-    $container = Item::factory()->for($user->currentTeam)->create(['name' => 'Soft Shell Case', 'type' => ItemType::Bin]);
+    $bin = Item::factory()->for($user->currentTeam)->create(['name' => 'Soft Shell Case', 'type' => ItemType::Bin]);
     $item = Item::factory()->for($user->currentTeam)->create(['name' => 'Guitar']);
 
     Livewire::actingAs($user)
@@ -105,7 +105,7 @@ test('can edit an item', function () {
         ->assertSet('form.name', 'Guitar')
         ->assertSet('form.parent_id', null)
         ->set('form.name', 'Yamaha Guitar')
-        ->set('form.parent_id', $container->id)
+        ->set('form.parent_id', $bin->id)
         ->call('save')
         ->assertHasNoErrors()
         ->assertSet('form.name', '')
@@ -113,7 +113,7 @@ test('can edit an item', function () {
 
     expect($item->fresh())
         ->name->toBe('Yamaha Guitar')
-        ->parent_id->toBe($container->id);
+        ->parent_id->toBe($bin->id);
 });
 
 test('can delete an item', function () {

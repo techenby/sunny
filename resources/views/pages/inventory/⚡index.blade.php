@@ -141,7 +141,7 @@ new #[Title('Inventory')] class extends Component {
         <flux:table.columns>
             <flux:table.column sortable :sorted="$sortBy === 'name'" :direction="$sortDirection" wire:click="sort('name')">{{ __('Name') }}</flux:table.column>
             <flux:table.column>{{ __('Modified') }}</flux:table.column>
-            <flux:table.column>{{ __('Size') }}</flux:table.column>
+            <flux:table.column>{{ __('Contents') }}</flux:table.column>
             <flux:table.column></flux:table.column>
         </flux:table.columns>
 
@@ -154,7 +154,7 @@ new #[Title('Inventory')] class extends Component {
                             <span>{{ $item->name }}</span>
                         </flux:link>
                     </flux:table.cell>
-                    <flux:table.cell>{{ $item->updated_at }}</flux:table.cell>
+                    <flux:table.cell>{{ $item->updated_at->diffForHumans() }}</flux:table.cell>
                     <flux:table.cell>
                         {{ $item->children_count }}
                     </flux:table.cell>
@@ -192,7 +192,7 @@ new #[Title('Inventory')] class extends Component {
                 @endforeach
             </flux:select>
 
-            <flux:select wire:model="form.parent_id" :label="__('Parent Container')">
+            <flux:select wire:model="form.parent_id" :label="__('Parent')">
                 <flux:select.option value="">{{ __('None') }}</flux:select.option>
                 @foreach ($this->parentItems as $parentItem)
                     <flux:select.option :value="$parentItem->id">{{ $parentItem->name }}</flux:select.option>
