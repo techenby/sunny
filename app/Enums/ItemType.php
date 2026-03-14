@@ -10,7 +10,7 @@ enum ItemType: string
     case Bin = 'bin';
     case Item = 'item';
 
-    public function getIcon()
+    public function getIcon(): string
     {
         return match ($this) {
             self::Location => 'map-pin',
@@ -19,7 +19,7 @@ enum ItemType: string
         };
     }
 
-    public function getIconColor()
+    public function getIconColor(): string
     {
         return match ($this) {
             self::Location => 'red',

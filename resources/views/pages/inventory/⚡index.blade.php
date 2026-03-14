@@ -4,7 +4,7 @@ use App\Livewire\Forms\Inventory\ItemForm;
 use App\Livewire\Traits\WithSearching;
 use App\Livewire\Traits\WithSorting;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection as BaseCollection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
@@ -21,7 +21,7 @@ new #[Title('Inventory')] class extends Component {
     public ItemForm $form;
 
     #[Url]
-    public $parentId = null;
+    public ?int $parentId = null;
 
     #[Computed]
     public function breadcrumbs(): BaseCollection
@@ -40,7 +40,7 @@ new #[Title('Inventory')] class extends Component {
     }
 
     #[Computed]
-    public function items()
+    public function items(): LengthAwarePaginator
     {
         return Auth::user()->currentTeam
             ->items()
@@ -48,7 +48,7 @@ new #[Title('Inventory')] class extends Component {
             ->where('parent_id', $this->parentId)
             ->when($this->search, fn ($query) => $query->where('name', 'like', '%' . $this->search . '%'))
             ->orderBy($this->sortBy, $this->sortDirection)
-            ->get();
+            ->paginate(10);
     }
 
     #[Computed]
@@ -62,19 +62,19 @@ new #[Title('Inventory')] class extends Component {
 
     public function delete(int $id): void
     {
-        $item = $this->items->firstWhere('id', $id);
-        throw_if($item === null, ModelNotFoundException::class);
+        Auth::user()->currentTeam->items()
+            ->where('id', $id)
+            ->firstOrFail()
+            ->delete();
 
-        $item->delete();
         unset($this->items, $this->parentItems);
     }
 
     public function edit(int $id): void
     {
-        $item = $this->items->firstWhere('id', $id);
-        throw_if($item === null, ModelNotFoundException::class);
-
-        $this->form->load($item);
+        $this->form->load(
+            Auth::user()->currentTeam->items()->findOrFail($id)
+        );
         $this->modal('item-form')->show();
     }
 
@@ -132,7 +132,7 @@ new #[Title('Inventory')] class extends Component {
         </flux:breadcrumbs>
     </div>
 
-    <flux:table>
+    <flux:table :paginate="$this->items">
         <flux:table.columns>
             <flux:table.column sortable :sorted="$sortBy === 'name'" :direction="$sortDirection" wire:click="sort('name')">{{ __('Name') }}</flux:table.column>
             <flux:table.column>{{ __('Modified') }}</flux:table.column>

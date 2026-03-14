@@ -18,7 +18,7 @@ class ItemFactory extends Factory
         return [
             'team_id' => Team::factory(),
             'name' => fake()->word(),
-            'type' => fake()->randomElement(ItemType::class),
+            'type' => ItemType::Item,
         ];
     }
 
@@ -39,7 +39,7 @@ class ItemFactory extends Factory
     public function container(): static
     {
         return $this->state(fn (array $attributes) => [
-            'type' => fake()->randomElement(ItemType::cases()),
+            'type' => fake()->randomElement([ItemType::Location, ItemType::Bin]),
         ]);
     }
 
