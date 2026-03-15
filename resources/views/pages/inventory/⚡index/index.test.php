@@ -398,7 +398,7 @@ describe('can import items', function () {
 
         Livewire::actingAs($user)
             ->test('pages::inventory.index')
-            ->set('file', amazonFixtureUpload())
+            ->set('importForm.file', amazonFixtureUpload())
             ->call('import')
             ->assertHasNoErrors();
 
@@ -412,7 +412,7 @@ describe('can import items', function () {
         Livewire::actingAs($user)
             ->test('pages::inventory.index')
             ->call('navigateDown', $parent->id)
-            ->set('file', amazonFixtureUpload())
+            ->set('importForm.file', amazonFixtureUpload())
             ->call('import')
             ->assertHasNoErrors();
 
@@ -424,9 +424,9 @@ describe('can import items', function () {
 
         Livewire::actingAs($user)
             ->test('pages::inventory.index')
-            ->set('file', amazonFixtureUpload())
+            ->set('importForm.file', amazonFixtureUpload())
             ->call('import')
-            ->assertSet('file', null);
+            ->assertSet('importForm.file', null);
     });
 
     test('import requires a file', function () {
@@ -435,7 +435,7 @@ describe('can import items', function () {
         Livewire::actingAs($user)
             ->test('pages::inventory.index')
             ->call('import')
-            ->assertHasErrors('file');
+            ->assertHasErrors('importForm.file');
     });
 
     test('import rejects non-csv files', function () {
@@ -444,8 +444,8 @@ describe('can import items', function () {
 
         Livewire::actingAs($user)
             ->test('pages::inventory.index')
-            ->set('file', $file)
+            ->set('importForm.file', $file)
             ->call('import')
-            ->assertHasErrors('file');
+            ->assertHasErrors('importForm.file');
     });
 });

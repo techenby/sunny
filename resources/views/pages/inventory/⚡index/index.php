@@ -1,10 +1,9 @@
 <?php
 
-use App\Actions\Inventory\ImportItemsFromAmazonAction;
+use App\Livewire\Forms\Inventory\ImportItemsForm;
 use App\Livewire\Forms\Inventory\ItemForm;
 use App\Livewire\Traits\WithSearching;
 use App\Livewire\Traits\WithSorting;
-use Flux\Flux;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection as BaseCollection;
@@ -12,7 +11,6 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
-use Livewire\Attributes\Validate;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
@@ -25,12 +23,10 @@ new #[Title('Inventory')] class extends Component
     use WithSorting;
 
     public ItemForm $form;
+    public ImportItemsForm $importForm;
 
     #[Url]
     public ?int $parentId = null;
-
-    #[Validate('required|file|mimes:csv,txt')]
-    public $file = null;
 
     #[Computed]
     public function breadcrumbs(): BaseCollection
@@ -101,26 +97,10 @@ new #[Title('Inventory')] class extends Component
 
     public function import(): void
     {
-        $this->validateOnly('file');
+        $this->importForm->process($this->parentId);
 
-        $result = resolve(ImportItemsFromAmazonAction::class)->handle(
-            $this->file,
-            Auth::user()->currentTeam,
-            $this->parentId,
-        );
-
-        $this->reset('file');
-        $this->modal('import-items')->close();
         unset($this->items, $this->parentItems);
-
-        Flux::toast(
-            text: __('Imported :imported items, skipped :skipped.', [
-                'imported' => $result['imported'],
-                'skipped' => $result['skipped'],
-            ]),
-            heading: __('Import complete'),
-            variant: 'success',
-        );
+        $this->modal('import-items')->close();
     }
 
     public function navigateDown(int $id): void
