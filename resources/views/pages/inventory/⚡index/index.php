@@ -28,6 +28,7 @@ new #[Title('Inventory')] class extends Component
 
     public string $qrCodeSvg = '';
     public string $qrCodeItemName = '';
+    public string $qrCodeUrl = '';
 
     #[Url]
     public ?int $parentId = null;
@@ -125,6 +126,8 @@ new #[Title('Inventory')] class extends Component
 
         $this->qrCodeSvg = app(GenerateItemQrCode::class)->handle($item);
         $this->qrCodeItemName = $item->name;
+        $this->qrCodeUrl = route('inventory.index', ['parentId' => $item->id]);
+
         $this->modal('qr-code')->show();
     }
 

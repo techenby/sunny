@@ -19,10 +19,8 @@ class GenerateItemQrCode
             new SvgImageBackEnd,
         );
 
-        $writer = new Writer($renderer);
-
         $url = route('inventory.index', ['parentId' => $item->id]);
 
-        return $writer->writeString($url);
+        return new Writer($renderer)->writeString($url);
     }
 }
