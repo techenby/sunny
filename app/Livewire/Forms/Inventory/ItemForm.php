@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Livewire\Forms\Inventory;
 
+use App\Actions\Inventory\CreateItem;
+use App\Actions\Inventory\UpdateItem;
 use App\Enums\ItemType;
 use App\Models\Item;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\Form;
@@ -70,15 +70,10 @@ class ItemForm extends Form
             ->mapWithKeys(fn (array $pair) => [$pair['key'] => $pair['value']])
             ->all() ?: null;
 
-        $photo = $data['photo'] ?? null;
-        unset($data['photo']);
-
         if ($this->editingItem) {
-            $this->editingItem->update($data);
-            $this->handlePhotoUpdate($this->editingItem, $photo);
+            (new UpdateItem)->handle($this->editingItem, $data, $this->removePhoto);
         } else {
-            $item = Auth::user()->currentTeam->items()->create($data);
-            $this->handlePhotoStore($item, $photo);
+            (new CreateItem)->handle(Auth::user()->currentTeam, $data);
         }
 
         $this->reset();
@@ -96,31 +91,5 @@ class ItemForm extends Form
             'metadata.*.value' => ['required_with:metadata.*.key', 'nullable', 'string', 'max:255'],
             'photo' => ['nullable', 'image', 'max:5120'],
         ];
-    }
-
-    private function handlePhotoStore(Item $item, mixed $photo): void
-    {
-        if ($photo instanceof UploadedFile) {
-            $filename = Str::slug($item->name) . '.' . $photo->getClientOriginalExtension();
-            $path = $photo->storeAs("teams/{$item->team_id}/items", $filename);
-            $item->update(['photo_path' => $path]);
-        }
-    }
-
-    private function handlePhotoUpdate(Item $item, mixed $photo): void
-    {
-        if ($this->removePhoto && ! $photo instanceof UploadedFile) {
-            if ($item->photo_path) {
-                Storage::delete($item->photo_path);
-            }
-            $item->update(['photo_path' => null]);
-        } elseif ($photo instanceof UploadedFile) {
-            if ($item->photo_path) {
-                Storage::delete($item->photo_path);
-            }
-            $filename = Str::slug($item->name) . '.' . $photo->getClientOriginalExtension();
-            $path = $photo->storeAs("teams/{$item->team_id}/items", $filename);
-            $item->update(['photo_path' => $path]);
-        }
     }
 }
