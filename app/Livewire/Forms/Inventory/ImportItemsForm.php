@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire\Forms\Inventory;
 
 use App\Actions\Inventory\ImportItemsFromAmazonAction;
@@ -10,7 +12,7 @@ use Livewire\Form;
 
 class ImportItemsForm extends Form
 {
-     #[Validate('required|file|mimes:csv,txt')]
+    #[Validate('required|file|mimes:csv,txt')]
     public $file = null;
 
     public bool $filterGifts = true;
