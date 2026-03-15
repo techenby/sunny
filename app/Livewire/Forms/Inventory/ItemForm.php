@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace App\Livewire\Forms\Inventory;
 
+use App\Actions\Inventory\CreateItem;
+use App\Actions\Inventory\UpdateItem;
 use App\Enums\ItemType;
 use App\Models\Item;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\Form;
 
 class ItemForm extends Form
@@ -23,6 +27,12 @@ class ItemForm extends Form
     /** @var array<int, array{key: string, value: string}> */
     public array $metadata = [];
 
+    public ?TemporaryUploadedFile $photo = null;
+
+    public ?string $existingPhotoUrl = null;
+
+    public bool $removePhoto = false;
+
     public function load(Item $item): void
     {
         $metadata = collect($item->metadata ?? [])
@@ -36,6 +46,7 @@ class ItemForm extends Form
             'type' => $item->type->value,
             'parent_id' => $item->parent_id,
             'metadata' => $metadata,
+            'existingPhotoUrl' => $item->photo_path ? Storage::temporaryUrl($item->photo_path, now()->addMinutes(30)) : null,
         ]);
     }
 
@@ -60,9 +71,9 @@ class ItemForm extends Form
             ->all() ?: null;
 
         if ($this->editingItem) {
-            $this->editingItem->update($data);
+            (new UpdateItem)->handle($this->editingItem, $data, $this->removePhoto);
         } else {
-            Auth::user()->currentTeam->items()->create($data);
+            (new CreateItem)->handle(Auth::user()->currentTeam, $data);
         }
 
         $this->reset();
@@ -78,6 +89,7 @@ class ItemForm extends Form
             'metadata' => ['nullable', 'array'],
             'metadata.*.key' => ['nullable', 'string', 'max:255', 'distinct'],
             'metadata.*.value' => ['required_with:metadata.*.key', 'nullable', 'string', 'max:255'],
+            'photo' => ['nullable', 'image', 'max:5120'],
         ];
     }
 }

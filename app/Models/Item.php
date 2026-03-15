@@ -24,6 +24,7 @@ class Item extends Model
         'parent_id',
         'type',
         'name',
+        'photo_path',
         'metadata',
     ];
 
