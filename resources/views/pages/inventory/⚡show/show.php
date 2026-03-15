@@ -4,11 +4,11 @@ use App\Actions\Inventory\GenerateItemQrCode;
 use App\Livewire\Forms\Inventory\ItemForm;
 use App\Models\Item;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Collection as BaseCollection;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
-use Illuminate\Support\Collection as BaseCollection;
-use Illuminate\Support\Facades\Auth;
 use Livewire\WithFileUploads;
 
 new #[Title('Inventory: Item')] class extends Component
@@ -65,7 +65,7 @@ new #[Title('Inventory: Item')] class extends Component
 
     public function showQrCode(): void
     {
-        $this->qrCode = app(GenerateItemQrCode::class)->handle($this->item);
+        $this->qrCode = resolve(GenerateItemQrCode::class)->handle($this->item);
 
         $this->modal('qr-code')->show();
     }

@@ -94,6 +94,7 @@ describe('can navigate up and down', function () {
         $bedroom = Item::factory()->for($user->currentTeam)->location()->create(['name' => 'Bedroom']);
         $closet = Item::factory()->for($user->currentTeam)->bin()->childOf($bedroom)->create(['name' => 'Right Closet']);
         $tote = Item::factory()->for($user->currentTeam)->bin()->childOf($closet)->create(['name' => 'Game Tote']);
+        $game = Item::factory()->for($user->currentTeam)->bin()->childOf($tote)->create(['name' => 'Catan']);
 
         Livewire::actingAs($user)
             ->test('pages::inventory.index')
@@ -545,8 +546,8 @@ describe('can generate qr codes', function () {
         Livewire::actingAs($user)
             ->test('pages::inventory.index')
             ->call('showQrCode', $item->id)
-            ->assertSet('qrCodeItemName', 'Guitar')
-            ->assertNotSet('qrCodeSvg', '');
+            ->assertSet('qrCode.name', 'Guitar')
+            ->assertNotSet('qrCode.svg', '');
     });
 
     test('qr code svg contains valid svg markup', function () {
@@ -557,7 +558,7 @@ describe('can generate qr codes', function () {
             ->test('pages::inventory.index')
             ->call('showQrCode', $item->id);
 
-        expect($component->get('qrCodeSvg'))->toContain('<svg');
+        expect($component->get('qrCode.svg'))->toContain('<svg');
     });
 
     test('cannot show qr code for an item from another team', function () {

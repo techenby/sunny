@@ -28,7 +28,7 @@
             <flux:menu>
                 <flux:menu.item wire:click="edit" icon="pencil">{{ __('Edit') }}</flux:menu.item>
                 <flux:menu.item wire:click="showQrCode" icon="qr-code">{{ __('QR Code') }}</flux:menu.item>
-                <flux:menu.item wire:click="delete" variant="danger" icon="trash" wire:confirm="{{ __('Are you sure you want to delete this recipe?') }}">{{ __('Delete') }}</flux:menu.item>
+                <flux:menu.item wire:click="delete" variant="danger" icon="trash" wire:confirm="{{ __('Are you sure you want to delete this item?') }}">{{ __('Delete') }}</flux:menu.item>
             </flux:menu>
         </flux:dropdown>
     </div>

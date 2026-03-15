@@ -151,7 +151,7 @@ describe('can add item metadata', function () {
         $user = User::factory()->withTeam()->create();
 
         $item = Item::factory()->for($user->currentTeam)->create([
-            'metadata' => ['color' => 'red']
+            'metadata' => ['color' => 'red'],
         ]);
 
         Livewire::actingAs($user)
@@ -242,8 +242,8 @@ describe('can generate qr codes', function () {
         Livewire::actingAs($user)
             ->test('pages::inventory.show', ['item' => $item])
             ->call('showQrCode')
-            ->assertSet('qrCodeItemName', 'Guitar')
-            ->assertNotSet('qrCodeSvg', '');
+            ->assertSet('qrCode.name', 'Guitar')
+            ->assertNotSet('qrCode.svg', '');
     });
 
     test('qr code svg contains valid svg markup', function () {
@@ -254,6 +254,6 @@ describe('can generate qr codes', function () {
             ->test('pages::inventory.show', ['item' => $item])
             ->call('showQrCode');
 
-        expect($component->get('qrCodeSvg'))->toContain('<svg');
+        expect($component->get('qrCode.svg'))->toContain('<svg');
     });
 });

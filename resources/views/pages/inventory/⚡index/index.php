@@ -127,7 +127,7 @@ new #[Title('Inventory')] class extends Component
     {
         $item = Auth::user()->currentTeam->items()->findOrFail($id);
 
-        $this->qrCode = app(GenerateItemQrCode::class)->handle($item);
+        $this->qrCode = resolve(GenerateItemQrCode::class)->handle($item);
 
         $this->modal('qr-code')->show();
     }

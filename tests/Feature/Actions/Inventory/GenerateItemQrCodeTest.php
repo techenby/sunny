@@ -6,9 +6,9 @@ use App\Models\Item;
 test('it generates an svg qr code for an item', function () {
     $item = Item::factory()->create();
 
-    $svg = app(GenerateItemQrCode::class)->handle($item);
+    $qrCode = resolve(GenerateItemQrCode::class)->handle($item);
 
-    expect($svg)
+    expect($qrCode['svg'])
         ->toContain('<svg')
         ->toContain('</svg>');
 });
@@ -16,7 +16,7 @@ test('it generates an svg qr code for an item', function () {
 test('qr code encodes the inventory url with the item id', function () {
     $item = Item::factory()->create();
 
-    $svg = app(GenerateItemQrCode::class)->handle($item);
+    $qrCode = resolve(GenerateItemQrCode::class)->handle($item);
 
-    expect($svg)->toBeString()->not->toBeEmpty();
+    expect($qrCode['svg'])->toBeString()->not->toBeEmpty();
 });
