@@ -4,6 +4,31 @@
 
         <flux:input wire:model="form.name" :label="__('Name')" type="text" required />
 
+        <flux:field>
+            <flux:label>{{ __('Photo') }}</flux:label>
+
+            <flux:file-upload wire:model="form.photo">
+                <flux:file-upload.dropzone :heading="__('Drop photo here or click to browse')" :text="__('JPG, PNG up to 5MB')" inline />
+            </flux:file-upload>
+
+            <div class="mt-4 flex flex-col gap-2">
+            @if ($this->form->photo)
+                <flux:file-item :heading="$this->form->photo->getClientOriginalName()" :image="$this->form->photo->isPreviewable() ? $this->form->photo->temporaryUrl() : null" :size="$this->form->photo->getSize()">
+                    <x-slot name="actions">
+                        <flux:button wire:click="removePhoto" variant="ghost" size="sm" icon="x-mark" />
+                    </x-slot>
+                </flux:file-item>
+            @elseif ($this->form->existingPhotoUrl)
+                <flux:file-item :heading="basename($this->form->editingItem->photo_path)" :image="$this->form->existingPhotoUrl">
+                    <x-slot name="actions">
+                        <flux:button wire:click="removePhoto" variant="ghost" size="sm" icon="x-mark" />
+                    </x-slot>
+                </flux:file-item>
+            @endif
+            </div>
+            <flux:error name="form.photo" />
+        </flux:field>
+
         <flux:select wire:model="form.type" :label="__('Type')" placeholder="Select type" variant="listbox" searchable>
             @foreach (\App\Enums\ItemType::cases() as $type)
                 <flux:select.option :value="$type->value">{{ ucfirst($type->value) }}</flux:select.option>

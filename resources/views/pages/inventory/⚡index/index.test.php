@@ -5,6 +5,7 @@ use App\Models\Item;
 use App\Models\User;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
 test('guests are redirected to the login page', function () {
@@ -389,6 +390,92 @@ describe('can add item metadata', function () {
             ->assertSet('form.metadata', [
                 ['key' => 'url', 'value' => 'https://example.com'],
             ]);
+    });
+});
+
+describe('can manage item photos', function () {
+    test('can create an item with a photo', function () {
+        Storage::fake();
+        $user = User::factory()->withTeam()->create();
+        $photo = UploadedFile::fake()->image('guitar.jpg');
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->set('form.name', 'Guitar')
+            ->set('form.type', ItemType::Item->value)
+            ->set('form.photo', $photo)
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $item = Item::where('name', 'Guitar')->first();
+
+        expect($item->photo_path)->not->toBeNull();
+        Storage::assertExists($item->photo_path);
+    });
+
+    test('can create an item without a photo', function () {
+        $user = User::factory()->withTeam()->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->set('form.name', 'Screwdriver')
+            ->set('form.type', ItemType::Item->value)
+            ->call('save')
+            ->assertHasNoErrors();
+
+        expect(Item::where('name', 'Screwdriver')->first()->photo_path)->toBeNull();
+    });
+
+    test('can update an item with a new photo', function () {
+        Storage::fake();
+        $user = User::factory()->withTeam()->create();
+        $item = Item::factory()->for($user->currentTeam)->create(['name' => 'Guitar', 'photo_path' => 'teams/1/items/guitar.jpg']);
+        Storage::put('teams/1/items/guitar.jpg', 'old');
+
+        $newPhoto = UploadedFile::fake()->image('new-guitar.png');
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->call('edit', $item->id)
+            ->set('form.photo', $newPhoto)
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $item->refresh();
+
+        expect($item->photo_path)->not->toBeNull();
+        Storage::assertExists($item->photo_path);
+        Storage::assertMissing('teams/1/items/guitar.jpg');
+    });
+
+    test('can remove an existing photo', function () {
+        Storage::fake();
+        $user = User::factory()->withTeam()->create();
+        $item = Item::factory()->for($user->currentTeam)->create(['name' => 'Guitar', 'photo_path' => 'teams/1/items/guitar.jpg']);
+        Storage::put('teams/1/items/guitar.jpg', 'content');
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->call('edit', $item->id)
+            ->call('removePhoto')
+            ->call('save')
+            ->assertHasNoErrors();
+
+        expect($item->fresh()->photo_path)->toBeNull();
+        Storage::assertMissing('teams/1/items/guitar.jpg');
+    });
+
+    test('photo validation rejects non-image files', function () {
+        $user = User::factory()->withTeam()->create();
+        $file = UploadedFile::fake()->create('document.pdf', 100, 'application/pdf');
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->set('form.name', 'Guitar')
+            ->set('form.type', ItemType::Item->value)
+            ->set('form.photo', $file)
+            ->call('save')
+            ->assertHasErrors('form.photo');
     });
 });
 

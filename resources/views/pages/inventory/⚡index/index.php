@@ -123,6 +123,17 @@ new #[Title('Inventory')] class extends Component
         $this->form->removeMetadata($index);
     }
 
+    public function removePhoto(): void
+    {
+        if ($this->form->photo) {
+            $this->form->photo->delete();
+            $this->form->photo = null;
+        } elseif ($this->form->existingPhotoUrl) {
+            $this->form->existingPhotoUrl = null;
+            $this->form->removePhoto = true;
+        }
+    }
+
     public function save(): void
     {
         $this->form->save();

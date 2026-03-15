@@ -6,8 +6,12 @@ namespace App\Livewire\Forms\Inventory;
 
 use App\Enums\ItemType;
 use App\Models\Item;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\Form;
 
 class ItemForm extends Form
@@ -23,6 +27,12 @@ class ItemForm extends Form
     /** @var array<int, array{key: string, value: string}> */
     public array $metadata = [];
 
+    public ?TemporaryUploadedFile $photo = null;
+
+    public ?string $existingPhotoUrl = null;
+
+    public bool $removePhoto = false;
+
     public function load(Item $item): void
     {
         $metadata = collect($item->metadata ?? [])
@@ -36,6 +46,7 @@ class ItemForm extends Form
             'type' => $item->type->value,
             'parent_id' => $item->parent_id,
             'metadata' => $metadata,
+            'existingPhotoUrl' => $item->photo_path ? Storage::temporaryUrl($item->photo_path, now()->addMinutes(30)) : null,
         ]);
     }
 
@@ -59,10 +70,15 @@ class ItemForm extends Form
             ->mapWithKeys(fn (array $pair) => [$pair['key'] => $pair['value']])
             ->all() ?: null;
 
+        $photo = $data['photo'] ?? null;
+        unset($data['photo']);
+
         if ($this->editingItem) {
             $this->editingItem->update($data);
+            $this->handlePhotoUpdate($this->editingItem, $photo);
         } else {
-            Auth::user()->currentTeam->items()->create($data);
+            $item = Auth::user()->currentTeam->items()->create($data);
+            $this->handlePhotoStore($item, $photo);
         }
 
         $this->reset();
@@ -78,6 +94,33 @@ class ItemForm extends Form
             'metadata' => ['nullable', 'array'],
             'metadata.*.key' => ['nullable', 'string', 'max:255', 'distinct'],
             'metadata.*.value' => ['required_with:metadata.*.key', 'nullable', 'string', 'max:255'],
+            'photo' => ['nullable', 'image', 'max:5120'],
         ];
+    }
+
+    private function handlePhotoStore(Item $item, mixed $photo): void
+    {
+        if ($photo instanceof UploadedFile) {
+            $filename = Str::slug($item->name) . '.' . $photo->getClientOriginalExtension();
+            $path = $photo->storeAs("teams/{$item->team_id}/items", $filename);
+            $item->update(['photo_path' => $path]);
+        }
+    }
+
+    private function handlePhotoUpdate(Item $item, mixed $photo): void
+    {
+        if ($this->removePhoto && ! $photo instanceof UploadedFile) {
+            if ($item->photo_path) {
+                Storage::delete($item->photo_path);
+            }
+            $item->update(['photo_path' => null]);
+        } elseif ($photo instanceof UploadedFile) {
+            if ($item->photo_path) {
+                Storage::delete($item->photo_path);
+            }
+            $filename = Str::slug($item->name) . '.' . $photo->getClientOriginalExtension();
+            $path = $photo->storeAs("teams/{$item->team_id}/items", $filename);
+            $item->update(['photo_path' => $path]);
+        }
     }
 }
