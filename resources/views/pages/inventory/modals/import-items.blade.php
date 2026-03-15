@@ -30,10 +30,16 @@
 
         <flux:checkbox wire:model="filterConsumables" label="{{ __('Filter out consumables') }}" description="{{ __('Skip food, drinks, toiletries, and other consumable items.') }}" />
 
-        <div class="grid grid-cols-2 gap-4">
-            <flux:date-picker wire:model="startDate" label="{{ __('From') }}" clearable max="today" />
-            <flux:date-picker wire:model="endDate" label="{{ __('To') }}" clearable max="today" />
-        </div>
+        <flux:date-picker wire:model="startDate" label="{{ __('From') }}" max="today" >
+            <x-slot name="trigger">
+                <flux:date-picker.input clearable />
+            </x-slot>
+        </flux:date-picker>
+        <flux:date-picker wire:model="endDate" label="{{ __('To') }}" max="today" >
+            <x-slot name="trigger">
+                <flux:date-picker.input clearable />
+            </x-slot>
+        </flux:date-picker>
 
         <div class="flex">
             <flux:spacer />
