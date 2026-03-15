@@ -108,6 +108,8 @@ new #[Title('Inventory')] class extends Component
         $item = $this->items->firstWhere('id', $id);
         if ($item !== null && $item->children_count === 0) {
             $this->redirectRoute('inventory.show', ['item' => $item]);
+
+            return;
         }
 
         $this->parentId = $id;

@@ -52,7 +52,7 @@ new #[Title('Inventory: Item')] class extends Component
 
         $this->item->delete();
 
-        unset($this->items, $this->parentItems);
+        unset($this->parentItems);
     }
 
     public function edit(): void
@@ -65,6 +65,8 @@ new #[Title('Inventory: Item')] class extends Component
 
     public function showQrCode(): void
     {
+        $this->authorize('view', $this->item);
+
         $this->qrCode = resolve(GenerateItemQrCode::class)->handle($this->item);
 
         $this->modal('qr-code')->show();
@@ -96,6 +98,6 @@ new #[Title('Inventory: Item')] class extends Component
 
         $this->form->save();
         $this->modal('item-form')->close();
-        unset($this->items, $this->parentItems);
+        unset($this->parentItems);
     }
 };

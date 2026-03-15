@@ -129,12 +129,25 @@ describe('can navigate up and down', function () {
             ->assertSeeHtml('<span>Right Closet</span>')
             ->assertDontSeeHtml('<span>Game Tote</span>');
     });
+
+    test('clicking item without children redirects to show', function () {
+        $user = User::factory()->withTeam()->create();
+        $parent = Item::factory()->for($user->currentTeam)->location()->create(['name' => 'Bedroom']);
+        $child = Item::factory()->for($user->currentTeam)->childOf($parent)->bin()->create(['name' => 'Closet']);
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->call('navigateDown', $parent->id)
+            ->call('navigateDown', $child->id)
+            ->assertRedirect(route('inventory.show', ['item' => $child]));
+    });
 });
 
 describe('can create and edit', function () {
     test('create pre-fills parent_id with current parentId', function () {
         $user = User::factory()->withTeam()->create();
         $parent = Item::factory()->for($user->currentTeam)->location()->create(['name' => 'Bedroom']);
+        Item::factory()->for($user->currentTeam)->childOf($parent)->bin()->create(['name' => 'Tote']);
 
         Livewire::actingAs($user)
             ->test('pages::inventory.index')
