@@ -4,12 +4,12 @@
         <div class="space-y-1">
             <flux:heading size="lg">{{ __('QR Code') }}</flux:heading>
 
-            <flux:text>{{ $qrCodeItemName }}</flux:text>
-            <flux:link :href="$qrCodeUrl">{{ $qrCodeUrl }}</flux:link>
+            <flux:text>{{ $qrCode['name'] ?? '' }}</flux:text>
+            <flux:link :href="$qrCode['url'] ?? ''">{{ $qrCode['url'] ?? '' }}</flux:link>
         </div>
 
         <div class="flex justify-center">
-            {!! $qrCodeSvg !!}
+            {!! $qrCode['svg'] ?? '' !!}
         </div>
     </div>
 </flux:modal>

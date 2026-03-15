@@ -26,9 +26,7 @@ new #[Title('Inventory')] class extends Component
     public ItemForm $form;
     public ImportItemsForm $importForm;
 
-    public string $qrCodeSvg = '';
-    public string $qrCodeItemName = '';
-    public string $qrCodeUrl = '';
+    public ?array $qrCode = null;
 
     #[Url]
     public ?int $parentId = null;
@@ -107,6 +105,11 @@ new #[Title('Inventory')] class extends Component
 
     public function navigateDown(int $id): void
     {
+        $item = $this->items->firstWhere('id', $id);
+        if ($item !== null && $item->children_count === 0) {
+            $this->redirectRoute('inventory.show', ['item' => $item]);
+        }
+
         $this->parentId = $id;
         unset($this->items, $this->parentItems, $this->breadcrumbs);
     }
@@ -124,9 +127,7 @@ new #[Title('Inventory')] class extends Component
     {
         $item = Auth::user()->currentTeam->items()->findOrFail($id);
 
-        $this->qrCodeSvg = app(GenerateItemQrCode::class)->handle($item);
-        $this->qrCodeItemName = $item->name;
-        $this->qrCodeUrl = route('inventory.index', ['parentId' => $item->id]);
+        $this->qrCode = app(GenerateItemQrCode::class)->handle($item);
 
         $this->modal('qr-code')->show();
     }

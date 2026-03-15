@@ -12,15 +12,23 @@ use BaconQrCode\Writer;
 
 class GenerateItemQrCode
 {
-    public function handle(Item $item): string
+    public function handle(Item $item): array
     {
         $renderer = new ImageRenderer(
             new RendererStyle(300),
             new SvgImageBackEnd,
         );
 
-        $url = route('inventory.index', ['parentId' => $item->id]);
+        if ($item->children()->exists()) {
+            $url = route('inventory.index', ['parentId' => $item->id]);
+        } else {
+            $url = route('inventory.show', ['item' => $item]);
+        }
 
-        return new Writer($renderer)->writeString($url);
+        return [
+            'svg' => new Writer($renderer)->writeString($url),
+            'name' => $item->name,
+            'url' => $url,
+        ];
     }
 }
