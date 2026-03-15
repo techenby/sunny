@@ -70,6 +70,7 @@
 
                             <flux:menu>
                                 <flux:menu.item wire:click="edit({{ $item->id }})" icon="pencil">{{ __('Edit') }}</flux:menu.item>
+                                <flux:menu.item wire:click="showQrCode({{ $item->id }})" icon="qr-code">{{ __('QR Code') }}</flux:menu.item>
                                 <flux:menu.item wire:click="delete({{ $item->id }})" variant="danger" icon="trash" wire:confirm="{{ __('Are you sure you want to delete this item?') }}">{{ __('Delete') }}</flux:menu.item>
                             </flux:menu>
                         </flux:dropdown>
@@ -85,7 +86,6 @@
         </flux:table.rows>
     </flux:table>
 
-    @teleport('body')
     @include('pages.inventory.modals.item-form')
-    @endteleport
+    @include('pages.inventory.modals.qr-code')
 </section>

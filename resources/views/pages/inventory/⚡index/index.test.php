@@ -536,3 +536,36 @@ describe('can import items', function () {
             ->assertHasErrors('importForm.file');
     });
 });
+
+describe('can generate qr codes', function () {
+    test('can show qr code for an item', function () {
+        $user = User::factory()->withTeam()->create();
+        $item = Item::factory()->for($user->currentTeam)->create(['name' => 'Guitar']);
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->call('showQrCode', $item->id)
+            ->assertSet('qrCodeItemName', 'Guitar')
+            ->assertNotSet('qrCodeSvg', '');
+    });
+
+    test('qr code svg contains valid svg markup', function () {
+        $user = User::factory()->withTeam()->create();
+        $item = Item::factory()->for($user->currentTeam)->create();
+
+        $component = Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->call('showQrCode', $item->id);
+
+        expect($component->get('qrCodeSvg'))->toContain('<svg');
+    });
+
+    test('cannot show qr code for an item from another team', function () {
+        $user = User::factory()->withTeam()->create();
+        $otherItem = Item::factory()->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->call('showQrCode', $otherItem->id);
+    })->throws(ModelNotFoundException::class);
+});

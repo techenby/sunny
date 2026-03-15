@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\Inventory\GenerateItemQrCode;
 use App\Livewire\Forms\Inventory\ImportItemsForm;
 use App\Livewire\Forms\Inventory\ItemForm;
 use App\Livewire\Traits\WithSearching;
@@ -24,6 +25,9 @@ new #[Title('Inventory')] class extends Component
 
     public ItemForm $form;
     public ImportItemsForm $importForm;
+
+    public string $qrCodeSvg = '';
+    public string $qrCodeItemName = '';
 
     #[Url]
     public ?int $parentId = null;
@@ -79,10 +83,7 @@ new #[Title('Inventory')] class extends Component
 
     public function delete(int $id): void
     {
-        Auth::user()->currentTeam->items()
-            ->where('id', $id)
-            ->firstOrFail()
-            ->delete();
+        Auth::user()->currentTeam->items()->findOrFail($id)->delete();
 
         unset($this->items, $this->parentItems);
     }
@@ -116,6 +117,15 @@ new #[Title('Inventory')] class extends Component
             $this->parentId = $parent?->parent_id;
             unset($this->items, $this->parentItems, $this->breadcrumbs);
         }
+    }
+
+    public function showQrCode(int $id): void
+    {
+        $item = Auth::user()->currentTeam->items()->findOrFail($id);
+
+        $this->qrCodeSvg = app(GenerateItemQrCode::class)->handle($item);
+        $this->qrCodeItemName = $item->name;
+        $this->modal('qr-code')->show();
     }
 
     public function removeMetadata(int $index): void
