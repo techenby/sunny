@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\Inventory\ImportItemsFromAmazonAction;
+use App\Livewire\Forms\Inventory\ImportItemsForm;
 use App\Livewire\Forms\Inventory\ItemForm;
 use App\Livewire\Traits\WithSearching;
 use App\Livewire\Traits\WithSorting;
@@ -25,20 +26,10 @@ new #[Title('Inventory')] class extends Component
     use WithSorting;
 
     public ItemForm $form;
+    public ImportItemsForm $importForm;
 
     #[Url]
     public ?int $parentId = null;
-
-    #[Validate('required|file|mimes:csv,txt')]
-    public $file = null;
-
-    public bool $filterGifts = true;
-
-    public bool $filterConsumables = true;
-
-    public ?string $startDate = null;
-
-    public ?string $endDate = null;
 
     #[Computed]
     public function breadcrumbs(): BaseCollection
@@ -109,32 +100,10 @@ new #[Title('Inventory')] class extends Component
 
     public function import(): void
     {
-        $this->validateOnly('file');
+        $this->importForm->process($this->parentId);
 
-        $result = resolve(ImportItemsFromAmazonAction::class)->handle(
-            $this->file,
-            Auth::user()->currentTeam,
-            $this->parentId,
-            [
-                'filterGifts' => $this->filterGifts,
-                'filterConsumables' => $this->filterConsumables,
-                'startDate' => $this->startDate,
-                'endDate' => $this->endDate,
-            ],
-        );
-
-        $this->reset('file', 'filterGifts', 'filterConsumables', 'startDate', 'endDate');
-        $this->modal('import-items')->close();
         unset($this->items, $this->parentItems);
-
-        Flux::toast(
-            text: __('Imported :imported items, skipped :skipped.', [
-                'imported' => $result['imported'],
-                'skipped' => $result['skipped'],
-            ]),
-            heading: __('Import complete'),
-            variant: 'success',
-        );
+        $this->modal('import-items')->close();
     }
 
     public function navigateDown(int $id): void
