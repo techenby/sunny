@@ -10,6 +10,7 @@ use App\Models\Team;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Str;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Spatie\SimpleExcel\SimpleExcelReader;
 
 class ImportItemsFromAmazonAction
@@ -44,7 +45,11 @@ class ImportItemsFromAmazonAction
         $startDate = isset($filters['startDate']) ? Date::parse($filters['startDate']) : null;
         $endDate = isset($filters['endDate']) ? Date::parse($filters['endDate'])->endOfDay() : null;
 
-        $toImport = SimpleExcelReader::create($file->getRealPath())->getRows()
+        $filePath = $file instanceof TemporaryUploadedFile
+            ? tap(tempnam(sys_get_temp_dir(), 'import_'), fn ($path) => file_put_contents($path, $file->get()))
+            : $file->getRealPath();
+
+        $toImport = SimpleExcelReader::create($filePath)->getRows()
             ->collect()
             ->when($filterGifts, fn ($collection) => $this->rejectGifts($collection))
             ->when($filterConsumables, fn ($collection) => $this->rejectConsumables($collection))
