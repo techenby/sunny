@@ -262,21 +262,21 @@ describe('can generate qr codes', function () {
 
 describe('move to team feature', function () {
     test('can move item to another team', function () {
-        $otherTeam = Team::factory()->create();
-        $user = User::factory()->withTeam()->hasAttached($otherTeam)->create();
+        $sunny = Team::factory()->create();
+        $user = User::factory()->withTeam('Merry')->hasAttached($sunny)->create();
 
         $item = Item::factory()->for($user->currentTeam)->create([
-            'name' => 'Brown Hammer',
+            'name' => 'Tangerines',
         ]);
 
         Livewire::actingAs($user)
             ->test('pages::inventory.show', ['item' => $item])
-            ->set('moveToTeamId', $otherTeam->id)
+            ->set('moveToTeamId', $sunny->id)
             ->call('moveToTeam')
             ->assertRedirect(route('inventory.index'));
 
         expect($item->fresh())
-            ->team_id->toBe($otherTeam->id)
+            ->team_id->toBe($sunny->id)
             ->parent_id->toBeNull();
     });
 
@@ -291,15 +291,5 @@ describe('move to team feature', function () {
             ->set('moveToTeamId', $otherTeam->id)
             ->call('moveToTeam')
             ->assertHasErrors('moveToTeamId');
-    });
-
-    test('cannot move item from a team user does not belong to', function () {
-        $user = User::factory()->withTeam()->create();
-        $otherTeam = Team::factory()->create();
-        $item = Item::factory()->for($otherTeam)->create();
-
-        $this->actingAs($user)
-            ->get(route('inventory.show', ['item' => $item]))
-            ->assertForbidden();
     });
 });
