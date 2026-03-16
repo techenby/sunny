@@ -36,6 +36,11 @@ new #[Title('Inventory')] class extends Component
 
     public ?array $qrCode = null;
 
+    /** @var array<int, int> */
+    public array $selected = [];
+
+    public ?int $bulkParentId = null;
+
     #[Url]
     public bool $showTrashed = false;
 
@@ -85,6 +90,37 @@ new #[Title('Inventory')] class extends Component
             ->when($this->form->editingItem, fn ($query) => $query->where('id', '!=', $this->form->editingItem->id))
             ->orderBy('name')
             ->get();
+    }
+
+    public function openBulkUpdateParentModal(): void
+    {
+        $this->bulkParentId = $this->parentId;
+        $this->modal('bulk-update-parent')->show();
+    }
+
+    public function updateParent(): void
+    {
+        $this->validate([
+            'selected' => ['required', 'array', 'min:1'],
+            'selected.*' => ['integer'],
+            'bulkParentId' => ['nullable', 'integer', 'exists:items,id'],
+        ]);
+
+        $items = Auth::user()->currentTeam->items()
+            ->whereIn('id', $this->selected)
+            ->get();
+
+        foreach ($items as $item) {
+            $this->authorize('update', $item);
+            $item->update(['parent_id' => $this->bulkParentId]);
+        }
+
+        $this->modal('bulk-update-parent')->close();
+        $this->reset('selected', 'bulkParentId');
+
+        unset($this->items, $this->parentItems);
+
+        Flux::toast(__(':count item(s) updated.', ['count' => $items->count()]));
     }
 
     public function openMoveModal(int $itemId): void

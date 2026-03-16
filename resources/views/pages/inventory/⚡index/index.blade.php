@@ -39,12 +39,29 @@
     </div>
 
     <div class="mb-4 flex items-center justify-between">
-        <flux:input wire:model.live.debounce.300ms="search" :placeholder="__('Search inventory...')" icon="magnifying-glass" class="max-w-sm" />
+        <div class="flex items-center gap-1">
+            <flux:input wire:model.live.debounce.300ms="search" :placeholder="__('Search inventory...')" icon="magnifying-glass" class="max-w-sm" />
+            @if ($selected !== [])
+            <flux:dropdown>
+                <flux:button icon:trailing="chevron-down">{{ __('Bulk Actions') }}</flux:button>
+
+                <flux:menu>
+                    <flux:menu.item wire:click="openBulkUpdateParentModal">{{ __('Change Parent') }}</flux:menu.item>
+
+                    <flux:menu.separator />
+
+                    <flux:menu.item wire:click="delete" variant="danger" icon="trash">{{ __('Delete') }}</flux:menu.item>
+                </flux:menu>
+            </flux:dropdown>
+            @endif
+        </div>
         <flux:switch wire:model.live="showTrashed" label="{{ __('Show deleted') }}" />
     </div>
 
+    <flux:checkbox.group wire:model.live="selected">
     <flux:table :paginate="$this->items">
         <flux:table.columns>
+            <flux:table.column class="w-8"><flux:checkbox.all /></flux:table.column>
             <flux:table.column sortable :sorted="$sortBy === 'name'" :direction="$sortDirection" wire:click="sort('name')">{{ __('Name') }}</flux:table.column>
             <flux:table.column>{{ __('Modified') }}</flux:table.column>
             <flux:table.column>{{ __('Contents') }}</flux:table.column>
@@ -54,6 +71,9 @@
         <flux:table.rows>
             @forelse ($this->items as $item)
                 <flux:table.row :key="$item->id">
+                    <flux:table.cell>
+                        <flux:checkbox :value="$item->id"/>
+                    </flux:table.cell>
                     <flux:table.cell>
                         <flux:link wire:click="navigateDown({{ $item->id }})" as="button" inset="top bottom" class="!flex !items-center gap-3">
                             <flux:avatar size="xs" :icon="$item->type->getIcon()" :color="$item->type->getIconColor()" icon:variant="outline" />
@@ -88,13 +108,14 @@
                 </flux:table.row>
             @empty
                 <flux:table.row key="empty-item">
-                    <flux:table.cell colspan="4" class="text-center">
+                    <flux:table.cell colspan="5" class="text-center">
                         <flux:text variant="subtle" size="xl">{{ __('No items found') }}</flux:text>
                     </flux:table.cell>
                 </flux:table.row>
             @endforelse
         </flux:table.rows>
     </flux:table>
+    </flux:checkbox.group>
 
     @include('pages.inventory.modals.item-form')
     @include('pages.inventory.modals.qr-code')

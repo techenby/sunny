@@ -679,6 +679,27 @@ describe('bulk update parent', function () {
             ->assertSet('bulkParentId', null);
     });
 
+    test('opening bulk update parent modal pre-fills current parentId', function () {
+        $user = User::factory()->withTeam()->create();
+        $parent = Item::factory()->for($user->currentTeam)->location()->create(['name' => 'Bedroom']);
+        Item::factory()->for($user->currentTeam)->childOf($parent)->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->set('parentId', $parent->id)
+            ->call('openBulkUpdateParentModal')
+            ->assertSet('bulkParentId', $parent->id);
+    });
+
+    test('opening bulk update parent modal sets null when at root level', function () {
+        $user = User::factory()->withTeam()->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->call('openBulkUpdateParentModal')
+            ->assertSet('bulkParentId', null);
+    });
+
     test('bulk update requires at least one selected item', function () {
         $user = User::factory()->withTeam()->create();
 
