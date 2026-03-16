@@ -1,7 +1,7 @@
 <?php
 
-use App\Actions\Inventory\MoveItemToTeam;
 use App\Actions\Inventory\GenerateItemQrCode;
+use App\Actions\Inventory\MoveItemToTeam;
 use App\Livewire\Forms\Inventory\ItemForm;
 use App\Models\Item;
 use App\Models\Team;
