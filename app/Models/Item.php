@@ -48,6 +48,12 @@ class Item extends Model
         return $this->hasMany(self::class, 'parent_id');
     }
 
+    public function purge(): void
+    {
+        $this->children()->update(['parent_id' => null]);
+        $this->delete();
+    }
+
     /** @return array<string, string> */
     protected function casts(): array
     {
@@ -55,12 +61,6 @@ class Item extends Model
             'type' => ItemType::class,
             'metadata' => 'array',
         ];
-    }
-
-    public function purge(): void
-    {
-        $this->children()->update(['parent_id' => null]);
-        $this->delete();
     }
 
     protected function truncatedName(): Attribute
