@@ -43,4 +43,9 @@ class ItemPolicy
     {
         return $item->team_id === $user->current_team_id;
     }
+
+    public function move(User $user, Item $item): bool
+    {
+        return $item->team_id === $user->current_team_id;
+    }
 }
