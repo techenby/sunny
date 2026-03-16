@@ -767,6 +767,22 @@ describe('bulk delete', function () {
             ->call('delete')
             ->assertHasNoErrors();
     });
+
+    test('can bulk restore selected trashed items', function () {
+        $user = User::factory()->withTeam()->create();
+        [$itemA, $itemB, $itemC] = Item::factory()->count(3)->for($user->currentTeam)->trashed()->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->set('selected', [$itemA->id, $itemC->id])
+            ->call('bulkRestore')
+            ->assertHasNoErrors()
+            ->assertSet('selected', []);
+
+        expect($itemA->fresh())->not->toBeTrashed()
+            ->and($itemB->fresh())->toBeTrashed()
+            ->and($itemC->fresh())->not->toBeTrashed();
+    });
 });
 
 describe('can generate qr codes', function () {

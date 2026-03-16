@@ -205,6 +205,20 @@ new #[Title('Inventory')] class extends Component
         Flux::toast(__(':count item(s) deleted.', ['count' => $items->count()]));
     }
 
+    public function bulkRestore(): void
+    {
+        $count = Auth::user()->currentTeam->items()
+            ->onlyTrashed()
+            ->whereIn('id', $this->selected)
+            ->restore();
+
+        $this->reset('selected');
+
+        unset($this->items, $this->parentItems);
+
+        Flux::toast(__(':count item(s) restored.', ['count' => $count]));
+    }
+
     public function restore(int $id): void
     {
         $item = Auth::user()->currentTeam->items()->onlyTrashed()->findOrFail($id);

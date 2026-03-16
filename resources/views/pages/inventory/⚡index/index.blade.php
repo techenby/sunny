@@ -50,7 +50,11 @@
 
                     <flux:menu.separator />
 
+                    @if ($showTrashed)
+                    <flux:menu.item wire:click="bulkRestore" icon="arrow-uturn-left">{{ __('Restore') }}</flux:menu.item>
+                    @else
                     <flux:menu.item wire:click="delete" wire:confirm="{{ __('Are you sure you want to delete the selected items?') }}" variant="danger" icon="trash">{{ __('Delete') }}</flux:menu.item>
+                    @endif
                 </flux:menu>
             </flux:dropdown>
             @endif
