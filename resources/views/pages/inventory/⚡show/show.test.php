@@ -63,10 +63,10 @@ test('can delete an item and redirects to index', function () {
         ->call('delete')
         ->assertRedirect(route('inventory.index'));
 
-    expect($item->fresh())->toBeNull();
+    expect($item->fresh()->trashed())->toBeTrue();
 });
 
-test('deleting a parent nullifies children parent_id', function () {
+test('deleting a parent keeps children with their parent_id', function () {
     $user = User::factory()->withTeam()->create();
     $parent = Item::factory()->for($user->currentTeam)->location()->create();
     $child = Item::factory()->for($user->currentTeam)->childOf($parent)->create();
@@ -75,7 +75,7 @@ test('deleting a parent nullifies children parent_id', function () {
         ->test('pages::inventory.show', ['item' => $parent])
         ->call('delete', $parent->id);
 
-    expect($child->fresh()->parent_id)->toBeNull();
+    expect($child->fresh()->parent_id)->toBe($parent->id);
 });
 
 describe('can add item metadata', function () {

@@ -36,6 +36,8 @@ new #[Title('Inventory')] class extends Component
 
     public ?array $qrCode = null;
 
+    public bool $showTrashed = false;
+
     #[Url]
     public ?int $parentId = null;
 
@@ -60,6 +62,7 @@ new #[Title('Inventory')] class extends Component
     {
         return Auth::user()->currentTeam
             ->items()
+            ->when($this->showTrashed, fn ($query) => $query->onlyTrashed())
             ->withCount('children')
             ->where('parent_id', $this->parentId)
             ->when($this->search, fn ($query) => $query->where('name', 'like', '%' . $this->search . '%'))
@@ -131,6 +134,17 @@ new #[Title('Inventory')] class extends Component
         $this->authorize('delete', $item);
 
         $item->delete();
+
+        unset($this->items, $this->parentItems);
+    }
+
+    public function restore(int $id): void
+    {
+        $item = Auth::user()->currentTeam->items()->onlyTrashed()->findOrFail($id);
+
+        $this->authorize('restore', $item);
+
+        $item->restore();
 
         unset($this->items, $this->parentItems);
     }

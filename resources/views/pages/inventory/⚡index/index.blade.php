@@ -38,8 +38,9 @@
         </div>
     </div>
 
-    <div class="mb-4">
+    <div class="mb-4 flex items-center justify-between">
         <flux:input wire:model.live.debounce.300ms="search" :placeholder="__('Search inventory...')" icon="magnifying-glass" class="max-w-sm" />
+        <flux:switch wire:model.live="showTrashed" label="{{ __('Show deleted') }}" />
     </div>
 
     <flux:table :paginate="$this->items">
@@ -64,18 +65,22 @@
                         {{ $item->children_count }}
                     </flux:table.cell>
                     <flux:table.cell>
-                        <flux:dropdown>
-                            <flux:button variant="ghost" size="sm" icon="ellipsis-vertical" />
+                        @if ($showTrashed)
+                            <flux:button wire:click="restore({{ $item->id }})" variant="ghost" size="sm" icon="arrow-uturn-left">{{ __('Restore') }}</flux:button>
+                        @else
+                            <flux:dropdown>
+                                <flux:button variant="ghost" size="sm" icon="ellipsis-vertical" />
 
-                            <flux:menu>
-                                <flux:menu.item wire:click="edit({{ $item->id }})" icon="pencil">{{ __('Edit') }}</flux:menu.item>
-                                <flux:menu.item wire:click="showQrCode({{ $item->id }})" icon="qr-code">{{ __('QR Code') }}</flux:menu.item>
-                                @if ($this->otherTeams->isNotEmpty())
-                                    <flux:menu.item wire:click="openMoveModal({{ $item->id }})" icon="arrow-up-tray">{{ __('Move to Team') }}</flux:menu.item>
-                                @endif
-                                <flux:menu.item wire:click="delete({{ $item->id }})" variant="danger" icon="trash" wire:confirm="{{ __('Are you sure you want to delete this item?') }}">{{ __('Delete') }}</flux:menu.item>
-                            </flux:menu>
-                        </flux:dropdown>
+                                <flux:menu>
+                                    <flux:menu.item wire:click="edit({{ $item->id }})" icon="pencil">{{ __('Edit') }}</flux:menu.item>
+                                    <flux:menu.item wire:click="showQrCode({{ $item->id }})" icon="qr-code">{{ __('QR Code') }}</flux:menu.item>
+                                    @if ($this->otherTeams->isNotEmpty())
+                                        <flux:menu.item wire:click="openMoveModal({{ $item->id }})" icon="arrow-up-tray">{{ __('Move to Team') }}</flux:menu.item>
+                                    @endif
+                                    <flux:menu.item wire:click="delete({{ $item->id }})" variant="danger" icon="trash" wire:confirm="{{ __('Are you sure you want to delete this item?') }}">{{ __('Delete') }}</flux:menu.item>
+                                </flux:menu>
+                            </flux:dropdown>
+                        @endif
                     </flux:table.cell>
                 </flux:table.row>
             @empty
