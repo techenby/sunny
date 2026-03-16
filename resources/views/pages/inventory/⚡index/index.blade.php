@@ -41,6 +41,13 @@
     <div class="mb-4 flex items-center justify-between">
         <div class="flex items-center gap-1">
             <flux:input wire:model.live.debounce.300ms="search" :placeholder="__('Search inventory...')" icon="magnifying-glass" class="max-w-sm" />
+            <flux:dropdown>
+                <flux:button :variant="($filters['withoutHome'] ?? false) ? 'primary' : 'ghost'" :color="($filters['withoutHome'] ?? false) ? 'sky' : ''" icon="funnel" icon:variant="outline"/>
+
+                <flux:menu>
+                    <flux:menu.checkbox wire:model.live="filters.withoutHome">{{ __('Without home') }}</flux:menu.checkbox>
+                </flux:menu>
+            </flux:dropdown>
             @if ($selected !== [])
             <flux:dropdown>
                 <flux:button icon:trailing="chevron-down">{{ __('Bulk Actions') }}</flux:button>

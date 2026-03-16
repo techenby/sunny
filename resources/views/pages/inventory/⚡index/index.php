@@ -2,6 +2,7 @@
 
 use App\Actions\Inventory\GenerateItemQrCode;
 use App\Actions\Inventory\MoveItemToTeam;
+use App\Enums\ItemType;
 use App\Livewire\Forms\Inventory\ImportItemsForm;
 use App\Livewire\Forms\Inventory\ItemForm;
 use App\Livewire\Traits\WithSearching;
@@ -44,6 +45,12 @@ new #[Title('Inventory')] class extends Component
     #[Url]
     public bool $showTrashed = false;
 
+    /** @var array<string, bool> */
+    #[Url]
+    public array $filters = [
+        'withoutHome' => false,
+    ];
+
     #[Url]
     public ?int $parentId = null;
 
@@ -72,6 +79,7 @@ new #[Title('Inventory')] class extends Component
             ->withCount('children')
             ->where('parent_id', $this->parentId)
             ->when($this->search, fn ($query) => $query->where('name', 'like', '%' . $this->search . '%'))
+            ->when($this->filters['withoutHome'] ?? false, fn ($query) => $query->where('type', ItemType::Item)->whereNull('parent_id'))
             ->orderBy($this->sortBy, $this->sortDirection)
             ->paginate(10);
     }

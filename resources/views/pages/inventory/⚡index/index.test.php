@@ -855,3 +855,22 @@ describe('move to team feature', function () {
             ->assertHasErrors('moveToTeamId');
     });
 });
+
+describe('can filter', function () {
+    test('without home filter shows only items with type item and no parent', function () {
+        $user = User::factory()->withTeam()->create();
+
+        $location = Item::factory()->location()->for($user->currentTeam)->create(['name' => 'Merry']);
+        Item::factory()->for($user->currentTeam)->childOf($location)->create(['name' => 'Tangerines']);
+        Item::factory()->for($user->currentTeam)->create(['name' => 'Golden Bell', 'parent_id' => null]);
+        Item::factory()->bin()->for($user->currentTeam)->create(['name' => 'Treasure Chest', 'parent_id' => null]);
+
+        $this->actingAs($user)
+            ->get(route('inventory.index', ['filters' => ['withoutHome' => true]]))
+            ->assertOk()
+            ->assertSee('Golden Bell')
+            ->assertSee('Treasure Chest')
+            ->assertDontSeeHtml('<span>Merry</span>')
+            ->assertDontSeeHtml('<span>Tangerines</span>');
+    });
+});
