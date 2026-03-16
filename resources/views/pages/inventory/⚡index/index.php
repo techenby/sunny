@@ -42,17 +42,21 @@ new #[Title('Inventory')] class extends Component
 
     public ?int $bulkParentId = null;
 
-    #[Url]
-    public bool $showTrashed = false;
-
     /** @var array<string, bool> */
     #[Url]
     public array $filters = [
         'withoutHome' => false,
+        'showTrashed' => false,
     ];
 
     #[Url]
     public ?int $parentId = null;
+
+    #[Computed]
+    public function areFiltersActive(): bool
+    {
+        return collect($this->filters)->contains(true);
+    }
 
     #[Computed]
     public function breadcrumbs(): BaseCollection
@@ -75,7 +79,7 @@ new #[Title('Inventory')] class extends Component
     {
         return Auth::user()->currentTeam
             ->items()
-            ->when($this->showTrashed, fn ($query) => $query->onlyTrashed())
+            ->when($this->filters['showTrashed'] ?? false, fn ($query) => $query->onlyTrashed())
             ->withCount('children')
             ->when(
                 $this->filters['withoutHome'] ?? false,

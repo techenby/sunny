@@ -303,7 +303,7 @@ describe('can view and restore deleted items', function () {
             ->test('pages::inventory.index')
             ->assertSeeHtml('<span>Active Widget</span>')
             ->assertDontSeeHtml('<span>Deleted Widget</span>')
-            ->set('showTrashed', true)
+            ->set('filters.showTrashed', true)
             ->assertSeeHtml('<span>Deleted Widget</span>')
             ->assertDontSeeHtml('<span>Active Widget</span>');
     });
@@ -315,7 +315,7 @@ describe('can view and restore deleted items', function () {
 
         Livewire::actingAs($user)
             ->test('pages::inventory.index')
-            ->set('showTrashed', true)
+            ->set('filters.showTrashed', true)
             ->assertSee('Restored Widget')
             ->call('restore', $item->id);
 
@@ -331,7 +331,7 @@ describe('can view and restore deleted items', function () {
 
         Livewire::actingAs($user)
             ->test('pages::inventory.index')
-            ->set('showTrashed', true)
+            ->set('filters.showTrashed', true)
             ->call('restore', $item->id);
     })->throws(ModelNotFoundException::class);
 });
@@ -344,7 +344,7 @@ describe('can permanently delete items', function () {
 
         Livewire::actingAs($user)
             ->test('pages::inventory.index')
-            ->set('showTrashed', true)
+            ->set('filters.showTrashed', true)
             ->call('forceDelete', $item->id);
 
         expect($item->fresh())->toBeNull();
@@ -357,7 +357,7 @@ describe('can permanently delete items', function () {
 
         Livewire::actingAs($user)
             ->test('pages::inventory.index')
-            ->set('showTrashed', true)
+            ->set('filters.showTrashed', true)
             ->call('forceDelete', $item->id);
     })->throws(ModelNotFoundException::class);
 });

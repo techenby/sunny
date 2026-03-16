@@ -42,10 +42,11 @@
         <div class="flex items-center gap-1">
             <flux:input wire:model.live.debounce.300ms="search" :placeholder="__('Search inventory...')" icon="magnifying-glass" class="max-w-sm" />
             <flux:dropdown>
-                <flux:button :variant="($filters['withoutHome'] ?? false) ? 'primary' : 'ghost'" :color="($filters['withoutHome'] ?? false) ? 'sky' : ''" icon="funnel" icon:variant="outline"/>
+                <flux:button :variant="$this->areFiltersActive ? 'primary' : 'ghost'" :color="$this->areFiltersActive ? 'sky' : ''" icon="funnel" icon:variant="outline"/>
 
                 <flux:menu>
                     <flux:menu.checkbox wire:model.live="filters.withoutHome" :disabled="$parentId !== null">{{ __('Without home') }}</flux:menu.checkbox>
+                    <flux:menu.checkbox wire:model.live="filters.showTrashed">{{ __('Show deleted') }}</flux:menu.checkbox>
                 </flux:menu>
             </flux:dropdown>
             @if ($selected !== [])
@@ -57,7 +58,7 @@
 
                     <flux:menu.separator />
 
-                    @if ($showTrashed)
+                    @if ($filters['showTrashed'] ?? false)
                     <flux:menu.item wire:click="bulkRestore" icon="arrow-uturn-left">{{ __('Restore') }}</flux:menu.item>
                     @else
                     <flux:menu.item wire:click="bulkDelete" wire:confirm="{{ __('Are you sure you want to delete the selected items?') }}" variant="danger" icon="trash">{{ __('Delete') }}</flux:menu.item>
@@ -66,7 +67,6 @@
             </flux:dropdown>
             @endif
         </div>
-        <flux:switch wire:model.live="showTrashed" label="{{ __('Show deleted') }}" />
     </div>
 
     <flux:checkbox.group wire:model.live="selected">
@@ -96,7 +96,7 @@
                         {{ $item->children_count }}
                     </flux:table.cell>
                     <flux:table.cell>
-                        @if ($showTrashed)
+                        @if ($filters['showTrashed'] ?? false)
                             <div class="flex items-center gap-1">
                                 <flux:button wire:click="restore({{ $item->id }})" wire:confirm="{{ __('Are you sure you want to restore this item?') }}" variant="ghost" size="sm" icon="arrow-uturn-left">{{ __('Restore') }}</flux:button>
                                 <flux:button wire:click="forceDelete({{ $item->id }})" wire:confirm="{{ __('Are you sure you want to permanently delete this item? This cannot be undone.') }}" variant="danger" size="sm" icon="trash">{{ __('Delete Forever') }}</flux:button>
