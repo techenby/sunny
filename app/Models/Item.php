@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Collection as BaseCollection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class Item extends Model
@@ -46,6 +48,19 @@ class Item extends Model
     public function children(): HasMany
     {
         return $this->hasMany(self::class, 'parent_id');
+    }
+
+    /** @return BaseCollection<int, int> */
+    public function descendantIds(): BaseCollection
+    {
+        return collect(DB::select(
+            'with recursive descendants as (
+                select id from items where parent_id = ?
+                union all
+                select items.id from items inner join descendants on descendants.id = items.parent_id
+            ) select id from descendants',
+            [$this->id],
+        ))->pluck('id');
     }
 
     public function purge(): void

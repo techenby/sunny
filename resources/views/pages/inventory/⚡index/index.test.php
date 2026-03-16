@@ -632,6 +632,159 @@ describe('can import items', function () {
     });
 });
 
+describe('bulk update parent', function () {
+    test('can bulk update parent for selected items', function () {
+        $user = User::factory()->withTeam()->create();
+        $parent = Item::factory()->for($user->currentTeam)->location()->create(['name' => 'Bedroom']);
+        $itemA = Item::factory()->for($user->currentTeam)->create(['name' => 'Guitar']);
+        $itemB = Item::factory()->for($user->currentTeam)->create(['name' => 'Amp']);
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->set('selected', [$itemA->id, $itemB->id])
+            ->set('bulkParentId', $parent->id)
+            ->call('updateParent')
+            ->assertHasNoErrors();
+
+        expect($itemA->fresh()->parent_id)->toBe($parent->id)
+            ->and($itemB->fresh()->parent_id)->toBe($parent->id);
+    });
+
+    test('can bulk move items to top level', function () {
+        $user = User::factory()->withTeam()->create();
+        $parent = Item::factory()->for($user->currentTeam)->location()->create(['name' => 'Bedroom']);
+        $itemA = Item::factory()->for($user->currentTeam)->childOf($parent)->create(['name' => 'Guitar']);
+        $itemB = Item::factory()->for($user->currentTeam)->childOf($parent)->create(['name' => 'Amp']);
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->set('selected', [$itemA->id, $itemB->id])
+            ->set('bulkParentId', null)
+            ->call('updateParent')
+            ->assertHasNoErrors();
+
+        expect($itemA->fresh()->parent_id)->toBeNull()
+            ->and($itemB->fresh()->parent_id)->toBeNull();
+    });
+
+    test('bulk update resets selected and bulkParentId after success', function () {
+        $user = User::factory()->withTeam()->create();
+        $item = Item::factory()->for($user->currentTeam)->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->set('selected', [$item->id])
+            ->call('updateParent')
+            ->assertSet('selected', [])
+            ->assertSet('bulkParentId', null);
+    });
+
+    test('bulk parent options excludes selected items and their descendants', function () {
+        $user = User::factory()->withTeam()->create();
+        $forDeck = Item::factory()->for($user->currentTeam)->location()->create(['name' => 'For Deck']);
+        $tangerines = Item::factory()->for($user->currentTeam)->childOf($forDeck)->create(['name' => 'Tangerines']);
+        $aftDeck = Item::factory()->for($user->currentTeam)->location()->create(['name' => 'Aft Deck']);
+
+        $component = Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->set('selected', [$forDeck->id]);
+
+        $options = $component->get('bulkParentOptions');
+
+        expect($options->pluck('id')->toArray())
+            ->toContain($aftDeck->id)
+            ->not->toContain($forDeck->id)
+            ->not->toContain($tangerines->id);
+    });
+
+    test('opening bulk update parent modal pre-fills current parentId', function () {
+        $user = User::factory()->withTeam()->create();
+        $parent = Item::factory()->for($user->currentTeam)->location()->create(['name' => 'Bedroom']);
+        Item::factory()->for($user->currentTeam)->childOf($parent)->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->set('parentId', $parent->id)
+            ->call('openBulkUpdateParentModal')
+            ->assertSet('bulkParentId', $parent->id);
+    });
+
+    test('opening bulk update parent modal sets null when at root level', function () {
+        $user = User::factory()->withTeam()->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->call('openBulkUpdateParentModal')
+            ->assertSet('bulkParentId', null);
+    });
+
+    test('bulk update requires at least one selected item', function () {
+        $user = User::factory()->withTeam()->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->set('selected', [])
+            ->call('updateParent')
+            ->assertHasErrors('selected');
+    });
+
+    test('ignores items from another team', function () {
+        $user = User::factory()->withTeam()->create();
+        $otherItem = Item::factory()->create(['parent_id' => null]);
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->set('selected', [$otherItem->id])
+            ->call('updateParent')
+            ->assertHasNoErrors();
+
+        expect($otherItem->fresh()->parent_id)->toBeNull();
+    });
+});
+
+describe('bulk delete', function () {
+    test('can bulk delete selected items', function () {
+        $user = User::factory()->withTeam()->create();
+        [$itemA, $itemB, $itemC] = Item::factory()->count(3)->for($user->currentTeam)->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->set('selected', [$itemA->id, $itemC->id])
+            ->call('bulkDelete')
+            ->assertHasNoErrors()
+            ->assertSet('selected', []);
+
+        expect($itemA->fresh())->toBeTrashed()
+            ->and($itemB->fresh())->not->toBeTrashed()
+            ->and($itemC->fresh())->toBeTrashed();
+    });
+
+    test('bulk delete does nothing when no items are selected', function () {
+        $user = User::factory()->withTeam()->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->call('bulkDelete')
+            ->assertHasNoErrors();
+    });
+
+    test('can bulk restore selected trashed items', function () {
+        $user = User::factory()->withTeam()->create();
+        [$itemA, $itemB, $itemC] = Item::factory()->count(3)->for($user->currentTeam)->trashed()->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->set('selected', [$itemA->id, $itemC->id])
+            ->call('bulkRestore')
+            ->assertHasNoErrors()
+            ->assertSet('selected', []);
+
+        expect($itemA->fresh())->not->toBeTrashed()
+            ->and($itemB->fresh())->toBeTrashed()
+            ->and($itemC->fresh())->not->toBeTrashed();
+    });
+});
+
 describe('can generate qr codes', function () {
     test('can show qr code for an item', function () {
         $user = User::factory()->withTeam()->create();
