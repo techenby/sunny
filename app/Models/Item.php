@@ -11,12 +11,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
 class Item extends Model
 {
     /** @use HasFactory<ItemFactory> */
     use HasFactory;
+    use SoftDeletes;
 
     /** @var list<string> */
     protected $fillable = [
@@ -44,6 +46,12 @@ class Item extends Model
     public function children(): HasMany
     {
         return $this->hasMany(self::class, 'parent_id');
+    }
+
+    public function purge(): void
+    {
+        $this->children()->update(['parent_id' => null]);
+        $this->delete();
     }
 
     /** @return array<string, string> */

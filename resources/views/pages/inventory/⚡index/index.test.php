@@ -249,7 +249,7 @@ describe('can create and edit', function () {
 });
 
 describe('can delete', function () {
-    test('can delete an item', function () {
+    test('can soft delete an item', function () {
         $user = User::factory()->withTeam()->create();
         $item = Item::factory()->for($user->currentTeam)->create();
 
@@ -257,7 +257,7 @@ describe('can delete', function () {
             ->test('pages::inventory.index')
             ->call('delete', $item->id);
 
-        expect($item->fresh())->toBeNull();
+        expect($item->fresh()->trashed())->toBeTrue();
     });
 
     test('cannot delete an item from another team', function () {
@@ -280,6 +280,86 @@ describe('can delete', function () {
 
         expect($child->fresh()->parent_id)->toBeNull();
     });
+});
+
+describe('can view and restore deleted items', function () {
+    test('deleted items are hidden by default', function () {
+        $user = User::factory()->withTeam()->create();
+        $item = Item::factory()->for($user->currentTeam)->create(['name' => 'Deleted Widget']);
+        $item->delete();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->assertDontSee('Deleted Widget');
+    });
+
+    test('can toggle to show deleted items', function () {
+        $user = User::factory()->withTeam()->create();
+        $active = Item::factory()->for($user->currentTeam)->create(['name' => 'Active Widget']);
+        $deleted = Item::factory()->for($user->currentTeam)->create(['name' => 'Deleted Widget']);
+        $deleted->delete();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->assertSeeHtml('<span>Active Widget</span>')
+            ->assertDontSeeHtml('<span>Deleted Widget</span>')
+            ->set('showTrashed', true)
+            ->assertSeeHtml('<span>Deleted Widget</span>')
+            ->assertDontSeeHtml('<span>Active Widget</span>');
+    });
+
+    test('can restore a deleted item', function () {
+        $user = User::factory()->withTeam()->create();
+        $item = Item::factory()->for($user->currentTeam)->create(['name' => 'Restored Widget']);
+        $item->delete();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->set('showTrashed', true)
+            ->assertSee('Restored Widget')
+            ->call('restore', $item->id);
+
+        expect($item->fresh())
+            ->not->toBeNull()
+            ->trashed()->toBeFalse();
+    });
+
+    test('cannot restore an item from another team', function () {
+        $user = User::factory()->withTeam()->create();
+        $item = Item::factory()->create();
+        $item->delete();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->set('showTrashed', true)
+            ->call('restore', $item->id);
+    })->throws(ModelNotFoundException::class);
+});
+
+describe('can permanently delete items', function () {
+    test('can force delete a trashed item', function () {
+        $user = User::factory()->withTeam()->create();
+        $item = Item::factory()->for($user->currentTeam)->create();
+        $item->delete();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->set('showTrashed', true)
+            ->call('forceDelete', $item->id);
+
+        expect($item->fresh())->toBeNull();
+    });
+
+    test('cannot force delete an item from another team', function () {
+        $user = User::factory()->withTeam()->create();
+        $item = Item::factory()->create();
+        $item->delete();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->set('showTrashed', true)
+            ->call('forceDelete', $item->id);
+    })->throws(ModelNotFoundException::class);
 });
 
 describe('can add item metadata', function () {
