@@ -8,6 +8,7 @@ use App\Models\Team;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Collection as BaseCollection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -60,7 +61,7 @@ new #[Title('Inventory: Item')] class extends Component
     public function moveToTeam(): void
     {
         $this->validate([
-            'moveToTeamId' => ['required', 'integer', 'exists:team_user,team_id,user_id,' . Auth::id()],
+            'moveToTeamId' => ['required', 'integer', Rule::exists('team_user', 'team_id')->where('user_id', Auth::id())],
         ]);
 
         $this->authorize('move', $this->item);

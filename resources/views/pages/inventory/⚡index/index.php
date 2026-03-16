@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection as BaseCollection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
@@ -93,7 +94,7 @@ new #[Title('Inventory')] class extends Component
     {
         $this->validate([
             'moveItemId' => ['required', 'integer'],
-            'moveToTeamId' => ['required', 'integer', 'exists:team_user,team_id,user_id,' . Auth::id()],
+            'moveToTeamId' => ['required', 'integer', Rule::exists('team_user', 'team_id')->where('user_id', Auth::id())],
         ]);
 
         $item = Auth::user()->currentTeam->items()->findOrFail($this->moveItemId);
