@@ -1,3 +1,4 @@
+@teleport('body')
 <flux:modal name="import-items" flyout variant="floating" class="md:w-96">
     <form wire:submit="import" class="space-y-6">
         <div>
@@ -48,3 +49,4 @@
         </div>
     </form>
 </flux:modal>
+@endteleport

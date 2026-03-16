@@ -1,5 +1,5 @@
 @teleport('body')
-<flux:modal name="item-form" class="md:w-96">
+<flux:modal name="item-form" flyout variant="floating" class="md:w-96">
     <form wire:submit="save" class="space-y-6">
         <flux:heading size="lg">{{ $form->editingItem ? __('Edit Item') : __('Add Item') }}</flux:heading>
 
