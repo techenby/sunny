@@ -50,9 +50,11 @@ new #[Title('Inventory: Item')] class extends Component
     {
         $this->authorize('delete', $this->item);
 
+        $parentId = $this->item->parent_id;
+
         $this->item->delete();
 
-        unset($this->parentItems);
+        $this->redirectRoute('inventory.index', ['parentId' => $parentId]);
     }
 
     public function edit(): void

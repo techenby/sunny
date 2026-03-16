@@ -3,6 +3,7 @@
 use App\Actions\Inventory\GenerateItemQrCode;
 use App\Livewire\Forms\Inventory\ImportItemsForm;
 use App\Livewire\Forms\Inventory\ItemForm;
+use App\Models\Item;
 use App\Livewire\Traits\WithSearching;
 use App\Livewire\Traits\WithSorting;
 use Illuminate\Database\Eloquent\Collection;
@@ -82,16 +83,22 @@ new #[Title('Inventory')] class extends Component
 
     public function delete(int $id): void
     {
-        Auth::user()->currentTeam->items()->findOrFail($id)->delete();
+        $item = Auth::user()->currentTeam->items()->findOrFail($id);
+
+        $this->authorize('delete', $item);
+
+        $item->delete();
 
         unset($this->items, $this->parentItems);
     }
 
     public function edit(int $id): void
     {
-        $this->form->load(
-            Auth::user()->currentTeam->items()->findOrFail($id)
-        );
+        $item = Auth::user()->currentTeam->items()->findOrFail($id);
+
+        $this->authorize('update', $item);
+
+        $this->form->load($item);
         $this->modal('item-form')->show();
     }
 
@@ -129,6 +136,8 @@ new #[Title('Inventory')] class extends Component
     {
         $item = Auth::user()->currentTeam->items()->findOrFail($id);
 
+        $this->authorize('view', $item);
+
         $this->qrCode = resolve(GenerateItemQrCode::class)->handle($item);
 
         $this->modal('qr-code')->show();
@@ -136,11 +145,19 @@ new #[Title('Inventory')] class extends Component
 
     public function removeMetadata(int $index): void
     {
+        if ($this->form->editingItem) {
+            $this->authorize('update', $this->form->editingItem);
+        }
+
         $this->form->removeMetadata($index);
     }
 
     public function removePhoto(): void
     {
+        if ($this->form->editingItem) {
+            $this->authorize('update', $this->form->editingItem);
+        }
+
         if ($this->form->photo) {
             $this->form->photo->delete();
             $this->form->photo = null;
@@ -152,6 +169,12 @@ new #[Title('Inventory')] class extends Component
 
     public function save(): void
     {
+        if ($this->form->editingItem) {
+            $this->authorize('update', $this->form->editingItem);
+        } else {
+            $this->authorize('create', Item::class);
+        }
+
         $this->form->save();
         $this->modal('item-form')->close();
         unset($this->items, $this->parentItems);

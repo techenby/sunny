@@ -512,7 +512,7 @@ describe('can import items', function () {
 
         Livewire::actingAs($user)
             ->test('pages::inventory.index')
-            ->call('navigateDown', $parent->id)
+            ->set('parentId', $parent->id)
             ->set('importForm.file', amazonFixtureUpload())
             ->call('import')
             ->assertHasNoErrors();

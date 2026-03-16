@@ -53,13 +53,14 @@ test('can edit an item', function () {
         ->parent_id->toBe($bin->id);
 });
 
-test('can delete an item', function () {
+test('can delete an item and redirects to index', function () {
     $user = User::factory()->withTeam()->create();
     $item = Item::factory()->for($user->currentTeam)->create();
 
     Livewire::actingAs($user)
         ->test('pages::inventory.show', ['item' => $item])
-        ->call('delete');
+        ->call('delete')
+        ->assertRedirect(route('inventory.index'));
 
     expect($item->fresh())->toBeNull();
 });
