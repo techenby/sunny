@@ -632,6 +632,77 @@ describe('can import items', function () {
     });
 });
 
+describe('bulk update parent', function () {
+    test('can bulk update parent for selected items', function () {
+        $user = User::factory()->withTeam()->create();
+        $parent = Item::factory()->for($user->currentTeam)->location()->create(['name' => 'Bedroom']);
+        $itemA = Item::factory()->for($user->currentTeam)->create(['name' => 'Guitar']);
+        $itemB = Item::factory()->for($user->currentTeam)->create(['name' => 'Amp']);
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->set('selected', [$itemA->id, $itemB->id])
+            ->set('bulkParentId', $parent->id)
+            ->call('updateParent')
+            ->assertHasNoErrors();
+
+        expect($itemA->fresh()->parent_id)->toBe($parent->id)
+            ->and($itemB->fresh()->parent_id)->toBe($parent->id);
+    });
+
+    test('can bulk move items to top level', function () {
+        $user = User::factory()->withTeam()->create();
+        $parent = Item::factory()->for($user->currentTeam)->location()->create(['name' => 'Bedroom']);
+        $itemA = Item::factory()->for($user->currentTeam)->childOf($parent)->create(['name' => 'Guitar']);
+        $itemB = Item::factory()->for($user->currentTeam)->childOf($parent)->create(['name' => 'Amp']);
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->set('selected', [$itemA->id, $itemB->id])
+            ->set('bulkParentId', null)
+            ->call('updateParent')
+            ->assertHasNoErrors();
+
+        expect($itemA->fresh()->parent_id)->toBeNull()
+            ->and($itemB->fresh()->parent_id)->toBeNull();
+    });
+
+    test('bulk update resets selected and bulkParentId after success', function () {
+        $user = User::factory()->withTeam()->create();
+        $item = Item::factory()->for($user->currentTeam)->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->set('selected', [$item->id])
+            ->call('updateParent')
+            ->assertSet('selected', [])
+            ->assertSet('bulkParentId', null);
+    });
+
+    test('bulk update requires at least one selected item', function () {
+        $user = User::factory()->withTeam()->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->set('selected', [])
+            ->call('updateParent')
+            ->assertHasErrors('selected');
+    });
+
+    test('ignores items from another team', function () {
+        $user = User::factory()->withTeam()->create();
+        $otherItem = Item::factory()->create(['parent_id' => null]);
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->set('selected', [$otherItem->id])
+            ->call('updateParent')
+            ->assertHasNoErrors();
+
+        expect($otherItem->fresh()->parent_id)->toBeNull();
+    });
+});
+
 describe('can generate qr codes', function () {
     test('can show qr code for an item', function () {
         $user = User::factory()->withTeam()->create();
