@@ -55,7 +55,7 @@
             @forelse ($this->items as $item)
                 <flux:table.row :key="$item->id">
                     <flux:table.cell>
-                        <flux:link as="button" wire:click="navigateDown({{ $item->id }})" inset="top bottom" class="!flex !items-center gap-3">
+                        <flux:link wire:click="navigateDown({{ $item->id }})" as="button" inset="top bottom" class="!flex !items-center gap-3">
                             <flux:avatar size="xs" :icon="$item->type->getIcon()" :color="$item->type->getIconColor()" icon:variant="outline" />
                             <span>{{ $item->truncated_name }}</span>
                         </flux:link>
