@@ -1,7 +1,7 @@
 <div class="space-y-6">
     <flux:breadcrumbs>
         <flux:breadcrumbs.item :href="route('inventory.index')" class="cursor-pointer">
-            {{ __('All') }}
+            {{ __('Inventory') }}
         </flux:breadcrumbs.item>
 
         @foreach ($this->breadcrumbs as $breadcrumb)

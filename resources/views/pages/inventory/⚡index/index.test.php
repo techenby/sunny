@@ -101,7 +101,7 @@ describe('can navigate up and down', function () {
             ->call('navigateDown', $bedroom->id)
             ->call('navigateDown', $closet->id)
             ->call('navigateDown', $tote->id)
-            ->assertSeeInOrder(['All', 'Bedroom', 'Right Closet', 'Game Tote']);
+            ->assertSeeInOrder(['Inventory', 'Bedroom', 'Right Closet', 'Game Tote']);
     });
 
     test('breadcrumbs are empty at root level', function () {

@@ -1,6 +1,25 @@
-<section class="w-full">
-    <div class="mb-4 flex items-center justify-between">
-        <flux:heading size="xl">{{ __('Inventory') }}</flux:heading>
+<div class="space-y-6">
+    <flux:breadcrumbs>
+        <flux:breadcrumbs.item wire:click="$set('parentId', null)" class="cursor-pointer">
+            {{ __('Inventory') }}
+        </flux:breadcrumbs.item>
+
+        @foreach ($this->breadcrumbs as $breadcrumb)
+            <flux:breadcrumbs.item wire:click="navigateDown({{ $breadcrumb->id }})" class="cursor-pointer">
+                {{ $breadcrumb->name }}
+            </flux:breadcrumbs.item>
+        @endforeach
+    </flux:breadcrumbs>
+
+    <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+            @if ($parentId === null)
+            <flux:heading size="xl">{{ __('All Items') }}</flux:heading>
+            @else
+            <flux:button wire:click="navigateUp" icon="arrow-left" variant="ghost" />
+            <flux:heading size="xl">{{ $breadcrumb->name }}</flux:heading>
+            @endif
+        </div>
         <div class="flex items-center gap-1">
             <flux:button variant="primary" wire:click="create">{{ __('Add Item') }}</flux:button>
             <flux:dropdown>
@@ -12,9 +31,7 @@
                             <flux:menu.item icon="document-arrow-up">{{ __('Import') }}</flux:menu.item>
                         </flux:modal.trigger>
 
-                        @teleport('body')
                         @include('pages.inventory.modals.import-items')
-                        @endteleport
                     </div>
                 </flux:menu>
             </flux:dropdown>
@@ -23,24 +40,6 @@
 
     <div class="mb-4">
         <flux:input wire:model.live.debounce.300ms="search" :placeholder="__('Search inventory...')" icon="magnifying-glass" class="max-w-sm" />
-    </div>
-
-    <div class="mb-4 flex items-center gap-2">
-        @if ($this->parentId)
-            <flux:button variant="ghost" size="sm" icon="arrow-left" wire:click="navigateUp" />
-        @endif
-
-        <flux:breadcrumbs>
-            <flux:breadcrumbs.item wire:click="$set('parentId', null)" class="cursor-pointer">
-                {{ __('All') }}
-            </flux:breadcrumbs.item>
-
-            @foreach ($this->breadcrumbs as $breadcrumb)
-                <flux:breadcrumbs.item wire:click="navigateDown({{ $breadcrumb->id }})" class="cursor-pointer">
-                    {{ $breadcrumb->name }}
-                </flux:breadcrumbs.item>
-            @endforeach
-        </flux:breadcrumbs>
     </div>
 
     <flux:table :paginate="$this->items">
@@ -88,4 +87,4 @@
 
     @include('pages.inventory.modals.item-form')
     @include('pages.inventory.modals.qr-code')
-</section>
+</div>
