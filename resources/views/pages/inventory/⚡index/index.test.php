@@ -750,7 +750,7 @@ describe('bulk delete', function () {
         Livewire::actingAs($user)
             ->test('pages::inventory.index')
             ->set('selected', [$itemA->id, $itemC->id])
-            ->call('delete')
+            ->call('bulkDelete')
             ->assertHasNoErrors()
             ->assertSet('selected', []);
 
@@ -764,7 +764,7 @@ describe('bulk delete', function () {
 
         Livewire::actingAs($user)
             ->test('pages::inventory.index')
-            ->call('delete')
+            ->call('bulkDelete')
             ->assertHasNoErrors();
     });
 

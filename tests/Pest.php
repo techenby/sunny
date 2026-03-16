@@ -35,7 +35,7 @@ expect()->extend('toHaveOne', function () {
 });
 
 expect()->extend('toBeTrashed', function () {
-    return $this->deleted_at->not->toBeNull();
+    return $this->trashed()->toBeTrue();
 });
 
 /*

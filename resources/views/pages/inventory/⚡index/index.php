@@ -183,14 +183,25 @@ new #[Title('Inventory')] class extends Component
         $this->modal('item-form')->show();
     }
 
-    public function delete(?int $id = null): void
+    public function delete(int $id): void
     {
-        if ($id !== null) {
-            $items = collect([Auth::user()->currentTeam->items()->findOrFail($id)]);
-        } else {
-            $items = Auth::user()->currentTeam->items()
-                ->whereIn('id', $this->selected)
-                ->get();
+        $item = Auth::user()->currentTeam->items()->findOrFail($id);
+
+        $this->authorize('delete', $item);
+
+        $item->purge();
+
+        unset($this->items, $this->parentItems);
+    }
+
+    public function bulkDelete(): void
+    {
+        $items = Auth::user()->currentTeam->items()
+            ->whereIn('id', $this->selected)
+            ->get();
+
+        if ($items->isEmpty()) {
+            return;
         }
 
         foreach ($items as $item) {
@@ -207,16 +218,25 @@ new #[Title('Inventory')] class extends Component
 
     public function bulkRestore(): void
     {
-        $count = Auth::user()->currentTeam->items()
+        $items = Auth::user()->currentTeam->items()
             ->onlyTrashed()
             ->whereIn('id', $this->selected)
-            ->restore();
+            ->get();
+
+        if ($items->isEmpty()) {
+            return;
+        }
+
+        foreach ($items as $item) {
+            $this->authorize('restore', $item);
+            $item->restore();
+        }
 
         $this->reset('selected');
 
         unset($this->items, $this->parentItems);
 
-        Flux::toast(__(':count item(s) restored.', ['count' => $count]));
+        Flux::toast(__(':count item(s) restored.', ['count' => $items->count()]));
     }
 
     public function restore(int $id): void
