@@ -94,6 +94,7 @@ describe('can navigate up and down', function () {
         $bedroom = Item::factory()->for($user->currentTeam)->location()->create(['name' => 'Bedroom']);
         $closet = Item::factory()->for($user->currentTeam)->bin()->childOf($bedroom)->create(['name' => 'Right Closet']);
         $tote = Item::factory()->for($user->currentTeam)->bin()->childOf($closet)->create(['name' => 'Game Tote']);
+        $game = Item::factory()->for($user->currentTeam)->bin()->childOf($tote)->create(['name' => 'Catan']);
 
         Livewire::actingAs($user)
             ->test('pages::inventory.index')
@@ -128,12 +129,25 @@ describe('can navigate up and down', function () {
             ->assertSeeHtml('<span>Right Closet</span>')
             ->assertDontSeeHtml('<span>Game Tote</span>');
     });
+
+    test('clicking item without children redirects to show', function () {
+        $user = User::factory()->withTeam()->create();
+        $parent = Item::factory()->for($user->currentTeam)->location()->create(['name' => 'Bedroom']);
+        $child = Item::factory()->for($user->currentTeam)->childOf($parent)->bin()->create(['name' => 'Closet']);
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->call('navigateDown', $parent->id)
+            ->call('navigateDown', $child->id)
+            ->assertRedirect(route('inventory.show', ['item' => $child]));
+    });
 });
 
 describe('can create and edit', function () {
     test('create pre-fills parent_id with current parentId', function () {
         $user = User::factory()->withTeam()->create();
         $parent = Item::factory()->for($user->currentTeam)->location()->create(['name' => 'Bedroom']);
+        Item::factory()->for($user->currentTeam)->childOf($parent)->bin()->create(['name' => 'Tote']);
 
         Livewire::actingAs($user)
             ->test('pages::inventory.index')
@@ -498,7 +512,7 @@ describe('can import items', function () {
 
         Livewire::actingAs($user)
             ->test('pages::inventory.index')
-            ->call('navigateDown', $parent->id)
+            ->set('parentId', $parent->id)
             ->set('importForm.file', amazonFixtureUpload())
             ->call('import')
             ->assertHasNoErrors();
@@ -535,4 +549,37 @@ describe('can import items', function () {
             ->call('import')
             ->assertHasErrors('importForm.file');
     });
+});
+
+describe('can generate qr codes', function () {
+    test('can show qr code for an item', function () {
+        $user = User::factory()->withTeam()->create();
+        $item = Item::factory()->for($user->currentTeam)->create(['name' => 'Guitar']);
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->call('showQrCode', $item->id)
+            ->assertSet('qrCode.name', 'Guitar')
+            ->assertNotSet('qrCode.svg', '');
+    });
+
+    test('qr code svg contains valid svg markup', function () {
+        $user = User::factory()->withTeam()->create();
+        $item = Item::factory()->for($user->currentTeam)->create();
+
+        $component = Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->call('showQrCode', $item->id);
+
+        expect($component->get('qrCode.svg'))->toContain('<svg');
+    });
+
+    test('cannot show qr code for an item from another team', function () {
+        $user = User::factory()->withTeam()->create();
+        $otherItem = Item::factory()->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->call('showQrCode', $otherItem->id);
+    })->throws(ModelNotFoundException::class);
 });
