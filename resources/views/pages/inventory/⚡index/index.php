@@ -92,6 +92,25 @@ new #[Title('Inventory')] class extends Component
             ->get();
     }
 
+    #[Computed]
+    public function bulkParentOptions(): Collection
+    {
+        $excludedIds = collect($this->selected);
+
+        $selectedItems = Auth::user()->currentTeam->items()
+            ->whereIn('id', $this->selected)
+            ->get();
+
+        foreach ($selectedItems as $item) {
+            $excludedIds = $excludedIds->merge($item->descendantIds());
+        }
+
+        return Auth::user()->currentTeam->items()
+            ->whereNotIn('id', $excludedIds->unique()->all())
+            ->orderBy('name')
+            ->get();
+    }
+
     public function openBulkUpdateParentModal(): void
     {
         $this->bulkParentId = $this->parentId;
@@ -118,7 +137,7 @@ new #[Title('Inventory')] class extends Component
         $this->modal('bulk-update-parent')->close();
         $this->reset('selected', 'bulkParentId');
 
-        unset($this->items, $this->parentItems);
+        unset($this->items, $this->parentItems, $this->bulkParentOptions);
 
         Flux::toast(__(':count item(s) updated.', ['count' => $items->count()]));
     }

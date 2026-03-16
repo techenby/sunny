@@ -679,6 +679,24 @@ describe('bulk update parent', function () {
             ->assertSet('bulkParentId', null);
     });
 
+    test('bulk parent options excludes selected items and their descendants', function () {
+        $user = User::factory()->withTeam()->create();
+        $forDeck = Item::factory()->for($user->currentTeam)->location()->create(['name' => 'For Deck']);
+        $tangerines = Item::factory()->for($user->currentTeam)->childOf($forDeck)->create(['name' => 'Tangerines']);
+        $aftDeck = Item::factory()->for($user->currentTeam)->location()->create(['name' => 'Aft Deck']);
+
+        $component = Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->set('selected', [$forDeck->id]);
+
+        $options = $component->get('bulkParentOptions');
+
+        expect($options->pluck('id')->toArray())
+            ->toContain($aftDeck->id)
+            ->not->toContain($forDeck->id)
+            ->not->toContain($tangerines->id);
+    });
+
     test('opening bulk update parent modal pre-fills current parentId', function () {
         $user = User::factory()->withTeam()->create();
         $parent = Item::factory()->for($user->currentTeam)->location()->create(['name' => 'Bedroom']);

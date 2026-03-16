@@ -6,10 +6,8 @@
             <flux:text class="mt-2">{{ __('Move :count item(s) to a new parent.', ['count' => count($selected)]) }}</flux:text>
         </div>
         <flux:select wire:model="bulkParentId" :label="__('Parent')" :placeholder="__('None (top level)')" variant="listbox" clearable>
-            @foreach ($this->parentItems as $parentItem)
-                @if (! in_array($parentItem->id, $selected))
-                    <flux:select.option :value="$parentItem->id">{{ $parentItem->name }}</flux:select.option>
-                @endif
+            @foreach ($this->bulkParentOptions as $parentItem)
+                <flux:select.option :value="$parentItem->id">{{ $parentItem->name }}</flux:select.option>
             @endforeach
         </flux:select>
         <div class="flex">
