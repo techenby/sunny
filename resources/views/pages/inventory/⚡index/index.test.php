@@ -2,6 +2,7 @@
 
 use App\Enums\ItemType;
 use App\Models\Item;
+use App\Models\Team;
 use App\Models\User;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\UploadedFile;
@@ -582,4 +583,42 @@ describe('can generate qr codes', function () {
             ->test('pages::inventory.index')
             ->call('showQrCode', $otherItem->id);
     })->throws(ModelNotFoundException::class);
+});
+
+describe('move to team feature', function () {
+    test('can move item to another team', function () {
+        $otherTeam = Team::factory()->create();
+        $user = User::factory()->withTeam()->hasAttached($otherTeam)->create();
+
+        $item = Item::factory()->for($user->currentTeam)->create([
+            'name' => 'Brown Hammer',
+        ]);
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->call('openMoveModal', $item->id)
+            ->assertSet('moveItemId', $item->id)
+            ->set('moveToTeamId', $otherTeam->id)
+            ->call('moveToTeam');
+
+        expect($item->fresh())
+            ->team_id->toBe($otherTeam->id)
+            ->parent_id->toBeNull();
+
+        expect($user->currentTeam->items()->where('name', 'Brown Hammer')->exists())->toBeFalse();
+    });
+
+    test('cannot move item to a team user does not belong to', function () {
+        $user = User::factory()->withTeam()->create();
+        $otherTeam = Team::factory()->create();
+
+        $item = Item::factory()->for($user->currentTeam)->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->call('openMoveModal', $item->id)
+            ->set('moveToTeamId', $otherTeam->id)
+            ->call('moveToTeam')
+            ->assertHasErrors('moveToTeamId');
+    });
 });

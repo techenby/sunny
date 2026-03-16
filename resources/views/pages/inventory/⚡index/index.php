@@ -1,11 +1,13 @@
 <?php
 
+use App\Actions\Inventory\MoveItemToTeam;
 use App\Actions\Inventory\GenerateItemQrCode;
 use App\Livewire\Forms\Inventory\ImportItemsForm;
 use App\Livewire\Forms\Inventory\ItemForm;
 use App\Livewire\Traits\WithSearching;
 use App\Livewire\Traits\WithSorting;
 use App\Models\Item;
+use App\Models\Team;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection as BaseCollection;
@@ -26,6 +28,10 @@ new #[Title('Inventory')] class extends Component
 
     public ItemForm $form;
     public ImportItemsForm $importForm;
+
+    public ?int $moveItemId = null;
+
+    public ?int $moveToTeamId = null;
 
     public ?array $qrCode = null;
 
@@ -60,6 +66,13 @@ new #[Title('Inventory')] class extends Component
             ->paginate(10);
     }
 
+    /** @return Collection<int, Team> */
+    #[Computed]
+    public function otherTeams(): Collection
+    {
+        return Auth::user()->teams->where('id', '!=', Auth::user()->current_team_id)->values();
+    }
+
     #[Computed]
     public function parentItems(): Collection
     {
@@ -67,6 +80,35 @@ new #[Title('Inventory')] class extends Component
             ->when($this->form->editingItem, fn ($query) => $query->where('id', '!=', $this->form->editingItem->id))
             ->orderBy('name')
             ->get();
+    }
+
+    public function openMoveModal(int $itemId): void
+    {
+        $this->moveItemId = $itemId;
+        $this->moveToTeamId = null;
+        $this->modal('move-item')->show();
+    }
+
+    public function moveToTeam(): void
+    {
+        $this->validate([
+            'moveItemId' => ['required', 'integer'],
+            'moveToTeamId' => ['required', 'integer', 'exists:team_user,team_id,user_id,' . Auth::id()],
+        ]);
+
+        $item = Auth::user()->currentTeam->items()->findOrFail($this->moveItemId);
+        $this->authorize('move', $item);
+
+        $team = $this->otherTeams->firstWhere('id', $this->moveToTeamId);
+
+        (new MoveItemToTeam)->handle($item, $team);
+
+        $this->modal('move-item')->close();
+        $this->reset('moveItemId', 'moveToTeamId');
+
+        unset($this->items);
+
+        Flux::toast(__('Item moved successfully.'));
     }
 
     public function addMetadata(): void

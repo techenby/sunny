@@ -1,8 +1,10 @@
 <?php
 
+use App\Actions\Inventory\MoveItemToTeam;
 use App\Actions\Inventory\GenerateItemQrCode;
 use App\Livewire\Forms\Inventory\ItemForm;
 use App\Models\Item;
+use App\Models\Team;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Collection as BaseCollection;
 use Illuminate\Support\Facades\Auth;
@@ -18,6 +20,8 @@ new #[Title('Inventory: Item')] class extends Component
     public Item $item;
 
     public ItemForm $form;
+
+    public ?int $moveToTeamId = null;
 
     public ?array $qrCode = null;
 
@@ -37,6 +41,13 @@ new #[Title('Inventory: Item')] class extends Component
         return $breadcrumbs;
     }
 
+    /** @return Collection<int, Team> */
+    #[Computed]
+    public function otherTeams(): Collection
+    {
+        return Auth::user()->teams->where('id', '!=', Auth::user()->current_team_id)->values();
+    }
+
     #[Computed]
     public function parentItems(): Collection
     {
@@ -44,6 +55,21 @@ new #[Title('Inventory: Item')] class extends Component
             ->where('id', '!=', $this->item->id)
             ->orderBy('name')
             ->get();
+    }
+
+    public function moveToTeam(): void
+    {
+        $this->validate([
+            'moveToTeamId' => ['required', 'integer', 'exists:team_user,team_id,user_id,' . Auth::id()],
+        ]);
+
+        $this->authorize('move', $this->item);
+
+        $team = $this->otherTeams->firstWhere('id', $this->moveToTeamId);
+
+        (new MoveItemToTeam)->handle($this->item, $team);
+
+        $this->redirectRoute('inventory.index');
     }
 
     public function delete(): void

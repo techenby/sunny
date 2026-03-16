@@ -2,6 +2,7 @@
 
 use App\Enums\ItemType;
 use App\Models\Item;
+use App\Models\Team;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -256,5 +257,49 @@ describe('can generate qr codes', function () {
             ->call('showQrCode');
 
         expect($component->get('qrCode.svg'))->toContain('<svg');
+    });
+});
+
+describe('move to team feature', function () {
+    test('can move item to another team', function () {
+        $otherTeam = Team::factory()->create();
+        $user = User::factory()->withTeam()->hasAttached($otherTeam)->create();
+
+        $item = Item::factory()->for($user->currentTeam)->create([
+            'name' => 'Brown Hammer',
+        ]);
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.show', ['item' => $item])
+            ->set('moveToTeamId', $otherTeam->id)
+            ->call('moveToTeam')
+            ->assertRedirect(route('inventory.index'));
+
+        expect($item->fresh())
+            ->team_id->toBe($otherTeam->id)
+            ->parent_id->toBeNull();
+    });
+
+    test('cannot move item to a team user does not belong to', function () {
+        $user = User::factory()->withTeam()->create();
+        $otherTeam = Team::factory()->create();
+
+        $item = Item::factory()->for($user->currentTeam)->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.show', ['item' => $item])
+            ->set('moveToTeamId', $otherTeam->id)
+            ->call('moveToTeam')
+            ->assertHasErrors('moveToTeamId');
+    });
+
+    test('cannot move item from a team user does not belong to', function () {
+        $user = User::factory()->withTeam()->create();
+        $otherTeam = Team::factory()->create();
+        $item = Item::factory()->for($otherTeam)->create();
+
+        $this->actingAs($user)
+            ->get(route('inventory.show', ['item' => $item]))
+            ->assertForbidden();
     });
 });
