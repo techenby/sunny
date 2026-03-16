@@ -46,7 +46,7 @@ class ImportItemsFromAmazonAction
         $endDate = isset($filters['endDate']) ? Date::parse($filters['endDate'])->endOfDay() : null;
 
         $filePath = $file instanceof TemporaryUploadedFile
-            ? tap(tempnam(sys_get_temp_dir(), 'import_'), fn ($path) => file_put_contents($path, $file->get()))
+            ? tap(sys_get_temp_dir() . '/import_' . uniqid() . '.csv', fn ($path) => file_put_contents($path, $file->get()))
             : $file->getRealPath();
 
         $toImport = SimpleExcelReader::create($filePath)->getRows()
