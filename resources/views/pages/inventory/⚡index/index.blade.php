@@ -99,4 +99,5 @@
     @include('pages.inventory.modals.item-form')
     @include('pages.inventory.modals.qr-code')
     @include('pages.inventory.modals.move-item')
+    @include('pages.inventory.modals.bulk-update-parent')
 </div>
