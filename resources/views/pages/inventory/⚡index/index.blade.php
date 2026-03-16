@@ -50,7 +50,7 @@
 
                     <flux:menu.separator />
 
-                    <flux:menu.item wire:click="delete" variant="danger" icon="trash">{{ __('Delete') }}</flux:menu.item>
+                    <flux:menu.item wire:click="delete" wire:confirm="{{ __('Are you sure you want to delete the selected items?') }}" variant="danger" icon="trash">{{ __('Delete') }}</flux:menu.item>
                 </flux:menu>
             </flux:dropdown>
             @endif

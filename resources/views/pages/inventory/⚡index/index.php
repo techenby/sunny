@@ -183,15 +183,26 @@ new #[Title('Inventory')] class extends Component
         $this->modal('item-form')->show();
     }
 
-    public function delete(int $id): void
+    public function delete(?int $id = null): void
     {
-        $item = Auth::user()->currentTeam->items()->findOrFail($id);
+        if ($id !== null) {
+            $items = collect([Auth::user()->currentTeam->items()->findOrFail($id)]);
+        } else {
+            $items = Auth::user()->currentTeam->items()
+                ->whereIn('id', $this->selected)
+                ->get();
+        }
 
-        $this->authorize('delete', $item);
+        foreach ($items as $item) {
+            $this->authorize('delete', $item);
+            $item->purge();
+        }
 
-        $item->purge();
+        $this->reset('selected');
 
         unset($this->items, $this->parentItems);
+
+        Flux::toast(__(':count item(s) deleted.', ['count' => $items->count()]));
     }
 
     public function restore(int $id): void

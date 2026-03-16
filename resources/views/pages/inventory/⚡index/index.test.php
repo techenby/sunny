@@ -742,6 +742,33 @@ describe('bulk update parent', function () {
     });
 });
 
+describe('bulk delete', function () {
+    test('can bulk delete selected items', function () {
+        $user = User::factory()->withTeam()->create();
+        [$itemA, $itemB, $itemC] = Item::factory()->count(3)->for($user->currentTeam)->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->set('selected', [$itemA->id, $itemC->id])
+            ->call('delete')
+            ->assertHasNoErrors()
+            ->assertSet('selected', []);
+
+        expect($itemA->fresh())->toBeTrashed()
+            ->and($itemB->fresh())->not->toBeTrashed()
+            ->and($itemC->fresh())->toBeTrashed();
+    });
+
+    test('bulk delete does nothing when no items are selected', function () {
+        $user = User::factory()->withTeam()->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->call('delete')
+            ->assertHasNoErrors();
+    });
+});
+
 describe('can generate qr codes', function () {
     test('can show qr code for an item', function () {
         $user = User::factory()->withTeam()->create();

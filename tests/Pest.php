@@ -34,6 +34,10 @@ expect()->extend('toHaveOne', function () {
     return $this->toHaveCount(1);
 });
 
+expect()->extend('toBeTrashed', function () {
+    return $this->deleted_at->not->toBeNull();
+});
+
 /*
 |--------------------------------------------------------------------------
 | Functions
