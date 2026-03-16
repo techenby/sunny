@@ -45,34 +45,41 @@ class ImportItemsFromAmazonAction
         $startDate = isset($filters['startDate']) ? Date::parse($filters['startDate']) : null;
         $endDate = isset($filters['endDate']) ? Date::parse($filters['endDate'])->endOfDay() : null;
 
-        $filePath = $file instanceof TemporaryUploadedFile
-            ? tap(sys_get_temp_dir() . '/import_' . uniqid() . '.csv', fn ($path) => file_put_contents($path, $file->get()))
+        $isTemporaryUpload = $file instanceof TemporaryUploadedFile;
+        $filePath = $isTemporaryUpload
+            ? tap(tempnam(sys_get_temp_dir(), 'import_'), fn ($path) => file_put_contents($path, $file->get()))
             : $file->getRealPath();
 
-        $toImport = SimpleExcelReader::create($filePath)->getRows()
-            ->collect()
-            ->when($filterGifts, fn ($collection) => $this->rejectGifts($collection))
-            ->when($filterConsumables, fn ($collection) => $this->rejectConsumables($collection))
-            ->when($startDate || $endDate, fn ($collection) => $this->rejectOutsideDates($collection, $startDate, $endDate))
-            ->map(function (array $row) use ($parent) {
-                return [
-                    'type' => ItemType::Item,
-                    'parent_id' => $parent?->id,
-                    'name' => html_entity_decode($row['Product Name'], ENT_QUOTES | ENT_HTML5, 'UTF-8'),
-                    'metadata' => [
-                        'Amount Paid' => $row['Total Amount'],
-                        'ASIN' => $row['ASIN'],
-                        'Purchased On' => Date::parse($row['Order Date']),
-                        'Website' => $row['Website'],
-                    ],
-                ];
-            });
+        try {
+            $toImport = SimpleExcelReader::create($filePath, 'csv')->getRows()
+                ->collect()
+                ->when($filterGifts, fn ($collection) => $this->rejectGifts($collection))
+                ->when($filterConsumables, fn ($collection) => $this->rejectConsumables($collection))
+                ->when($startDate || $endDate, fn ($collection) => $this->rejectOutsideDates($collection, $startDate, $endDate))
+                ->map(function (array $row) use ($parent) {
+                    return [
+                        'type' => ItemType::Item,
+                        'parent_id' => $parent?->id,
+                        'name' => html_entity_decode($row['Product Name'], ENT_QUOTES | ENT_HTML5, 'UTF-8'),
+                        'metadata' => [
+                            'Amount Paid' => $row['Total Amount'],
+                            'ASIN' => $row['ASIN'],
+                            'Purchased On' => Date::parse($row['Order Date']),
+                            'Website' => $row['Website'],
+                        ],
+                    ];
+                });
 
-        $this->stats['imported'] = count($toImport);
+            $this->stats['imported'] = count($toImport);
 
-        $team->items()->createMany($toImport);
+            $team->items()->createMany($toImport);
 
-        return $this->stats;
+            return $this->stats;
+        } finally {
+            if ($isTemporaryUpload) {
+                @unlink($filePath);
+            }
+        }
     }
 
     private function rejectConsumables($collection)
