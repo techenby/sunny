@@ -77,9 +77,12 @@ new #[Title('Inventory')] class extends Component
             ->items()
             ->when($this->showTrashed, fn ($query) => $query->onlyTrashed())
             ->withCount('children')
-            ->where('parent_id', $this->parentId)
+            ->when(
+                $this->filters['withoutHome'] ?? false,
+                fn ($query) => $query->where('type', ItemType::Item)->whereNull('parent_id'),
+                fn ($query) => $query->where('parent_id', $this->parentId),
+            )
             ->when($this->search, fn ($query) => $query->where('name', 'like', '%' . $this->search . '%'))
-            ->when($this->filters['withoutHome'] ?? false, fn ($query) => $query->where('type', ItemType::Item)->whereNull('parent_id'))
             ->orderBy($this->sortBy, $this->sortDirection)
             ->paginate(10);
     }

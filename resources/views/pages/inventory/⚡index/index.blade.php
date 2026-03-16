@@ -45,7 +45,7 @@
                 <flux:button :variant="($filters['withoutHome'] ?? false) ? 'primary' : 'ghost'" :color="($filters['withoutHome'] ?? false) ? 'sky' : ''" icon="funnel" icon:variant="outline"/>
 
                 <flux:menu>
-                    <flux:menu.checkbox wire:model.live="filters.withoutHome">{{ __('Without home') }}</flux:menu.checkbox>
+                    <flux:menu.checkbox wire:model.live="filters.withoutHome" :disabled="$parentId !== null">{{ __('Without home') }}</flux:menu.checkbox>
                 </flux:menu>
             </flux:dropdown>
             @if ($selected !== [])

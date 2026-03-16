@@ -36,6 +36,13 @@ class ItemFactory extends Factory
         ]);
     }
 
+    public function item(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'type' => ItemType::Item,
+        ]);
+    }
+
     public function childOf(Item $parent): static
     {
         return $this->state(fn (array $attributes) => [
