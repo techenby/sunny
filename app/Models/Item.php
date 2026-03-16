@@ -57,6 +57,12 @@ class Item extends Model
         ];
     }
 
+    public function purge(): void
+    {
+        $this->children()->update(['parent_id' => null]);
+        $this->delete();
+    }
+
     protected function truncatedName(): Attribute
     {
         return Attribute::make(

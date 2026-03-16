@@ -36,6 +36,7 @@ new #[Title('Inventory')] class extends Component
 
     public ?array $qrCode = null;
 
+    #[Url]
     public bool $showTrashed = false;
 
     #[Url]
@@ -133,7 +134,7 @@ new #[Title('Inventory')] class extends Component
 
         $this->authorize('delete', $item);
 
-        $item->delete();
+        $item->purge();
 
         unset($this->items, $this->parentItems);
     }
@@ -145,6 +146,17 @@ new #[Title('Inventory')] class extends Component
         $this->authorize('restore', $item);
 
         $item->restore();
+
+        unset($this->items, $this->parentItems);
+    }
+
+    public function forceDelete(int $id): void
+    {
+        $item = Auth::user()->currentTeam->items()->onlyTrashed()->findOrFail($id);
+
+        $this->authorize('forceDelete', $item);
+
+        $item->forceDelete();
 
         unset($this->items, $this->parentItems);
     }

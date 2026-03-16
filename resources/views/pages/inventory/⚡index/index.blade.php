@@ -66,7 +66,10 @@
                     </flux:table.cell>
                     <flux:table.cell>
                         @if ($showTrashed)
-                            <flux:button wire:click="restore({{ $item->id }})" variant="ghost" size="sm" icon="arrow-uturn-left">{{ __('Restore') }}</flux:button>
+                            <div class="flex items-center gap-1">
+                                <flux:button wire:click="restore({{ $item->id }})" wire:confirm="{{ __('Are you sure you want to restore this item?') }}" variant="ghost" size="sm" icon="arrow-uturn-left">{{ __('Restore') }}</flux:button>
+                                <flux:button wire:click="forceDelete({{ $item->id }})" wire:confirm="{{ __('Are you sure you want to permanently delete this item? This cannot be undone.') }}" variant="danger" size="sm" icon="trash">{{ __('Delete Forever') }}</flux:button>
+                            </div>
                         @else
                             <flux:dropdown>
                                 <flux:button variant="ghost" size="sm" icon="ellipsis-vertical" />

@@ -23,6 +23,16 @@ test('authenticated users can visit the items page', function () {
         ->assertOk();
 });
 
+test('can view a soft deleted item', function () {
+    $user = User::factory()->withTeam()->create();
+    $item = Item::factory()->for($user->currentTeam)->create();
+    $item->delete();
+
+    $this->actingAs($user)
+        ->get(route('inventory.show', ['item' => $item]))
+        ->assertOk();
+});
+
 test('cannot view item for different team', function () {
     $user = User::factory()->withTeam()->create();
     $item = Item::factory()->create(['name' => 'Pink Hammer']);
@@ -66,7 +76,7 @@ test('can delete an item and redirects to index', function () {
     expect($item->fresh()->trashed())->toBeTrue();
 });
 
-test('deleting a parent keeps children with their parent_id', function () {
+test('deleting a parent nullifies children parent_id', function () {
     $user = User::factory()->withTeam()->create();
     $parent = Item::factory()->for($user->currentTeam)->location()->create();
     $child = Item::factory()->for($user->currentTeam)->childOf($parent)->create();
@@ -75,7 +85,7 @@ test('deleting a parent keeps children with their parent_id', function () {
         ->test('pages::inventory.show', ['item' => $parent])
         ->call('delete', $parent->id);
 
-    expect($child->fresh()->parent_id)->toBe($parent->id);
+    expect($child->fresh()->parent_id)->toBeNull();
 });
 
 describe('can add item metadata', function () {

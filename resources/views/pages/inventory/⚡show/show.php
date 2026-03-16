@@ -79,7 +79,7 @@ new #[Title('Inventory: Item')] class extends Component
 
         $parentId = $this->item->parent_id;
 
-        $this->item->delete();
+        $this->item->purge();
 
         $this->redirectRoute('inventory.index', ['parentId' => $parentId]);
     }

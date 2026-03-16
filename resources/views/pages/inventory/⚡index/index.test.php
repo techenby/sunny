@@ -269,7 +269,7 @@ describe('can delete', function () {
             ->call('delete', $item->id);
     })->throws(ModelNotFoundException::class);
 
-    test('deleting a parent keeps children with their parent_id', function () {
+    test('deleting a parent nullifies children parent_id', function () {
         $user = User::factory()->withTeam()->create();
         $parent = Item::factory()->for($user->currentTeam)->location()->create();
         $child = Item::factory()->for($user->currentTeam)->childOf($parent)->create();
@@ -278,7 +278,7 @@ describe('can delete', function () {
             ->test('pages::inventory.index')
             ->call('delete', $parent->id);
 
-        expect($child->fresh()->parent_id)->toBe($parent->id);
+        expect($child->fresh()->parent_id)->toBeNull();
     });
 });
 
@@ -333,6 +333,32 @@ describe('can view and restore deleted items', function () {
             ->test('pages::inventory.index')
             ->set('showTrashed', true)
             ->call('restore', $item->id);
+    })->throws(ModelNotFoundException::class);
+});
+
+describe('can permanently delete items', function () {
+    test('can force delete a trashed item', function () {
+        $user = User::factory()->withTeam()->create();
+        $item = Item::factory()->for($user->currentTeam)->create();
+        $item->delete();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->set('showTrashed', true)
+            ->call('forceDelete', $item->id);
+
+        expect($item->fresh())->toBeNull();
+    });
+
+    test('cannot force delete an item from another team', function () {
+        $user = User::factory()->withTeam()->create();
+        $item = Item::factory()->create();
+        $item->delete();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->set('showTrashed', true)
+            ->call('forceDelete', $item->id);
     })->throws(ModelNotFoundException::class);
 });
 
