@@ -3,9 +3,9 @@
 use App\Actions\Inventory\GenerateItemQrCode;
 use App\Livewire\Forms\Inventory\ImportItemsForm;
 use App\Livewire\Forms\Inventory\ItemForm;
-use App\Models\Item;
 use App\Livewire\Traits\WithSearching;
 use App\Livewire\Traits\WithSorting;
+use App\Models\Item;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection as BaseCollection;
