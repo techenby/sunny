@@ -83,10 +83,10 @@ new #[Title('Inventory')] class extends Component
             ->withCount('children')
             ->when(
                 $this->filters['withoutHome'] ?? false,
-                fn ($query) => $query->where('type', ItemType::Item)->whereNull('parent_id'),
-                fn ($query) => $query->where('parent_id', $this->parentId),
+                fn ($query) => $query->where('type', ItemType::Item)->whereNull('parent_id')
             )
             ->when($this->search, fn ($query) => $query->where('name', 'like', '%' . $this->search . '%'))
+            ->where('parent_id', $this->parentId)
             ->orderBy($this->sortBy, $this->sortDirection)
             ->paginate(10);
     }
