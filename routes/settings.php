@@ -3,12 +3,14 @@
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 
-Route::middleware(['auth'])->group(function () {
-    Route::redirect('settings', 'settings/profile');
+Route::middleware(['auth'])
+    ->prefix('settings')
+    ->group(function (): void {
+        Route::redirect('/', 'settings/profile');
 
-    Route::livewire('settings/profile', 'pages::settings.profile')->name('profile.edit');
-    Route::livewire('settings/team', 'pages::settings.team')->name('team.edit');
-});
+        Route::livewire('profile', 'pages::settings.profile')->name('profile.edit');
+        Route::livewire('team', 'pages::settings.team')->name('team.edit');
+    });
 
 Route::middleware(['auth', 'verified'])
     ->prefix('settings')
