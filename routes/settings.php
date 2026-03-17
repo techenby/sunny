@@ -10,18 +10,20 @@ Route::middleware(['auth'])->group(function () {
     Route::livewire('settings/team', 'pages::settings.team')->name('team.edit');
 });
 
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::livewire('settings/password', 'pages::settings.password')->name('user-password.edit');
-    Route::livewire('settings/appearance', 'pages::settings.appearance')->name('appearance.edit');
+Route::middleware(['auth', 'verified'])
+    ->prefix('settings')
+    ->group(function (): void {
+        Route::livewire('password', 'pages::settings.password')->name('user-password.edit');
+        Route::livewire('appearance', 'pages::settings.appearance')->name('appearance.edit');
 
-    Route::livewire('settings/two-factor', 'pages::settings.two-factor')
-        ->middleware(
-            when(
-                Features::canManageTwoFactorAuthentication()
-                && Features::optionEnabled(Features::twoFactorAuthentication(), 'confirmPassword'),
-                ['password.confirm'],
-                [],
-            ),
-        )
-        ->name('two-factor.show');
-});
+        Route::livewire('two-factor', 'pages::settings.two-factor')
+            ->middleware(
+                when(
+                    Features::canManageTwoFactorAuthentication()
+                    && Features::optionEnabled(Features::twoFactorAuthentication(), 'confirmPassword'),
+                    ['password.confirm'],
+                    [],
+                ),
+            )
+            ->name('two-factor.show');
+    });
