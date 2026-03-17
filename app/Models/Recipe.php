@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Concerns\HasSlug;
 use Database\Factories\RecipeFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -15,6 +17,7 @@ class Recipe extends Model
 {
     /** @use HasFactory<RecipeFactory> */
     use HasFactory;
+    use HasSlug;
 
     /** @var list<string> */
     protected $fillable = [
@@ -36,42 +39,6 @@ class Recipe extends Model
         'tags',
         'photo_path',
     ];
-
-    protected static function booted(): void
-    {
-        static::creating(function ($recipe) {
-            $recipe->slug = $recipe->generateUniqueSlug($recipe->name);
-        });
-
-        static::updating(function ($recipe) {
-            if ($recipe->isDirty('name')) {
-                $recipe->slug = $recipe->generateUniqueSlug($recipe->name);
-            }
-        });
-    }
-
-    public function generateUniqueSlug(string $name): string
-    {
-        $baseSlug = Str::slug($name);
-
-        $existingSlugs = self::query()
-            ->where('team_id', $this->team_id)
-            ->where('slug', 'like', $baseSlug . '%')
-            ->when($this->exists, fn ($query) => $query->where('id', '!=', $this->id))
-            ->pluck('slug');
-
-        if ($existingSlugs->doesntContain($baseSlug)) {
-            return $baseSlug;
-        }
-
-        $counter = 1;
-
-        while ($existingSlugs->contains($baseSlug . '-' . $counter)) {
-            $counter++;
-        }
-
-        return $baseSlug . '-' . $counter;
-    }
 
     /** @return BelongsTo<Team, $this> */
     public function team(): BelongsTo
@@ -124,6 +91,12 @@ class Recipe extends Model
     public function isShared(): bool
     {
         return ! is_null($this->share_token);
+    }
+
+    /** @param  Builder<static>  $query */
+    protected function scopeSlugUniqueness(Builder $query): void
+    {
+        $query->where('team_id', $this->team_id);
     }
 
     /** @return array<string, mixed> */
