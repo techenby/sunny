@@ -22,16 +22,6 @@ class Item extends Model
     use HasFactory;
     use SoftDeletes;
 
-    /** @var list<string> */
-    protected $fillable = [
-        'team_id',
-        'parent_id',
-        'type',
-        'name',
-        'photo_path',
-        'metadata',
-    ];
-
     /** @return BelongsTo<Team, $this> */
     public function team(): BelongsTo
     {

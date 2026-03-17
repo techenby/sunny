@@ -16,27 +16,6 @@ class Recipe extends Model
     /** @use HasFactory<RecipeFactory> */
     use HasFactory;
 
-    /** @var list<string> */
-    protected $fillable = [
-        'team_id',
-        'parent_id',
-        'name',
-        'slug',
-        'share_token',
-        'source',
-        'servings',
-        'prep_time',
-        'cook_time',
-        'total_time',
-        'description',
-        'ingredients',
-        'instructions',
-        'notes',
-        'nutrition',
-        'tags',
-        'photo_path',
-    ];
-
     protected static function booted(): void
     {
         static::creating(function ($recipe) {
