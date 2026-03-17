@@ -2,7 +2,6 @@
 
 use App\Actions\Inventory\GenerateItemQrCode;
 use App\Actions\Inventory\MoveItemToTeam;
-use App\Enums\ItemType;
 use App\Livewire\Forms\Inventory\ImportItemsForm;
 use App\Livewire\Forms\Inventory\ItemForm;
 use App\Livewire\Traits\WithSearching;
@@ -79,7 +78,7 @@ new #[Title('Inventory')] class extends Component
             ->items()
             ->withCount('children')
             ->when($this->filters['showTrashed'] ?? false, fn ($query) => $query->onlyTrashed())
-            ->when(! empty($this->filters['types']), fn ($query) => $query->whereIn('type', $this->filters['types']))
+            ->when(filled($this->filters['types']), fn ($query) => $query->whereIn('type', $this->filters['types']))
             ->when($this->search, fn ($query) => $query->where('name', 'like', '%' . $this->search . '%'))
             ->where('parent_id', $this->parentId)
             ->orderBy($this->sortBy, $this->sortDirection)
