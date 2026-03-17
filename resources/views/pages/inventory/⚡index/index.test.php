@@ -857,7 +857,7 @@ describe('move to team feature', function () {
 });
 
 describe('can filter', function () {
-    test('without home filter shows only items with type item and no parent', function () {
+    test('type filter only shows items by type', function () {
         $user = User::factory()->withTeam()->create();
 
         $location = Item::factory()->location()->for($user->currentTeam)->create(['name' => 'Merry']);
@@ -865,26 +865,42 @@ describe('can filter', function () {
         Item::factory()->for($user->currentTeam)->item()->create(['name' => 'Golden Bell']);
         Item::factory()->for($user->currentTeam)->bin()->create(['name' => 'Treasure Chest']);
 
-        $this->actingAs($user)
-            ->get(route('inventory.index', ['filters' => ['withoutHome' => true]]))
-            ->assertOk()
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->set('filters.types', [ItemType::Item])
             ->assertSeeHtml('<span>Golden Bell</span>')
             ->assertDontSeeHtml('<span>Treasure Chest</span>')
             ->assertDontSeeHtml('<span>Merry</span>')
+            ->assertDontSeeHtml('<span>Tangerines</span>')
+            ->set('filters.types', [ItemType::Bin])
+            ->assertDontSeeHtml('<span>Golden Bell</span>')
+            ->assertSeeHtml('<span>Treasure Chest</span>')
+            ->assertDontSeeHtml('<span>Merry</span>')
+            ->assertDontSeeHtml('<span>Tangerines</span>')
+            ->set('filters.types', [ItemType::Location])
+            ->assertDontSeeHtml('<span>Golden Bell</span>')
+            ->assertDontSeeHtml('<span>Treasure Chest</span>')
+            ->assertSeeHtml('<span>Merry</span>')
             ->assertDontSeeHtml('<span>Tangerines</span>');
     });
 
-    test('without home filter is disabled when navigated into a child', function () {
+    test('type filter works when navigated into a child', function () {
         $user = User::factory()->withTeam()->create();
 
         $location = Item::factory()->location()->for($user->currentTeam)->create(['name' => 'Merry']);
-        Item::factory()->for($user->currentTeam)->childOf($location)->create(['name' => 'Tangerines']);
-        Item::factory()->for($user->currentTeam)->create(['name' => 'Golden Bell']);
+        Item::factory()->for($user->currentTeam)->childOf($location)->item()->create(['name' => 'Tangerines']);
+        Item::factory()->for($user->currentTeam)->childOf($location)->bin()->create(['name' => 'Small Box']);
 
         Livewire::actingAs($user)
             ->test('pages::inventory.index')
             ->call('navigateDown', $location->id)
             ->assertSeeHtml('<span>Tangerines</span>')
-            ->assertSeeHtmlInOrder(['<ui-menu-checkbox', 'disabled', 'Without home', '</ui-menu-checkbox>']);
+            ->assertSeeHtml('<span>Small Box</span>')
+            ->set('filters.types', [ItemType::Item])
+            ->assertSeeHtml('<span>Tangerines</span>')
+            ->assertDontSeeHtml('<span>Small Box</span>')
+            ->set('filters.types', [ItemType::Bin])
+            ->assertDontSeeHtml('<span>Tangerines</span>')
+            ->assertSeeHtml('<span>Small Box</span>');
     });
 });

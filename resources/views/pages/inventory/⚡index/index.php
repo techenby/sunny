@@ -2,7 +2,6 @@
 
 use App\Actions\Inventory\GenerateItemQrCode;
 use App\Actions\Inventory\MoveItemToTeam;
-use App\Enums\ItemType;
 use App\Livewire\Forms\Inventory\ImportItemsForm;
 use App\Livewire\Forms\Inventory\ItemForm;
 use App\Livewire\Traits\WithSearching;
@@ -42,10 +41,9 @@ new #[Title('Inventory')] class extends Component
 
     public ?int $bulkParentId = null;
 
-    /** @var array<string, bool> */
     #[Url]
     public array $filters = [
-        'withoutHome' => false,
+        'types' => [],
         'showTrashed' => false,
     ];
 
@@ -79,14 +77,11 @@ new #[Title('Inventory')] class extends Component
     {
         return Auth::user()->currentTeam
             ->items()
-            ->when($this->filters['showTrashed'] ?? false, fn ($query) => $query->onlyTrashed())
             ->withCount('children')
-            ->when(
-                $this->filters['withoutHome'] ?? false,
-                fn ($query) => $query->where('type', ItemType::Item)->whereNull('parent_id'),
-                fn ($query) => $query->where('parent_id', $this->parentId),
-            )
+            ->when($this->filters['showTrashed'] ?? false, fn ($query) => $query->onlyTrashed())
+            ->when(filled($this->filters['types']), fn ($query) => $query->whereIn('type', $this->filters['types']))
             ->when($this->search, fn ($query) => $query->where('name', 'like', '%' . $this->search . '%'))
+            ->where('parent_id', $this->parentId)
             ->orderBy($this->sortBy, $this->sortDirection)
             ->paginate(10);
     }

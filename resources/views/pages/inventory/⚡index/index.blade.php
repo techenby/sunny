@@ -45,7 +45,12 @@
                 <flux:button :variant="$this->areFiltersActive ? 'primary' : 'ghost'" :color="$this->areFiltersActive ? 'sky' : ''" icon="funnel" icon:variant="outline"/>
 
                 <flux:menu>
-                    <flux:menu.checkbox wire:model.live="filters.withoutHome" :disabled="$parentId !== null">{{ __('Without home') }}</flux:menu.checkbox>
+                    <flux:menu.checkbox.group wire:model.live="filters.types">
+                        @foreach (App\Enums\ItemType::cases() as $type)
+                            <flux:menu.checkbox :value="$type->value">{{ $type->name }}</flux:menu.checkbox>
+                        @endforeach
+                    </flux:menu.checkbox.group>
+                    <flux:menu.separator />
                     <flux:menu.checkbox wire:model.live="filters.showTrashed">{{ __('Show deleted') }}</flux:menu.checkbox>
                 </flux:menu>
             </flux:dropdown>
