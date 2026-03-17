@@ -14,11 +14,6 @@ class TeamInvitation extends Model
     /** @use HasFactory<TeamInvitationFactory> */
     use HasFactory;
 
-    /** @var list<string> */
-    protected $fillable = [
-        'email',
-    ];
-
     /** @return BelongsTo<Team, $this> */
     public function team(): BelongsTo
     {

@@ -16,11 +16,6 @@ class Team extends Model
     /** @use HasFactory<TeamFactory> */
     use HasFactory;
 
-    /** @var list<string> */
-    protected $fillable = [
-        'name',
-    ];
-
     /** @return BelongsTo<User, $this> */
     public function owner(): BelongsTo
     {
