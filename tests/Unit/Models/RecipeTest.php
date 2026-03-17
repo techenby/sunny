@@ -94,6 +94,27 @@ test('updating keeps existing slug if still unique', function () {
     expect($recipe->fresh())->slug->toBe('chocolate-cake-modified');
 });
 
+test('replicated recipe gets a unique slug', function () {
+    $recipe = Recipe::factory()->create(['name' => 'Original Recipe']);
+    $copy = $recipe->replicate();
+    $copy->save();
+
+    expect($copy->slug)->toBe('original-recipe-1')
+        ->and($recipe->fresh()->slug)->toBe('original-recipe');
+});
+
+test('updating name to one that exists in another team reuses base slug', function () {
+    $team1 = Team::factory()->create();
+    $team2 = Team::factory()->create();
+
+    Recipe::create(['team_id' => $team1->id, 'name' => 'Shared Name']);
+    $recipe = Recipe::create(['team_id' => $team2->id, 'name' => 'Different Name']);
+
+    $recipe->update(['name' => 'Shared Name']);
+
+    expect($recipe->fresh()->slug)->toBe('shared-name');
+});
+
 test('source can be shortened', function () {
     $recipe = Recipe::factory()->make(['source' => 'https://www.italianfoodforever.com/2018/12/buttery-toasted-almond-crescent-cookies/?fbclid=IwAR35HddGDTbORlGEwro1CehIKuGDvGtwc44zMl05BLEjF4NuNF-hKDrpJPU']);
 

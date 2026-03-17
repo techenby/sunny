@@ -92,3 +92,12 @@ test('slug uniqueness handles multiple collisions', function () {
 
     expect($third->slug)->toBe('duplicate-2');
 });
+
+test('replicated team gets a unique slug', function () {
+    $team = Team::factory()->create(['name' => 'Original Team']);
+    $copy = $team->replicate();
+    $copy->save();
+
+    expect($copy->slug)->toBe('original-team-1')
+        ->and($team->fresh()->slug)->toBe('original-team');
+});
