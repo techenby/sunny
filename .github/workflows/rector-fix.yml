@@ -1,0 +1,38 @@
+name: Rector Fix
+
+on:
+    workflow_call:
+
+jobs:
+  rector:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref || github.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          tools: composer:v2
+
+      - name: Add Flux Credentials Loaded From ENV
+        run: composer config http-basic.composer.fluxui.dev "${{ secrets.FLUX_USERNAME }}" "${{ secrets.FLUX_LICENSE_KEY }}"
+
+      - name: Install Dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Run Rector
+        run: ./vendor/bin/rector process
+
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Rector fixes
+          commit_user_name: GitHub Action
+          commit_user_email: actions@github.com

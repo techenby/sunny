@@ -1,0 +1,22 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  rector:
+    uses: ./.github/workflows/rector-fix.yml
+    secrets: inherit
+
+  duster:
+    needs: rector
+    uses: ./.github/workflows/duster-fix-blame.yml
+    secrets: inherit
+
+  tests:
+    needs: duster
+    uses: ./.github/workflows/tests.yml
+    secrets: inherit
