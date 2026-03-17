@@ -6,7 +6,7 @@ use Laravel\Fortify\Features;
 Route::middleware(['auth'])
     ->prefix('settings')
     ->group(function (): void {
-        Route::redirect('/', 'settings/profile');
+        Route::redirect('/', '/settings/profile');
 
         Route::livewire('profile', 'pages::settings.profile')->name('profile.edit');
         Route::livewire('team', 'pages::settings.team')->name('team.edit');
