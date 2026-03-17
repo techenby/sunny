@@ -47,7 +47,7 @@
                 <flux:menu>
                     <flux:menu.checkbox.group wire:model.live="filters.types">
                         @foreach (App\Enums\ItemType::cases() as $type)
-                        <flux:menu.checkbox :value="$type->value">{{ $type->name }}</flux:menu.checkbox>
+                            <flux:menu.checkbox :value="$type->value">{{ $type->name }}</flux:menu.checkbox>
                         @endforeach
                     </flux:menu.checkbox.group>
                     <flux:menu.separator />

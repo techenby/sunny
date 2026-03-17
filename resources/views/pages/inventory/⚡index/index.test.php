@@ -883,4 +883,24 @@ describe('can filter', function () {
             ->assertSeeHtml('<span>Merry</span>')
             ->assertDontSeeHtml('<span>Tangerines</span>');
     });
+
+    test('type filter works when navigated into a child', function () {
+        $user = User::factory()->withTeam()->create();
+
+        $location = Item::factory()->location()->for($user->currentTeam)->create(['name' => 'Merry']);
+        Item::factory()->for($user->currentTeam)->childOf($location)->item()->create(['name' => 'Tangerines']);
+        Item::factory()->for($user->currentTeam)->childOf($location)->bin()->create(['name' => 'Small Box']);
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->call('navigateDown', $location->id)
+            ->assertSeeHtml('<span>Tangerines</span>')
+            ->assertSeeHtml('<span>Small Box</span>')
+            ->set('filters.types', [ItemType::Item])
+            ->assertSeeHtml('<span>Tangerines</span>')
+            ->assertDontSeeHtml('<span>Small Box</span>')
+            ->set('filters.types', [ItemType::Bin])
+            ->assertDontSeeHtml('<span>Tangerines</span>')
+            ->assertSeeHtml('<span>Small Box</span>');
+    });
 });

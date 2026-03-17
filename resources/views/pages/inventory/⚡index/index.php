@@ -41,6 +41,7 @@ new #[Title('Inventory')] class extends Component
 
     public ?int $bulkParentId = null;
 
+    #[Url]
     public array $filters = [
         'types' => [],
         'showTrashed' => false,
