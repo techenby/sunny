@@ -95,47 +95,8 @@ new class extends Component {
             </flux:menu>
         </flux:dropdown>
 
-        @teleport('body')
-        <flux:modal name="share-recipe" class="md:w-96">
-            <div class="space-y-6">
-                <div>
-                    <flux:heading size="lg">{{ __('Share Recipe') }}</flux:heading>
-                    <flux:text class="mt-2">{{ __('Anyone with the link can view this recipe.') }}</flux:text>
-                </div>
-
-                <div class="flex items-center justify-between">
-                    <flux:text>{{ __('Public Link') }}</flux:text>
-                    <flux:switch wire:click="toggleSharing" :checked="$recipe->isShared()" />
-                </div>
-
-                @if ($recipe->isShared())
-                    <flux:input
-                        readonly
-                        :value="route('recipes.shared', $recipe->share_token)"
-                        copyable
-                    />
-                @endif
-            </div>
-        </flux:modal>
-
-        <flux:modal name="copy-recipe" class="md:w-96">
-            <form wire:submit="copyToTeam" class="space-y-6">
-                <div>
-                    <flux:heading size="lg">{{ __('Copy to Team') }}</flux:heading>
-                    <flux:text class="mt-2">{{ __('Copy this recipe to another team.') }}</flux:text>
-                </div>
-                <flux:select wire:model="copyToTeamId" :label="__('Team')" :placeholder="__('Select a team...')">
-                    @foreach ($this->otherTeams as $team)
-                        <flux:select.option :value="$team->id">{{ $team->name }}</flux:select.option>
-                    @endforeach
-                </flux:select>
-                <div class="flex">
-                    <flux:spacer />
-                    <flux:button type="submit" variant="primary">{{ __('Copy') }}</flux:button>
-                </div>
-            </form>
-        </flux:modal>
-        @endteleport
+        @include('pages::recipes.modals.share-recipe')
+        @include('pages::recipes.modals.copy-to-team')
     </div>
 
     @include('pages.recipes.detail')
