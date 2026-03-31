@@ -26,6 +26,11 @@
 
             <flux:spacer />
 
+
+            <flux:sidebar.item icon="light-bulb" icon:trailing="arrow-up-right" href="https://suggest.gg/techenby" target="_blank">
+                {{ __('Make a Suggestion') }}
+            </flux:sidebar.item>
+
             @can('admin')
                 <flux:sidebar.item icon="wrench-screwdriver" :href="route('admin.dashboard')" :current="request()->routeIs('admin.*')" wire:navigate>
                     {{ __('Admin') }}
