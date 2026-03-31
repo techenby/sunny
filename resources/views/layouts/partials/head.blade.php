@@ -10,5 +10,15 @@
 <link rel="preconnect" href="https://fonts.bunny.net">
 <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
 
+<script src="https://app.bentonow.com/d14d22f048103e883848523b335aa614.js" defer></script>
+<script>
+  window.addEventListener('bento:ready', function () {
+    @if(auth()->user() && auth()->user()->email)
+      bento.identify(@json(auth()->user()->email));
+    @endif
+    bento.view();
+  });
+</script>
+
 @vite(['resources/css/app.css', 'resources/js/app.js'])
 @fluxAppearance
