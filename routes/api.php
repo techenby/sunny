@@ -9,9 +9,9 @@ use Illuminate\Validation\ValidationException;
 
 Route::post('/sanctum/token', function (Request $request) {
     $request->validate([
-        'email' => 'required|email',
-        'password' => 'required',
-        'device_name' => 'required',
+        'email' => ['required', 'email'],
+        'password' => ['required'],
+        'device_name' => ['required'],
     ]);
 
     $user = User::firstWhere('email', $request->email);
