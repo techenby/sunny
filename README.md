@@ -1,14 +1,14 @@
 # Sunny
 
-**PHP:** 8.4  
-**Laravel:** 12  
-**Node:** 22  
-**Asset Compiler:** Vite  
-**Database:** Postgres 18  
-**Frontend:** [Livewire v4](https://livewire.laravel.com/docs/quickstart)  
-**Testing:** [Pest v4](https://pestphp.com/docs/installation)  
-**Hosting:** Cloud  
-**Monitoring:** Nightwatch  
+**PHP:** 8.4
+**Laravel:** 12
+**Node:** 22
+**Asset Compiler:** Vite
+**Database:** Postgres 18
+**Frontend:** [Livewire v4](https://livewire.laravel.com/docs/quickstart)
+**Testing:** [Pest v4](https://pestphp.com/docs/installation)
+**Hosting:** Cloud
+**Monitoring:** Nightwatch
 
 **Notible Composer Packages:**
 - [driftingly/rector-laravel](https://github.com/driftingly/rector-laravel)
@@ -20,6 +20,29 @@
 - [playwright](https://github.com/microsoft/playwright)
 - [tailwindcss](https://tailwindcss.com/)
 - [tailwindcss/typography](https://github.com/tailwindlabs/tailwindcss-typography)
+
+### Helpful Commands
+
+- `composer run setup`
+    Sets up the repo for development by installing PHP dependencies, creating the `.env` file if missing, generating the app key, running database migrations, and installing and building the frontend assets with npm.
+
+- `composer run dev`
+    Runs multiple development tasks in parallel using `npx concurrently`, including serving the site, running the queues, running `pail`, and compiling frontend assets.
+
+- `composer run lint`
+    Runs Rector and Duster to standardize the codebase.
+
+- `composer run lint:check`
+    Runs Rector and Duster in check-only mode, without applying fixes.
+
+- `composer run ci:check`
+    Runs all the commands that GitHub Actions will run, including Rector, Duster, PHPStan, and the test suite.
+
+- `composer run stan`
+    Runs PHPStan to check the codebase for type safety.
+
+- `composer run test`
+    Runs the test suite.
 
 ## ERD
 
