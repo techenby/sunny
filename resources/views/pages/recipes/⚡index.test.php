@@ -62,7 +62,7 @@ test('can delete a recipe', function () {
         ->test('pages::recipes.index')
         ->call('delete', $recipe->id);
 
-    expect($recipe->fresh())->toBeNull();
+    expect($recipe->fresh()->trashed())->toBeTrue();
 });
 
 test('cannot delete a recipe from another team', function () {
