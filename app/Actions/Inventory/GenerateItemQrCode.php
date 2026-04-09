@@ -19,10 +19,14 @@ class GenerateItemQrCode
             new SvgImageBackEnd,
         );
 
+        if (! request()->route('current_team')) {
+            $params['current_team'] = $item->team;
+        }
+
         if ($item->children()->exists()) {
-            $url = route('inventory.index', ['current_team' => $item->team, 'parentId' => $item->id]);
+            $url = route('inventory.index', [...$params ?? [], 'parentId' => $item->id]);
         } else {
-            $url = route('inventory.show', ['current_team' => $item->team, 'item' => $item]);
+            $url = route('inventory.show', [...$params ?? [], 'item' => $item]);
         }
 
         return [
