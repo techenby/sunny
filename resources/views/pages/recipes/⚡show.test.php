@@ -126,7 +126,7 @@ test('can delete a recipe from show page', function () {
         ->call('delete')
         ->assertRedirect(route('recipes.index'));
 
-    expect($recipe->fresh())->toBeNull();
+    expect($recipe->fresh()->trashed())->toBeTrue();
 });
 
 test('non-owner cannot delete a recipe from show page', function () {

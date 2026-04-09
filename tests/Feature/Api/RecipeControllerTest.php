@@ -133,7 +133,7 @@ test('destroy deletes a recipe', function () {
         ->deleteJson(route('api.recipes.destroy', $recipe))
         ->assertNoContent();
 
-    $this->assertDatabaseMissing('recipes', ['id' => $recipe->id]);
+    $this->assertSoftDeleted('recipes', ['id' => $recipe->id]);
 });
 
 test('destroy returns 403 for another team recipe', function () {
