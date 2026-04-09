@@ -11,7 +11,7 @@ test('displays the landing page for guests', function () {
 });
 
 test('shows dashboard link for authenticated users', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
 
     $this->actingAs($user)
         ->get('/')

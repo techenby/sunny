@@ -43,7 +43,7 @@ new class extends Component {
     public function copyToTeam(): void
     {
         $this->validate([
-            'copyToTeamId' => ['required', 'integer', 'exists:team_user,team_id,user_id,' . Auth::id()],
+            'copyToTeamId' => ['required', 'integer', 'exists:team_members,team_id,user_id,' . Auth::id()],
         ]);
 
         $this->authorize('copy', $this->recipe);

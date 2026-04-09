@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
 test('can view a recipe', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
     $recipe = Recipe::factory()->for($user->currentTeam)->create([
         'name' => 'Pasta Carbonara',
         'ingredients' => 'Pasta, Eggs, Bacon',
@@ -22,7 +22,7 @@ test('can view a recipe', function () {
 });
 
 test('cannot view a recipe from another team', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
     $otherRecipe = Recipe::factory()->create();
 
     $this->actingAs($user)
@@ -31,7 +31,7 @@ test('cannot view a recipe from another team', function () {
 });
 
 test('can create a remix of a recipe', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
     $original = Recipe::factory()->for($user->currentTeam)->create([
         'name' => 'Original Chocolate Cake',
     ]);
@@ -50,7 +50,7 @@ test('can create a remix of a recipe', function () {
 });
 
 test('remix shows parent recipe', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
     $original = Recipe::factory()->for($user->currentTeam)->create(['name' => 'Original Recipe']);
     $remix = Recipe::factory()->for($user->currentTeam)->remixOf($original)->create(['name' => 'Remixed Recipe']);
 
@@ -62,7 +62,7 @@ test('remix shows parent recipe', function () {
 });
 
 test('parent shows remixes', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
     $original = Recipe::factory()->for($user->currentTeam)->create(['name' => 'Original Recipe']);
     Recipe::factory()->for($user->currentTeam)->remixOf($original)->create(['name' => 'Remixed Recipe']);
 
@@ -74,7 +74,7 @@ test('parent shows remixes', function () {
 });
 
 test('shows tags on recipe', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
     $recipe = Recipe::factory()->for($user->currentTeam)->create([
         'description' => 'A delicious recipe',
         'tags' => ['dinner', 'italian'],
@@ -90,7 +90,7 @@ test('shows tags on recipe', function () {
 test('displays photo when recipe has one', function () {
     Storage::fake();
 
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
     $recipe = Recipe::factory()->for($user->currentTeam)->create([
         'name' => 'Chocolate Cake',
         'photo_path' => "teams/{$user->current_team_id}/recipes/chocolate-cake.png",
@@ -105,7 +105,7 @@ test('displays photo when recipe has one', function () {
 });
 
 test('does not display photo when recipe has none', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
     $recipe = Recipe::factory()->for($user->currentTeam)->create([
         'name' => 'Chocolate Cake',
         'photo_path' => null,
@@ -118,7 +118,7 @@ test('does not display photo when recipe has none', function () {
 });
 
 test('can delete a recipe from show page', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
     $recipe = Recipe::factory()->for($user->currentTeam)->create();
 
     Livewire::actingAs($user)
@@ -130,7 +130,7 @@ test('can delete a recipe from show page', function () {
 });
 
 test('non-owner cannot delete a recipe from show page', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
     $recipe = Recipe::factory()->create();
 
     Livewire::actingAs($user)
@@ -142,7 +142,7 @@ test('non-owner cannot delete a recipe from show page', function () {
 describe('copy to team feature', function () {
     test('can copy recipe to another team from show page', function () {
         $otherTeam = Team::factory()->create();
-        $user = User::factory()->withTeam()->hasAttached($otherTeam)->create();
+        $user = User::factory()->hasAttached($otherTeam)->create();
 
         $recipe = Recipe::factory()->for($user->currentTeam)->create([
             'name' => 'Pasta Carbonara',
@@ -162,7 +162,7 @@ describe('copy to team feature', function () {
     });
 
     test('cannot copy recipe to a team user does not belong to', function () {
-        $user = User::factory()->withTeam()->create();
+        $user = User::factory()->create();
         $otherTeam = Team::factory()->create();
 
         $recipe = Recipe::factory()->for($user->currentTeam)->create();
@@ -176,7 +176,7 @@ describe('copy to team feature', function () {
 
     test('cannot copy recipe from team user does not belong to', function () {
         $otherTeam = Team::factory()->create();
-        $user = User::factory()->withTeam()->hasAttached($otherTeam)->create();
+        $user = User::factory()->hasAttached($otherTeam)->create();
 
         $recipe = Recipe::factory()->create();
 
@@ -190,7 +190,7 @@ describe('copy to team feature', function () {
 
 describe('sharing feature', function () {
     test('can toggle sharing on recipe from team user does belong to', function () {
-        $user = User::factory()->withTeam()->create();
+        $user = User::factory()->create();
         $recipe = Recipe::factory()->create(['team_id' => $user->currentTeam->id]);
 
         $this->actingAs($user);
@@ -207,7 +207,7 @@ describe('sharing feature', function () {
     });
 
     test('cannot toggle sharing on recipe from team user does not belong to', function () {
-        $user = User::factory()->withTeam()->create();
+        $user = User::factory()->create();
         $recipe = Recipe::factory()->create();
 
         Livewire::actingAs($user)

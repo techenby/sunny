@@ -69,7 +69,7 @@ new class extends Component {
     {
         $this->validate([
             'copyRecipeId' => ['required', 'integer'],
-            'copyToTeamId' => ['required', 'integer', 'exists:team_user,team_id,user_id,' . Auth::id()],
+            'copyToTeamId' => ['required', 'integer', 'exists:team_members,team_id,user_id,' . Auth::id()],
         ]);
 
         $recipe = $this->recipes->firstWhere('id', $this->copyRecipeId);

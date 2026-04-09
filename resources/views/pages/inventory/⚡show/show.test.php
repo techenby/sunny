@@ -10,12 +10,12 @@ use Livewire\Livewire;
 
 test('guests are redirected to the login page', function () {
     $item = Item::factory()->create();
-    $this->get(route('inventory.show', ['item' => $item]))
+    $this->get('/any-team/inventory/' . $item->id)
         ->assertRedirect(route('login'));
 });
 
 test('authenticated users can visit the items page', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
     $item = Item::factory()->for($user->currentTeam)->create();
 
     $this->actingAs($user)
@@ -24,7 +24,7 @@ test('authenticated users can visit the items page', function () {
 });
 
 test('can view a soft deleted item', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
     $item = Item::factory()->for($user->currentTeam)->create();
     $item->delete();
 
@@ -34,7 +34,7 @@ test('can view a soft deleted item', function () {
 });
 
 test('cannot view item for different team', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
     $item = Item::factory()->create(['name' => 'Pink Hammer']);
 
     $this->actingAs($user)
@@ -43,7 +43,7 @@ test('cannot view item for different team', function () {
 });
 
 test('can edit an item', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
     $bin = Item::factory()->for($user->currentTeam)->create(['name' => 'Soft Shell Case', 'type' => ItemType::Bin]);
     $item = Item::factory()->for($user->currentTeam)->create(['name' => 'Guitar']);
 
@@ -65,7 +65,7 @@ test('can edit an item', function () {
 });
 
 test('can delete an item and redirects to index', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
     $item = Item::factory()->for($user->currentTeam)->create();
 
     Livewire::actingAs($user)
@@ -77,7 +77,7 @@ test('can delete an item and redirects to index', function () {
 });
 
 test('deleting a parent nullifies children parent_id', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
     $parent = Item::factory()->for($user->currentTeam)->location()->create();
     $child = Item::factory()->for($user->currentTeam)->childOf($parent)->create();
 
@@ -90,7 +90,7 @@ test('deleting a parent nullifies children parent_id', function () {
 
 describe('can add item metadata', function () {
     test('can update an item with metadata', function () {
-        $user = User::factory()->withTeam()->create();
+        $user = User::factory()->create();
         $item = Item::factory()->for($user->currentTeam)->create([
             'metadata' => ['color' => 'red'],
         ]);
@@ -111,7 +111,7 @@ describe('can add item metadata', function () {
     });
 
     test('empty metadata keys are filtered out', function () {
-        $user = User::factory()->withTeam()->create();
+        $user = User::factory()->create();
         $item = Item::factory()->for($user->currentTeam)->create([
             'metadata' => ['color' => 'red'],
         ]);
@@ -129,7 +129,7 @@ describe('can add item metadata', function () {
     });
 
     test('item with no metadata stores null', function () {
-        $user = User::factory()->withTeam()->create();
+        $user = User::factory()->create();
 
         $item = Item::factory()->for($user->currentTeam)->create([
             'metadata' => ['color' => 'red'],
@@ -145,7 +145,7 @@ describe('can add item metadata', function () {
     });
 
     test('metadata value is required when key is present', function () {
-        $user = User::factory()->withTeam()->create();
+        $user = User::factory()->create();
 
         $item = Item::factory()->for($user->currentTeam)->create();
 
@@ -160,7 +160,7 @@ describe('can add item metadata', function () {
     });
 
     test('duplicate metadata keys are rejected', function () {
-        $user = User::factory()->withTeam()->create();
+        $user = User::factory()->create();
 
         $item = Item::factory()->for($user->currentTeam)->create([
             'metadata' => ['color' => 'red'],
@@ -178,7 +178,7 @@ describe('can add item metadata', function () {
     });
 
     test('editing an item loads existing metadata', function () {
-        $user = User::factory()->withTeam()->create();
+        $user = User::factory()->create();
         $item = Item::factory()->for($user->currentTeam)->create([
             'metadata' => ['url' => 'https://example.com'],
         ]);
@@ -195,7 +195,7 @@ describe('can add item metadata', function () {
 describe('can manage item photos', function () {
     test('can update an item with a new photo', function () {
         Storage::fake();
-        $user = User::factory()->withTeam()->create();
+        $user = User::factory()->create();
         $item = Item::factory()->for($user->currentTeam)->create(['name' => 'Guitar', 'photo_path' => 'teams/1/items/guitar.jpg']);
         Storage::put('teams/1/items/guitar.jpg', 'old');
 
@@ -217,7 +217,7 @@ describe('can manage item photos', function () {
 
     test('can remove an existing photo', function () {
         Storage::fake();
-        $user = User::factory()->withTeam()->create();
+        $user = User::factory()->create();
         $item = Item::factory()->for($user->currentTeam)->create(['name' => 'Guitar', 'photo_path' => 'teams/1/items/guitar.jpg']);
         Storage::put('teams/1/items/guitar.jpg', 'content');
 
@@ -233,7 +233,7 @@ describe('can manage item photos', function () {
     });
 
     test('photo validation rejects non-image files', function () {
-        $user = User::factory()->withTeam()->create();
+        $user = User::factory()->create();
         $item = Item::factory()->for($user->currentTeam)->create(['name' => 'Guitar']);
         $file = UploadedFile::fake()->create('document.pdf', 100, 'application/pdf');
 
@@ -248,7 +248,7 @@ describe('can manage item photos', function () {
 
 describe('can generate qr codes', function () {
     test('can show qr code for an item', function () {
-        $user = User::factory()->withTeam()->create();
+        $user = User::factory()->create();
         $item = Item::factory()->for($user->currentTeam)->create(['name' => 'Guitar']);
 
         Livewire::actingAs($user)
@@ -259,7 +259,7 @@ describe('can generate qr codes', function () {
     });
 
     test('qr code svg contains valid svg markup', function () {
-        $user = User::factory()->withTeam()->create();
+        $user = User::factory()->create();
         $item = Item::factory()->for($user->currentTeam)->create();
 
         $component = Livewire::actingAs($user)
@@ -272,8 +272,8 @@ describe('can generate qr codes', function () {
 
 describe('move to team feature', function () {
     test('can move item to another team', function () {
-        $sunny = Team::factory()->create();
-        $user = User::factory()->withTeam('Merry')->hasAttached($sunny)->create();
+        [$merry, $sunny] = Team::factory()->count(2)->sequence(['name' => 'Merry'], ['name' => 'Sunny'])->create();
+        $user = User::factory()->hasAttached([$merry, $sunny])->create();
 
         $item = Item::factory()->for($user->currentTeam)->create([
             'name' => 'Tangerines',
@@ -291,7 +291,7 @@ describe('move to team feature', function () {
     });
 
     test('cannot move item to a team user does not belong to', function () {
-        $user = User::factory()->withTeam()->create();
+        $user = User::factory()->create();
         $otherTeam = Team::factory()->create();
 
         $item = Item::factory()->for($user->currentTeam)->create();

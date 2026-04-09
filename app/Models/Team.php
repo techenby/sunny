@@ -4,28 +4,60 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Concerns\GeneratesUniqueTeamSlugs;
+use App\Enums\TeamRole;
 use Database\Factories\TeamFactory;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\Pivot;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
+#[Fillable(['name', 'slug', 'is_personal'])]
 class Team extends Model
 {
     /** @use HasFactory<TeamFactory> */
-    use HasFactory;
+    use GeneratesUniqueTeamSlugs, HasFactory, SoftDeletes;
 
-    /** @return BelongsTo<User, $this> */
-    public function owner(): BelongsTo
+    protected static function boot(): void
     {
-        return $this->belongsTo(User::class, 'user_id');
+        parent::boot();
+
+        static::creating(function (Team $team) {
+            if (blank($team->slug)) {
+                $team->slug = static::generateUniqueTeamSlug($team->name);
+            }
+        });
+
+        static::updating(function (Team $team) {
+            if ($team->isDirty('name')) {
+                $team->slug = static::generateUniqueTeamSlug($team->name, $team->id);
+            }
+        });
     }
 
-    /** @return BelongsToMany<User, $this> */
-    public function users(): BelongsToMany
+    public function owner(): ?Model
     {
-        return $this->belongsToMany(User::class)->withTimestamps();
+        return $this->members()
+            ->wherePivot('role', TeamRole::Owner->value)
+            ->first();
+    }
+
+    /** @return BelongsToMany<User, $this, Pivot> */
+    public function members(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'team_members', 'team_id', 'user_id')
+            ->using(Membership::class)
+            ->withPivot(['role'])
+            ->withTimestamps();
+    }
+
+    /** @return HasMany<Membership, $this> */
+    public function memberships(): HasMany
+    {
+        return $this->hasMany(Membership::class);
     }
 
     /** @return HasMany<TeamInvitation, $this> */
@@ -46,28 +78,28 @@ class Team extends Model
         return $this->hasMany(Recipe::class);
     }
 
-    public function hasUser(User $user): bool
-    {
-        return $this->users->contains($user) || $this->user_id === $user->id;
-    }
-
-    public function removeUser(User $user): void
-    {
-        $this->users()->detach($user);
-    }
-
     public function purge(): void
     {
-        $this->owner()->where('current_team_id', $this->id)
+        $this->members()->where('current_team_id', $this->id)
             ->update(['current_team_id' => null]);
 
-        $this->users()->where('current_team_id', $this->id)
-            ->update(['current_team_id' => null]);
-
-        $this->users()->detach();
+        $this->members()->detach();
 
         $this->recipes()->delete();
 
         $this->delete();
+    }
+
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
+
+    /** @return array<string, string> */
+    protected function casts(): array
+    {
+        return [
+            'is_personal' => 'boolean',
+        ];
     }
 }

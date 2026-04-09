@@ -8,13 +8,13 @@ use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
 test('can view page', function () {
-    $this->actingAs(User::factory()->withTeam()->create())
+    $this->actingAs(User::factory()->create())
         ->get(route('recipes.create'))
         ->assertOk();
 });
 
 test('can create a recipe', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
 
     Livewire::actingAs($user)
         ->test('pages::recipes.create')
@@ -62,7 +62,7 @@ test('can import recipe from url', function () {
         ),
     ]);
 
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
 
     Livewire::actingAs($user)
         ->test('pages::recipes.create')
@@ -90,7 +90,7 @@ test('import does not set tags when none match', function () {
         ),
     ]);
 
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
 
     Livewire::actingAs($user)
         ->test('pages::recipes.create')
@@ -101,7 +101,7 @@ test('import does not set tags when none match', function () {
 });
 
 test('import validates url is required', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
 
     Livewire::actingAs($user)
         ->test('pages::recipes.create')
@@ -113,7 +113,7 @@ test('import validates url is required', function () {
 test('can upload a photo to a recipe', function () {
     Storage::fake();
 
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
 
     Livewire::actingAs($user)
         ->test('pages::recipes.create')
@@ -134,7 +134,7 @@ test('can upload a photo to a recipe', function () {
 test('rejects non-image file uploads', function () {
     Storage::fake();
 
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
 
     Livewire::actingAs($user)
         ->test('pages::recipes.create')
@@ -147,7 +147,7 @@ test('rejects non-image file uploads', function () {
 test('rejects photo exceeding 5MB', function () {
     Storage::fake();
 
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
 
     Livewire::actingAs($user)
         ->test('pages::recipes.create')
@@ -160,7 +160,7 @@ test('rejects photo exceeding 5MB', function () {
 test('can remove a temporary uploaded photo', function () {
     Storage::fake();
 
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
 
     Livewire::actingAs($user)
         ->test('pages::recipes.create')

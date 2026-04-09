@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureTeamMembership;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 
@@ -9,7 +10,6 @@ Route::middleware(['auth'])
         Route::redirect('/', '/settings/profile');
 
         Route::livewire('profile', 'pages::settings.profile')->name('profile.edit');
-        Route::livewire('team', 'pages::settings.team')->name('team.edit');
     });
 
 Route::middleware(['auth', 'verified'])
@@ -28,4 +28,10 @@ Route::middleware(['auth', 'verified'])
                 ),
             )
             ->name('two-factor.show');
+
+        Route::livewire('teams', 'pages::teams.index')->name('teams.index');
+
+        Route::middleware(EnsureTeamMembership::class)->group(function () {
+            Route::livewire('teams/{team}', 'pages::teams.edit')->name('teams.edit');
+        });
     });

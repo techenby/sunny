@@ -1,17 +1,19 @@
 <?php
 
-use App\Http\Controllers\AcceptTeamInvitation;
+use App\Http\Middleware\EnsureTeamMembership;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome')->name('home');
 
-Route::view('dashboard', 'dashboard')
-    ->middleware(['auth', 'verified'])
-    ->name('dashboard');
+Route::prefix('{current_team}')
+    ->middleware(['auth', 'verified', EnsureTeamMembership::class])
+    ->group(function () {
+        Route::view('dashboard', 'dashboard')->name('dashboard');
+    });
 
-Route::get('invitations/{invitation}/accept', AcceptTeamInvitation::class)
-    ->name('invitation.accept')
-    ->middleware('signed');
+Route::middleware(['auth'])->group(function () {
+    Route::livewire('invitations/{invitation}/accept', 'pages::teams.accept-invitation')->name('invitations.accept');
+});
 
 require __DIR__ . '/admin.php';
 require __DIR__ . '/inventory.php';

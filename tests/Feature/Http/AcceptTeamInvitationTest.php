@@ -1,190 +1,87 @@
 <?php
 
+use App\Enums\TeamRole;
 use App\Models\TeamInvitation;
 use App\Models\User;
-use Illuminate\Support\Facades\URL;
+use Livewire\Livewire;
 
-test('existing user can accept invitation', function () {
-    $luffy = User::factory()->withTeam()->create(['name' => 'luffy@strawhat.pirates']);
-    $zoro = User::factory()->create(['name' => 'zoro@strawhat.pirates']);
+test('authenticated user can accept invitation', function () {
+    $luffy = User::factory()->create();
+    $zoro = User::factory()->create();
     $invitation = TeamInvitation::factory()->for($luffy->currentTeam)->create(['email' => $zoro->email]);
 
-    $acceptUrl = URL::signedRoute('invitation.accept', $invitation);
-
-    $this->actingAs($zoro)
-        ->get($acceptUrl)
+    Livewire::actingAs($zoro)
+        ->test('pages::teams.accept-invitation', ['invitation' => $invitation])
         ->assertRedirect(route('dashboard'));
 
-    expect($luffy->currentTeam->fresh()->users->pluck('id'))->toContain($zoro->id)
+    expect($luffy->currentTeam->fresh()->members->pluck('id'))->toContain($zoro->id)
         ->and($zoro->fresh()->current_team_id)->toBe($luffy->currentTeam->id)
-        ->and(TeamInvitation::find($invitation->id))->toBeNull();
+        ->and($invitation->fresh()->accepted_at)->not->toBeNull();
 });
 
 test('cannot accept invitation for wrong email', function () {
-    $luffy = User::factory()->withTeam()->create(['name' => 'luffy@strawhat.pirates']);
-    $zoro = User::factory()->create(['name' => 'zoro@strawhat.pirates']);
+    $luffy = User::factory()->create();
+    $zoro = User::factory()->create();
     $invitation = TeamInvitation::factory()->for($luffy->currentTeam)->create(['email' => 'nami@strawhat.pirates']);
 
-    $acceptUrl = URL::signedRoute('invitation.accept', $invitation);
-
-    $this->actingAs($zoro)
-        ->get($acceptUrl)
-        ->assertForbidden();
+    Livewire::actingAs($zoro)
+        ->test('pages::teams.accept-invitation', ['invitation' => $invitation])
+        ->assertHasErrors('invitation');
 });
 
-test('unauthenticated user with existing account is redirected to login', function () {
-    $luffy = User::factory()->withTeam()->create(['name' => 'luffy@strawhat.pirates']);
-    $zoro = User::factory()->create(['name' => 'zoro@strawhat.pirates']);
-    $invitation = TeamInvitation::factory()->for($luffy->currentTeam)->create(['email' => $zoro->email]);
+test('cannot accept already accepted invitation', function () {
+    $luffy = User::factory()->create();
+    $zoro = User::factory()->create();
+    $invitation = TeamInvitation::factory()->for($luffy->currentTeam)->accepted()->create(['email' => $zoro->email]);
 
-    $acceptUrl = URL::signedRoute('invitation.accept', $invitation);
-
-    $this->get($acceptUrl)
-        ->assertRedirect(route('login'));
-
-    expect(session('team_invitation_id'))->toBe($invitation->id);
+    Livewire::actingAs($zoro)
+        ->test('pages::teams.accept-invitation', ['invitation' => $invitation])
+        ->assertHasErrors('invitation');
 });
 
-test('unauthenticated user without account is redirected to register', function () {
-    $luffy = User::factory()->withTeam()->create(['name' => 'luffy@strawhat.pirates']);
-    $invitation = TeamInvitation::factory()->for($luffy->currentTeam)->create(['email' => 'zoro@strawhat.pirates']);
+test('cannot accept expired invitation', function () {
+    $luffy = User::factory()->create();
+    $zoro = User::factory()->create();
+    $invitation = TeamInvitation::factory()->for($luffy->currentTeam)->expired()->create(['email' => $zoro->email]);
 
-    $acceptUrl = URL::signedRoute('invitation.accept', $invitation);
-
-    $this->get($acceptUrl)
-        ->assertRedirect(route('register'));
-
-    expect(session('team_invitation_id'))->toBe($invitation->id);
+    Livewire::actingAs($zoro)
+        ->test('pages::teams.accept-invitation', ['invitation' => $invitation])
+        ->assertHasErrors('invitation');
 });
 
-test('pending invitation is auto-accepted after registration', function () {
-    $luffy = User::factory()->withTeam()->create(['name' => 'luffy@strawhat.pirates']);
-    $invitation = TeamInvitation::factory()->for($luffy->currentTeam)->create(['email' => 'zoro@strawhat.pirates']);
+test('invitation assigns the correct role', function () {
+    $luffy = User::factory()->create();
+    $zoro = User::factory()->create();
+    $invitation = TeamInvitation::factory()->for($luffy->currentTeam)->create([
+        'email' => $zoro->email,
+        'role' => TeamRole::Admin,
+    ]);
 
-    $this->withSession(['team_invitation_id' => $invitation->id])
-        ->post(route('register'), [
-            'name' => 'Roronoa Zoro',
-            'email' => 'zoro@strawhat.pirates',
-            'password' => 'password',
-            'password_confirmation' => 'password',
-        ]);
+    Livewire::actingAs($zoro)
+        ->test('pages::teams.accept-invitation', ['invitation' => $invitation])
+        ->assertRedirect(route('dashboard'));
 
-    $zoro = User::where('email', 'zoro@strawhat.pirates')->first();
-
-    expect($luffy->currentTeam->fresh()->users->pluck('id'))->toContain($zoro->id)
-        ->and($zoro->current_team_id)->toBe($luffy->currentTeam->id)
-        ->and(TeamInvitation::find($invitation->id))->toBeNull();
-});
-
-test('deleted invitation clears session and allows registration', function () {
-    $this->withSession(['team_invitation_id' => 999])
-        ->post(route('register'), [
-            'name' => 'Roronoa Zoro',
-            'email' => 'zoro@strawhat.pirates',
-            'password' => 'password',
-            'password_confirmation' => 'password',
-        ])
-        ->assertValid('email');
-
-    expect(session()->has('team_invitation_id'))->toBeFalse();
-});
-
-test('deleted invitation clears session and allows login', function () {
-    User::factory()->withTeam()->create(['email' => 'zoro@strawhat.pirates']);
-
-    $this->withSession(['team_invitation_id' => 999])
-        ->post(route('login'), [
-            'email' => 'zoro@strawhat.pirates',
-            'password' => 'password',
-        ])
-        ->assertValid('email');
-
-    expect(session()->has('team_invitation_id'))->toBeFalse();
-});
-
-test('cannot register with different email', function () {
-    $luffy = User::factory()->withTeam()->create(['name' => 'luffy@strawhat.pirates']);
-    $invitation = TeamInvitation::factory()->for($luffy->currentTeam)->create(['email' => 'zoro@strawhat.pirates']);
-
-    $this->withSession(['team_invitation_id' => $invitation->id])
-        ->post(route('register'), [
-            'name' => 'Roronoa Zoro',
-            'email' => 'zoro@baroqueworks.com',
-            'password' => 'password',
-            'password_confirmation' => 'password',
-        ])
-        ->assertInvalid(['email' => 'must match']);
-});
-
-test('pending invitation is auto-accepted after login', function () {
-    $luffy = User::factory()->withTeam()->create(['email' => 'luffy@strawhat.pirates']);
-    $zoro = User::factory()->withTeam()->create(['email' => 'zoro@strawhat.pirates']);
-    $invitation = TeamInvitation::factory()->for($luffy->currentTeam)->create(['email' => $zoro->email]);
-
-    $this->withSession(['team_invitation_id' => $invitation->id])
-        ->post(route('login'), [
-            'email' => $zoro->email,
-            'password' => 'password',
-        ]);
-
-    expect($luffy->currentTeam->fresh()->users->pluck('id'))->toContain($zoro->id)
-        ->and($zoro->fresh()->current_team_id)->toBe($luffy->currentTeam->id)
-        ->and(TeamInvitation::find($invitation->id))->toBeNull();
-});
-
-test('cannot login with different email than invitation', function () {
-    $luffy = User::factory()->withTeam()->create(['email' => 'luffy@strawhat.pirates']);
-    [$sanjiOld, $sanjiNew] = User::factory()
-        ->count(2)
-        ->sequence(
-            ['email' => 'sanji@baratie.restaurant'],
-            ['email' => 'sanji@strawhat.pirates'],
-        )
-        ->create();
-    $invitation = TeamInvitation::factory()->for($luffy->currentTeam)->create(['email' => $sanjiNew->email]);
-
-    $this->withSession(['team_invitation_id' => $invitation->id])
-        ->post(route('login'), [
-            'email' => $sanjiOld->email,
-            'password' => 'password',
-        ])
-        ->assertInvalid(['email' => 'must match']);
-});
-
-test('expired signed url returns 403', function () {
-    $luffy = User::factory()->withTeam()->create(['name' => 'luffy@strawhat.pirates']);
-    $zoro = User::factory()->create(['name' => 'zoro@strawhat.pirates']);
-    $invitation = TeamInvitation::factory()->for($luffy->currentTeam)->create(['email' => $zoro->email]);
-
-    $acceptUrl = URL::temporarySignedRoute('invitation.accept', now()->subDay(), $invitation);
-
-    $this->actingAs($zoro)
-        ->get($acceptUrl)
-        ->assertForbidden();
+    expect($zoro->teamRole($luffy->currentTeam))->toBe(TeamRole::Admin);
 });
 
 test('already a member gracefully handles duplicate join', function () {
-    $luffy = User::factory()->withTeam()->create(['name' => 'luffy@strawhat.pirates']);
-    $zoro = User::factory()->withTeam()->create(['name' => 'zoro@strawhat.pirates']);
-    $luffy->currentTeam->users()->attach($zoro);
+    $luffy = User::factory()->create();
+    $zoro = User::factory()->create();
+    $luffy->currentTeam->memberships()->create(['user_id' => $zoro->id, 'role' => TeamRole::Member]);
     $invitation = TeamInvitation::factory()->for($luffy->currentTeam)->create(['email' => $zoro->email]);
 
-    $acceptUrl = URL::signedRoute('invitation.accept', $invitation);
-
-    $this->actingAs($zoro)
-        ->get($acceptUrl)
+    Livewire::actingAs($zoro)
+        ->test('pages::teams.accept-invitation', ['invitation' => $invitation])
         ->assertRedirect(route('dashboard'));
 
     expect($zoro->fresh()->current_team_id)->toBe($luffy->currentTeam->id)
-        ->and(TeamInvitation::find($invitation->id))->toBeNull();
+        ->and($invitation->fresh()->accepted_at)->not->toBeNull();
 });
 
-test('tampered signed url returns 403', function () {
-    $luffy = User::factory()->withTeam()->create(['name' => 'luffy@strawhat.pirates']);
+test('unauthenticated user is redirected to login', function () {
+    $luffy = User::factory()->create();
     $invitation = TeamInvitation::factory()->for($luffy->currentTeam)->create(['email' => 'zoro@strawhat.pirates']);
 
-    $acceptUrl = URL::signedRoute('invitation.accept', $invitation);
-
-    $this->get($acceptUrl . '&tampered=true')
-        ->assertForbidden();
+    $this->get(route('invitations.accept', $invitation))
+        ->assertRedirect(route('login'));
 });

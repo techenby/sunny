@@ -13,7 +13,7 @@ test('guests cannot access recipes', function () {
 });
 
 test('index returns recipes for the current team', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
     Recipe::factory()->for($user->currentTeam)->count(3)->create();
     Recipe::factory()->count(2)->create();
 
@@ -25,7 +25,7 @@ test('index returns recipes for the current team', function () {
 });
 
 test('store creates a recipe and returns it', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
 
     $this->actingAs($user)
         ->postJson(route('api.recipes.store'), [
@@ -45,7 +45,7 @@ test('store creates a recipe and returns it', function () {
 });
 
 test('store validates required fields', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
 
     $this->actingAs($user)
         ->postJson(route('api.recipes.store'), [])
@@ -54,7 +54,7 @@ test('store validates required fields', function () {
 });
 
 test('show returns a recipe', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
     $recipe = Recipe::factory()->for($user->currentTeam)->create();
 
     $this->actingAs($user)
@@ -67,7 +67,7 @@ test('show returns a recipe', function () {
 test('show returns photo_url when recipe has a photo', function () {
     Storage::fake();
 
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
     $recipe = Recipe::factory()->for($user->currentTeam)->create([
         'photo_path' => "teams/{$user->current_team_id}/recipes/cake.png",
     ]);
@@ -81,7 +81,7 @@ test('show returns photo_url when recipe has a photo', function () {
 });
 
 test('show returns null photo_url when recipe has no photo', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
     $recipe = Recipe::factory()->for($user->currentTeam)->create(['photo_path' => null]);
 
     $this->actingAs($user)
@@ -91,7 +91,7 @@ test('show returns null photo_url when recipe has no photo', function () {
 });
 
 test('show returns 403 for another team recipe', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
     $recipe = Recipe::factory()->create();
 
     $this->actingAs($user)
@@ -100,7 +100,7 @@ test('show returns 403 for another team recipe', function () {
 });
 
 test('update modifies a recipe', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
     $recipe = Recipe::factory()->for($user->currentTeam)->create();
 
     $this->actingAs($user)
@@ -117,7 +117,7 @@ test('update modifies a recipe', function () {
 });
 
 test('update returns 403 for another team recipe', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
     $recipe = Recipe::factory()->create();
 
     $this->actingAs($user)
@@ -126,7 +126,7 @@ test('update returns 403 for another team recipe', function () {
 });
 
 test('destroy deletes a recipe', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
     $recipe = Recipe::factory()->for($user->currentTeam)->create();
 
     $this->actingAs($user)
@@ -137,7 +137,7 @@ test('destroy deletes a recipe', function () {
 });
 
 test('destroy returns 403 for another team recipe', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
     $recipe = Recipe::factory()->create();
 
     $this->actingAs($user)

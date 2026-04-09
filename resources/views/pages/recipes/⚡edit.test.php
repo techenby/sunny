@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
 test('can view edit page', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
     $recipe = Recipe::factory()->for($user->currentTeam)->create(['name' => 'Oden']);
 
     $this->actingAs($user)
@@ -18,7 +18,7 @@ test('can view edit page', function () {
 });
 
 test('can edit a recipe', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
     $recipe = Recipe::factory()->for($user->currentTeam)->create(['name' => 'Old Name', 'tags' => ['Dinner']]);
 
     Livewire::actingAs($user)
@@ -41,7 +41,7 @@ test('can edit a recipe', function () {
 test('can upload a photo to a recipe', function () {
     Storage::fake();
 
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
     $recipe = Recipe::factory()->for($user->currentTeam)->create(['name' => 'Chocolate Cake']);
 
     Livewire::actingAs($user)
@@ -60,7 +60,7 @@ test('can upload a photo to a recipe', function () {
 test('can replace a photo on a recipe', function () {
     Storage::fake();
 
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
     $recipe = Recipe::factory()->for($user->currentTeam)->create([
         'name' => 'Chocolate Cake',
         'photo_path' => "teams/{$user->current_team_id}/recipes/chocolate-cake.png",
@@ -87,7 +87,7 @@ test('can replace a photo on a recipe', function () {
 test('can remove an existing photo', function () {
     Storage::fake();
 
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
     $recipe = Recipe::factory()->for($user->currentTeam)->create([
         'name' => 'Chocolate Cake',
         'photo_path' => "teams/{$user->current_team_id}/recipes/chocolate-cake.png",
@@ -113,7 +113,7 @@ test('can remove an existing photo', function () {
 test('can remove a temporary uploaded photo', function () {
     Storage::fake();
 
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
     $recipe = Recipe::factory()->for($user->currentTeam)->create([
         'name' => 'Chocolate Cake',
     ]);
@@ -129,7 +129,7 @@ test('can remove a temporary uploaded photo', function () {
 test('can remove existing photo then upload a new one', function () {
     Storage::fake();
 
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
     $recipe = Recipe::factory()->for($user->currentTeam)->create([
         'name' => 'Chocolate Cake',
         'photo_path' => "teams/{$user->current_team_id}/recipes/chocolate-cake.png",
@@ -156,7 +156,7 @@ test('can remove existing photo then upload a new one', function () {
 });
 
 test('cannot edit a recipe from another team', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
     $otherRecipe = Recipe::factory()->for(Team::factory())->create();
 
     $this->actingAs($user)

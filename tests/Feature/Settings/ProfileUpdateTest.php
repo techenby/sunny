@@ -4,13 +4,13 @@ use App\Models\User;
 use Livewire\Livewire;
 
 test('profile page is displayed', function () {
-    $this->actingAs(User::factory()->withTeam()->create())
+    $this->actingAs(User::factory()->create())
         ->get(route('profile.edit'))
         ->assertOk();
 });
 
 test('profile information can be updated', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
 
     Livewire::actingAs($user)
         ->test('pages::settings.profile')
@@ -26,7 +26,7 @@ test('profile information can be updated', function () {
 });
 
 test('email verification status is unchanged when email address is unchanged', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
 
     Livewire::actingAs($user)
         ->test('pages::settings.profile')
@@ -39,7 +39,7 @@ test('email verification status is unchanged when email address is unchanged', f
 });
 
 test('user can delete their account', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
 
     Livewire::actingAs($user)
         ->test('pages::settings.delete-user-form')
@@ -53,7 +53,7 @@ test('user can delete their account', function () {
 });
 
 test('correct password must be provided to delete account', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
 
     Livewire::actingAs($user)
         ->test('pages::settings.delete-user-form')

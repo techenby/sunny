@@ -20,9 +20,9 @@ class GenerateItemQrCode
         );
 
         if ($item->children()->exists()) {
-            $url = route('inventory.index', ['parentId' => $item->id]);
+            $url = route('inventory.index', ['current_team' => $item->team, 'parentId' => $item->id]);
         } else {
-            $url = route('inventory.show', ['item' => $item]);
+            $url = route('inventory.show', ['current_team' => $item->team, 'item' => $item]);
         }
 
         return [
