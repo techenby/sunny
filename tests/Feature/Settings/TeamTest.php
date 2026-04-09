@@ -28,6 +28,16 @@ test('teams can be created', function () {
     ]);
 });
 
+test('team name cannot be from reserved list', function () {
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::teams.index')
+        ->set('name', 'home')
+        ->call('createTeam')
+        ->assertHasErrors('name');
+});
+
 test('team slug uses next available suffix', function () {
     $user = User::factory()->create();
 
