@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\ItemController;
 use App\Http\Controllers\Api\RecipeController;
+use App\Http\Controllers\Api\SyncController;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -33,6 +34,7 @@ Route::middleware('auth:sanctum')
     ->name('api.')
     ->group(function (): void {
         Route::get('user', fn (Request $request) => $request->user())->name('user');
+        Route::get('sync', SyncController::class)->name('sync');
 
         Route::get('items', [ItemController::class, 'index'])->name('items.index');
         Route::post('items', [ItemController::class, 'store'])->name('items.store');
