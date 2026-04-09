@@ -46,11 +46,6 @@ class TeamInvitation extends Model
         return $this->accepted_at !== null;
     }
 
-    public function isPending(): bool
-    {
-        return $this->accepted_at === null && ! $this->isExpired();
-    }
-
     public function isExpired(): bool
     {
         return $this->expires_at !== null && $this->expires_at->isPast();
