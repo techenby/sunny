@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\ItemController;
 use App\Http\Controllers\Api\RecipeController;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -32,6 +33,12 @@ Route::middleware('auth:sanctum')
     ->name('api.')
     ->group(function (): void {
         Route::get('user', fn (Request $request) => $request->user())->name('user');
+
+        Route::get('items', [ItemController::class, 'index'])->name('items.index');
+        Route::post('items', [ItemController::class, 'store'])->name('items.store');
+        Route::get('items/{item}', [ItemController::class, 'show'])->name('items.show');
+        Route::patch('items/{item}', [ItemController::class, 'update'])->name('items.update');
+        Route::delete('items/{item}', [ItemController::class, 'destroy'])->name('items.destroy');
 
         Route::get('recipes', [RecipeController::class, 'index'])->name('recipes.index');
         Route::post('recipes', [RecipeController::class, 'store'])->name('recipes.store');
