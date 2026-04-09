@@ -1,11 +1,12 @@
 <?php
 
+use App\Http\Middleware\EnsureTeamMembership;
 use Illuminate\Support\Facades\Route;
 
 Route::livewire('recipes/shared/{shareToken}', 'pages::recipes.shared')->name('recipes.shared');
 
-Route::middleware(['auth', 'verified'])
-    ->prefix('recipes')
+Route::prefix('{current_team}/recipes')
+    ->middleware(['auth', 'verified', EnsureTeamMembership::class])
     ->name('recipes')
     ->group(function (): void {
         Route::livewire('/', 'pages::recipes.index')->name('.index')->middleware('can:viewAny,App\Models\Recipe');

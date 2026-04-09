@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Concerns;
 
 use App\Models\User;
-use App\Rules\InvitationEmailMatch;
 use Illuminate\Validation\Rule;
 
 trait ProfileValidationRules
@@ -36,7 +35,6 @@ trait ProfileValidationRules
             $userId === null
                 ? Rule::unique(User::class)
                 : Rule::unique(User::class)->ignore($userId),
-            new InvitationEmailMatch,
         ];
     }
 }

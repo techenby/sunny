@@ -1,9 +1,10 @@
 <?php
 
+use App\Http\Middleware\EnsureTeamMembership;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth', 'verified'])
-    ->prefix('inventory')
+Route::prefix('{current_team}/inventory')
+    ->middleware(['auth', 'verified', EnsureTeamMembership::class])
     ->name('inventory')
     ->group(function (): void {
         Route::livewire('/', 'pages::inventory.index')->name('.index')->middleware('can:viewAny,App\Models\Item');

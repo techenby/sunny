@@ -10,7 +10,7 @@ test('guests are redirected to the login page', function () {
 test('authenticated users cannot visit the admin dashboard in production', function () {
     app()->detectEnvironment(fn () => 'production');
 
-    $this->actingAs(User::factory()->withTeam()->create())
+    $this->actingAs(User::factory()->create())
         ->get(route('admin.dashboard'))
         ->assertForbidden();
 });
@@ -18,7 +18,7 @@ test('authenticated users cannot visit the admin dashboard in production', funct
 test('Andy can visit the admin dashboard in production', function () {
     app()->detectEnvironment(fn () => 'production');
 
-    $this->actingAs(User::factory()->withTeam()->create(['email' => 'andy@techenby.com']))
+    $this->actingAs(User::factory()->create(['email' => 'andy@techenby.com']))
         ->get(route('admin.dashboard'))
         ->assertOk();
 });

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
-use App\Rules\InvitationEmailMatch;
 use Laravel\Fortify\Fortify;
 use Laravel\Fortify\Http\Requests\LoginRequest as FortifyLoginRequest;
 
@@ -14,7 +13,7 @@ class LoginRequest extends FortifyLoginRequest
     public function rules(): array
     {
         return [
-            Fortify::username() => ['required', 'string', new InvitationEmailMatch],
+            Fortify::username() => ['required', 'string'],
             'password' => ['required', 'string'],
         ];
     }

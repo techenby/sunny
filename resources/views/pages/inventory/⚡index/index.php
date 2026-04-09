@@ -163,7 +163,7 @@ new #[Title('Inventory')] class extends Component
     {
         $this->validate([
             'moveItemId' => ['required', 'integer'],
-            'moveToTeamId' => ['required', 'integer', Rule::exists('team_user', 'team_id')->where('user_id', Auth::id())],
+            'moveToTeamId' => ['required', 'integer', Rule::exists('team_members', 'team_id')->where('user_id', Auth::id())],
         ]);
 
         $item = Auth::user()->currentTeam->items()->findOrFail($this->moveItemId);

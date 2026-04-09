@@ -7,18 +7,18 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Livewire\Livewire;
 
 test('guests are redirected to the login page', function () {
-    $this->get(route('recipes.index'))
+    $this->get('/any-team/recipes')
         ->assertRedirect(route('login'));
 });
 
 test('authenticated users can visit the recipes page', function () {
-    $this->actingAs(User::factory()->withTeam()->create())
+    $this->actingAs(User::factory()->create())
         ->get(route('recipes.index'))
         ->assertOk();
 });
 
 test('renders recipes for the current team only', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
     Recipe::factory()->for($user->currentTeam)->create(['name' => 'Pasta Carbonara']);
     Recipe::factory()->create(['name' => 'Chicken Tikka']);
 
@@ -29,7 +29,7 @@ test('renders recipes for the current team only', function () {
 });
 
 test('can search recipes by name', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
     Recipe::factory()
         ->count(2)
         ->for($user->currentTeam)
@@ -44,7 +44,7 @@ test('can search recipes by name', function () {
 });
 
 test('can sort recipes', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
     Recipe::factory()->count(2)->for($user->currentTeam)->sequence(['name' => 'Zucchini Bread'], ['name' => 'Apple Pie'])->create();
 
     Livewire::actingAs($user)
@@ -55,7 +55,7 @@ test('can sort recipes', function () {
 });
 
 test('can delete a recipe', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
     $recipe = Recipe::factory()->for($user->currentTeam)->create();
 
     Livewire::actingAs($user)
@@ -66,7 +66,7 @@ test('can delete a recipe', function () {
 });
 
 test('cannot delete a recipe from another team', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
     $recipe = Recipe::factory()->create();
 
     Livewire::actingAs($user)
@@ -75,7 +75,7 @@ test('cannot delete a recipe from another team', function () {
 })->throws(ModelNotFoundException::class);
 
 test('shows source url as shortened link', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
     Recipe::factory()->for($user->currentTeam)->create([
         'name' => 'Test Recipe',
         'source' => 'https://www.example.com/recipes/chocolate-cake',
@@ -87,7 +87,7 @@ test('shows source url as shortened link', function () {
 });
 
 test('can create a remix of a recipe', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
     $original = Recipe::factory()->for($user->currentTeam)->create([
         'name' => 'Original Chocolate Cake',
         'ingredients' => 'Flour, Sugar, Eggs',
@@ -111,7 +111,7 @@ test('can create a remix of a recipe', function () {
 describe('copy to team feature', function () {
     test('can copy recipe to another team', function () {
         $otherTeam = Team::factory()->create();
-        $user = User::factory()->withTeam()->hasAttached($otherTeam)->create();
+        $user = User::factory()->hasAttached($otherTeam)->create();
 
         $recipe = Recipe::factory()->for($user->currentTeam)->create([
             'name' => 'Pasta Carbonara',
@@ -133,7 +133,7 @@ describe('copy to team feature', function () {
     });
 
     test('cannot copy recipe to a team user does not belong to', function () {
-        $user = User::factory()->withTeam()->create();
+        $user = User::factory()->create();
         $otherTeam = Team::factory()->create();
 
         $recipe = Recipe::factory()->for($user->currentTeam)->create();

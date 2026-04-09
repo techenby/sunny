@@ -1,179 +1,262 @@
 <?php
 
-use App\Models\TeamInvitation;
+use App\Enums\TeamRole;
+use App\Models\Team;
 use App\Models\User;
-use App\Notifications\TeamInvitationNotification;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
 
-test('team settings page is displayed for team owners', function () {
-    $this->actingAs(User::factory()->withTeam()->create())
-        ->get(route('team.edit'))
+test('teams index page can be rendered', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->get(route('teams.index'))
         ->assertOk();
 });
 
-test('team name can be updated by team owner', function () {
-    $user = User::factory()->withTeam()->create();
+test('teams can be created', function () {
+    $user = User::factory()->create();
 
     Livewire::actingAs($user)
-        ->test('pages::settings.team')
-        ->set('name', 'Updated Team Name')
-        ->call('updateTeamName')
-        ->assertHasNoErrors()
-        ->assertDispatched('team-updated');
+        ->test('pages::teams.index')
+        ->set('name', 'Test Team')
+        ->call('createTeam')
+        ->assertHasNoErrors();
 
-    expect($user->currentTeam->fresh()->name)->toEqual('Updated Team Name');
+    $this->assertDatabaseHas('teams', [
+        'name' => 'Test Team',
+        'is_personal' => false,
+    ]);
 });
 
-test('non-owners get a 403 when attempting to render the team settings page', function () {
-    $owner = User::factory()->withTeam()->create();
-    $member = User::factory()->create();
-    $owner->currentTeam->users()->attach($member);
-    $member->switchTeam($owner->currentTeam);
+test('team name cannot be from reserved list', function () {
+    $user = User::factory()->create();
 
-    $this->actingAs($member)
-        ->get(route('team.edit'))
+    Livewire::actingAs($user)
+        ->test('pages::teams.index')
+        ->set('name', 'home')
+        ->call('createTeam')
+        ->assertHasErrors('name');
+});
+
+test('team slug uses next available suffix', function () {
+    $user = User::factory()->create();
+
+    Team::factory()->create(['name' => 'Acme', 'slug' => 'acme']);
+    Team::factory()->create(['name' => 'Acme One', 'slug' => 'acme-1']);
+    Team::factory()->create(['name' => 'Acme Ten', 'slug' => 'acme-10']);
+
+    Livewire::actingAs($user)
+        ->test('pages::teams.index')
+        ->set('name', 'Acme')
+        ->call('createTeam')
+        ->assertHasNoErrors();
+
+    $this->assertDatabaseHas('teams', [
+        'name' => 'Acme',
+        'slug' => 'acme-11',
+    ]);
+});
+
+test('team edit page can be rendered', function () {
+    $user = User::factory()->create();
+    $team = Team::factory()->create();
+    $team->members()->attach($user, ['role' => TeamRole::Owner->value]);
+
+    $this->actingAs($user)
+        ->get(route('teams.edit', $team))
+        ->assertOk();
+});
+
+test('teams can be updated by owners', function () {
+    $user = User::factory()->create();
+    $team = Team::factory()->create(['name' => 'Original Name']);
+
+    $team->members()->attach($user, ['role' => TeamRole::Owner->value]);
+
+    Livewire::actingAs($user)
+        ->test('pages::teams.edit', ['team' => $team])
+        ->set('teamName', 'Updated Name')
+        ->call('updateTeam')
+        ->assertHasNoErrors();
+
+    $this->assertDatabaseHas('teams', [
+        'id' => $team->id,
+        'name' => 'Updated Name',
+    ]);
+});
+
+test('teams cannot be updated by members', function () {
+    $owner = User::factory()->create();
+    $member = User::factory()->create();
+    $team = Team::factory()->create();
+
+    $team->members()->attach($owner, ['role' => TeamRole::Owner->value]);
+    $team->members()->attach($member, ['role' => TeamRole::Member->value]);
+
+    Livewire::actingAs($member)
+        ->test('pages::teams.edit', ['team' => $team])
+        ->set('teamName', 'Updated Name')
+        ->call('updateTeam')
         ->assertForbidden();
 });
 
-test('owner can invite a member by email', function () {
-    Notification::fake();
+test('teams can be deleted by owners', function () {
+    $user = User::factory()->create();
+    $team = Team::factory()->create();
 
-    $user = User::factory()->withTeam()->create(['name' => 'Monkey D. Luffy']);
-
-    Livewire::actingAs($user)
-        ->test('pages::settings.team')
-        ->set('email', 'zoro@strawhat.pirates')
-        ->call('inviteMember')
-        ->assertHasNoErrors()
-        ->assertSet('email', '');
-
-    $invitations = $user->currentTeam->fresh()->invitations;
-    expect($invitations)->toHaveCount(1)
-        ->and($invitations->first()->email)->toEqual('zoro@strawhat.pirates');
-
-    Notification::assertSentOnDemand(TeamInvitationNotification::class, function ($notification, $channels, $notifiable) {
-        return $notifiable->routes['mail'] === 'zoro@strawhat.pirates';
-    });
-});
-
-test('invite requires a valid email', function () {
-    $user = User::factory()->withTeam()->create();
+    $team->members()->attach($user, ['role' => TeamRole::Owner->value]);
 
     Livewire::actingAs($user)
-        ->test('pages::settings.team')
-        ->set('email', 'not-an-email')
-        ->call('inviteMember')
-        ->assertHasErrors(['email' => 'email']);
-});
-
-test('cannot invite someone who is already a team member', function () {
-    $owner = User::factory()->withTeam()->create();
-    $member = User::factory()->create();
-    $owner->currentTeam->users()->attach($member);
-
-    Livewire::actingAs($owner)
-        ->test('pages::settings.team')
-        ->set('email', $member->email)
-        ->call('inviteMember')
-        ->assertHasErrors('email');
-});
-
-test('cannot invite someone who already has a pending invitation', function () {
-    $user = User::factory()->withTeam()->create();
-
-    TeamInvitation::factory()->for($user->currentTeam)->create(['email' => 'invited@example.com']);
-
-    Livewire::actingAs($user)
-        ->test('pages::settings.team')
-        ->set('email', 'invited@example.com')
-        ->call('inviteMember')
-        ->assertHasErrors(['email' => 'unique']);
-});
-
-test('owner can cancel a pending invitation', function () {
-    $owner = User::factory()->withTeam()->create();
-    $invitation = TeamInvitation::factory()->for($owner->currentTeam)->create(['email' => 'pending@example.com']);
-
-    Livewire::actingAs($owner)
-        ->test('pages::settings.team')
-        ->call('cancelInvitation', $invitation->id)
+        ->test('pages::teams.delete-team-modal', ['team' => $team])
+        ->set('deleteName', $team->name)
+        ->call('deleteTeam')
         ->assertHasNoErrors();
 
-    expect(TeamInvitation::find($invitation->id))->toBeNull();
+    $this->assertSoftDeleted('teams', [
+        'id' => $team->id,
+    ]);
 });
 
-test('non-owner cannot cancel a pending invitation', function () {
-    $owner = User::factory()->withTeam()->create();
-    $member = User::factory()->create();
-    $owner->currentTeam->users()->attach($member);
-    $member->switchTeam($owner->currentTeam);
+test('team deletion requires name confirmation', function () {
+    $user = User::factory()->create();
+    $team = Team::factory()->create();
 
-    $invitation = TeamInvitation::factory()->for($owner->currentTeam)->create(['email' => 'pending@example.com']);
+    $team->members()->attach($user, ['role' => TeamRole::Owner->value]);
+
+    Livewire::actingAs($user)
+        ->test('pages::teams.delete-team-modal', ['team' => $team])
+        ->set('deleteName', 'Wrong Name')
+        ->call('deleteTeam')
+        ->assertHasErrors(['deleteName']);
+
+    $this->assertDatabaseHas('teams', [
+        'id' => $team->id,
+        'deleted_at' => null,
+    ]);
+});
+
+test('deleting current team switches to alphabetically first remaining team', function () {
+    $user = User::factory()->create(['name' => 'Mike']);
+
+    $zuluTeam = Team::factory()->create(['name' => 'Zulu Team']);
+    $zuluTeam->members()->attach($user, ['role' => TeamRole::Owner->value]);
+
+    $alphaTeam = Team::factory()->create(['name' => 'Alpha Team']);
+    $alphaTeam->members()->attach($user, ['role' => TeamRole::Owner->value]);
+
+    $betaTeam = Team::factory()->create(['name' => 'Beta Team']);
+    $betaTeam->members()->attach($user, ['role' => TeamRole::Owner->value]);
+
+    $user->update(['current_team_id' => $zuluTeam->id]);
+
+    Livewire::actingAs($user)
+        ->test('pages::teams.delete-team-modal', ['team' => $zuluTeam])
+        ->set('deleteName', $zuluTeam->name)
+        ->call('deleteTeam')
+        ->assertHasNoErrors();
+
+    $this->assertSoftDeleted('teams', [
+        'id' => $zuluTeam->id,
+    ]);
+
+    expect($user->fresh()->current_team_id)->toEqual($alphaTeam->id);
+});
+
+test('deleting current team falls back to personal team when alphabetically first', function () {
+    $user = User::factory()->create();
+    $personalTeam = $user->personalTeam();
+    $team = Team::factory()->create(['name' => 'Zulu Team']);
+    $team->members()->attach($user, ['role' => TeamRole::Owner->value]);
+
+    $user->update(['current_team_id' => $team->id]);
+
+    Livewire::actingAs($user)
+        ->test('pages::teams.delete-team-modal', ['team' => $team])
+        ->set('deleteName', $team->name)
+        ->call('deleteTeam')
+        ->assertHasNoErrors();
+
+    $this->assertSoftDeleted('teams', [
+        'id' => $team->id,
+    ]);
+
+    expect($user->fresh()->current_team_id)->toEqual($personalTeam->id);
+});
+
+test('deleting non current team leaves current team unchanged', function () {
+    $user = User::factory()->create();
+    $personalTeam = $user->personalTeam();
+    $team = Team::factory()->create();
+    $team->members()->attach($user, ['role' => TeamRole::Owner->value]);
+
+    $user->update(['current_team_id' => $personalTeam->id]);
+
+    Livewire::actingAs($user)
+        ->test('pages::teams.delete-team-modal', ['team' => $team])
+        ->set('deleteName', $team->name)
+        ->call('deleteTeam')
+        ->assertHasNoErrors();
+
+    $this->assertSoftDeleted('teams', [
+        'id' => $team->id,
+    ]);
+
+    expect($user->fresh()->current_team_id)->toEqual($personalTeam->id);
+});
+
+test('deleting team switches other affected users to their personal team', function () {
+    $owner = User::factory()->create();
+    $member = User::factory()->create();
+
+    $team = Team::factory()->create();
+    $team->members()->attach($owner, ['role' => TeamRole::Owner->value]);
+    $team->members()->attach($member, ['role' => TeamRole::Member->value]);
+
+    $owner->update(['current_team_id' => $team->id]);
+    $member->update(['current_team_id' => $team->id]);
+
+    Livewire::actingAs($owner)
+        ->test('pages::teams.delete-team-modal', ['team' => $team])
+        ->set('deleteName', $team->name)
+        ->call('deleteTeam')
+        ->assertHasNoErrors();
+
+    expect($member->fresh()->current_team_id)->toEqual($member->personalTeam()->id);
+});
+
+test('personal teams cannot be deleted', function () {
+    $user = User::factory()->create();
+
+    $personalTeam = $user->personalTeam();
+
+    Livewire::actingAs($user)
+        ->test('pages::teams.delete-team-modal', ['team' => $personalTeam])
+        ->set('deleteName', $personalTeam->name)
+        ->call('deleteTeam')
+        ->assertForbidden();
+
+    $this->assertDatabaseHas('teams', [
+        'id' => $personalTeam->id,
+        'deleted_at' => null,
+    ]);
+});
+
+test('teams cannot be deleted by non owners', function () {
+    $owner = User::factory()->create();
+    $member = User::factory()->create();
+    $team = Team::factory()->create();
+
+    $team->members()->attach($owner, ['role' => TeamRole::Owner->value]);
+    $team->members()->attach($member, ['role' => TeamRole::Member->value]);
 
     Livewire::actingAs($member)
-        ->test('pages::settings.team')
-        ->assertStatus(403);
+        ->test('pages::teams.delete-team-modal', ['team' => $team])
+        ->set('deleteName', $team->name)
+        ->call('deleteTeam')
+        ->assertForbidden();
 });
 
-test('owner can copy invitation link', function () {
-    $owner = User::factory()->withTeam()->create();
-    $invitation = TeamInvitation::factory()->for($owner->currentTeam)->create(['email' => 'pending@example.com']);
-
-    Livewire::actingAs($owner)
-        ->test('pages::settings.team')
-        ->call('copyInvitationLink', $invitation->id)
-        ->assertDispatched('copy-to-clipboard', fn ($name, $params) => str_contains($params['url'], '/invitations/' . $invitation->id . '/accept'));
-});
-
-test('non-owner cannot copy invitation link', function () {
-    $owner = User::factory()->withTeam()->create();
-    $member = User::factory()->create();
-    $owner->currentTeam->users()->attach($member);
-    $member->switchTeam($owner->currentTeam);
-
-    $invitation = TeamInvitation::factory()->for($owner->currentTeam)->create(['email' => 'pending@example.com']);
-
-    Livewire::actingAs($member)
-        ->test('pages::settings.team')
-        ->assertStatus(403);
-});
-
-test('cannot copy invitation link belonging to another team', function () {
-    $owner = User::factory()->withTeam()->create();
-    $otherOwner = User::factory()->withTeam()->create();
-    $invitation = TeamInvitation::factory()->for($otherOwner->currentTeam)->create(['email' => 'pending@example.com']);
-
-    Livewire::actingAs($owner)
-        ->test('pages::settings.team')
-        ->call('copyInvitationLink', $invitation->id);
-})->throws(ModelNotFoundException::class);
-
-test('cannot cancel invitation belonging to another team', function () {
-    $owner = User::factory()->withTeam()->create();
-    $otherOwner = User::factory()->withTeam()->create();
-    $invitation = TeamInvitation::factory()->for($otherOwner->currentTeam)->create(['email' => 'pending@example.com']);
-
-    Livewire::actingAs($owner)
-        ->test('pages::settings.team')
-        ->call('cancelInvitation', $invitation->id);
-})->throws(ModelNotFoundException::class);
-
-test('members table shows existing members and pending invitations', function () {
-    $owner = User::factory()->withTeam()->create();
-    $member = User::factory()->create();
-    $owner->currentTeam->users()->attach($member);
-
-    TeamInvitation::factory()->for($owner->currentTeam)->create(['email' => 'pending@example.com']);
-
-    Livewire::actingAs($owner)
-        ->test('pages::settings.team')
-        ->assertSee($owner->name)
-        ->assertSee($owner->email)
-        ->assertSee($member->name)
-        ->assertSee($member->email)
-        ->assertSee('pending@example.com')
-        ->assertSee('Member')
-        ->assertSee('Invited');
+test('guests cannot access teams', function () {
+    $this->get(route('teams.index'))
+        ->assertRedirect(route('login'));
 });

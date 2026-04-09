@@ -13,7 +13,7 @@ test('guests cannot access items', function () {
 });
 
 test('index returns items for the current team', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
     Item::factory()->for($user->currentTeam)->count(3)->create();
     Item::factory()->count(2)->create();
 
@@ -25,7 +25,7 @@ test('index returns items for the current team', function () {
 });
 
 test('store creates an item and returns it', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
 
     $this->actingAs($user)
         ->postJson(route('api.items.store'), [
@@ -44,7 +44,7 @@ test('store creates an item and returns it', function () {
 });
 
 test('store validates required fields', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
 
     $this->actingAs($user)
         ->postJson(route('api.items.store'), [])
@@ -53,7 +53,7 @@ test('store validates required fields', function () {
 });
 
 test('store validates type is a valid enum', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
 
     $this->actingAs($user)
         ->postJson(route('api.items.store'), [
@@ -65,7 +65,7 @@ test('store validates type is a valid enum', function () {
 });
 
 test('show returns an item', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
     $item = Item::factory()->for($user->currentTeam)->create();
 
     $this->actingAs($user)
@@ -78,7 +78,7 @@ test('show returns an item', function () {
 test('show returns photo_url when item has a photo', function () {
     Storage::fake();
 
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
     $item = Item::factory()->for($user->currentTeam)->create([
         'photo_path' => "teams/{$user->current_team_id}/items/wrench.png",
     ]);
@@ -92,7 +92,7 @@ test('show returns photo_url when item has a photo', function () {
 });
 
 test('show returns null photo_url when item has no photo', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
     $item = Item::factory()->for($user->currentTeam)->create(['photo_path' => null]);
 
     $this->actingAs($user)
@@ -102,7 +102,7 @@ test('show returns null photo_url when item has no photo', function () {
 });
 
 test('show returns 403 for another team item', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
     $item = Item::factory()->create();
 
     $this->actingAs($user)
@@ -111,7 +111,7 @@ test('show returns 403 for another team item', function () {
 });
 
 test('update modifies an item', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
     $item = Item::factory()->for($user->currentTeam)->create();
 
     $this->actingAs($user)
@@ -128,7 +128,7 @@ test('update modifies an item', function () {
 });
 
 test('update returns 403 for another team item', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
     $item = Item::factory()->create();
 
     $this->actingAs($user)
@@ -137,7 +137,7 @@ test('update returns 403 for another team item', function () {
 });
 
 test('destroy deletes an item', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
     $item = Item::factory()->for($user->currentTeam)->create();
 
     $this->actingAs($user)
@@ -148,7 +148,7 @@ test('destroy deletes an item', function () {
 });
 
 test('destroy returns 403 for another team item', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
     $item = Item::factory()->create();
 
     $this->actingAs($user)

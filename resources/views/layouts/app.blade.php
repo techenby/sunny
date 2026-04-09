@@ -37,11 +37,9 @@
                 </flux:sidebar.item>
             @endcan
 
-            @if (auth()->user()->ownsTeam(auth()->user()->currentTeam))
-                <flux:sidebar.item icon="user-group" :href="route('team.edit')" :current="request()->routeIs('team.edit')" wire:navigate>
-                    {{ __('Team Settings') }}
-                </flux:sidebar.item>
-            @endif
+            <flux:sidebar.item icon="user-group" :href="route('teams.index')" :current="request()->routeIs('teams.*')" wire:navigate>
+                {{ __('Teams') }}
+            </flux:sidebar.item>
             <x-desktop-user-menu class="hidden lg:block" :name="auth()->user()->name" />
         </flux:sidebar>
 

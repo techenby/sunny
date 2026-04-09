@@ -34,7 +34,7 @@ test('authenticated user can add shared recipe to their team', function () {
         'instructions' => '<ol><li>Mix</li></ol>',
     ]);
 
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
 
     $this->actingAs($user)
         ->get(route('recipes.shared', $recipe->share_token))
@@ -57,7 +57,7 @@ test('adding shared recipe to team creates a copy', function () {
         'servings' => '4',
     ]);
 
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
 
     Livewire::actingAs($user)
         ->test('pages::recipes.shared', ['shareToken' => $recipe->share_token])
@@ -73,7 +73,7 @@ test('adding shared recipe to team creates a copy', function () {
 });
 
 test('owner sees disabled add button', function () {
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
     $recipe = Recipe::factory()->shared()->for($user->currentTeam)->create();
 
     $this->actingAs($user)
@@ -84,7 +84,7 @@ test('owner sees disabled add button', function () {
 
 test('previously added recipe shows view in my recipes', function () {
     $recipe = Recipe::factory()->shared()->create(['name' => 'Shared Pasta']);
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
 
     $copy = Recipe::factory()->for($user->currentTeam)->create([
         'source' => route('recipes.shared', $recipe->share_token),
@@ -102,7 +102,7 @@ test('previously added recipe shows view in my recipes', function () {
 
 test('adding recipe that already exists redirects to existing', function () {
     $recipe = Recipe::factory()->shared()->create(['name' => 'Shared Pasta']);
-    $user = User::factory()->withTeam()->create();
+    $user = User::factory()->create();
 
     $existing = Recipe::factory()->for($user->currentTeam)->create([
         'source' => route('recipes.shared', $recipe->share_token),

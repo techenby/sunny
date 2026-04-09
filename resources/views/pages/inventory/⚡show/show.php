@@ -61,7 +61,7 @@ new #[Title('Inventory: Item')] class extends Component
     public function moveToTeam(): void
     {
         $this->validate([
-            'moveToTeamId' => ['required', 'integer', Rule::exists('team_user', 'team_id')->where('user_id', Auth::id())],
+            'moveToTeamId' => ['required', 'integer', Rule::exists('team_members', 'team_id')->where('user_id', Auth::id())],
         ]);
 
         $this->authorize('move', $this->item);

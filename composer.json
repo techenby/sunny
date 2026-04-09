@@ -75,7 +75,6 @@
         "ci:check": [
             "Composer\\Config::disableProcessTimeout",
             "@lint",
-            "@stan",
             "@test"
         ],
         "stan": [

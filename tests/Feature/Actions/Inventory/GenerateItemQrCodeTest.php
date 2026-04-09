@@ -18,7 +18,7 @@ test('qr code for a leaf item encodes the show url', function () {
 
     $qrCode = resolve(GenerateItemQrCode::class)->handle($item);
 
-    expect($qrCode['url'])->toBe(route('inventory.show', ['item' => $item]));
+    expect($qrCode['url'])->toBe(route('inventory.show', ['current_team' => $item->team, 'item' => $item]));
     expect($qrCode['name'])->toBe($item->name);
 });
 
@@ -28,6 +28,6 @@ test('qr code for a parent item encodes the index url with parentId', function (
 
     $qrCode = resolve(GenerateItemQrCode::class)->handle($parent);
 
-    expect($qrCode['url'])->toBe(route('inventory.index', ['parentId' => $parent->id]));
+    expect($qrCode['url'])->toBe(route('inventory.index', ['current_team' => $parent->team, 'parentId' => $parent->id]));
     expect($qrCode['name'])->toBe($parent->name);
 });
