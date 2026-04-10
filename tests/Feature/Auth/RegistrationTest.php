@@ -9,9 +9,21 @@ test('registration screen can be rendered', function () {
 });
 
 test('new users can register', function () {
-    $response = $this->post(route('register.store'), [
+    $this->post(route('register.store'), [
         'name' => 'John Doe',
         'email' => 'test@example.com',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+    ])->assertSessionHasNoErrors()
+        ->assertRedirect(route('dashboard', absolute: false));
+
+    $this->assertAuthenticated();
+});
+
+test('new users with a single name can register', function () {
+    $response = $this->post(route('register.store'), [
+        'name' => 'Shane',
+        'email' => 'shane@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',
     ]);

@@ -37,11 +37,11 @@ class CreateNewUser implements CreatesNewUsers
             $this->createTeam->handle($user, $user->name . "'s Team", isPersonal: true);
 
             if (app()->isProduction()) {
-                [$firstName, $lastName] = str($user->name)->explode(' ', 2);
+                $name = str($user->name)->explode(' ', 2);
                 Bento::track(
                     $user->email,
                     '$completed_onboarding',
-                    fields: ['first_name' => $firstName, 'last_name' => $lastName],
+                    fields: ['first_name' => $name->first(), 'last_name' => $name->get(1, '')],
                     details: ['source' => 'register']
                 );
             }
