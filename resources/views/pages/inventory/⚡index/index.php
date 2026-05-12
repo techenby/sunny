@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection as BaseCollection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
@@ -80,8 +81,8 @@ new #[Title('Inventory')] class extends Component
             ->withCount('children')
             ->when($this->filters['showTrashed'] ?? false, fn ($query) => $query->onlyTrashed())
             ->when(filled($this->filters['types']), fn ($query) => $query->whereIn('type', $this->filters['types']))
-            ->when($this->search, fn ($query) => $query->where('name', 'like', '%' . $this->search . '%'))
-            ->where('parent_id', $this->parentId)
+            ->when($this->search, fn ($query) => $query->whereRaw('LOWER(name) LIKE ?', ['%' . Str::lower($this->search) . '%']))
+            ->when(blank($this->search), fn ($query) => $query->where('parent_id', $this->parentId))
             ->orderBy($this->sortBy, $this->sortDirection)
             ->paginate(10);
     }

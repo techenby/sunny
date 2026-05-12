@@ -6,20 +6,19 @@ namespace App\Models;
 
 use App\Enums\TeamRole;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
 #[Fillable(['team_id', 'user_id', 'role'])]
+#[Table(name: 'team_members')]
 class Membership extends Pivot
 {
     use HasFactory;
 
     /** @var bool */
     public $incrementing = true;
-
-    /** @var string */
-    protected $table = 'team_members';
 
     /** @return BelongsTo<Team, $this> */
     public function team(): BelongsTo
