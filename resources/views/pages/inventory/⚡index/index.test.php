@@ -51,6 +51,37 @@ test('can search items by name', function () {
         ->assertDontSeeHtml('<span>Screwdriver</span>');
 });
 
+test('searches items case insensitively', function () {
+    $user = User::factory()->create();
+    Item::factory()->for($user->currentTeam)->create(['name' => '3D Printed Foot Stool']);
+    Item::factory()->for($user->currentTeam)->create(['name' => 'Dining Chair']);
+
+    Livewire::actingAs($user)
+        ->test('pages::inventory.index')
+        ->set('search', 'foot')
+        ->assertSeeHtml('<span>3D Printed Foot Stool</span>')
+        ->assertDontSeeHtml('<span>Dining Chair</span>');
+});
+
+test('searches all current team items while viewing a parent', function () {
+    $user = User::factory()->create();
+    $bedroom = Item::factory()->for($user->currentTeam)->location()->create(['name' => 'Bedroom']);
+    $garage = Item::factory()->for($user->currentTeam)->location()->create(['name' => 'Garage']);
+    Item::factory()->for($user->currentTeam)->childOf($bedroom)->create(['name' => 'Wool Blanket']);
+    Item::factory()->for($user->currentTeam)->childOf($garage)->create(['name' => 'Framing Hammer']);
+    Item::factory()->create(['name' => 'Pink Hammer']);
+
+    Livewire::actingAs($user)
+        ->test('pages::inventory.index')
+        ->call('navigateDown', $bedroom->id)
+        ->assertSeeHtml('<span>Wool Blanket</span>')
+        ->assertDontSeeHtml('<span>Framing Hammer</span>')
+        ->set('search', 'Hammer')
+        ->assertSeeHtml('<span>Framing Hammer</span>')
+        ->assertDontSeeHtml('<span>Wool Blanket</span>')
+        ->assertDontSeeHtml('<span>Pink Hammer</span>');
+});
+
 test('can sort items', function () {
     $user = User::factory()->create();
     Item::factory()->count(2)->for($user->currentTeam)->sequence(['name' => 'Bravo'], ['name' => 'Alpha'])->create();
