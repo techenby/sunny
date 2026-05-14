@@ -60,7 +60,7 @@ new class extends Component
         return $this->feeds
             ->flatMap(function (CalendarFeed $feed) {
                 try {
-                    return app(FetchCalendarEvents::class)->handle($feed, 7, $this->weekStartsAt());
+                    return resolve(FetchCalendarEvents::class)->handle($feed, 7, $this->weekStartsAt());
                 } catch (Throwable) {
                     return collect();
                 }

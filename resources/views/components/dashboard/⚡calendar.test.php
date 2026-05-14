@@ -150,7 +150,7 @@ it('expands simple recurring calendar events', function () {
         'name' => 'Family',
     ]);
 
-    $events = app(FetchCalendarEvents::class)->parse(
+    $events = resolve(FetchCalendarEvents::class)->parse(
         calendarFixture(<<<ICS
 BEGIN:VEVENT
 UID:standup@example.com
@@ -175,7 +175,7 @@ it('honors excluded recurring calendar dates', function () {
         'name' => 'Family',
     ]);
 
-    $events = app(FetchCalendarEvents::class)->parse(
+    $events = resolve(FetchCalendarEvents::class)->parse(
         calendarFixture(<<<ICS
 BEGIN:VEVENT
 UID:standup@example.com
@@ -202,7 +202,7 @@ it('converts calendar feed times to the users timezone', function () {
         'url' => 'https://calendar.example.com/basic.ics',
     ]);
 
-    $events = app(FetchCalendarEvents::class)->parse(
+    $events = resolve(FetchCalendarEvents::class)->parse(
         calendarFixture(),
         $feed,
         CarbonImmutable::parse('2026-05-14 00:00:00', 'America/New_York'),
