@@ -10,11 +10,11 @@
             </flux:sidebar.header>
 
             <flux:sidebar.nav>
-                <flux:sidebar.item icon="calendar" href="#">Calendar</flux:sidebar.item>
-                <flux:sidebar.item icon="arrow-path-rounded-square" href="#">Routines</flux:sidebar.item>
-                <flux:sidebar.item icon="clipboard-document-list" href="#">Chore Chart</flux:sidebar.item>
-                <flux:sidebar.item icon="queue-list" href="#">Lists</flux:sidebar.item>
-                <flux:sidebar.item icon="cooking-pot" href="#">Meal Planning</flux:sidebar.item>
+                <flux:sidebar.item icon="calendar" :href="route('kiosk.calendar')" :current="request()->routeIs('kiosk.calendar')" wire:navigate>Calendar</flux:sidebar.item>
+                <flux:sidebar.item icon="arrow-path-rounded-square" :href="route('kiosk.routines')" :current="request()->routeIs('kiosk.routines')" wire:navigate>Routines</flux:sidebar.item>
+                <flux:sidebar.item icon="clipboard-document-list" :href="route('kiosk.chore-chart')" :current="request()->routeIs('kiosk.chore-chart')" wire:navigate>Chore Chart</flux:sidebar.item>
+                <flux:sidebar.item icon="queue-list" :href="route('kiosk.lists')" :current="request()->routeIs('kiosk.lists')" wire:navigate>Lists</flux:sidebar.item>
+                <flux:sidebar.item icon="cooking-pot" :href="route('kiosk.meal-planning')" :current="request()->routeIs('kiosk.meal-planning')" wire:navigate>Meal Planning</flux:sidebar.item>
             </flux:sidebar.nav>
         </flux:sidebar>
 
