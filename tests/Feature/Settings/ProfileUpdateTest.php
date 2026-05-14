@@ -16,13 +16,25 @@ test('profile information can be updated', function () {
         ->test('pages::settings.profile')
         ->set('name', 'Test User')
         ->set('email', 'test@example.com')
+        ->set('timezone', 'America/New_York')
         ->call('updateProfileInformation')
         ->assertHasNoErrors();
 
     expect($user->fresh())
         ->name->toEqual('Test User')
         ->email->toEqual('test@example.com')
+        ->timezone->toEqual('America/New_York')
         ->email_verified_at->toBeNull();
+});
+
+test('profile timezone must be valid', function () {
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::settings.profile')
+        ->set('timezone', 'Not/AZone')
+        ->call('updateProfileInformation')
+        ->assertHasErrors(['timezone']);
 });
 
 test('email verification status is unchanged when email address is unchanged', function () {

@@ -16,6 +16,7 @@ trait ProfileValidationRules
         return [
             'name' => $this->nameRules(),
             'email' => $this->emailRules($userId),
+            'timezone' => $this->timezoneRules(),
         ];
     }
 
@@ -37,5 +38,11 @@ trait ProfileValidationRules
                 ? Rule::unique(User::class)
                 : Rule::unique(User::class)->ignore($userId),
         ];
+    }
+
+    /** @return array<int, \Illuminate\Contracts\Validation\Rule|array<mixed>|string> */
+    protected function timezoneRules(): array
+    {
+        return ['required', 'string', Rule::in(timezone_identifiers_list())];
     }
 }

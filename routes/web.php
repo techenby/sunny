@@ -19,3 +19,10 @@ require __DIR__ . '/admin.php';
 require __DIR__ . '/inventory.php';
 require __DIR__ . '/recipes.php';
 require __DIR__ . '/settings.php';
+
+Route::prefix('{current_team}/kiosk')
+    ->middleware(['auth', 'verified', EnsureTeamMembership::class])
+    ->name('kiosk')
+    ->group(function (): void {
+        Route::livewire('/calendar', 'pages::kiosk.calendar')->name('.calendar');
+    });
