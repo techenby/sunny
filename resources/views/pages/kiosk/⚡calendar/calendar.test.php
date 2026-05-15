@@ -1,10 +1,10 @@
 <?php
 
-use Illuminate\Support\Facades\Date;
 use App\Enums\CalendarColor;
 use App\Models\CalendarFeed;
 use App\Models\Team;
 use App\Models\User;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Http;
 use Livewire\Livewire;
 
@@ -68,7 +68,7 @@ test('can go to the next and previous weeks', function () {
 test('can hide feed from calendar', function () {
     Http::allowStrayRequests([
         'https://calendar.google.com/calendar/ical/*',
-        'https://worldpublicholiday.com/calendar-feeds/*'
+        'https://worldpublicholiday.com/calendar-feeds/*',
     ]);
 
     $this->travelTo(Date::parse('2026-03-20'));
@@ -97,7 +97,7 @@ test('can hide feed from calendar', function () {
         ->assertSeeInOrder([
             'calendar-day-2026-03-17', "St. Patrick's Day",
             'calendar-day-2026-03-18', 'Autonomia do Estado',
-            'calendar-day-2026-03-19', 'Dia de São José'
+            'calendar-day-2026-03-19', 'Dia de São José',
         ])
         ->set('selectedFeeds', [$usHolidays->id])
         ->assertSeeInOrder([
