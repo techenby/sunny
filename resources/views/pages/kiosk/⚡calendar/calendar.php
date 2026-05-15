@@ -3,7 +3,6 @@
 use App\Actions\Calendars\FetchCalendarEvents;
 use App\Models\CalendarFeed;
 use Carbon\CarbonImmutable;
-use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
@@ -31,7 +30,7 @@ new #[Layout('layouts::kiosk')] class extends Component
     #[Computed]
     public function feeds(): EloquentCollection
     {
-        return Auth::user()
+        return Auth::user()->currentTeam
             ->calendarFeeds()
             ->get();
     }
@@ -43,11 +42,7 @@ new #[Layout('layouts::kiosk')] class extends Component
         return $this->feeds
             ->whereIn('id', $this->selectedFeeds)
             ->flatMap(function (CalendarFeed $feed) {
-                try {
-                    return resolve(FetchCalendarEvents::class)->handle($feed, 7, $this->weekStartsAt());
-                } catch (Throwable) {
-                    return collect();
-                }
+                return resolve(FetchCalendarEvents::class)->handle($feed, 7, $this->weekStartsAt());
             })
             ->sortBy('starts_at')
             ->values()
@@ -85,22 +80,22 @@ new #[Layout('layouts::kiosk')] class extends Component
     public function previousWeek(): void
     {
         $this->weekStartDate = $this->weekStartsAt()->subWeek()->toDateString();
-        unset($this->weekEvents, $this->weekDays, $this->weekLabel);
+        unset($this->weekEvents, $this->weekDays);
     }
 
     public function nextWeek(): void
     {
         $this->weekStartDate = $this->weekStartsAt()->addWeek()->toDateString();
-        unset($this->weekEvents, $this->weekDays, $this->weekLabel);
+        unset($this->weekEvents, $this->weekDays);
     }
 
     public function currentWeek(): void
     {
         $this->weekStartDate = CarbonImmutable::now($this->timezoneName())
-            ->startOfWeek(CarbonInterface::SUNDAY)
+            ->startOfWeek(Auth::user()->currentTeam->week_start)
             ->toDateString();
 
-        unset($this->weekEvents, $this->weekDays, $this->weekLabel);
+        unset($this->weekEvents, $this->weekDays);
     }
 
     private function weekStartsAt(): CarbonImmutable

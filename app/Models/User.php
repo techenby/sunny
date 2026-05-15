@@ -10,7 +10,6 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
@@ -43,15 +42,8 @@ class User extends Authenticatable implements PasskeyUser
     public function purge(): void
     {
         $this->ownedTeams->each->purge();
-        $this->calendarFeeds()->delete();
         $this->teamMemberships()->delete();
         $this->delete();
-    }
-
-    /** @return HasMany<CalendarFeed, $this> */
-    public function calendarFeeds(): HasMany
-    {
-        return $this->hasMany(CalendarFeed::class);
     }
 
     /** @return array<string, string> */

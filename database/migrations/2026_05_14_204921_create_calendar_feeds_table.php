@@ -10,13 +10,13 @@ return new class extends Migration
     {
         Schema::create('calendar_feeds', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('team_id')->constrained()->cascadeOnDelete();
             $table->string('name');
             $table->text('url');
             $table->string('color', 7)->default('#2563eb');
             $table->timestamps();
 
-            $table->index(['user_id', 'name']);
+            $table->index(['team_id', 'name']);
         });
     }
 

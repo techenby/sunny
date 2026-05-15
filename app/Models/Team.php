@@ -38,6 +38,12 @@ class Team extends Model
         });
     }
 
+    /** @return HasMany<CalendarFeed, $this> */
+    public function calendarFeeds(): HasMany
+    {
+        return $this->hasMany(CalendarFeed::class);
+    }
+
     public function owner(): ?Model
     {
         return $this->members()

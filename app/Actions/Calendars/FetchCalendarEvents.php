@@ -127,16 +127,16 @@ class FetchCalendarEvents
             return null;
         }
 
-        $email = mb_strtolower((string) $feed->user?->email);
+        $emails = $this->teamMemberEmails($feed);
 
-        if ($email === '') {
+        if ($emails->isEmpty()) {
             return null;
         }
 
         foreach ($event->ATTENDEE as $attendee) {
             $attendeeEmail = mb_strtolower(preg_replace('/^mailto:/i', '', (string) $attendee->getValue()));
 
-            if ($attendeeEmail !== $email) {
+            if (! $emails->contains($attendeeEmail)) {
                 continue;
             }
 
@@ -148,8 +148,20 @@ class FetchCalendarEvents
         return null;
     }
 
+    /** @return Collection<int, string> */
+    private function teamMemberEmails(CalendarFeed $feed): Collection
+    {
+        $feed->loadMissing('team.members');
+
+        return $feed->team->members
+            ->pluck('email')
+            ->map(fn (string $email): string => mb_strtolower($email))
+            ->filter()
+            ->values();
+    }
+
     private function timezoneName(CalendarFeed $feed): string
     {
-        return $feed->user?->timezone ?: 'America/Chicago';
+        return $feed->team?->timezone ?: 'America/Chicago';
     }
 }
