@@ -11,10 +11,10 @@ class SettingsForm extends Form
 {
     public Team $editingTeam;
 
-    #[Validate('required')]
+    #[Validate('required|string|timezone:all')]
     public string $timezone = 'America/Chicago';
 
-    #[Validate('required')]
+    #[Validate('required|int|between:0,6')]
     public int $week_start = Carbon::SUNDAY;
 
     public function load(Team $team)

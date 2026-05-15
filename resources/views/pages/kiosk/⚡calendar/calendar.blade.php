@@ -33,7 +33,7 @@
             </flux:checkbox.group>
         </div>
 
-        <div data-calendar class="grid min-h-0 flex-1 overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-700 lg:grid-cols-7 lg:divide-x lg:divide-y-0">
+        <div class="grid min-h-0 flex-1 overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-700 lg:grid-cols-7 lg:divide-x lg:divide-y-0">
             @foreach ($this->weekDays as $day)
                 <div wire:key="calendar-day-{{ $day['date']->toDateString() }}" class="flex min-h-40 flex-col lg:min-h-0">
                     <div @class([
@@ -42,39 +42,15 @@
                         'bg-blue-100 dark:bg-blue-900' => $day['is_today'],
                     ])>
                         <div>
-                            <div @class([
-                                'text-xs font-medium uppercase',
-                                'text-zinc-500 dark:text-zinc-400'
-                            ])>{{ $day['date']->format('D') }}</div>
-                            <div @class([
-                                'text-sm font-semibold',
-                                'text-zinc-900 dark:text-zinc-100'
-                            ])>{{ $day['date']->format('M j') }}</div>
+                            <div class="text-xs font-medium uppercase text-zinc-500 dark:text-zinc-400">{{ $day['date']->format('D') }}</div>
+                            <div class="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{{ $day['date']->format('M j') }}</div>
                         </div>
                     </div>
 
                     <div class="flex flex-1 flex-col gap-2 p-3">
-                        @forelse ($day['events'] as $event)
-                            <div
-                                wire:key="calendar-event-{{ $event['feed_id'] }}-{{ $event['starts_at']->timestamp }}-{{ str($event['title'])->slug() }}"
-                                @class([
-                                    'rounded-md border border-zinc-200 bg-white p-2 text-sm shadow-xs dark:border-zinc-700 dark:bg-zinc-950',
-                                    'line-through decoration-2 opacity-60' => ($event['response_status'] ?? null) === 'DECLINED',
-                                ])
-                                style="border-left: 4px {{ ($event['response_status'] ?? null) === 'NEEDS-ACTION' ? 'dashed' : 'solid' }} {{ $event['feed_color'] }}"
-                            >
-                                <div class="mb-1 flex items-center gap-1.5 text-xs font-medium text-zinc-500 dark:text-zinc-400">
-                                    {{ $event['all_day'] ? __('All day') : $event['starts_at']->format('g:i A') }}
-                                </div>
-
-                                <div class="wrap-break-word font-medium leading-snug text-zinc-900 dark:text-zinc-100">{{ $event['title'] }}</div>
-
-                                @if ($event['location'])
-                                    <div class="mt-1 truncate text-xs text-zinc-500 dark:text-zinc-400">{{ $event['location'] }}</div>
-                                @endif
-                            </div>
-                        @empty
-                        @endforelse
+                        @foreach ($day['events'] as $event)
+                            <x-kiosk.calendar.event :$event />
+                        @endforeach
                     </div>
                 </div>
             @endforeach

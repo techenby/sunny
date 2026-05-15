@@ -14,13 +14,11 @@ new #[Title('Profile settings')] class extends Component {
 
     public string $name = '';
     public string $email = '';
-    public string $timezone = 'America/Chicago';
 
     public function mount(): void
     {
         $this->name = Auth::user()->name;
         $this->email = Auth::user()->email;
-        $this->timezone = Auth::user()->timezone;
     }
 
     public function updateProfileInformation(): void
@@ -67,12 +65,6 @@ new #[Title('Profile settings')] class extends Component {
         return ! Auth::user() instanceof MustVerifyEmail
             || (Auth::user() instanceof MustVerifyEmail && Auth::user()->hasVerifiedEmail());
     }
-
-    /** @return array<int, string> */
-    public function timezones(): array
-    {
-        return \DateTimeZone::listIdentifiers();
-    }
 }; ?>
 
 <section class="w-full">
@@ -105,12 +97,6 @@ new #[Title('Profile settings')] class extends Component {
                     </div>
                 @endif
             </div>
-
-            <flux:select wire:model="timezone" :label="__('Timezone')" variant="listbox" searchable>
-                @foreach ($this->timezones() as $timezoneOption)
-                    <flux:select.option value="{{ $timezoneOption }}">{{ str_replace('_', ' ', $timezoneOption) }}</flux:select.option>
-                @endforeach
-            </flux:select>
 
             <div class="flex items-center gap-4">
                 <div class="flex items-center justify-end">

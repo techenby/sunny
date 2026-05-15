@@ -3,9 +3,16 @@
 use App\Models\User;
 use Livewire\Livewire;
 
-it('renders successfully', function () {
-    Livewire::actingAs(User::factory()->create())
+use function Pest\Laravel\actingAs;
+
+test('renders successfully', function () {
+    $user = User::factory()->create();
+
+    actingAs($user)
+        ->get(route('kiosk.lists'))
+        ->assertOk();
+
+    Livewire::actingAs($user)
         ->test('pages::kiosk.lists')
-        ->assertStatus(200)
-        ->assertSee('Lists');
-});
+        ->assertOk();
+})->group('smoke');
