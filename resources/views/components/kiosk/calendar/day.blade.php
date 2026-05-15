@@ -1,9 +1,9 @@
-<div class="flex h-full divide-x divide-zinc-100 dark:divide-zinc-700">
+<div class="flex min-h-0 divide-x divide-zinc-100 dark:divide-zinc-700">
     <div class="flex min-h-0 flex-1 flex-col overflow-hidden">
         <div
             wire:key="calendar-day-{{ $this->day['date']->toDateString() }}"
             @class([
-                'border-b px-5 py-4 border-zinc-100 dark:border-zinc-700',
+                'border-b px-3 py-2 border-zinc-100 dark:border-zinc-700',
                 'bg-zinc-50 dark:bg-zinc-800' => ! $this->day['is_today'],
                 'bg-blue-100 dark:bg-blue-900' => $this->day['is_today'],
             ])
