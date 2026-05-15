@@ -38,6 +38,8 @@ test('can view events from feed', function () {
 
     Livewire::actingAs($user)
         ->test('pages::kiosk.calendar')
+        ->assertSee('Cinco de Mayo')
+        ->set('format', 'month')
         ->assertSee('Cinco de Mayo');
 });
 
@@ -51,17 +53,44 @@ test('can go to the next and previous weeks', function () {
         ->assertSeeInOrder([
             'calendar-day-2026-05-03', 'calendar-day-2026-05-04', 'calendar-day-2026-05-05', 'calendar-day-2026-05-06', 'calendar-day-2026-05-07', 'calendar-day-2026-05-08', 'calendar-day-2026-05-09',
         ])
-        ->call('previousWeek')
+        ->call('previous')
         ->assertSeeInOrder([
             'calendar-day-2026-04-26', 'calendar-day-2026-04-27', 'calendar-day-2026-04-28', 'calendar-day-2026-04-29', 'calendar-day-2026-04-30', 'calendar-day-2026-05-01', 'calendar-day-2026-05-02',
         ])
-        ->call('currentWeek')
+        ->call('current')
         ->assertSeeInOrder([
             'calendar-day-2026-05-03', 'calendar-day-2026-05-04', 'calendar-day-2026-05-05', 'calendar-day-2026-05-06', 'calendar-day-2026-05-07', 'calendar-day-2026-05-08', 'calendar-day-2026-05-09',
         ])
-        ->call('nextWeek')
+        ->call('next')
         ->assertSeeInOrder([
             'calendar-day-2026-05-10', 'calendar-day-2026-05-11', 'calendar-day-2026-05-12', 'calendar-day-2026-05-13', 'calendar-day-2026-05-14', 'calendar-day-2026-05-15', 'calendar-day-2026-05-16',
+        ]);
+});
+
+test('can view and navigate a month calendar', function () {
+    $this->travelTo(Date::parse('2026-05-15'));
+
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::kiosk.calendar')
+        ->set('format', 'month')
+        ->assertSeeInOrder([
+            'calendar-day-2026-04-26', 'calendar-day-2026-04-27', 'calendar-day-2026-04-28', 'calendar-day-2026-04-29', 'calendar-day-2026-04-30', 'calendar-day-2026-05-01', 'calendar-day-2026-05-02',
+            'calendar-day-2026-05-03', 'calendar-day-2026-05-04', 'calendar-day-2026-05-05', 'calendar-day-2026-05-06', 'calendar-day-2026-05-07', 'calendar-day-2026-05-08', 'calendar-day-2026-05-09',
+            'calendar-day-2026-05-31', 'calendar-day-2026-06-01', 'calendar-day-2026-06-02', 'calendar-day-2026-06-03', 'calendar-day-2026-06-04', 'calendar-day-2026-06-05', 'calendar-day-2026-06-06',
+        ])
+        ->call('previous')
+        ->assertSeeInOrder([
+            'calendar-day-2026-03-29', 'calendar-day-2026-03-30', 'calendar-day-2026-03-31', 'calendar-day-2026-04-01', 'calendar-day-2026-04-02', 'calendar-day-2026-04-03', 'calendar-day-2026-04-04',
+        ])
+        ->call('current')
+        ->assertSeeInOrder([
+            'calendar-day-2026-04-26', 'calendar-day-2026-04-27', 'calendar-day-2026-04-28', 'calendar-day-2026-04-29', 'calendar-day-2026-04-30', 'calendar-day-2026-05-01', 'calendar-day-2026-05-02',
+        ])
+        ->call('next')
+        ->assertSeeInOrder([
+            'calendar-day-2026-05-31', 'calendar-day-2026-06-01', 'calendar-day-2026-06-02', 'calendar-day-2026-06-03', 'calendar-day-2026-06-04', 'calendar-day-2026-06-05', 'calendar-day-2026-06-06',
         ]);
 });
 

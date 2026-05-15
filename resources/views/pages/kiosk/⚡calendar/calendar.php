@@ -11,7 +11,7 @@ use Livewire\Component;
 
 new #[Layout('layouts::kiosk')] class extends Component
 {
-    public string $weekStartDate = '';
+    public string $focusedDate = '';
 
     public string $format = 'week';
 
@@ -19,9 +19,7 @@ new #[Layout('layouts::kiosk')] class extends Component
 
     public function mount(): void
     {
-        $this->weekStartDate = CarbonImmutable::now($this->timezoneName())
-            ->startOfWeek(Auth::user()->currentTeam->week_start)
-            ->toDateString();
+        $this->focusedDate = CarbonImmutable::now($this->timezoneName())->toDateString();
 
         $this->selectedFeeds = $this->feeds->pluck('id')->toArray();
     }
@@ -39,14 +37,7 @@ new #[Layout('layouts::kiosk')] class extends Component
     #[Computed]
     public function weekEvents(): array
     {
-        return $this->feeds
-            ->whereIn('id', $this->selectedFeeds)
-            ->flatMap(function (CalendarFeed $feed) {
-                return resolve(FetchCalendarEvents::class)->handle($feed, 7, $this->weekStartsAt());
-            })
-            ->sortBy('starts_at')
-            ->values()
-            ->all();
+        return $this->eventsForRange($this->weekStartsAt(), 7);
     }
 
     /** @return array<int, array{date: CarbonImmutable, events: array<int, array<string, mixed>>, is_today: bool}> */
@@ -71,37 +62,108 @@ new #[Layout('layouts::kiosk')] class extends Component
             ->all();
     }
 
+    /** @return array<int, array<string, mixed>> */
+    #[Computed]
+    public function monthEvents(): array
+    {
+        return $this->eventsForRange($this->monthGridStartsAt(), 42);
+    }
+
+    /** @return array<int, array{date: CarbonImmutable, events: array<int, array<string, mixed>>, is_today: bool, is_current_month: bool}> */
+    #[Computed]
+    public function monthDays(): array
+    {
+        $events = collect($this->monthEvents);
+        $month = $this->monthStartsAt();
+
+        return collect(range(0, 41))
+            ->map(function (int $offset) use ($events, $month): array {
+                $date = $this->monthGridStartsAt()->addDays($offset);
+
+                return [
+                    'date' => $date,
+                    'events' => $events
+                        ->filter(fn (array $event) => $event['starts_at']->isSameDay($date))
+                        ->values()
+                        ->all(),
+                    'is_today' => $date->isSameDay(CarbonImmutable::now($this->timezoneName())),
+                    'is_current_month' => $date->isSameMonth($month),
+                ];
+            })
+            ->all();
+    }
+
     #[Computed]
     public function nowLabel(): string
     {
         return CarbonImmutable::now($this->timezoneName())->format('D, M j g:i A');
     }
 
-    public function previousWeek(): void
+    public function previous(): void
     {
-        $this->weekStartDate = $this->weekStartsAt()->subWeek()->toDateString();
-        unset($this->weekEvents, $this->weekDays);
+        $this->focusedDate = match ($this->format) {
+            'month' => $this->focusedDate()->subMonthNoOverflow()->toDateString(),
+            default => $this->weekStartsAt()->subWeek()->toDateString(),
+        };
+
+        $this->clearCalendarState();
     }
 
-    public function nextWeek(): void
+    public function next(): void
     {
-        $this->weekStartDate = $this->weekStartsAt()->addWeek()->toDateString();
-        unset($this->weekEvents, $this->weekDays);
+        $this->focusedDate = match ($this->format) {
+            'month' => $this->focusedDate()->addMonthNoOverflow()->toDateString(),
+            default => $this->weekStartsAt()->addWeek()->toDateString(),
+        };
+
+        $this->clearCalendarState();
     }
 
-    public function currentWeek(): void
+    public function current(): void
     {
-        $this->weekStartDate = CarbonImmutable::now($this->timezoneName())
-            ->startOfWeek(Auth::user()->currentTeam->week_start)
-            ->toDateString();
+        $this->focusedDate = CarbonImmutable::now($this->timezoneName())->toDateString();
 
-        unset($this->weekEvents, $this->weekDays);
+        $this->clearCalendarState();
     }
 
     private function weekStartsAt(): CarbonImmutable
     {
-        return CarbonImmutable::parse($this->weekStartDate, $this->timezoneName())
+        return $this->focusedDate()
             ->startOfWeek(Auth::user()->currentTeam->week_start);
+    }
+
+    private function monthStartsAt(): CarbonImmutable
+    {
+        return $this->focusedDate()->startOfMonth();
+    }
+
+    private function monthGridStartsAt(): CarbonImmutable
+    {
+        return $this->monthStartsAt()
+            ->startOfWeek(Auth::user()->currentTeam->week_start);
+    }
+
+    private function focusedDate(): CarbonImmutable
+    {
+        return CarbonImmutable::parse($this->focusedDate, $this->timezoneName());
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function eventsForRange(CarbonImmutable $startsAt, int $days): array
+    {
+        return $this->feeds
+            ->whereIn('id', $this->selectedFeeds)
+            ->flatMap(function (CalendarFeed $feed) use ($days, $startsAt) {
+                return resolve(FetchCalendarEvents::class)->handle($feed, $days, $startsAt);
+            })
+            ->sortBy('starts_at')
+            ->values()
+            ->all();
+    }
+
+    private function clearCalendarState(): void
+    {
+        unset($this->weekEvents, $this->weekDays, $this->monthEvents, $this->monthDays);
     }
 
     private function timezoneName(): string
