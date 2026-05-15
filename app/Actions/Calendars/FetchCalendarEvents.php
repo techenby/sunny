@@ -136,7 +136,7 @@ class FetchCalendarEvents
         foreach ($event->ATTENDEE as $attendee) {
             $attendeeEmail = mb_strtolower(preg_replace('/^mailto:/i', '', (string) $attendee->getValue()));
 
-            if (! $emails->contains($attendeeEmail)) {
+            if ($emails->doesntContain($attendeeEmail)) {
                 continue;
             }
 

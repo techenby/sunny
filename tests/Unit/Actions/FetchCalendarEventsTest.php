@@ -23,7 +23,7 @@ test('it checks attendee response status against team member emails', function (
         'url' => 'https://example.com/calendar.ics',
     ]);
 
-    $events = app(FetchCalendarEvents::class)->parse(
+    $events = resolve(FetchCalendarEvents::class)->parse(
         ics: <<<'ICS'
 BEGIN:VCALENDAR
 VERSION:2.0

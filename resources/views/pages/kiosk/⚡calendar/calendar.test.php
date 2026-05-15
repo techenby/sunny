@@ -1,10 +1,10 @@
 <?php
 
+use Illuminate\Support\Facades\Date;
 use App\Enums\CalendarColor;
 use App\Models\CalendarFeed;
 use App\Models\Team;
 use App\Models\User;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
 use Livewire\Livewire;
 
@@ -25,7 +25,7 @@ test('renders successfully', function () {
 test('can view events from feed', function () {
     Http::allowStrayRequests(['https://calendar.google.com/calendar/ical/*']);
 
-    $this->travelTo(Carbon::parse('2026-05-08'));
+    $this->travelTo(Date::parse('2026-05-08'));
 
     $team = Team::factory()
         ->has(CalendarFeed::factory()->state([
@@ -42,7 +42,7 @@ test('can view events from feed', function () {
 });
 
 test('can go to the next and previous weeks', function () {
-    $this->travelTo(Carbon::parse('2026-05-08'));
+    $this->travelTo(Date::parse('2026-05-08'));
 
     $user = User::factory()->create();
 
@@ -71,7 +71,7 @@ test('can hide feed from calendar', function () {
         'https://worldpublicholiday.com/calendar-feeds/*'
     ]);
 
-    $this->travelTo(Carbon::parse('2026-03-20'));
+    $this->travelTo(Date::parse('2026-03-20'));
 
     $team = Team::factory()
         ->has(
