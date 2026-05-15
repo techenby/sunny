@@ -214,6 +214,66 @@ it('converts calendar feed times to the users timezone', function () {
         ->and($events->first()['starts_at']->format('g:i A'))->toBe('11:00 AM');
 });
 
+it('marks events pending response when the feed owner attendee needs action', function () {
+    $feed = new CalendarFeed([
+        'name' => 'Work',
+        'url' => 'https://calendar.example.com/basic.ics',
+        'color' => '#2563eb',
+    ]);
+    $feed->id = 10;
+    $feed->setRelation('user', User::factory()->make([
+        'email' => 'andy@example.com',
+        'timezone' => 'America/Chicago',
+    ]));
+
+    $events = resolve(FetchCalendarEvents::class)->parse(
+        calendarFixture(<<<ICS
+BEGIN:VEVENT
+UID:pending@example.com
+SUMMARY:Needs reply
+DTSTART:20260514T150000Z
+DTEND:20260514T160000Z
+ATTENDEE;PARTSTAT=NEEDS-ACTION:mailto:andy@example.com
+END:VEVENT
+ICS),
+        $feed,
+        CarbonImmutable::parse('2026-05-14 00:00:00'),
+        30,
+    );
+
+    expect($events->first()['response_status'])->toBe('NEEDS-ACTION');
+});
+
+it('marks declined events when the feed owner attendee has declined', function () {
+    $feed = new CalendarFeed([
+        'name' => 'Work',
+        'url' => 'https://calendar.example.com/basic.ics',
+        'color' => '#2563eb',
+    ]);
+    $feed->id = 10;
+    $feed->setRelation('user', User::factory()->make([
+        'email' => 'andy@example.com',
+        'timezone' => 'America/Chicago',
+    ]));
+
+    $events = resolve(FetchCalendarEvents::class)->parse(
+        calendarFixture(<<<ICS
+BEGIN:VEVENT
+UID:declined@example.com
+SUMMARY:Declined meeting
+DTSTART:20260514T150000Z
+DTEND:20260514T160000Z
+ATTENDEE;PARTSTAT=DECLINED:mailto:andy@example.com
+END:VEVENT
+ICS),
+        $feed,
+        CarbonImmutable::parse('2026-05-14 00:00:00'),
+        30,
+    );
+
+    expect($events->first()['response_status'])->toBe('DECLINED');
+});
+
 function calendarFixture(string $events = ''): string
 {
     $events = $events ?: <<<ICS

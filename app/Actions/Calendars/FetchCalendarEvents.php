@@ -27,6 +27,7 @@ class FetchCalendarEvents
      *     starts_at: CarbonImmutable,
      *     ends_at: CarbonImmutable|null,
      *     all_day: bool
+     *     response_status: string|null
      * }>
      */
     public function handle(CalendarFeed $feed, int $days = 30, ?CarbonImmutable $from = null): Collection
@@ -53,6 +54,7 @@ class FetchCalendarEvents
      *     starts_at: CarbonImmutable,
      *     ends_at: CarbonImmutable|null,
      *     all_day: bool
+     *     response_status: string|null
      * }>
      */
     public function parse(string $ics, CalendarFeed $feed, CarbonImmutable $from, int $days = 30): Collection
@@ -80,10 +82,13 @@ class FetchCalendarEvents
      *     starts_at: CarbonImmutable,
      *     ends_at: CarbonImmutable|null,
      *     all_day: bool
+     *     response_status: string|null
      * }
      */
     private function eventData(VEvent $event, CalendarFeed $feed, DateTimeZone $timezone): array
     {
+        $responseStatus = $this->responseStatus($event, $feed);
+
         return [
             'feed_id' => $feed->id,
             'feed_name' => $feed->name,
@@ -93,6 +98,7 @@ class FetchCalendarEvents
             'starts_at' => $this->carbon($event->DTSTART->getDateTime($timezone), $timezone),
             'ends_at' => $this->endDate($event, $timezone),
             'all_day' => ! $event->DTSTART->hasTime(),
+            'response_status' => $responseStatus,
         ];
     }
 
@@ -113,6 +119,33 @@ class FetchCalendarEvents
     private function carbon(DateTimeInterface $dateTime, DateTimeZone $timezone): CarbonImmutable
     {
         return CarbonImmutable::instance($dateTime)->setTimezone($timezone);
+    }
+
+    private function responseStatus(VEvent $event, CalendarFeed $feed): ?string
+    {
+        if (! isset($event->ATTENDEE)) {
+            return null;
+        }
+
+        $email = mb_strtolower((string) $feed->user?->email);
+
+        if ($email === '') {
+            return null;
+        }
+
+        foreach ($event->ATTENDEE as $attendee) {
+            $attendeeEmail = mb_strtolower(preg_replace('/^mailto:/i', '', (string) $attendee->getValue()));
+
+            if ($attendeeEmail !== $email) {
+                continue;
+            }
+
+            return isset($attendee['PARTSTAT'])
+                ? strtoupper((string) $attendee['PARTSTAT'])
+                : null;
+        }
+
+        return null;
     }
 
     private function timezoneName(CalendarFeed $feed): string
