@@ -31,18 +31,5 @@
         </div>
     </div>
 
-    @switch($format)
-        @case('day')
-            <x-kiosk.calendar.day />
-
-            @break
-
-        @case('month')
-            <x-kiosk.calendar.month />
-
-            @break
-
-        @default
-            <x-kiosk.calendar.week />
-    @endswitch
+    <x-dynamic-component :component="'kiosk.calendar.' . $format" />
 </div>
