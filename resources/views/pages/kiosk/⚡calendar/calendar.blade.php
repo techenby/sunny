@@ -25,9 +25,11 @@
                 <flux:radio value="month" label="Month" />
             </flux:radio.group>
 
-            <flux:button type="button" variant="ghost" size="sm" icon="chevron-left" wire:click="previous" />
-            <flux:button type="button" variant="filled" size="sm" wire:click="current">{{ __('Today') }}</flux:button>
-            <flux:button type="button" variant="ghost" size="sm" icon="chevron-right" wire:click="next" />
+            <flux:button.group>
+                <flux:button icon="chevron-left" wire:click="previous" />
+                <flux:button wire:click="current">{{ __('Today') }}</flux:button>
+                <flux:button icon="chevron-right" wire:click="next" />
+            </flux:button.group>
         </div>
     </div>
 
