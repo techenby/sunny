@@ -29,4 +29,5 @@ Route::prefix('{current_team}/kiosk')
         Route::livewire('chore-chart', 'pages::kiosk.chore-chart')->name('.chore-chart');
         Route::livewire('lists', 'pages::kiosk.lists')->name('.lists');
         Route::livewire('meal-planning', 'pages::kiosk.meal-planning')->name('.meal-planning');
+        Route::livewire('settings', 'pages::kiosk.settings')->name('.settings');
     });
