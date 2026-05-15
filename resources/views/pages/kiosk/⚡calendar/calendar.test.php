@@ -67,6 +67,57 @@ test('can view and navigate a day calendar', function () {
         ->assertSee('May 9');
 });
 
+test('day calendar shows hours and sizes timed events by duration', function () {
+    Http::fake([
+        'https://example.com/day-calendar.ics' => Http::response(<<<'ICS'
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Sunny//Tests//EN
+BEGIN:VEVENT
+UID:family-day
+DTSTAMP:20260501T120000Z
+DTSTART;VALUE=DATE:20260508
+DTEND;VALUE=DATE:20260509
+SUMMARY:Family Day
+END:VEVENT
+BEGIN:VEVENT
+UID:morning-standup
+DTSTAMP:20260501T120000Z
+DTSTART;TZID=America/Chicago:20260508T090000
+DTEND;TZID=America/Chicago:20260508T103000
+SUMMARY:Morning Standup
+LOCATION:Kitchen
+END:VEVENT
+END:VCALENDAR
+ICS),
+    ]);
+
+    $this->travelTo(Date::parse('2026-05-08 12:00:00', 'America/Chicago'));
+
+    $team = Team::factory()
+        ->has(CalendarFeed::factory()->state([
+            'url' => 'https://example.com/day-calendar.ics',
+            'name' => 'Family Calendar',
+            'color' => CalendarColor::Blue,
+        ]))
+        ->create();
+    $user = User::factory()->memberOf($team)->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::kiosk.calendar')
+        ->set('format', 'day')
+        ->assertSee('12 AM')
+        ->assertSee('9 AM')
+        ->assertSee('All day')
+        ->assertSee('Family Day')
+        ->assertSee('Morning Standup')
+        ->assertSee('Kitchen')
+        ->assertSee('9:00 AM')
+        ->assertSee('10:30 AM')
+        ->assertSee('top: 37.5%', false)
+        ->assertSee('height: 6.25%', false);
+});
+
 test('can go to the next and previous weeks', function () {
     $this->travelTo(Date::parse('2026-05-08'));
 

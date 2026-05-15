@@ -58,6 +58,42 @@ new #[Layout('layouts::kiosk')] class extends Component
 
     /** @return array<int, array<string, mixed>> */
     #[Computed]
+    public function dayAllDayEvents(): array
+    {
+        return collect($this->dayEvents)
+            ->filter(fn (array $event): bool => $event['all_day'])
+            ->values()
+            ->all();
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    #[Computed]
+    public function dayTimedEvents(): array
+    {
+        $dayStartsAt = $this->focusedDate()->startOfDay();
+        $dayEndsAt = $this->focusedDate()->endOfDay();
+
+        return collect($this->dayEvents)
+            ->reject(fn (array $event): bool => $event['all_day'])
+            ->map(function (array $event) use ($dayEndsAt, $dayStartsAt): array {
+                $startsAt = $event['starts_at']->lessThan($dayStartsAt) ? $dayStartsAt : $event['starts_at'];
+                $endsAt = $event['ends_at'] instanceof CarbonImmutable ? $event['ends_at'] : $event['starts_at']->addMinutes(30);
+                $endsAt = $endsAt->greaterThan($dayEndsAt) ? $dayEndsAt : $endsAt;
+                $duration = max(15, (int) round($startsAt->diffInMinutes($endsAt)));
+                $startsAfterMidnight = (int) round($dayStartsAt->diffInMinutes($startsAt));
+
+                return [
+                    ...$event,
+                    'timeline_top' => ($startsAfterMidnight / 1440) * 100,
+                    'timeline_height' => ($duration / 1440) * 100,
+                ];
+            })
+            ->values()
+            ->all();
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    #[Computed]
     public function weekEvents(): array
     {
         return $this->eventsForRange($this->weekStartsAt(), 7);
@@ -188,7 +224,7 @@ new #[Layout('layouts::kiosk')] class extends Component
 
     private function clearCalendarState(): void
     {
-        unset($this->dayEvents, $this->day, $this->weekEvents, $this->weekDays, $this->monthEvents, $this->monthDays);
+        unset($this->dayEvents, $this->day, $this->dayAllDayEvents, $this->dayTimedEvents, $this->weekEvents, $this->weekDays, $this->monthEvents, $this->monthDays);
     }
 
     private function timezoneName(): string
