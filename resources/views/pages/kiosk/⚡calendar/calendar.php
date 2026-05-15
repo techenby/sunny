@@ -1,7 +1,6 @@
 <?php
 
 use App\Actions\Calendars\FetchCalendarEvents;
-use App\Enums\CalendarColor;
 use App\Models\CalendarFeed;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
