@@ -169,6 +169,57 @@ test('can view and navigate a month calendar', function () {
         ]);
 });
 
+test('month calendar shows two events before overflow count', function () {
+    Http::fake([
+        'https://example.com/month-calendar.ics' => Http::response(<<<'ICS'
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Sunny//Tests//EN
+BEGIN:VEVENT
+UID:first-event
+DTSTAMP:20260501T120000Z
+DTSTART;TZID=America/Chicago:20260515T090000
+DTEND;TZID=America/Chicago:20260515T100000
+SUMMARY:First Event
+END:VEVENT
+BEGIN:VEVENT
+UID:second-event
+DTSTAMP:20260501T120000Z
+DTSTART;TZID=America/Chicago:20260515T110000
+DTEND;TZID=America/Chicago:20260515T120000
+SUMMARY:Second Event
+END:VEVENT
+BEGIN:VEVENT
+UID:third-event
+DTSTAMP:20260501T120000Z
+DTSTART;TZID=America/Chicago:20260515T130000
+DTEND;TZID=America/Chicago:20260515T140000
+SUMMARY:Third Event
+END:VEVENT
+END:VCALENDAR
+ICS),
+    ]);
+
+    $this->travelTo(Date::parse('2026-05-15 12:00:00', 'America/Chicago'));
+
+    $team = Team::factory()
+        ->has(CalendarFeed::factory()->state([
+            'url' => 'https://example.com/month-calendar.ics',
+            'name' => 'Family Calendar',
+            'color' => CalendarColor::Blue,
+        ]))
+        ->create();
+    $user = User::factory()->memberOf($team)->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::kiosk.calendar')
+        ->set('format', 'month')
+        ->assertSee('First Event')
+        ->assertSee('Second Event')
+        ->assertSee('+1 events')
+        ->assertDontSee('Third Event');
+});
+
 test('can hide feed from calendar', function () {
     Http::allowStrayRequests([
         'https://calendar.google.com/calendar/ical/*',
