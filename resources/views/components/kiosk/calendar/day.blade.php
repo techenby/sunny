@@ -1,5 +1,5 @@
-<div class="flex divide-x h-full divide-zinc-100 dark:divide-zinc-700">
-    <div class="flex-1 flex min-h-0 flex-col overflow-hidden">
+<div class="flex h-full divide-x divide-zinc-100 dark:divide-zinc-700">
+    <div class="flex min-h-0 flex-1 flex-col overflow-hidden">
         <div
             wire:key="calendar-day-{{ $this->day['date']->toDateString() }}"
             @class([
@@ -22,10 +22,11 @@
             @endif
         </div>
     </div>
-    <div class="shrink-none">
+
+    <div class="shrink-0">
         <flux:calendar
             static
-            value="2026-05-15"
+            :value="$this->day['date']->toDateString()"
             size="xs"
             :navigation="false"
         />

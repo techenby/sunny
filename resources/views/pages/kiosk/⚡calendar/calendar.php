@@ -7,12 +7,15 @@ use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 
 new #[Layout('layouts::kiosk')] class extends Component
 {
+    #[Url]
     public string $focusedDate = '';
 
+    #[Url]
     public string $format = 'week';
 
     public array $selectedFeeds = [];
