@@ -31,9 +31,18 @@
         </div>
     </div>
 
-    @if ($format === 'month')
-        <x-kiosk.calendar.month />
-    @else
-        <x-kiosk.calendar.week />
-    @endif
+    @switch($format)
+        @case('day')
+            <x-kiosk.calendar.day />
+
+            @break
+
+        @case('month')
+            <x-kiosk.calendar.month />
+
+            @break
+
+        @default
+            <x-kiosk.calendar.week />
+    @endswitch
 </div>

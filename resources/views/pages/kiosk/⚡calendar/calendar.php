@@ -35,6 +35,26 @@ new #[Layout('layouts::kiosk')] class extends Component
 
     /** @return array<int, array<string, mixed>> */
     #[Computed]
+    public function dayEvents(): array
+    {
+        return $this->eventsForRange($this->focusedDate(), 1);
+    }
+
+    /** @return array{date: CarbonImmutable, events: array<int, array<string, mixed>>, is_today: bool} */
+    #[Computed]
+    public function day(): array
+    {
+        $date = $this->focusedDate();
+
+        return [
+            'date' => $date,
+            'events' => $this->dayEvents,
+            'is_today' => $date->isSameDay(CarbonImmutable::now($this->timezoneName())),
+        ];
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    #[Computed]
     public function weekEvents(): array
     {
         return $this->eventsForRange($this->weekStartsAt(), 7);
@@ -102,6 +122,7 @@ new #[Layout('layouts::kiosk')] class extends Component
     public function previous(): void
     {
         $this->focusedDate = match ($this->format) {
+            'day' => $this->focusedDate()->subDay()->toDateString(),
             'month' => $this->focusedDate()->subMonthNoOverflow()->toDateString(),
             default => $this->weekStartsAt()->subWeek()->toDateString(),
         };
@@ -112,6 +133,7 @@ new #[Layout('layouts::kiosk')] class extends Component
     public function next(): void
     {
         $this->focusedDate = match ($this->format) {
+            'day' => $this->focusedDate()->addDay()->toDateString(),
             'month' => $this->focusedDate()->addMonthNoOverflow()->toDateString(),
             default => $this->weekStartsAt()->addWeek()->toDateString(),
         };
@@ -163,7 +185,7 @@ new #[Layout('layouts::kiosk')] class extends Component
 
     private function clearCalendarState(): void
     {
-        unset($this->weekEvents, $this->weekDays, $this->monthEvents, $this->monthDays);
+        unset($this->dayEvents, $this->day, $this->weekEvents, $this->weekDays, $this->monthEvents, $this->monthDays);
     }
 
     private function timezoneName(): string

@@ -39,8 +39,32 @@ test('can view events from feed', function () {
     Livewire::actingAs($user)
         ->test('pages::kiosk.calendar')
         ->assertSee('Cinco de Mayo')
+        ->set('format', 'day')
+        ->set('focusedDate', '2026-05-05')
+        ->assertSee('Cinco de Mayo')
         ->set('format', 'month')
         ->assertSee('Cinco de Mayo');
+});
+
+test('can view and navigate a day calendar', function () {
+    $this->travelTo(Date::parse('2026-05-08 12:00:00', 'America/Chicago'));
+
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::kiosk.calendar')
+        ->set('format', 'day')
+        ->assertSee('Friday')
+        ->assertSee('May 8')
+        ->call('previous')
+        ->assertSee('Thursday')
+        ->assertSee('May 7')
+        ->call('current')
+        ->assertSee('Friday')
+        ->assertSee('May 8')
+        ->call('next')
+        ->assertSee('Saturday')
+        ->assertSee('May 9');
 });
 
 test('can go to the next and previous weeks', function () {

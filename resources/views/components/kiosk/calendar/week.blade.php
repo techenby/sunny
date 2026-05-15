@@ -2,7 +2,7 @@
     @foreach ($this->weekDays as $day)
         <div wire:key="calendar-day-{{ $day['date']->toDateString() }}" class="flex min-h-40 flex-col lg:min-h-0">
             <div @class([
-                'border-b px-3 py-3 border-zinc-100 dark:border-zinc-700',
+                'border-b px-3 py-2 border-zinc-100 dark:border-zinc-700',
                 'bg-zinc-50 dark:bg-zinc-800' => ! $day['is_today'],
                 'bg-blue-100 dark:bg-blue-900' => $day['is_today'],
             ])>
