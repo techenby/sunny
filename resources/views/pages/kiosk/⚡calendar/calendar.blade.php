@@ -5,6 +5,20 @@
         </div>
 
         <div class="flex items-center gap-2">
+            <flux:dropdown>
+                <flux:button icon="funnel" icon:variant="outline" />
+                <flux:menu keep-open>
+                    <flux:menu.checkbox.group wire:model.live="selectedFeeds">
+                        @foreach ($this->feeds as $feed)
+                            <flux:menu.checkbox :value="$feed->id">
+                                <span class="size-2 rounded-full mr-2" style="background: {{ $feed->color }}"></span>
+                                {{ $feed->name }}
+                            </flux:menu.checkbox>
+                        @endforeach
+                    </flux:menu.checkbox.group>
+                </flux:menu>
+            </flux:dropdown>
+
             <flux:radio.group wire:model.live="format" variant="segmented">
                 <flux:radio value="day" label="Day" />
                 <flux:radio value="week" label="Week" />
@@ -15,14 +29,6 @@
             <flux:button type="button" variant="filled" size="sm" wire:click="currentWeek">{{ __('Today') }}</flux:button>
             <flux:button type="button" variant="ghost" size="sm" icon="chevron-right" wire:click="nextWeek" />
         </div>
-    </div>
-
-    <div class="shrink-0 p-2">
-        <flux:checkbox.group wire:model.live="selectedFeeds" variant="buttons">
-            @foreach ($this->feeds as $feed)
-            <flux:checkbox :value="$feed->id" :label="$feed->name" size="sm" style="border-left: 4px solid {{ $feed->color }}" />
-            @endforeach
-        </flux:checkbox.group>
     </div>
 
     <div class="grid min-h-0 flex-1 overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-700 lg:grid-cols-7 lg:divide-x lg:divide-y-0">
