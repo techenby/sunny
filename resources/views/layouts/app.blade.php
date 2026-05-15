@@ -21,6 +21,10 @@
                         {{ __('Recipes') }}
                     </flux:sidebar.item>
 
+                    <flux:sidebar.item icon="tv" :href="route('kiosk.calendar')" :current="request()->routeIs('kiosk.*')" wire:navigate>
+                        {{ __('Kiosk') }}
+                    </flux:sidebar.item>
+
                 </flux:sidebar.group>
             </flux:sidebar.nav>
 

@@ -152,12 +152,6 @@ new #[Layout('layouts::kiosk')] class extends Component
             ->all();
     }
 
-    #[Computed]
-    public function nowLabel(): string
-    {
-        return CarbonImmutable::now($this->timezoneName())->format('D, M j g:i A');
-    }
-
     public function previous(): void
     {
         $this->focusedDate = match ($this->format) {
