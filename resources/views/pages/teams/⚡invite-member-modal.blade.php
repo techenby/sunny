@@ -2,13 +2,14 @@
 
 use App\Enums\TeamRole;
 use App\Models\Team;
-use App\Notifications\TeamInvitationNotification;
+use App\Notifications\Teams\TeamInvitation as TeamInvitationNotification;
 use App\Rules\UniqueTeamInvitation;
 use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rule;
+use Livewire\Attributes\Computed;
 use Livewire\Component;
 
 new class extends Component {
@@ -51,7 +52,8 @@ new class extends Component {
     }
 
     /** @return array<array{value: string, label: string}> */
-    public function getAvailableRolesProperty(): array
+    #[Computed]
+    public function availableRoles(): array
     {
         return TeamRole::assignable();
     }
