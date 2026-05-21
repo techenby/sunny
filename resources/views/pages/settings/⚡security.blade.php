@@ -48,9 +48,6 @@ new #[Title('Security settings')] class extends Component {
     public string $deletingPasskeyName = '';
     /* @end-chisel-passkeys */
 
-    /**
-     * Mount the component.
-     */
     public function mount(DisableTwoFactorAuthentication $disableTwoFactorAuthentication): void
     {
         /* @chisel-2fa */
@@ -75,9 +72,6 @@ new #[Title('Security settings')] class extends Component {
         /* @end-chisel-passkeys */
     }
 
-    /**
-     * Update the password for the currently authenticated user.
-     */
     public function updatePassword(): void
     {
         try {
@@ -101,9 +95,6 @@ new #[Title('Security settings')] class extends Component {
     }
 
     /* @chisel-passkeys */
-    /**
-     * Load the user's passkeys.
-     */
     public function loadPasskeys(): void
     {
         $this->passkeys = auth()->user()->passkeys()
@@ -120,9 +111,6 @@ new #[Title('Security settings')] class extends Component {
             ->toArray();
     }
 
-    /**
-     * Show the delete confirmation modal.
-     */
     public function confirmDelete(int $passkeyId): void
     {
         $passkey = auth()->user()->passkeys()->findOrFail($passkeyId);
@@ -132,9 +120,6 @@ new #[Title('Security settings')] class extends Component {
         $this->showDeleteModal = true;
     }
 
-    /**
-     * Delete the passkey.
-     */
     public function deletePasskey(DeletePasskey $deletePasskey): void
     {
         if (! $this->deletingPasskeyId) {
@@ -149,9 +134,6 @@ new #[Title('Security settings')] class extends Component {
         $this->loadPasskeys();
     }
 
-    /**
-     * Close the delete confirmation modal.
-     */
     public function closeDeleteModal(): void
     {
         $this->showDeleteModal = false;
@@ -161,18 +143,12 @@ new #[Title('Security settings')] class extends Component {
     /* @end-chisel-passkeys */
 
     /* @chisel-2fa */
-    /**
-     * Handle the two-factor authentication enabled event.
-     */
     #[On('two-factor-enabled')]
     public function onTwoFactorEnabled(): void
     {
         $this->twoFactorEnabled = true;
     }
 
-    /**
-     * Disable two-factor authentication for the user.
-     */
     public function disable(DisableTwoFactorAuthentication $disableTwoFactorAuthentication): void
     {
         $disableTwoFactorAuthentication(auth()->user());
