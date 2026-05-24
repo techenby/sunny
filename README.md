@@ -14,6 +14,7 @@
 - [driftingly/rector-laravel](https://github.com/driftingly/rector-laravel)
 - [livewire/flux-pro](https://fluxui.dev/)
 - [laravel/boost](https://github.com/laravel/boost)
+- [laravel/pao](https://github.com/laravel/pao)
 - [nunomaduro/essentials](https://github.com/nunomaduro/essentials)
 
 **Notible NPM Packages:**
