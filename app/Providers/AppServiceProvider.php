@@ -14,17 +14,11 @@ use Illuminate\Validation\Rules\Password;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
     public function register(): void
     {
         //
     }
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
         $this->configureDefaults();
@@ -34,11 +28,7 @@ class AppServiceProvider extends ServiceProvider
     protected function configureGates(): void
     {
         Gate::define('admin', function (User $user): bool {
-            if (app()->isProduction()) {
-                return $user->email === 'andy@techenby.com';
-            }
-
-            return true;
+            return $user->email === 'andy@techenby.com';
         });
     }
 
