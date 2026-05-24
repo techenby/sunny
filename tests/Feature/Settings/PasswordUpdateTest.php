@@ -10,7 +10,7 @@ test('password can be updated', function () {
     ]);
 
     Livewire::actingAs($user)
-        ->test('pages::settings.password')
+        ->test('pages::settings.security')
         ->set('current_password', 'password')
         ->set('password', 'new-password')
         ->set('password_confirmation', 'new-password')
@@ -26,7 +26,7 @@ test('correct password must be provided to update password', function () {
     ]);
 
     Livewire::actingAs($user)
-        ->test('pages::settings.password')
+        ->test('pages::settings.security')
         ->set('current_password', 'wrong-password')
         ->set('password', 'new-password')
         ->set('password_confirmation', 'new-password')

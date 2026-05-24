@@ -20,17 +20,17 @@ test('two factor settings page can be rendered', function () {
 
     $this->actingAs($user)
         ->withSession(['auth.password_confirmed_at' => time()])
-        ->get(route('two-factor.show'))
+        ->get(route('security.edit'))
         ->assertOk()
-        ->assertSee('Two Factor Authentication')
-        ->assertSee('Disabled');
+        ->assertSee('Two-factor authentication')
+        ->assertSee('Enable 2FA');
 });
 
 test('two factor settings page requires password confirmation when enabled', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user)
-        ->get(route('two-factor.show'))
+        ->get(route('security.edit'))
         ->assertRedirect(route('password.confirm'));
 });
 
@@ -41,8 +41,9 @@ test('two factor settings page returns forbidden response when two factor is dis
 
     $this->actingAs($user)
         ->withSession(['auth.password_confirmed_at' => time()])
-        ->get(route('two-factor.show'))
-        ->assertForbidden();
+        ->get(route('security.edit'))
+        ->assertOk()
+        ->assertDontSee('Two-factor authentication');
 });
 
 test('two factor authentication disabled when confirmation abandoned between requests', function () {
@@ -55,7 +56,7 @@ test('two factor authentication disabled when confirmation abandoned between req
     ])->save();
 
     Livewire::actingAs($user)
-        ->test('pages::settings.two-factor')
+        ->test('pages::settings.security')
         ->assertSet('twoFactorEnabled', false);
 
     $this->assertDatabaseHas('users', [
