@@ -137,16 +137,16 @@ class StrawhatsSeeder extends Seeder
             ->for($strawhats)
             ->count(10)
             ->sequence(
-                ['name' => 'Brazilian Holidays (Luffy)', 'url' => 'https://worldpublicholiday.com/calendar-feeds/feed.ics?country=BR&year=' . now('Y'), 'color' => CalendarColor::Green],
-                ['name' => 'Japanese Holidays (Zoro)', 'url' => 'https://worldpublicholiday.com/calendar-feeds/feed.ics?country=JP&year=' . now('Y'), 'color' => CalendarColor::Red],
-                ['name' => 'Swedish Holidays (Nami)', 'url' => 'https://worldpublicholiday.com/calendar-feeds/feed.ics?country=SE&year=' . now('Y'), 'color' => CalendarColor::Gold],
-                ['name' => 'South African Holidays (Usopp)', 'url' => 'https://worldpublicholiday.com/calendar-feeds/feed.ics?country=ZA&year=' . now('Y'), 'color' => CalendarColor::Red],
-                ['name' => 'French Holidays (Sanji)', 'url' => 'https://worldpublicholiday.com/calendar-feeds/feed.ics?country=FR&year=' . now('Y'), 'color' => CalendarColor::Blue],
-                ['name' => 'Canadian Holidays (Chopper)', 'url' => 'https://worldpublicholiday.com/calendar-feeds/feed.ics?country=CA&year=' . now('Y'), 'color' => CalendarColor::Red],
-                ['name' => 'Russian Holidays (Robin)', 'url' => 'https://worldpublicholiday.com/calendar-feeds/feed.ics?country=RU&year=' . now('Y'), 'color' => CalendarColor::Blue],
-                ['name' => 'American Holidays (Franky)', 'url' => 'https://worldpublicholiday.com/calendar-feeds/feed.ics?country=US&year=' . now('Y'), 'color' => CalendarColor::Red],
-                ['name' => 'Austrian Holidays (Brook)', 'url' => 'https://worldpublicholiday.com/calendar-feeds/feed.ics?country=AT&year=' . now('Y'), 'color' => CalendarColor::Red],
-                ['name' => 'Indian Holidays (Jinbe)', 'url' => 'https://worldpublicholiday.com/calendar-feeds/feed.ics?country=IN&year=' . now('Y'), 'color' => CalendarColor::Orange],
+                ['name' => 'Brazilian Holidays (Luffy)', 'url' => 'https://worldpublicholiday.com/calendar-feeds/feed.ics?country=BR&year=' . now()->format('Y'), 'color' => CalendarColor::Green],
+                ['name' => 'Japanese Holidays (Zoro)', 'url' => 'https://worldpublicholiday.com/calendar-feeds/feed.ics?country=JP&year=' . now()->format('Y'), 'color' => CalendarColor::Red],
+                ['name' => 'Swedish Holidays (Nami)', 'url' => 'https://worldpublicholiday.com/calendar-feeds/feed.ics?country=SE&year=' . now()->format('Y'), 'color' => CalendarColor::Gold],
+                ['name' => 'South African Holidays (Usopp)', 'url' => 'https://worldpublicholiday.com/calendar-feeds/feed.ics?country=ZA&year=' . now()->format('Y'), 'color' => CalendarColor::Red],
+                ['name' => 'French Holidays (Sanji)', 'url' => 'https://worldpublicholiday.com/calendar-feeds/feed.ics?country=FR&year=' . now()->format('Y'), 'color' => CalendarColor::Blue],
+                ['name' => 'Canadian Holidays (Chopper)', 'url' => 'https://worldpublicholiday.com/calendar-feeds/feed.ics?country=CA&year=' . now()->format('Y'), 'color' => CalendarColor::Red],
+                ['name' => 'Russian Holidays (Robin)', 'url' => 'https://worldpublicholiday.com/calendar-feeds/feed.ics?country=RU&year=' . now()->format('Y'), 'color' => CalendarColor::Blue],
+                ['name' => 'American Holidays (Franky)', 'url' => 'https://worldpublicholiday.com/calendar-feeds/feed.ics?country=US&year=' . now()->format('Y'), 'color' => CalendarColor::Red],
+                ['name' => 'Austrian Holidays (Brook)', 'url' => 'https://worldpublicholiday.com/calendar-feeds/feed.ics?country=AT&year=' . now()->format('Y'), 'color' => CalendarColor::Red],
+                ['name' => 'Indian Holidays (Jinbe)', 'url' => 'https://worldpublicholiday.com/calendar-feeds/feed.ics?country=IN&year=' . now()->format('Y'), 'color' => CalendarColor::Orange],
             )
             ->create();
     }
