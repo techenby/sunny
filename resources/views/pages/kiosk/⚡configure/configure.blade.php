@@ -19,7 +19,7 @@
         </flux:tabs>
 
         <flux:tab.panel name="calendar">
-            <div class="space-y-4 rounded-xl bg-white p-6 ring-1 ring-zinc-950/5 dark:bg-zinc-900 dark:ring-white/10">
+            <flux:card class="space-y-4">
                 <div class="flex items-center justify-between">
                     <flux:heading size="lg">{{ __('Calendar feeds') }}</flux:heading>
                     <flux:modal.trigger name="feed-form">
@@ -29,17 +29,15 @@
 
                 <div class="space-y-2">
                     @forelse ($this->feeds as $feed)
-                        <div wire:key="calendar-feed-{{ $feed->id }}" class="rounded-lg border border-zinc-200 bg-white p-3 dark:border-zinc-700 dark:bg-zinc-900">
+                        <flux:card size="sm" wire:key="calendar-feed-{{ $feed->id }}">
                             <div class="flex items-start justify-between gap-3">
                                 <div class="min-w-0 space-y-1">
-                                    <div class="flex items-center gap-2">
+                                    <flux:heading class="flex items-center gap-2">
                                         <span class="size-2.5 shrink-0 rounded-full" style="background: {{ $feed->color }}"></span>
                                         <span class="truncate font-medium">{{ $feed->name }}</span>
-                                    </div>
+                                    </flux:heading>
 
-                                    <flux:text class="block truncate text-xs text-zinc-500 dark:text-zinc-400">
-                                        {{ $feed->url }}
-                                    </flux:text>
+                                    <flux:text variant="subtle">{{ $feed->url }}</flux:text>
                                 </div>
 
                                 <div class="flex shrink-0 items-center gap-1">
@@ -52,14 +50,14 @@
                                     </flux:tooltip>
                                 </div>
                             </div>
-                        </div>
+                        </flux:card>
                     @empty
                         <div class="rounded-lg border border-dashed border-zinc-300 p-4 text-sm text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
                             {{ __('No calendar feeds yet.') }}
                         </div>
                     @endforelse
                 </div>
-            </div>
+            </flux:card>
         </flux:tab.panel>
         <flux:tab.panel name="routines">...</flux:tab.panel>
         <flux:tab.panel name="chores">...</flux:tab.panel>
