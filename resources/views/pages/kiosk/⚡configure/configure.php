@@ -1,119 +1,54 @@
 <?php
 
-use App\Enums\CalendarColor;
+use App\Livewire\Forms\Kiosk\CalendarFeedForm;
 use App\Models\CalendarFeed;
 use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
 new class extends Component
 {
-    public ?int $editingFeedId = null;
-
-    public string $feedName = '';
-
-    public string $feedUrl = '';
-
-    public string $feedColor = '#2563eb';
+    public CalendarFeedForm $form;
 
     #[Computed]
     public function feeds()
     {
-        return Auth::user()
-            ->currentTeam
-            ->calendarFeeds()
-            ->orderBy('name')
-            ->get();
+        return Auth::user()->currentTeam->calendarFeeds()->orderBy('name')->get();
     }
 
-    public function saveFeed(): void
+    public function delete(int $id): void
     {
-        $validated = $this->validate([
-            'feedName' => ['required', 'string', 'max:255'],
-            'feedUrl' => ['required', 'url', 'max:2048'],
-            'feedColor' => ['required', 'string', Rule::in($this->calendarColorValues())],
-        ]);
+        $feed = $this->feeds->firstWhere('id', $id);
 
-        $attributes = [
-            'name' => $validated['feedName'],
-            'url' => $validated['feedUrl'],
-            'color' => $validated['feedColor'],
-        ];
+        $this->authorize('delete', $feed);
 
-        if ($this->editingFeedId) {
-            $this->feedQuery()
-                ->whereKey($this->editingFeedId)
-                ->firstOrFail()
-                ->update($attributes);
-
-            Flux::toast(variant: 'success', text: __('Calendar feed updated.'));
-        } else {
-            $this->feedQuery()->create($attributes);
-
-            Flux::toast(variant: 'success', text: __('Calendar feed added.'));
-        }
+        $feed->delete();
 
         unset($this->feeds);
-
-        $this->resetFeedForm();
-    }
-
-    public function editFeed(int $feedId): void
-    {
-        $feed = $this->feedQuery()
-            ->whereKey($feedId)
-            ->firstOrFail();
-
-        $this->editingFeedId = $feed->id;
-        $this->feedName = $feed->name;
-        $this->feedUrl = $feed->url;
-        $this->feedColor = $feed->color;
-
-        $this->resetValidation();
-    }
-
-    public function deleteFeed(int $feedId): void
-    {
-        $this->feedQuery()
-            ->whereKey($feedId)
-            ->firstOrFail()
-            ->delete();
-
-        if ($this->editingFeedId === $feedId) {
-            $this->resetFeedForm();
-        }
-
-        unset($this->feeds);
-
         Flux::toast(variant: 'success', text: __('Calendar feed removed.'));
     }
 
-    public function resetFeedForm(): void
+    public function edit(int $id): void
     {
-        $this->reset(['editingFeedId', 'feedName', 'feedUrl']);
-        $this->feedColor = CalendarColor::Blue->value;
-        $this->resetValidation();
+        $feed = $this->feeds->firstWhere('id', $id);
+
+        $this->authorize('update', $feed);
+
+        $this->form->load($feed);
+        $this->modal('feed-form')->show();
     }
 
-    /** @return array<int, CalendarColor> */
-    public function calendarColors(): array
+    public function save(): void
     {
-        return CalendarColor::cases();
-    }
+        if ($this->form->editingFeed) {
+            $this->authorize('update', $this->form->editingFeed);
+        } else {
+            $this->authorize('create', CalendarFeed::class);
+        }
 
-    private function feedQuery()
-    {
-        return Auth::user()->currentTeam->calendarFeeds();
-    }
-
-    /** @return array<int, string> */
-    private function calendarColorValues(): array
-    {
-        return array_map(
-            fn (CalendarColor $color): string => $color->value,
-            CalendarColor::cases(),
-        );
+        $this->form->save();
+        $this->modal('feed-form')->close();
+        unset($this->feeds);
     }
 };

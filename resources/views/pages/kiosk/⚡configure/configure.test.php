@@ -8,7 +8,7 @@ use Livewire\Livewire;
 
 use function Pest\Laravel\actingAs;
 
-it('renders successfully', function () {
+test('renders successfully', function () {
     $team = Team::factory()
         ->has(CalendarFeed::factory()->state([
             'name' => 'Family Calendar',
@@ -29,20 +29,20 @@ it('renders successfully', function () {
         ->assertSee('Family Calendar');
 });
 
-it('can add a calendar feed', function () {
+test('can add a calendar feed', function () {
     $team = Team::factory()->create();
     $user = User::factory()->memberOf($team)->create();
 
     Livewire::actingAs($user)
         ->test('pages::kiosk.configure')
-        ->set('feedName', 'Brazilian Holidays')
-        ->set('feedUrl', 'https://worldpublicholiday.com/calendar-feeds/feed.ics?country=BR&year=2026')
-        ->set('feedColor', CalendarColor::Green->value)
-        ->call('saveFeed')
+        ->set('form.name', 'Brazilian Holidays')
+        ->set('form.url', 'https://worldpublicholiday.com/calendar-feeds/feed.ics?country=BR&year=2026')
+        ->set('form.color', CalendarColor::Green->value)
+        ->call('save')
         ->assertHasNoErrors()
-        ->assertSet('feedName', '')
-        ->assertSet('feedUrl', '')
-        ->assertSet('feedColor', CalendarColor::Blue->value);
+        ->assertSet('form.name', '')
+        ->assertSet('form.url', '')
+        ->assertSet('form.color', CalendarColor::Blue->value);
 
     $this->assertDatabaseHas('calendar_feeds', [
         'team_id' => $team->id,
@@ -52,7 +52,7 @@ it('can add a calendar feed', function () {
     ]);
 });
 
-it('can edit a team calendar feed', function () {
+test('can edit a team calendar feed', function () {
     $team = Team::factory()
         ->has(CalendarFeed::factory()->state([
             'name' => 'US Holidays',
@@ -65,15 +65,14 @@ it('can edit a team calendar feed', function () {
 
     Livewire::actingAs($user)
         ->test('pages::kiosk.configure')
-        ->call('editFeed', $feed->id)
-        ->assertSet('editingFeedId', $feed->id)
-        ->assertSet('feedName', 'US Holidays')
-        ->set('feedName', 'American Holidays')
-        ->set('feedUrl', 'https://example.com/american.ics')
-        ->set('feedColor', CalendarColor::Indigo->value)
-        ->call('saveFeed')
+        ->call('edit', $feed->id)
+        ->assertSet('form.name', 'US Holidays')
+        ->set('form.name', 'American Holidays')
+        ->set('form.url', 'https://example.com/american.ics')
+        ->set('form.color', CalendarColor::Indigo->value)
+        ->call('save')
         ->assertHasNoErrors()
-        ->assertSet('editingFeedId', null);
+        ->assertSet('editingFeed', null);
 
     $this->assertDatabaseHas('calendar_feeds', [
         'id' => $feed->id,
@@ -84,31 +83,36 @@ it('can edit a team calendar feed', function () {
     ]);
 });
 
-it('can remove a team calendar feed', function () {
+test('can remove a team calendar feed', function () {
     $team = Team::factory()
-        ->has(CalendarFeed::factory())
+        ->has(CalendarFeed::factory()->state([
+            'name' => 'US Holidays',
+            'url' => 'https://example.com/us.ics',
+            'color' => CalendarColor::Red,
+        ]))
         ->create();
     $user = User::factory()->memberOf($team)->create();
     $feed = $team->calendarFeeds()->firstOrFail();
 
     Livewire::actingAs($user)
         ->test('pages::kiosk.configure')
-        ->call('deleteFeed', $feed->id)
-        ->assertHasNoErrors();
+        ->call('delete', $feed->id)
+        ->assertHasNoErrors()
+        ->assertDontSee('US Holidays');
 
     $this->assertDatabaseMissing('calendar_feeds', [
         'id' => $feed->id,
     ]);
 });
 
-it('validates calendar feed input', function () {
+test('validates calendar feed input', function () {
     $user = User::factory()->create();
 
     Livewire::actingAs($user)
         ->test('pages::kiosk.configure')
-        ->set('feedName', '')
-        ->set('feedUrl', 'not-a-url')
-        ->set('feedColor', '#ffffff')
-        ->call('saveFeed')
-        ->assertHasErrors(['feedName', 'feedUrl', 'feedColor']);
+        ->set('form.name', '')
+        ->set('form.url', 'not-a-url')
+        ->set('form.color', '#ffffff')
+        ->call('save')
+        ->assertHasErrors(['form.name', 'form.url', 'form.color']);
 });

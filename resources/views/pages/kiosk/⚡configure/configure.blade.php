@@ -1,43 +1,21 @@
-<div class="grid min-h-dvh gap-6 p-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
-    <div class="min-h-[34rem] overflow-hidden rounded-lg border border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
-        <iframe src="{{ route('kiosk.calendar') }}" frameborder="0" class="h-full w-full"></iframe>
+<div class="space-y-6 p-6">
+    <div>
+        <flux:heading size="xl" level="1">{{ __('Kiosk Configuration') }}</flux:heading>
+        <flux:subheading size="lg">{{ __('Preview your kiosk and manage its data sources.') }}</flux:subheading>
     </div>
 
-    <aside class="space-y-6">
-        <form wire:submit="saveFeed" class="space-y-4 rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
-            <div class="flex items-center justify-between gap-3">
-                <flux:heading size="lg">
-                    {{ $editingFeedId ? __('Edit feed') : __('Add feed') }}
-                </flux:heading>
+    <div class="grid min-h-dvh gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
+        <div class="min-h-[34rem] overflow-hidden rounded-lg border border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
+            <iframe src="{{ route('kiosk.calendar') }}" frameborder="0" class="h-full w-full"></iframe>
+        </div>
 
-                @if ($editingFeedId)
-                    <flux:button type="button" variant="ghost" size="sm" wire:click="resetFeedForm">
-                        {{ __('Cancel') }}
-                    </flux:button>
-                @endif
+        <div class="space-y-4 rounded-xl bg-white p-6 ring-1 ring-zinc-950/5 dark:bg-zinc-900 dark:ring-white/10">
+            <div class="flex items-center justify-between">
+                <flux:heading size="lg">{{ __('Calendar feeds') }}</flux:heading>
+                <flux:modal.trigger name="feed-form">
+                    <flux:button variant="primary" size="sm">{{ __('Add Calendar Feed') }}</flux:button>
+                </flux:modal.trigger>
             </div>
-
-            <flux:input wire:model="feedName" :label="__('Name')" required />
-
-            <flux:input wire:model="feedUrl" :label="__('Calendar URL')" type="url" required />
-
-            <flux:select wire:model="feedColor" :label="__('Color')" variant="listbox">
-                @foreach (App\Enums\CalendarColor::cases() as $color)
-                    <flux:select.option :value="$color->value">{{ $color->name }}</flux:select.option>
-                @endforeach
-            </flux:select>
-
-            <div class="flex items-center gap-3">
-                <span class="size-4 rounded-full ring-1 ring-black/10" style="background: {{ $feedColor }}"></span>
-
-                <flux:button type="submit" variant="primary">
-                    {{ $editingFeedId ? __('Update feed') : __('Add feed') }}
-                </flux:button>
-            </div>
-        </form>
-
-        <div class="space-y-3">
-            <flux:heading size="lg">{{ __('Calendar feeds') }}</flux:heading>
 
             <div class="space-y-2">
                 @forelse ($this->feeds as $feed)
@@ -56,11 +34,11 @@
 
                             <div class="flex shrink-0 items-center gap-1">
                                 <flux:tooltip :content="__('Edit feed')">
-                                    <flux:button type="button" variant="ghost" size="sm" icon="pencil" wire:click="editFeed({{ $feed->id }})" />
+                                    <flux:button type="button" variant="ghost" size="sm" icon="pencil" wire:click="edit({{ $feed->id }})" />
                                 </flux:tooltip>
 
                                 <flux:tooltip :content="__('Remove feed')">
-                                    <flux:button type="button" variant="ghost" size="sm" icon="trash" wire:click="deleteFeed({{ $feed->id }})" wire:confirm="{{ __('Remove this calendar feed?') }}" />
+                                    <flux:button type="button" variant="ghost" size="sm" icon="trash" wire:click="delete({{ $feed->id }})" wire:confirm="{{ __('Remove this calendar feed?') }}" />
                                 </flux:tooltip>
                             </div>
                         </div>
@@ -72,5 +50,7 @@
                 @endforelse
             </div>
         </div>
-    </aside>
+
+        @include('pages.kiosk.modals.feed-form')
+    </div>
 </div>
