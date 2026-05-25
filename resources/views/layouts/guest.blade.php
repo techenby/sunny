@@ -15,6 +15,8 @@
             {{ $slot }}
         </div>
 
+        <x-screensize />
+
         @persist('toast')
             <flux:toast />
         @endpersist

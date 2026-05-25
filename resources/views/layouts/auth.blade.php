@@ -17,6 +17,13 @@
                 </div>
             </div>
         </div>
+
+        <x-screensize />
+
+        @persist('toast')
+            <flux:toast />
+        @endpersist
+
         @fluxScripts
     </body>
 </html>
