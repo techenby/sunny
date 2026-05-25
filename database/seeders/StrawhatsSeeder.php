@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Enums\CalendarColor;
 use App\Enums\ItemType;
+use App\Models\CalendarFeed;
 use App\Models\Item;
 use App\Models\Recipe;
 use App\Models\Team;
@@ -128,6 +130,23 @@ class StrawhatsSeeder extends Seeder
                 ['name' => 'Master Oda\'s Favorite - Chicken Onigiri!'],
                 ['name' => 'Master Oda\'s Dinner Paparazzi! (Work)'],
                 ['name' => 'Master Oda\'s Dinner Paparazzi! (Home)'],
+            )
+            ->create();
+
+        CalendarFeed::factory()
+            ->for($strawhats)
+            ->count(10)
+            ->sequence(
+                ['name' => 'Brazilian Holidays (Luffy)', 'url' => 'https://worldpublicholiday.com/calendar-feeds/feed.ics?country=BR&year=' . now('Y'), 'color' => CalendarColor::Green],
+                ['name' => 'Japanese Holidays (Zoro)', 'url' => 'https://worldpublicholiday.com/calendar-feeds/feed.ics?country=JP&year=' . now('Y'), 'color' => CalendarColor::Red],
+                ['name' => 'Swedish Holidays (Nami)', 'url' => 'https://worldpublicholiday.com/calendar-feeds/feed.ics?country=SE&year=' . now('Y'), 'color' => CalendarColor::Gold],
+                ['name' => 'South African Holidays (Usopp)', 'url' => 'https://worldpublicholiday.com/calendar-feeds/feed.ics?country=ZA&year=' . now('Y'), 'color' => CalendarColor::Red],
+                ['name' => 'French Holidays (Sanji)', 'url' => 'https://worldpublicholiday.com/calendar-feeds/feed.ics?country=FR&year=' . now('Y'), 'color' => CalendarColor::Blue],
+                ['name' => 'Canadian Holidays (Chopper)', 'url' => 'https://worldpublicholiday.com/calendar-feeds/feed.ics?country=CA&year=' . now('Y'), 'color' => CalendarColor::Red],
+                ['name' => 'Russian Holidays (Robin)', 'url' => 'https://worldpublicholiday.com/calendar-feeds/feed.ics?country=RU&year=' . now('Y'), 'color' => CalendarColor::Blue],
+                ['name' => 'American Holidays (Franky)', 'url' => 'https://worldpublicholiday.com/calendar-feeds/feed.ics?country=US&year=' . now('Y'), 'color' => CalendarColor::Red],
+                ['name' => 'Austrian Holidays (Brook)', 'url' => 'https://worldpublicholiday.com/calendar-feeds/feed.ics?country=AT&year=' . now('Y'), 'color' => CalendarColor::Red],
+                ['name' => 'Indian Holidays (Jinbe)', 'url' => 'https://worldpublicholiday.com/calendar-feeds/feed.ics?country=IN&year=' . now('Y'), 'color' => CalendarColor::Orange],
             )
             ->create();
     }
