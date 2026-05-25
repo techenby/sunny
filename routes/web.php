@@ -24,6 +24,8 @@ Route::prefix('{current_team}/kiosk')
     ->middleware(['auth', 'verified', EnsureTeamMembership::class])
     ->name('kiosk')
     ->group(function (): void {
+        Route::livewire('configure', 'pages::kiosk.configure')->name('.configure');
+
         Route::livewire('calendar', 'pages::kiosk.calendar')->name('.calendar');
         Route::livewire('routines', 'pages::kiosk.routines')->name('.routines');
         Route::livewire('chore-chart', 'pages::kiosk.chore-chart')->name('.chore-chart');
