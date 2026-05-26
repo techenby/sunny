@@ -1,4 +1,4 @@
-<div class="flex min-h-0 divide-x divide-zinc-100 dark:divide-zinc-700">
+<div class="flex min-h-0 md:divide-x divide-zinc-100 dark:divide-zinc-700">
     <div class="flex min-h-0 flex-1 flex-col overflow-hidden">
         <div
             wire:key="calendar-day-{{ $this->day['date']->toDateString() }}"
@@ -73,7 +73,7 @@
         </div>
     </div>
 
-    <div class="shrink-0">
+    <div class="hidden shrink-0 md:block">
         <flux:calendar
             static
             :value="$this->day['date']->toDateString()"
