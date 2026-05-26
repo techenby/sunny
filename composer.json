@@ -26,6 +26,8 @@
         "livewire/livewire": "^4.1",
         "nunomaduro/essentials": "^1.2",
         "sabre/vobject": "^4.5",
+        "saloonphp/laravel-plugin": "^4.3",
+        "saloonphp/saloon": "^4.0",
         "spatie/simple-excel": "^3.9"
     },
     "require-dev": {
