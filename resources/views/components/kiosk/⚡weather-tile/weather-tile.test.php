@@ -43,6 +43,35 @@ test('renders weather from api', function () {
     Saloon::assertSent(OneCall::class);
 });
 
+test('shows skeleton when api returns 429', function () {
+    Saloon::fake([
+        OneCall::class => MockResponse::make(
+            ['cod' => 429, 'message' => 'Too Many Requests'],
+            429,
+        ),
+    ]);
+
+    $team = Team::factory()->create([
+        'address' => [
+            'address' => '123 Main St',
+            'city' => 'Chicago',
+            'state' => 'IL',
+            'zip' => '60601',
+            'lat' => '41.8781',
+            'long' => '-87.6298',
+        ],
+    ]);
+
+    $user = User::factory()->memberOf($team)->create();
+
+    Livewire::actingAs($user)
+        ->test('kiosk.weather-tile')
+        ->assertDontSee('°')
+        ->assertSee('shimmer');
+
+    Saloon::assertSent(OneCall::class);
+});
+
 test('renders nothing without address coordinates', function () {
     $user = User::factory()->create();
 

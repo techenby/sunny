@@ -5,6 +5,7 @@ use App\Http\Integrations\OpenWeather\Requests\OneCall;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Component;
+use Saloon\Exceptions\Request\RequestException;
 
 new class extends Component
 {
@@ -31,10 +32,20 @@ new class extends Component
         $weather = Cache::remember(
             "weather:{$team->id}",
             now()->addMinutes(30),
-            fn () => (new OpenWeatherConnector)->send(
-                new OneCall($team->address['lat'], $team->address['long'], 'minutely,hourly,alerts')
-            )->json(),
+            function () use ($team) {
+                try {
+                    return (new OpenWeatherConnector)->send(
+                        new OneCall($team->address['lat'], $team->address['long'], 'minutely,hourly,alerts')
+                    )->json();
+                } catch (RequestException) {
+                    return null;
+                }
+            },
         );
+
+        if (! $weather) {
+            return;
+        }
 
         $this->location = $team->address['city'] ?? null;
         $this->temp = round($weather['current']['temp']);
