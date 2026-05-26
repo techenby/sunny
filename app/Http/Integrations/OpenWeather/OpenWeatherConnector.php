@@ -11,7 +11,7 @@ class OpenWeatherConnector extends Connector
 
     public function resolveBaseUrl(): string
     {
-        return 'https://api.openweathermap.org';
+        return 'https://api.openweathermap.org/data/3.0/';
     }
 
     protected function defaultQuery(): array
