@@ -41,8 +41,8 @@
     const autofill = document.querySelector('mapbox-address-autofill');
 
     autofill.addEventListener('retrieve', (event) => {
-        $wire.$set('form.address.lat', event.detail.features[0].geometry.coordinates[0]);
-        $wire.$set('form.address.long', event.detail.features[0].geometry.coordinates[1]);
+        $wire.$set('form.address.long', event.detail.features[0].geometry.coordinates[0]);
+        $wire.$set('form.address.lat', event.detail.features[0].geometry.coordinates[1]);
     });
 </script>
 @endscript

@@ -6,10 +6,12 @@ namespace App\Http\Integrations\OpenWeather;
 
 use Saloon\Http\Connector;
 use Saloon\Traits\Plugins\AcceptsJson;
+use Saloon\Traits\Plugins\AlwaysThrowOnErrors;
 
 class OpenWeatherConnector extends Connector
 {
     use AcceptsJson;
+    use AlwaysThrowOnErrors;
 
     public function resolveBaseUrl(): string
     {
@@ -20,6 +22,7 @@ class OpenWeatherConnector extends Connector
     {
         return [
             'appid' => config('services.openweather.key'),
+            'units' => 'imperial',
         ];
     }
 }
