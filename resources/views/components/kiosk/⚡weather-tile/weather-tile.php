@@ -29,19 +29,17 @@ new class extends Component
             return;
         }
 
-        $weather = Cache::remember(
-            "weather:{$team->id}",
-            now()->addMinutes(30),
-            function () use ($team) {
-                try {
-                    return (new OpenWeatherConnector)->send(
-                        new OneCall($team->address['lat'], $team->address['long'], 'minutely,hourly,alerts')
-                    )->json();
-                } catch (RequestException) {
-                    return null;
-                }
-            },
-        );
+        try {
+            $weather = Cache::remember(
+                "weather:{$team->id}",
+                now()->addMinutes(30),
+                fn () => (new OpenWeatherConnector)->send(
+                    new OneCall($team->address['lat'], $team->address['long'], 'minutely,hourly,alerts')
+                )->json(),
+            );
+        } catch (RequestException) {
+            $weather = null;
+        }
 
         if (! $weather) {
             return;

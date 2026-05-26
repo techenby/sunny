@@ -50,7 +50,7 @@ class CalendarFeedForm extends Form
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'url' => ['required', 'string', 'url'],
+            'url' => ['required', 'string', 'url:http,https'],
             'color' => ['required', Rule::enum(CalendarColor::class)],
         ];
     }
