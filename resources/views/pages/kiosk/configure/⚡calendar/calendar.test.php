@@ -19,12 +19,12 @@ test('renders successfully', function () {
     $user = User::factory()->memberOf($team)->create();
 
     actingAs($user)
-        ->get(route('kiosk.configure'))
+        ->get(route('kiosk.configure.calendar'))
         ->assertOk()
         ->assertSee('Family Calendar');
 
     Livewire::actingAs($user)
-        ->test('pages::kiosk.configure')
+        ->test('pages::kiosk.configure.calendar')
         ->assertStatus(200)
         ->assertSee('Family Calendar');
 });
@@ -34,7 +34,7 @@ test('can add a calendar feed', function () {
     $user = User::factory()->memberOf($team)->create();
 
     Livewire::actingAs($user)
-        ->test('pages::kiosk.configure')
+        ->test('pages::kiosk.configure.calendar')
         ->set('form.name', 'Brazilian Holidays')
         ->set('form.url', 'https://worldpublicholiday.com/calendar-feeds/feed.ics?country=BR&year=2026')
         ->set('form.color', CalendarColor::Green->value)
@@ -64,7 +64,7 @@ test('can edit a team calendar feed', function () {
     $feed = $team->calendarFeeds()->firstOrFail();
 
     Livewire::actingAs($user)
-        ->test('pages::kiosk.configure')
+        ->test('pages::kiosk.configure.calendar')
         ->call('edit', $feed->id)
         ->assertSet('form.name', 'US Holidays')
         ->set('form.name', 'American Holidays')
@@ -95,7 +95,7 @@ test('can remove a team calendar feed', function () {
     $feed = $team->calendarFeeds()->firstOrFail();
 
     Livewire::actingAs($user)
-        ->test('pages::kiosk.configure')
+        ->test('pages::kiosk.configure.calendar')
         ->call('delete', $feed->id)
         ->assertHasNoErrors()
         ->assertDontSee('US Holidays');
@@ -109,7 +109,7 @@ test('validates calendar feed input', function () {
     $user = User::factory()->create();
 
     Livewire::actingAs($user)
-        ->test('pages::kiosk.configure')
+        ->test('pages::kiosk.configure.calendar')
         ->set('form.name', '')
         ->set('form.url', 'not-a-url')
         ->set('form.color', '#ffffff')

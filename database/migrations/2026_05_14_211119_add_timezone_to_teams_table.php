@@ -12,6 +12,7 @@ return new class extends Migration
         Schema::table('teams', function (Blueprint $table) {
             $table->string('timezone')->default('America/Chicago')->after('is_personal');
             $table->integer('week_start')->default(Carbon::SUNDAY)->after('timezone');
+            $table->json('address')->nullable()->after('week_start');
         });
     }
 

@@ -29,7 +29,7 @@
                     {{ __('Recipes') }}
                 </flux:sidebar.item>
 
-                <flux:sidebar.item icon="tv" :href="route('kiosk.configure')" :current="request()->routeIs('kiosk.*')" wire:navigate>
+                <flux:sidebar.item icon="tv" :href="route('kiosk.configure.calendar')" :current="request()->routeIs('kiosk.*')" wire:navigate>
                     {{ __('Kiosk') }}
                 </flux:sidebar.item>
             </flux:sidebar.nav>

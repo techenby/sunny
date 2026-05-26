@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-new #[Layout('layouts::kiosk')] class extends Component
+new #[Layout('layouts::kiosk-configure')] class extends Component
 {
     public SettingsForm $form;
 

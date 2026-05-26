@@ -11,7 +11,6 @@
             <x-kiosk.sidebar.item icon="clipboard-document-list" :href="route('kiosk.chore-chart')" :current="request()->routeIs('kiosk.chore-chart')" wire:navigate>{{ __('Chores') }}</x-kiosk.sidebar.item>
             <x-kiosk.sidebar.item icon="queue-list" :href="route('kiosk.lists')" :current="request()->routeIs('kiosk.lists')" wire:navigate>{{ __('Lists') }}</x-kiosk.sidebar.item>
             <x-kiosk.sidebar.item icon="cooking-pot" :href="route('kiosk.meal-planning')" :current="request()->routeIs('kiosk.meal-planning')" wire:navigate>{{ __('Meals') }}</x-kiosk.sidebar.item>
-            <x-kiosk.sidebar.item icon="cog" :href="route('kiosk.settings')" :current="request()->routeIs('kiosk.settings')" wire:navigate>{{ __('Settings') }}</x-kiosk.sidebar.item>
         </x-kiosk.sidebar>
 
         <flux:main class="!p-0">

@@ -5,9 +5,10 @@ use App\Models\CalendarFeed;
 use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-new class extends Component
+new #[Layout('layouts::kiosk-configure')] class extends Component
 {
     public CalendarFeedForm $form;
 
