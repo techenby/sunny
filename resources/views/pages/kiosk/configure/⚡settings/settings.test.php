@@ -17,11 +17,11 @@ test('renders successfully', function () {
     $user = User::factory()->memberOf($team)->create();
 
     actingAs($user)
-        ->get(route('kiosk.settings'))
+        ->get(route('kiosk.configure.settings'))
         ->assertOk();
 
     Livewire::actingAs($user)
-        ->test('pages::kiosk.settings')
+        ->test('pages::kiosk.configure.settings')
         ->assertOk()
         ->assertSet('form.timezone', 'Asia/Tokyo')
         ->assertSet('form.week_start', Carbon::MONDAY);
@@ -37,10 +37,19 @@ test('can change kiosk settings', function () {
     $user = User::factory()->memberOf($team)->create();
 
     Livewire::actingAs($user)
-        ->test('pages::kiosk.settings')
+        ->test('pages::kiosk.configure.settings')
         ->set('form.timezone', 'America/Sao_Paulo')
         ->set('form.week_start', Carbon::SUNDAY)
-        ->call('save');
+        ->set('form.address', [
+            'address' => '123 Grand Line',
+            'city' => 'East Blue',
+            'state' => 'GL',
+            'zip' => '00001',
+            'lat' => '0.0',
+            'long' => '0.0',
+        ])
+        ->call('save')
+        ->assertHasNoErrors();
 
     expect($team->fresh())
         ->timezone->toBe('America/Sao_Paulo')
@@ -51,7 +60,7 @@ test('options must be valid', function () {
     $user = User::factory()->create();
 
     Livewire::actingAs($user)
-        ->test('pages::kiosk.settings')
+        ->test('pages::kiosk.configure.settings')
         ->set('form.timezone', 'Not/AZone')
         ->set('form.week_start', 15)
         ->call('save')

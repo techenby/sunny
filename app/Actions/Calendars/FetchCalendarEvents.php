@@ -26,7 +26,7 @@ class FetchCalendarEvents
      *     location: string|null,
      *     starts_at: CarbonImmutable,
      *     ends_at: CarbonImmutable|null,
-     *     all_day: bool
+     *     all_day: bool,
      *     response_status: string|null
      * }>
      */
@@ -53,7 +53,7 @@ class FetchCalendarEvents
      *     location: string|null,
      *     starts_at: CarbonImmutable,
      *     ends_at: CarbonImmutable|null,
-     *     all_day: bool
+     *     all_day: bool,
      *     response_status: string|null
      * }>
      */
@@ -81,7 +81,7 @@ class FetchCalendarEvents
      *     location: string|null,
      *     starts_at: CarbonImmutable,
      *     ends_at: CarbonImmutable|null,
-     *     all_day: bool
+     *     all_day: bool,
      *     response_status: string|null
      * }
      */

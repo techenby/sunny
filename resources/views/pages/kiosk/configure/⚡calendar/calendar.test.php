@@ -72,7 +72,7 @@ test('can edit a team calendar feed', function () {
         ->set('form.color', CalendarColor::Indigo->value)
         ->call('save')
         ->assertHasNoErrors()
-        ->assertSet('editingFeed', null);
+        ->assertSet('form.editingFeed', null);
 
     $this->assertDatabaseHas('calendar_feeds', [
         'id' => $feed->id,

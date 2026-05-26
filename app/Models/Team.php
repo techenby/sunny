@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['name', 'slug', 'is_personal', 'address'])]
+#[Fillable(['name', 'slug', 'is_personal', 'address', 'timezone', 'week_start'])]
 class Team extends Model
 {
     /** @use HasFactory<TeamFactory> */

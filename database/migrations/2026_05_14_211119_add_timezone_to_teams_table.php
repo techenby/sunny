@@ -19,7 +19,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('teams', function (Blueprint $table) {
-            $table->dropColumns(['timezone', 'week_start']);
+            $table->dropColumns(['timezone', 'week_start', 'address']);
         });
     }
 };

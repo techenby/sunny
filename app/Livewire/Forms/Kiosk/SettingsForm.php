@@ -37,7 +37,7 @@ class SettingsForm extends Form
         $this->editingTeam = $team;
         $this->timezone = $team->timezone;
         $this->week_start = $team->week_start;
-        $this->address = $team->address;
+        $this->address = $team->address ?? $this->address;
     }
 
     public function save()
