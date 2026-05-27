@@ -36,6 +36,7 @@ new #[Layout('layouts::kiosk-configure')] class extends Component
             </flux:input.group>
         </flux:field>
         <flux:button wire:click="swap" icon="arrow-path-rounded-square" square />
+        <flux:button :href="route('kiosk.calendar')" variant="primary" target="_blank" icon="arrow-top-right-on-square">Preview in New Tab</flux:button>
     </div>
     <div class="overflow-hidden rounded-lg border border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900" style="width: {{ $width }}px; height: {{ $height }}px;">
         <iframe src="{{ route('kiosk.calendar') }}" frameborder="0" class="h-full w-full"></iframe>
