@@ -25,9 +25,9 @@ test('renders successfully', function () {
 
     Livewire::actingAs($user)
         ->test('pages::kiosk.configure.calendar')
-        ->assertStatus(200)
+        ->assertOk()
         ->assertSee('Family Calendar');
-});
+})->group('smoke');
 
 test('can add a calendar feed', function () {
     $team = Team::factory()->create();
