@@ -1,4 +1,4 @@
-<div class="space-y-6">
+<div class="space-y-6" wire:poll.60s>
     <div class="flex items-center justify-between">
         <flux:heading size="lg">{{ __('Calendar feeds') }}</flux:heading>
         <flux:modal.trigger name="feed-form">
