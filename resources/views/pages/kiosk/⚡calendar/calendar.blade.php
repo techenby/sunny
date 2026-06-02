@@ -1,6 +1,6 @@
 <div class="flex h-dvh flex-col overflow-hidden">
     <div class="flex shrink-0 flex-col gap-3 border-b border-zinc-200 px-5 py-4 dark:border-zinc-700 sm:flex-row sm:items-center sm:justify-between">
-        <flux:heading size="xl">{{ Carbon\CarbonImmutable::now($this->timezoneName())->format('D, M j g:i A') }}</flux:heading>
+        <x-ui.clock :timezone="auth()->user()->currentTeam->timezone"/>
 
         <div class="flex items-center gap-2">
             <flux:dropdown>

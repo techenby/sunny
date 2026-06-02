@@ -16,7 +16,7 @@
                             <span class="truncate font-medium">{{ $feed->name }}</span>
                         </flux:heading>
 
-                        <flux:text variant="subtle">{{ $feed->url }}</flux:text>
+                        <flux:text variant="subtle" class="truncate max-w-64" title="{{ $feed->url }}">{{ $feed->url }}</flux:text>
                     </div>
 
                     <div class="flex shrink-0 items-center gap-1">
