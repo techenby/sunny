@@ -196,7 +196,7 @@ new #[Layout('layouts::kiosk')] class extends Component
             ? 'g:i'
             : 'g:i A';
 
-        return $event['starts_at']->format($startsAtFormat).' - '.$event['ends_at']->format('g:i A');
+        return $event['starts_at']->format($startsAtFormat) . ' - ' . $event['ends_at']->format('g:i A');
     }
 
     private function weekStartsAt(): CarbonImmutable
