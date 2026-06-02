@@ -1,11 +1,14 @@
 <?php
 
+use App\Models\KioskDevice;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 use Livewire\Livewire;
 
 use function Pest\Laravel\actingAs;
+use function Pest\Laravel\assertModelExists;
+use function Pest\Laravel\assertModelMissing;
 
 test('renders successfully', function () {
     $team = Team::factory()->create([
@@ -65,4 +68,35 @@ test('options must be valid', function () {
         ->set('form.week_start', 15)
         ->call('save')
         ->assertHasErrors(['form.timezone', 'form.week_start']);
+});
+
+describe('device management', function () {
+    test('can forget a paired display for the current team', function () {
+        $user = User::factory()->create();
+
+        $kitchen = KioskDevice::factory()->paired($user, $user->currentTeam)->create(['name' => 'Kitchen']);
+        $bedroom = KioskDevice::factory()->paired($user, $user->currentTeam)->create(['name' => 'Bedroom']);
+
+        Livewire::actingAs($user)
+            ->test('pages::kiosk.configure.settings')
+            ->assertSee('Kitchen')
+            ->assertSee('Bedroom')
+            ->call('forget', $kitchen->id)
+            ->assertDontSee('Kitchen')
+            ->assertSee('Bedroom');
+
+        assertModelMissing($kitchen);
+        assertModelExists($bedroom);
+    });
+
+    test('cannot forget device from another team', function () {
+        $user = User::factory()->create();
+        $other = KioskDevice::factory()->paired()->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::kiosk.configure.settings')
+            ->call('forget', $other->id);
+
+        assertModelExists($other);
+    });
 });

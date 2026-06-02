@@ -3,6 +3,12 @@
 use App\Http\Middleware\EnsureTeamMembership;
 use Illuminate\Support\Facades\Route;
 
+Route::livewire('kiosk', 'pages::kiosk.index')->name('kiosk.index');
+
+Route::livewire('kiosk/pair/{code}', 'pages::kiosk.pair')
+    ->middleware(['auth', 'verified'])
+    ->name('kiosk.pair');
+
 Route::prefix('{current_team}/kiosk')
     ->middleware(['auth', 'verified', EnsureTeamMembership::class])
     ->name('kiosk')
