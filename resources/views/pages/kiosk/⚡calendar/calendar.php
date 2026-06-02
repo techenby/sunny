@@ -181,6 +181,24 @@ new #[Layout('layouts::kiosk')] class extends Component
         $this->clearCalendarState();
     }
 
+    /** @param array{starts_at: CarbonImmutable, ends_at: CarbonImmutable|null, all_day: bool} $event */
+    public function eventTimeRange(array $event): string
+    {
+        if ($event['all_day']) {
+            return __('All day');
+        }
+
+        if (! $event['ends_at'] instanceof CarbonImmutable) {
+            return $event['starts_at']->format('g:i A');
+        }
+
+        $startsAtFormat = $event['starts_at']->format('A') === $event['ends_at']->format('A')
+            ? 'g:i'
+            : 'g:i A';
+
+        return $event['starts_at']->format($startsAtFormat).' - '.$event['ends_at']->format('g:i A');
+    }
+
     private function weekStartsAt(): CarbonImmutable
     {
         return $this->focusedDate()

@@ -88,6 +88,20 @@ DTEND;TZID=America/Chicago:20260508T103000
 SUMMARY:Morning Standup
 LOCATION:Kitchen
 END:VEVENT
+BEGIN:VEVENT
+UID:family-lunch
+DTSTAMP:20260501T120000Z
+DTSTART;TZID=America/Chicago:20260508T100000
+DTEND;TZID=America/Chicago:20260508T130000
+SUMMARY:Family Lunch
+END:VEVENT
+BEGIN:VEVENT
+UID:evening-game
+DTSTAMP:20260501T120000Z
+DTSTART;TZID=America/Chicago:20260508T170000
+DTEND;TZID=America/Chicago:20260508T190000
+SUMMARY:Evening Game
+END:VEVENT
 END:VCALENDAR
 ICS),
     ]);
@@ -111,9 +125,12 @@ ICS),
         ->assertSee('All day')
         ->assertSee('Family Day')
         ->assertSee('Morning Standup')
+        ->assertSee('Family Lunch')
+        ->assertSee('Evening Game')
         ->assertSee('Kitchen')
-        ->assertSee('9:00 AM')
-        ->assertSee('10:30 AM')
+        ->assertSee('9:00 - 10:30 AM')
+        ->assertSee('10:00 AM - 1:00 PM')
+        ->assertSee('5:00 - 7:00 PM')
         ->assertSee('top: 37.5%', false)
         ->assertSee('height: 6.25%', false);
 });

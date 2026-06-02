@@ -53,12 +53,7 @@
                             style="top: {{ $event['timeline_top'] }}%; height: {{ $event['timeline_height'] }}%; left: 0; right: 0; min-height: 2.5rem; border-left: 4px {{ ($event['response_status'] ?? null) === 'NEEDS-ACTION' ? 'dashed' : 'solid' }} {{ $event['feed_color'] }}"
                         >
                             <div class="mb-1 flex items-center gap-1.5 text-xs font-medium text-zinc-500 dark:text-zinc-400">
-                                {{ $event['starts_at']->format('g:i A') }}
-
-                                @if ($event['ends_at'])
-                                    <span>{{ __('-') }}</span>
-                                    <span>{{ $event['ends_at']->format('g:i A') }}</span>
-                                @endif
+                                {{ $this->eventTimeRange($event) }}
                             </div>
 
                             <div class="truncate font-medium leading-snug text-zinc-900 dark:text-zinc-100">{{ $event['title'] }}</div>

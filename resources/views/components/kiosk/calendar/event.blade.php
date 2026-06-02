@@ -7,7 +7,7 @@
     style="border-left: 4px {{ ($event['response_status'] ?? null) === 'NEEDS-ACTION' ? 'dashed' : 'solid' }} {{ $event['feed_color'] }}"
 >
     <div class="mb-1 flex items-center gap-1.5 text-xs font-medium text-zinc-500 dark:text-zinc-400">
-        {{ $event['all_day'] ? __('All day') : $event['starts_at']->format('g:i A') }}
+        {{ $this->eventTimeRange($event) }}
     </div>
 
     <div class="wrap-break-word font-medium leading-snug text-zinc-900 dark:text-zinc-100">{{ $event['title'] }}</div>

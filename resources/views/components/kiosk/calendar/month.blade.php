@@ -40,7 +40,7 @@
                                 ])
                                 style="border-left: 3px {{ ($event['response_status'] ?? null) === 'NEEDS-ACTION' ? 'dashed' : 'solid' }} {{ $event['feed_color'] }}"
                             >
-                                <span class="font-medium">{{ $event['all_day'] ? __('All day') : $event['starts_at']->format('g:i A') }}</span>
+                                <span class="font-medium">{{ $this->eventTimeRange($event) }}</span>
                                 {{ $event['title'] }}
                             </div>
                         @endforeach
