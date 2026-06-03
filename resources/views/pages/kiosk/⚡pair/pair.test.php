@@ -106,8 +106,8 @@ test('once a phone approves the device poll logs in and redirects', function ():
     $user = User::factory()->create();
     $device = KioskDevice::factory()->pending()->create();
 
-    $component = Livewire::test('pages::kiosk.index')
-        ->set('deviceId', $device->id);
+    $component = Livewire::withCookie('kiosk_device_uuid', $device->uuid)
+        ->test('pages::kiosk.index');
 
     KioskDevice::query()->whereKey($device->id)->update([
         'user_id' => $user->id,
@@ -235,14 +235,23 @@ test('deleting a paired device returns it to QR on next visit', function (): voi
 
 test('session id rotates after pair-completion login', function (): void {
     $user = User::factory()->create();
-    $device = KioskDevice::factory()->paired($user, $user->currentTeam)->create();
+    $device = KioskDevice::factory()->pending()->create();
 
     session()->put('marker', 'before-pair');
     $sessionIdBefore = session()->getId();
 
-    Livewire::test('pages::kiosk.index')
-        ->set('deviceId', $device->id)
-        ->call('check');
+    $component = Livewire::withCookie('kiosk_device_uuid', $device->uuid)
+        ->test('pages::kiosk.index');
+
+    KioskDevice::query()->whereKey($device->id)->update([
+        'user_id' => $user->id,
+        'team_id' => $user->currentTeam->id,
+        'paired_at' => now(),
+        'expires_at' => null,
+        'pairing_code' => null,
+    ]);
+
+    $component->call('check');
 
     expect(session()->getId())->not->toBe($sessionIdBefore);
 });

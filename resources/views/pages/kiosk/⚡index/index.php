@@ -17,8 +17,6 @@ new #[Layout('layouts.auth')] class extends Component
 {
     public const COOKIE_NAME = 'kiosk_device_uuid';
 
-    public ?int $deviceId = null;
-
     public string $pairingCode = '';
 
     public ?string $expiresAt = null;
@@ -40,7 +38,7 @@ new #[Layout('layouts.auth')] class extends Component
 
     public function check(): mixed
     {
-        $device = KioskDevice::query()->find($this->deviceId);
+        $device = $this->deviceFromCookie();
 
         if (! $device) {
             return $this->redirect(request()->fullUrl(), navigate: false);
@@ -91,6 +89,19 @@ new #[Layout('layouts.auth')] class extends Component
         }
 
         return $this->createDevice();
+    }
+
+    protected function deviceFromCookie(): ?KioskDevice
+    {
+        $uuid = request()->cookie(self::COOKIE_NAME);
+
+        if (! $uuid) {
+            return null;
+        }
+
+        return KioskDevice::query()
+            ->where('uuid', $uuid)
+            ->first();
     }
 
     protected function createDevice(): KioskDevice
