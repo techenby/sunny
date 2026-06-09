@@ -14,6 +14,14 @@ return [
     |
     */
 
+    'mapbox' => [
+        'key' => env('MAPBOX_API_KEY'),
+    ],
+
+    'openweather' => [
+        'key' => env('OPENWEATHER_API_KEY'),
+    ],
+
     'postmark' => [
         'key' => env('POSTMARK_API_KEY'),
     ],

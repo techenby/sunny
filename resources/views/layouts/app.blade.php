@@ -4,28 +4,37 @@
         @include('layouts.partials.head')
     </head>
     <body class="min-h-screen bg-white dark:bg-zinc-800">
-        <flux:sidebar sticky collapsible="mobile" class="border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
+        <flux:sidebar sticky collapsible class="border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
+            <flux:sidebar.header>
+                <flux:sidebar.brand
+                    href="#"
+                    :logo="asset('icon.png')"
+                    name="Sunny Home"
+                />
+                <flux:sidebar.collapse class="in-data-flux-sidebar-on-desktop:not-in-data-flux-sidebar-collapsed-desktop:-mr-2" />
+            </flux:sidebar.header>
+
             <livewire:team-switcher />
 
             <flux:sidebar.nav>
-                <flux:sidebar.group :heading="__('Platform')" class="grid">
-                    <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
-                        {{ __('Dashboard') }}
-                    </flux:sidebar.item>
+                <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
+                    {{ __('Dashboard') }}
+                </flux:sidebar.item>
 
-                    <flux:sidebar.item icon="archive-box" :href="route('inventory.index')" :current="request()->routeIs('inventory.*')" wire:navigate>
-                        {{ __('Inventory') }}
-                    </flux:sidebar.item>
+                <flux:sidebar.item icon="archive-box" :href="route('inventory.index')" :current="request()->routeIs('inventory.*')" wire:navigate>
+                    {{ __('Inventory') }}
+                </flux:sidebar.item>
 
-                    <flux:sidebar.item icon="book-open" :href="route('recipes.index')" :current="request()->routeIs('recipes.*')" wire:navigate>
-                        {{ __('Recipes') }}
-                    </flux:sidebar.item>
+                <flux:sidebar.item icon="book-open" :href="route('recipes.index')" :current="request()->routeIs('recipes.*')" wire:navigate>
+                    {{ __('Recipes') }}
+                </flux:sidebar.item>
 
-                </flux:sidebar.group>
+                <flux:sidebar.item icon="tv" :href="route('kiosk.configure.calendar')" :current="request()->routeIs('kiosk.*')" wire:navigate>
+                    {{ __('Kiosk') }}
+                </flux:sidebar.item>
             </flux:sidebar.nav>
 
             <flux:spacer />
-
 
             <flux:sidebar.item icon="light-bulb" icon:trailing="arrow-up-right" href="https://suggest.gg/techenby" target="_blank">
                 {{ __('Make a Suggestion') }}
@@ -102,6 +111,8 @@
         <flux:main>
             {{ $slot }}
         </flux:main>
+
+        <x-screensize />
 
         @persist('toast')
             <flux:toast.group>

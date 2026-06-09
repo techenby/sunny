@@ -63,4 +63,10 @@ class UserFactory extends Factory
             'two_factor_confirmed_at' => now(),
         ]);
     }
+
+    public function memberOf(Team $team): static
+    {
+        return $this->hasAttached($team)
+            ->afterCreating(fn ($user) => $user->switchTeam($team));
+    }
 }

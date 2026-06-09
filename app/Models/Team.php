@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['name', 'slug', 'is_personal'])]
+#[Fillable(['name', 'slug', 'is_personal', 'address', 'timezone', 'week_start'])]
 class Team extends Model
 {
     /** @use HasFactory<TeamFactory> */
@@ -36,6 +36,12 @@ class Team extends Model
                 $team->slug = static::generateUniqueTeamSlug($team->name, $team->id);
             }
         });
+    }
+
+    /** @return HasMany<CalendarFeed, $this> */
+    public function calendarFeeds(): HasMany
+    {
+        return $this->hasMany(CalendarFeed::class);
     }
 
     public function owner(): ?Model
@@ -100,6 +106,7 @@ class Team extends Model
     {
         return [
             'is_personal' => 'boolean',
+            'address' => 'array',
         ];
     }
 }
