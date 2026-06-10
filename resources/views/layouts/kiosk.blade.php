@@ -3,7 +3,14 @@
     <head>
         @include('layouts.partials.head')
     </head>
-    <body class="min-h-screen bg-white dark:bg-zinc-800">
+    <body
+        @class([
+            'bg-white dark:bg-zinc-800',
+            'h-screen w-screen overflow-hidden' => auth()->user()->currentTeam->layout === 'landscape',
+            'fixed top-0 left-[100vw] h-[100vw] w-[100vh] origin-top-left rotate-90 overflow-hidden' => auth()->user()->currentTeam->layout === 'portrait',
+        ])
+        data-kiosk-layout="{{ auth()->user()->currentTeam->layout }}"
+    >
         <x-kiosk.sidebar>
             <livewire:kiosk.weather-tile />
             <x-kiosk.sidebar.item icon="calendar" :href="route('kiosk.calendar')" :current="request()->routeIs('kiosk.calendar')" wire:navigate>{{ __('Calendar') }}</x-kiosk.sidebar.item>

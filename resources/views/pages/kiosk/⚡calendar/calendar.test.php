@@ -22,6 +22,20 @@ test('renders successfully', function () {
         ->assertOk();
 })->group('smoke');
 
+test('uses the team layout to orient the kiosk viewport', function (string $layout, string $expectedClasses) {
+    $team = Team::factory()->create(['layout' => $layout]);
+    $user = User::factory()->memberOf($team)->create();
+
+    actingAs($user)
+        ->get(route('kiosk.calendar'))
+        ->assertOk()
+        ->assertSee('data-kiosk-layout="' . $layout . '"', false)
+        ->assertSee($expectedClasses, false);
+})->with([
+    'landscape' => ['landscape', 'h-screen w-screen overflow-hidden'],
+    'portrait' => ['portrait', 'fixed top-0 left-[100vw] h-[100vw] w-[100vh] origin-top-left rotate-90 overflow-hidden'],
+]);
+
 test('can view events from feed', function () {
     Http::allowStrayRequests(['https://calendar.google.com/calendar/ical/*']);
 
