@@ -36,6 +36,26 @@ test('uses the team layout to orient the kiosk viewport', function (string $layo
     'portrait' => ['portrait', 'fixed top-0 left-[100vw] h-[100vw] w-[100vh] origin-top-left rotate-90 overflow-hidden'],
 ]);
 
+test('uses the team appearance for the kiosk color scheme', function (string $appearance, bool $isDark) {
+    $team = Team::factory()->create(['appearance' => $appearance]);
+    $user = User::factory()->memberOf($team)->create();
+
+    $response = actingAs($user)
+        ->get(route('kiosk.calendar'))
+        ->assertOk()
+        ->assertSee('data-kiosk-appearance="' . $appearance . '"', false)
+        ->assertSee('const appearance = \'' . $appearance . '\';', false)
+        ->assertDontSee('window.localStorage.getItem(\'flux.appearance\')', false);
+
+    $isDark
+        ? $response->assertSee('class="dark"', false)
+        : $response->assertDontSee('class="dark"', false);
+})->with([
+    'light' => ['light', false],
+    'dark' => ['dark', true],
+    'system' => ['system', false],
+]);
+
 test('can view events from feed', function () {
     Http::allowStrayRequests(['https://calendar.google.com/calendar/ical/*']);
 

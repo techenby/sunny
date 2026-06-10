@@ -27,5 +27,28 @@
 @endproduction
 
 @vite(['resources/css/app.css', 'resources/js/app.js'])
-@fluxAppearance
+@if (isset($fixedAppearance))
+    <style>
+        :root.dark {
+            color-scheme: dark;
+        }
+    </style>
+    <script>
+        (() => {
+            const appearance = @js($fixedAppearance);
+
+            const applyAppearance = () => {
+                const dark = appearance === 'dark'
+                    || (appearance === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+                document.documentElement.classList.toggle('dark', dark);
+            };
+
+            window.Flux = { applyAppearance };
+            applyAppearance();
+        })();
+    </script>
+@else
+    @fluxAppearance
+@endif
 @stack('head')

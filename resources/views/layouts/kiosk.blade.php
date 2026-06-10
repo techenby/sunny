@@ -1,7 +1,11 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
+<html
+    lang="{{ str_replace('_', '-', app()->getLocale()) }}"
+    @class(['dark' => auth()->user()->currentTeam->appearance === 'dark'])
+    data-kiosk-appearance="{{ auth()->user()->currentTeam->appearance }}"
+>
     <head>
-        @include('layouts.partials.head')
+        @include('layouts.partials.head', ['fixedAppearance' => auth()->user()->currentTeam->appearance])
     </head>
     <body
         @class([
