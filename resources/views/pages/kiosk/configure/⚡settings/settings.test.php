@@ -15,6 +15,8 @@ test('renders successfully', function () {
         'name' => 'Straw Hats',
         'timezone' => 'Asia/Tokyo',
         'week_start' => Carbon::MONDAY,
+        'appearance' => 'light',
+        'layout' => 'landscape',
     ]);
 
     $user = User::factory()->memberOf($team)->create();
@@ -27,7 +29,9 @@ test('renders successfully', function () {
         ->test('pages::kiosk.configure.settings')
         ->assertOk()
         ->assertSet('form.timezone', 'Asia/Tokyo')
-        ->assertSet('form.week_start', Carbon::MONDAY);
+        ->assertSet('form.week_start', Carbon::MONDAY)
+        ->assertSet('form.appearance', 'light')
+        ->assertSet('form.layout', 'landscape');
 })->group('smoke');
 
 test('can change kiosk settings', function () {
@@ -43,6 +47,8 @@ test('can change kiosk settings', function () {
         ->test('pages::kiosk.configure.settings')
         ->set('form.timezone', 'America/Sao_Paulo')
         ->set('form.week_start', Carbon::SUNDAY)
+        ->set('form.appearance', 'system')
+        ->set('form.layout', 'landscape')
         ->set('form.address', [
             'address' => '123 Grand Line',
             'city' => 'East Blue',
@@ -56,7 +62,9 @@ test('can change kiosk settings', function () {
 
     expect($team->fresh())
         ->timezone->toBe('America/Sao_Paulo')
-        ->week_start->toBe(Carbon::SUNDAY);
+        ->week_start->toBe(Carbon::SUNDAY)
+        ->appearance->toBe('system')
+        ->layout->toBe('landscape');
 });
 
 test('options must be valid', function () {
@@ -66,8 +74,10 @@ test('options must be valid', function () {
         ->test('pages::kiosk.configure.settings')
         ->set('form.timezone', 'Not/AZone')
         ->set('form.week_start', 15)
+        ->set('form.appearance', 'sepia')
+        ->set('form.layout', 'footer')
         ->call('save')
-        ->assertHasErrors(['form.timezone', 'form.week_start']);
+        ->assertHasErrors(['form.timezone', 'form.week_start', 'form.appearance', 'form.layout']);
 });
 
 describe('device management', function () {

@@ -25,6 +25,8 @@ class TeamFactory extends Factory
             'is_personal' => false,
             'timezone' => 'America/Chicago',
             'week_start' => Carbon::SUNDAY,
+            'appearance' => 'dark',
+            'layout' => 'landscape',
         ];
     }
 

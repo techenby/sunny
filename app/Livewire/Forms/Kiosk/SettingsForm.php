@@ -19,6 +19,12 @@ class SettingsForm extends Form
     #[Validate('required|int|between:0,6')]
     public int $week_start = Carbon::SUNDAY;
 
+    #[Validate('required|string|in:light,dark,system')]
+    public string $appearance = 'dark';
+
+    #[Validate('required|string|in:landscape,portrait')]
+    public string $layout = 'landscape';
+
     #[Validate([
         'address' => 'required|array',
         'address.*' => 'required',
@@ -32,15 +38,17 @@ class SettingsForm extends Form
         'long' => '',
     ];
 
-    public function load(Team $team)
+    public function load(Team $team): void
     {
         $this->editingTeam = $team;
         $this->timezone = $team->timezone;
         $this->week_start = $team->week_start;
+        $this->appearance = $team->appearance;
+        $this->layout = $team->layout;
         $this->address = $team->address ?? $this->address;
     }
 
-    public function save()
+    public function save(): void
     {
         $data = $this->validate();
 

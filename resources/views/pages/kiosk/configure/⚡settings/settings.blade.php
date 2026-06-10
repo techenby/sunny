@@ -1,20 +1,33 @@
 <div>
     <form wire:submit="save" class="space-y-6 p-6 lg:p-8">
-        <flux:select wire:model="form.timezone" :label="__('Timezone')" variant="listbox">
-            @foreach (DateTimeZone::listIdentifiers() as $timezoneOption)
-                <flux:select.option value="{{ $timezoneOption }}">{{ str_replace('_', ' ', $timezoneOption) }}</flux:select.option>
-            @endforeach
-        </flux:select>
+        <div class="grid gap-6 sm:grid-cols-2">
+            <flux:select wire:model="form.timezone" :label="__('Timezone')" variant="listbox" searchable>
+                @foreach (DateTimeZone::listIdentifiers() as $timezoneOption)
+                    <flux:select.option value="{{ $timezoneOption }}">{{ str_replace('_', ' ', $timezoneOption) }}</flux:select.option>
+                @endforeach
+            </flux:select>
 
-        <flux:select wire:model="form.week_start" :label="__('Calendar Week Start')" variant="listbox">
-            <flux:select.option value="0">{{ __('Sunday') }}</flux:select.option>
-            <flux:select.option value="1">{{ __('Monday') }}</flux:select.option>
-            <flux:select.option value="2">{{ __('Tuesday') }}</flux:select.option>
-            <flux:select.option value="3">{{ __('Wednesday') }}</flux:select.option>
-            <flux:select.option value="4">{{ __('Thursday') }}</flux:select.option>
-            <flux:select.option value="5">{{ __('Friday') }}</flux:select.option>
-            <flux:select.option value="6">{{ __('Saturday') }}</flux:select.option>
-        </flux:select>
+            <flux:select wire:model="form.week_start" :label="__('Calendar Week Start')" variant="listbox" searchable>
+                <flux:select.option value="0">{{ __('Sunday') }}</flux:select.option>
+                <flux:select.option value="1">{{ __('Monday') }}</flux:select.option>
+                <flux:select.option value="2">{{ __('Tuesday') }}</flux:select.option>
+                <flux:select.option value="3">{{ __('Wednesday') }}</flux:select.option>
+                <flux:select.option value="4">{{ __('Thursday') }}</flux:select.option>
+                <flux:select.option value="5">{{ __('Friday') }}</flux:select.option>
+                <flux:select.option value="6">{{ __('Saturday') }}</flux:select.option>
+            </flux:select>
+
+            <flux:radio.group wire:model="form.appearance" :label="__('Appearance')" variant="segmented">
+                <flux:radio value="light" icon="sun">{{ __('Light') }}</flux:radio>
+                <flux:radio value="dark" icon="moon">{{ __('Dark') }}</flux:radio>
+                <flux:radio value="system" icon="computer-desktop">{{ __('System') }}</flux:radio>
+            </flux:radio.group>
+
+            <flux:radio.group wire:model="form.layout" :label="__('Layout')" variant="segmented">
+                <flux:radio value="portrait">{{ __('Portrait') }}</flux:radio>
+                <flux:radio value="landscape">{{ __('Landscape') }}</flux:radio>
+            </flux:radio.group>
+        </div>
 
         <flux:field>
             <flux:label>Address for Weather</flux:label>

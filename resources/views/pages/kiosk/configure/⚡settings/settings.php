@@ -12,12 +12,12 @@ new #[Layout('layouts::kiosk-configure')] class extends Component
 {
     public SettingsForm $form;
 
-    public function mount()
+    public function mount(): void
     {
         $this->form->load(Auth::user()->currentTeam);
     }
 
-    public function save()
+    public function save(): void
     {
         $this->form->save();
     }
