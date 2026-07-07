@@ -1,0 +1,100 @@
+name: README Reminder
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  remind:
+    runs-on: ubuntu-latest
+
+    permissions:
+      pull-requests: write
+
+    steps:
+      - name: Comment when the README needs updating
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const marker = '<!-- readme-update-reminder -->';
+
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              per_page: 100,
+            });
+
+            const paths = files.map((file) => file.filename);
+            const migrationChanges = paths.filter((path) => path.startsWith('database/migrations/'));
+            const packageChanges = paths.filter((path) => ['composer.json', 'package.json'].includes(path));
+            const readmeUpdated = paths.includes('README.md');
+
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              per_page: 100,
+            });
+            const existing = comments.find((comment) => comment.body.includes(marker));
+
+            const reminderNeeded = (migrationChanges.length > 0 || packageChanges.length > 0) && ! readmeUpdated;
+
+            if (! reminderNeeded) {
+              if (existing) {
+                await github.rest.issues.deleteComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: existing.id,
+                });
+              }
+
+              return;
+            }
+
+            const sections = [];
+
+            if (migrationChanges.length > 0) {
+              sections.push([
+                '### Database changed — is the ERD current?',
+                '',
+                'This PR touches migrations, so the ERD in the README may need updating:',
+                '',
+                ...migrationChanges.map((path) => `- \`${path}\``),
+              ].join('\n'));
+            }
+
+            if (packageChanges.length > 0) {
+              sections.push([
+                '### Dependencies changed — are the Notable Packages current?',
+                '',
+                'This PR changes dependencies, so the Notable Packages lists in the README may need updating:',
+                '',
+                ...packageChanges.map((path) => `- \`${path}\``),
+              ].join('\n'));
+            }
+
+            const body = [
+              marker,
+              '## 📖 README update may be required',
+              '',
+              sections.join('\n\n'),
+              '',
+              '_If the README is already accurate, feel free to ignore this. This comment updates automatically as the PR changes._',
+            ].join('\n');
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                body,
+              });
+            }
