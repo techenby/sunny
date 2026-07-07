@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Concerns\GeneratesUniqueTeamSlugs;
+use App\Enums\Appearance;
 use App\Enums\TeamRole;
 use Database\Factories\TeamFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -15,7 +16,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['name', 'slug', 'is_personal', 'address', 'timezone', 'week_start'])]
+#[Fillable(['name', 'slug', 'is_personal', 'address', 'timezone', 'week_start', 'appearance'])]
 class Team extends Model
 {
     /** @use HasFactory<TeamFactory> */
@@ -107,6 +108,7 @@ class Team extends Model
         return [
             'is_personal' => 'boolean',
             'address' => 'array',
+            'appearance' => Appearance::class,
         ];
     }
 }

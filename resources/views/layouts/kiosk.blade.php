@@ -1,6 +1,10 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark' => auth()->user()->currentTeam->appearance === \App\Enums\Appearance::Dark])>
     <head>
+        {{-- Must run before @fluxAppearance so Flux applies the team's appearance instead of the device preference --}}
+        <script>
+            window.localStorage.setItem('flux.appearance', @js(auth()->user()->currentTeam->appearance->value));
+        </script>
         @include('layouts.partials.head')
     </head>
     <body class="min-h-screen bg-white dark:bg-zinc-800">

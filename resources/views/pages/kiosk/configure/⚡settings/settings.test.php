@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\Appearance;
 use App\Models\KioskDevice;
 use App\Models\Team;
 use App\Models\User;
@@ -15,6 +16,7 @@ test('renders successfully', function () {
         'name' => 'Straw Hats',
         'timezone' => 'Asia/Tokyo',
         'week_start' => Carbon::MONDAY,
+        'appearance' => Appearance::Light,
     ]);
 
     $user = User::factory()->memberOf($team)->create();
@@ -27,7 +29,8 @@ test('renders successfully', function () {
         ->test('pages::kiosk.configure.settings')
         ->assertOk()
         ->assertSet('form.timezone', 'Asia/Tokyo')
-        ->assertSet('form.week_start', Carbon::MONDAY);
+        ->assertSet('form.week_start', Carbon::MONDAY)
+        ->assertSet('form.appearance', 'light');
 })->group('smoke');
 
 test('can change kiosk settings', function () {
@@ -43,6 +46,7 @@ test('can change kiosk settings', function () {
         ->test('pages::kiosk.configure.settings')
         ->set('form.timezone', 'America/Sao_Paulo')
         ->set('form.week_start', Carbon::SUNDAY)
+        ->set('form.appearance', 'light')
         ->set('form.address', [
             'address' => '123 Grand Line',
             'city' => 'East Blue',
@@ -56,7 +60,8 @@ test('can change kiosk settings', function () {
 
     expect($team->fresh())
         ->timezone->toBe('America/Sao_Paulo')
-        ->week_start->toBe(Carbon::SUNDAY);
+        ->week_start->toBe(Carbon::SUNDAY)
+        ->appearance->toBe(Appearance::Light);
 });
 
 test('options must be valid', function () {
@@ -66,8 +71,9 @@ test('options must be valid', function () {
         ->test('pages::kiosk.configure.settings')
         ->set('form.timezone', 'Not/AZone')
         ->set('form.week_start', 15)
+        ->set('form.appearance', 'sepia')
         ->call('save')
-        ->assertHasErrors(['form.timezone', 'form.week_start']);
+        ->assertHasErrors(['form.timezone', 'form.week_start', 'form.appearance']);
 });
 
 describe('device management', function () {

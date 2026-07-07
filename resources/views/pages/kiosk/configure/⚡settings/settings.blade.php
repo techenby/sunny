@@ -16,6 +16,12 @@
             <flux:select.option value="6">{{ __('Saturday') }}</flux:select.option>
         </flux:select>
 
+        <flux:radio.group wire:model="form.appearance" :label="__('Appearance')" variant="segmented">
+            <flux:radio value="light" icon="sun" :label="__('Light')" />
+            <flux:radio value="dark" icon="moon" :label="__('Dark')" />
+            <flux:radio value="system" icon="computer-desktop" :label="__('System')" />
+        </flux:radio.group>
+
         <flux:field>
             <flux:label>Address for Weather</flux:label>
 
