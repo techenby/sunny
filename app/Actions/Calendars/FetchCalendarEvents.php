@@ -8,8 +8,6 @@ use App\Models\CalendarFeed;
 use Carbon\CarbonImmutable;
 use DateTimeInterface;
 use DateTimeZone;
-use Illuminate\Http\Client\ConnectionException;
-use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
