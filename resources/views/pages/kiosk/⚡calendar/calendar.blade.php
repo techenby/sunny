@@ -3,6 +3,20 @@
         <x-ui.clock :timezone="auth()->user()->currentTeam->timezone"/>
 
         <div class="flex items-center gap-2">
+            @if ($this->failedFeeds->isNotEmpty())
+            <flux:dropdown>
+                <flux:button icon="exclamation-triangle" variant="primary" color="yellow"/>
+
+                <flux:popover>
+                    <flux:heading>
+                        {{ __("Couldn't load :feeds.", ['feeds' => $this->failedFeeds->pluck('name')->join(', ', __(' and '))]) }}
+                    </flux:heading>
+                    <flux:text>
+                        {{ __('Open Sunny on your phone or computer and go to Configure → Calendar to fix it.') }}
+                    </flux:text>
+                </flux:popover>
+            </flux:dropdown>
+            @endif
             <flux:dropdown>
                 <flux:button icon="funnel" icon:variant="outline" />
                 <flux:menu keep-open>

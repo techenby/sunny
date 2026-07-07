@@ -36,6 +36,28 @@ new #[Layout('layouts::kiosk')] class extends Component
             ->get();
     }
 
+    /**
+     * Feeds that failed their most recent fetch. Reads the events for the
+     * current format first so fetches run before health is checked, keeping
+     * the banner in sync with this render instead of the previous one.
+     *
+     * @return EloquentCollection<int, CalendarFeed>
+     */
+    #[Computed]
+    public function failedFeeds(): EloquentCollection
+    {
+        match ($this->format) {
+            'day' => $this->dayEvents,
+            'month' => $this->monthEvents,
+            default => $this->weekEvents,
+        };
+
+        return $this->feeds
+            ->whereIn('id', $this->selectedFeeds)
+            ->filter(fn (CalendarFeed $feed): bool => $feed->isFailing())
+            ->values();
+    }
+
     /** @return array<int, array<string, mixed>> */
     #[Computed]
     public function dayEvents(): array
@@ -236,7 +258,7 @@ new #[Layout('layouts::kiosk')] class extends Component
 
     private function clearCalendarState(): void
     {
-        unset($this->dayEvents, $this->day, $this->dayAllDayEvents, $this->dayTimedEvents, $this->weekEvents, $this->weekDays, $this->monthEvents, $this->monthDays);
+        unset($this->dayEvents, $this->day, $this->dayAllDayEvents, $this->dayTimedEvents, $this->weekEvents, $this->weekDays, $this->monthEvents, $this->monthDays, $this->failedFeeds);
     }
 
     private function timezoneName(): string

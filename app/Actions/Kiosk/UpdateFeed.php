@@ -11,6 +11,10 @@ class UpdateFeed
     /** @param  array<string, mixed>  $data */
     public function handle(CalendarFeed $feed, array $data): CalendarFeed
     {
+        if (isset($data['url']) && $data['url'] !== $feed->url) {
+            $feed->fetched();
+        }
+
         $feed->update($data);
 
         return $feed;

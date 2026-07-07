@@ -105,6 +105,47 @@ test('can remove a team calendar feed', function () {
     ]);
 });
 
+test('shows failure details for a failing feed', function () {
+    $team = Team::factory()
+        ->has(CalendarFeed::factory()->failing()->state([
+            'name' => 'Work Calendar',
+            'url' => 'https://example.com/work.ics',
+            'color' => CalendarColor::Red,
+        ]))
+        ->create();
+    $user = User::factory()->memberOf($team)->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::kiosk.configure.calendar')
+        ->assertSee('Failing')
+        ->assertSee('The calendar server responded with HTTP 401.')
+        ->assertSee('Secret address in iCal format');
+});
+
+test('updating a feed url clears its failure state', function () {
+    $team = Team::factory()
+        ->has(CalendarFeed::factory()->failing()->state([
+            'name' => 'Work Calendar',
+            'url' => 'https://example.com/work.ics',
+            'color' => CalendarColor::Red,
+        ]))
+        ->create();
+    $user = User::factory()->memberOf($team)->create();
+    $feed = $team->calendarFeeds()->firstOrFail();
+
+    Livewire::actingAs($user)
+        ->test('pages::kiosk.configure.calendar')
+        ->call('edit', $feed->id)
+        ->set('form.url', 'https://example.com/work-fixed.ics')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $feed->refresh();
+
+    expect($feed->isFailing())->toBeFalse()
+        ->and($feed->last_error)->toBeNull();
+});
+
 test('validates calendar feed input', function () {
     $user = User::factory()->create();
 

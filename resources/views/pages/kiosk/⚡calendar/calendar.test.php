@@ -237,10 +237,112 @@ ICS),
         ->assertDontSee('Third Event');
 });
 
+test('shows a warning banner when a feed fails to load', function () {
+    Http::fake([
+        'https://example.com/good.ics' => Http::response(<<<'ICS'
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Sunny//Tests//EN
+BEGIN:VEVENT
+UID:morning-standup
+DTSTAMP:20260501T120000Z
+DTSTART;TZID=America/Chicago:20260508T090000
+DTEND;TZID=America/Chicago:20260508T103000
+SUMMARY:Morning Standup
+END:VEVENT
+END:VCALENDAR
+ICS),
+        'https://example.com/broken.ics' => Http::response('<!DOCTYPE html>Unauthorized', 401),
+    ]);
+
+    $this->travelTo(Date::parse('2026-05-08 12:00:00', 'America/Chicago'));
+
+    $team = Team::factory()
+        ->has(
+            CalendarFeed::factory()
+                ->count(2)
+                ->sequence([
+                    'url' => 'https://example.com/good.ics',
+                    'name' => 'Family Calendar',
+                    'color' => CalendarColor::Blue,
+                ], [
+                    'url' => 'https://example.com/broken.ics',
+                    'name' => 'Work Calendar',
+                    'color' => CalendarColor::Red,
+                ])
+        )
+        ->create();
+    $user = User::factory()->memberOf($team)->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::kiosk.calendar')
+        ->assertSee("Couldn't load Work Calendar.")
+        ->assertSee('Open Sunny on your phone or computer')
+        ->assertSee('Morning Standup');
+
+    expect($team->calendarFeeds()->firstWhere('name', 'Work Calendar')->isFailing())->toBeTrue()
+        ->and($team->calendarFeeds()->firstWhere('name', 'Family Calendar')->isFailing())->toBeFalse();
+});
+
+test('does not show a warning banner when all feeds load', function () {
+    Http::fake([
+        'https://example.com/good.ics' => Http::response(<<<'ICS'
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Sunny//Tests//EN
+END:VCALENDAR
+ICS),
+    ]);
+
+    $team = Team::factory()
+        ->has(CalendarFeed::factory()->state([
+            'url' => 'https://example.com/good.ics',
+            'name' => 'Family Calendar',
+            'color' => CalendarColor::Blue,
+        ]))
+        ->create();
+    $user = User::factory()->memberOf($team)->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::kiosk.calendar')
+        ->assertDontSee("Couldn't load");
+});
+
 test('can hide feed from calendar', function () {
-    Http::allowStrayRequests([
-        'https://calendar.google.com/calendar/ical/*',
-        'https://worldpublicholiday.com/calendar-feeds/*',
+    Http::fake([
+        'https://example.com/us.ics' => Http::response(<<<'ICS'
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Sunny//Tests//EN
+BEGIN:VEVENT
+UID:st-patricks-day
+DTSTAMP:20260301T120000Z
+DTSTART;VALUE=DATE:20260317
+DTEND;VALUE=DATE:20260318
+SUMMARY:St. Patrick's Day
+END:VEVENT
+END:VCALENDAR
+ICS),
+        'https://example.com/br.ics' => Http::response(<<<'ICS'
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Sunny//Tests//EN
+BEGIN:VEVENT
+UID:autonomia-do-estado
+DTSTAMP:20260301T120000Z
+DTSTART;VALUE=DATE:20260318
+DTEND;VALUE=DATE:20260319
+SUMMARY:Autonomia do Estado
+END:VEVENT
+BEGIN:VEVENT
+UID:dia-de-sao-jose
+DTSTAMP:20260301T120000Z
+DTSTART;VALUE=DATE:20260319
+DTEND;VALUE=DATE:20260320
+SUMMARY:Dia de São José
+END:VEVENT
+END:VCALENDAR
+ICS),
     ]);
 
     $this->travelTo(Date::parse('2026-03-20'));
@@ -250,11 +352,11 @@ test('can hide feed from calendar', function () {
             CalendarFeed::factory()
                 ->count(2)
                 ->sequence([
-                    'url' => 'https://calendar.google.com/calendar/ical/en.usa%23holiday%40group.v.calendar.google.com/public/basic.ics',
+                    'url' => 'https://example.com/us.ics',
                     'name' => 'US Holidays',
                     'color' => CalendarColor::Green,
                 ], [
-                    'url' => 'https://worldpublicholiday.com/calendar-feeds/feed.ics?country=BR&year=2026',
+                    'url' => 'https://example.com/br.ics',
                     'name' => 'Brazilian Holidays',
                     'color' => CalendarColor::Blue,
                 ])
