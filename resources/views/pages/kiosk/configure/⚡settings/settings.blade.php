@@ -16,6 +16,19 @@
             <flux:select.option value="6">{{ __('Saturday') }}</flux:select.option>
         </flux:select>
 
+        <flux:radio.group wire:model="form.appearance" :label="__('Appearance')" variant="segmented">
+            <flux:radio value="light" icon="sun" :label="__('Light')" />
+            <flux:radio value="dark" icon="moon" :label="__('Dark')" />
+            <flux:radio value="system" icon="computer-desktop" :label="__('System')" />
+        </flux:radio.group>
+
+        <flux:radio.group wire:model="form.rotation" :label="__('Rotation')" :description="__('Rotates the kiosk display for devices that ignore the browser orientation setting.')" variant="segmented">
+            <flux:radio value="0" label="0°" />
+            <flux:radio value="90" label="90°" />
+            <flux:radio value="180" label="180°" />
+            <flux:radio value="270" label="270°" />
+        </flux:radio.group>
+
         <flux:field>
             <flux:label>Address for Weather</flux:label>
 

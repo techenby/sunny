@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Enums\Appearance;
 use App\Models\Team;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
@@ -25,6 +26,8 @@ class TeamFactory extends Factory
             'is_personal' => false,
             'timezone' => 'America/Chicago',
             'week_start' => Carbon::SUNDAY,
+            'appearance' => Appearance::Dark,
+            'rotation' => 0,
         ];
     }
 

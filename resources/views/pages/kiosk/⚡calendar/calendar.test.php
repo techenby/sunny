@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\Appearance;
 use App\Enums\CalendarColor;
 use App\Models\CalendarFeed;
 use App\Models\Team;
@@ -21,6 +22,45 @@ test('renders successfully', function () {
         ->test('pages::kiosk.calendar')
         ->assertOk();
 })->group('smoke');
+
+test('kiosk layout follows the team appearance setting', function () {
+    $team = Team::factory()->create(['appearance' => Appearance::Dark]);
+    $user = User::factory()->memberOf($team)->create();
+
+    actingAs($user)
+        ->get(route('kiosk.calendar'))
+        ->assertSee('class="dark"', false)
+        ->assertSee("window.localStorage.setItem('flux.appearance', 'dark')", false);
+
+    $team->update(['appearance' => Appearance::Light]);
+
+    actingAs($user)
+        ->get(route('kiosk.calendar'))
+        ->assertDontSee('class="dark"', false)
+        ->assertSee("window.localStorage.setItem('flux.appearance', 'light')", false);
+
+    $team->update(['appearance' => Appearance::System]);
+
+    actingAs($user)
+        ->get(route('kiosk.calendar'))
+        ->assertDontSee('class="dark"', false)
+        ->assertSee("window.localStorage.setItem('flux.appearance', 'system')", false);
+});
+
+test('kiosk layout follows the team rotation setting', function () {
+    $team = Team::factory()->create(['rotation' => 0]);
+    $user = User::factory()->memberOf($team)->create();
+
+    $html = actingAs($user)->get(route('kiosk.calendar'))->getContent();
+
+    expect($html)->not->toMatch('/<body[^>]*data-rotation/');
+
+    $team->update(['rotation' => 90]);
+
+    $html = actingAs($user)->get(route('kiosk.calendar'))->getContent();
+
+    expect($html)->toMatch('/<body[^>]*data-rotation="90"/');
+});
 
 test('can view events from feed', function () {
     Http::allowStrayRequests(['https://calendar.google.com/calendar/ical/*']);
