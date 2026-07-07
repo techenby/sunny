@@ -24,4 +24,12 @@ class CalendarFeedFactory extends Factory
             'color' => fake()->randomElement(CalendarColor::class),
         ];
     }
+
+    public function failing(): static
+    {
+        return $this->state([
+            'last_failed_at' => now(),
+            'last_error' => 'The calendar server responded with HTTP 401.',
+        ]);
+    }
 }

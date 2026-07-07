@@ -1,7 +1,7 @@
 # Sunny
 
 **PHP:** 8.4
-**Laravel:** 12
+**Laravel:** 13
 **Node:** 22
 **Asset Compiler:** Vite
 **Database:** Postgres 18
@@ -10,15 +10,25 @@
 **Hosting:** Cloud
 **Monitoring:** Nightwatch
 
-**Notible Composer Packages:**
+**Notable Composer Packages:**
+- [bentonow/bento-laravel-sdk](https://github.com/bentonow/bento-laravel-sdk)
+- [dedoc/scramble](https://scramble.dedoc.co/)
 - [driftingly/rector-laravel](https://github.com/driftingly/rector-laravel)
-- [livewire/flux-pro](https://fluxui.dev/)
 - [laravel/boost](https://github.com/laravel/boost)
-- [laravel/pennant](https://github.com/laravel/pennant)
+- [laravel/chisel](https://github.com/laravel/chisel)
+- [laravel/fortify](https://github.com/laravel/fortify)
 - [laravel/pao](https://github.com/laravel/pao)
+- [laravel/pennant](https://github.com/laravel/pennant)
+- [livewire/flux-pro](https://fluxui.dev/)
 - [nunomaduro/essentials](https://github.com/nunomaduro/essentials)
+- [petebishwhip/laradocs](https://github.com/PeteBishwhip/laradocs)
+- [sabre/vobject](https://github.com/sabre-io/vobject)
+- [saloonphp/saloon](https://docs.saloon.dev/)
+- [spatie/simple-excel](https://github.com/spatie/simple-excel)
+- [tightenco/duster](https://github.com/tighten/duster)
 
-**Notible NPM Packages:**
+**Notable NPM Packages:**
+- [@laravel/passkeys](https://www.npmjs.com/package/@laravel/passkeys)
 - [playwright](https://github.com/microsoft/playwright)
 - [tailwindcss](https://tailwindcss.com/)
 - [tailwindcss/typography](https://github.com/tailwindlabs/tailwindcss-typography)
@@ -77,33 +87,37 @@ erDiagram
 
 	teams {
 		integer id PK ""
-		integer user_id FK ""
 		varchar name  ""
+		varchar slug UK ""
+		boolean is_personal  ""
+		varchar timezone  ""
+		integer week_start  ""
+		json address  ""
+		varchar appearance  ""
+		varchar layout  ""
+		datetime deleted_at  ""
 		datetime created_at  ""
 		datetime updated_at  ""
 	}
 
-	team_user {
+	team_members {
 		integer id PK ""
 		integer team_id FK ""
 		integer user_id FK ""
+		varchar role  ""
 		datetime created_at  ""
 		datetime updated_at  ""
-	}
-
-	sessions {
-		varchar id PK ""
-		integer user_id FK ""
-		varchar ip_address  ""
-		text user_agent  ""
-		text payload  ""
-		integer last_activity  ""
 	}
 
 	team_invitations {
 		integer id PK ""
 		integer team_id FK ""
+		integer invited_by FK ""
 		varchar email  ""
+		varchar role  ""
+		varchar code UK ""
+		datetime expires_at  ""
+		datetime accepted_at  ""
 		datetime created_at  ""
 		datetime updated_at  ""
 	}
@@ -127,6 +141,7 @@ erDiagram
 		text nutrition  ""
 		json tags  ""
 		varchar photo_path  ""
+		datetime deleted_at  ""
 		datetime created_at  ""
 		datetime updated_at  ""
 	}
@@ -137,11 +152,63 @@ erDiagram
 		integer parent_id FK ""
 		varchar type  ""
 		varchar name  ""
+		json metadata  ""
+		varchar photo_path  ""
+		datetime deleted_at  ""
 		datetime created_at  ""
 		datetime updated_at  ""
 	}
 
-password_reset_tokens {
+	calendar_feeds {
+		integer id PK ""
+		integer team_id FK ""
+		varchar name  ""
+		text url  ""
+		varchar color  ""
+		datetime last_fetched_at  ""
+		datetime last_failed_at  ""
+		varchar last_error  ""
+		datetime created_at  ""
+		datetime updated_at  ""
+	}
+
+	kiosk_devices {
+		integer id PK ""
+		varchar uuid UK ""
+		varchar pairing_code UK ""
+		varchar name  ""
+		varchar user_agent  ""
+		varchar last_ip  ""
+		integer user_id FK ""
+		integer team_id FK ""
+		datetime paired_at  ""
+		datetime expires_at  ""
+		datetime last_seen_at  ""
+		datetime created_at  ""
+		datetime updated_at  ""
+	}
+
+	passkeys {
+		integer id PK ""
+		integer user_id FK ""
+		varchar name  ""
+		varchar credential_id UK ""
+		json credential  ""
+		datetime last_used_at  ""
+		datetime created_at  ""
+		datetime updated_at  ""
+	}
+
+	sessions {
+		varchar id PK ""
+		integer user_id FK ""
+		varchar ip_address  ""
+		text user_agent  ""
+		text payload  ""
+		integer last_activity  ""
+	}
+
+	password_reset_tokens {
 		varchar email PK ""
 		varchar token  ""
 		datetime created_at  ""
@@ -160,14 +227,18 @@ password_reset_tokens {
 		datetime updated_at  ""
 	}
 
-	users||--o{teams:"owns"
-	users||--o{team_user:"belongs to"
+	users||--o{team_members:"belongs to"
 	users||--o|teams:"current team"
+	users||--o{team_invitations:"invited by"
+	users||--o{passkeys:"has"
+	users||--o{kiosk_devices:"paired"
 	users||--o{sessions:"has"
-	teams||--o{team_user:"has members"
+	teams||--o{team_members:"has members"
 	teams||--o{team_invitations:"has invitations"
 	teams||--o{recipes:"has"
 	teams||--o{items:"has"
+	teams||--o{calendar_feeds:"has"
+	teams||--o{kiosk_devices:"has"
 	recipes||--o{recipes:"remix of"
 	items||--o{items:"nested in"
 

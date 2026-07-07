@@ -14,6 +14,10 @@
                         <flux:heading class="flex items-center gap-2">
                             <span class="size-2.5 shrink-0 rounded-full" style="background: {{ $feed->color }}"></span>
                             <span class="truncate font-medium">{{ $feed->name }}</span>
+
+                            @if ($feed->isFailing())
+                                <flux:badge color="amber" size="sm" icon="exclamation-triangle">{{ __('Failing') }}</flux:badge>
+                            @endif
                         </flux:heading>
 
                         <flux:text variant="subtle" class="truncate max-w-64" title="{{ $feed->url }}">{{ $feed->url }}</flux:text>
@@ -29,6 +33,15 @@
                         </flux:tooltip>
                     </div>
                 </div>
+
+                @if ($feed->isFailing())
+                    <flux:callout variant="warning" icon="exclamation-triangle" class="mt-2">
+                        <flux:callout.heading>{{ $feed->last_error }}</flux:callout.heading>
+                        <flux:callout.text>
+                            {{ __('Last failed :time. Check that the URL is correct and the calendar is still shared. For Google Calendar, copy a fresh "Secret address in iCal format" from the calendar settings and update the URL here.', ['time' => $feed->last_failed_at->diffForHumans()]) }}
+                        </flux:callout.text>
+                    </flux:callout>
+                @endif
             </flux:card>
         @empty
             <div class="rounded-lg border border-dashed border-zinc-300 p-4 text-sm text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">

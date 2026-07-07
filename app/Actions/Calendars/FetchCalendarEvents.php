@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Http;
 use Sabre\VObject\Component\VEvent;
 use Sabre\VObject\DateTimeParser;
 use Sabre\VObject\Reader;
+use Throwable;
 
 class FetchCalendarEvents
 {
@@ -32,16 +33,19 @@ class FetchCalendarEvents
      */
     public function handle(CalendarFeed $feed, int $days = 30, ?CarbonImmutable $from = null): Collection
     {
-        $body = Cache::remember(
-            key: "calendar-feed:{$feed->id}:" . md5($feed->url),
-            ttl: now()->addMinutes(15),
-            callback: fn () => Http::withHeaders([
-                'Accept' => 'text/calendar,text/plain,*/*',
-                'User-Agent' => 'SunnyCalendar/1.0',
-            ])->timeout(10)->get($feed->url)->throw()->body(),
-        );
+        $body = $this->body($feed);
 
-        return $this->parse($body, $feed, $from ?? CarbonImmutable::now($this->timezoneName($feed)), $days);
+        if ($body === null) {
+            return collect();
+        }
+
+        try {
+            return $this->parse($body, $feed, $from ?? CarbonImmutable::now($this->timezoneName($feed)), $days);
+        } catch (Throwable $exception) {
+            $feed->fetched($exception);
+
+            return collect();
+        }
     }
 
     /**
@@ -163,5 +167,44 @@ class FetchCalendarEvents
     private function timezoneName(CalendarFeed $feed): string
     {
         return $feed->team?->timezone ?: 'America/Chicago';
+    }
+
+    /**
+     * Fetch the feed body, caching successful responses for 15 minutes and
+     * failures for 5 minutes so a broken feed doesn't slow every render.
+     */
+    private function body(CalendarFeed $feed): ?string
+    {
+        $cacheKey = "calendar-feed:{$feed->id}:" . md5($feed->url);
+
+        /** @var string|false|null $cached */
+        $cached = Cache::get($cacheKey);
+
+        if ($cached === null) {
+            $cached = $this->fetch($feed, $cacheKey);
+        }
+
+        return $cached === false ? null : $cached;
+    }
+
+    private function fetch(CalendarFeed $feed, string $cacheKey): string|false
+    {
+        try {
+            $body = Http::withHeaders([
+                'Accept' => 'text/calendar,text/plain,*/*',
+                'User-Agent' => 'SunnyCalendar/1.0',
+            ])->timeout(10)->get($feed->url)->throw()->body();
+        } catch (Throwable $exception) {
+            $feed->fetched($exception);
+            Cache::put($cacheKey, false, now()->addMinutes(5));
+
+            return false;
+        }
+
+        $feed->fetched();
+
+        Cache::put($cacheKey, $body, now()->addMinutes(15));
+
+        return $body;
     }
 }
