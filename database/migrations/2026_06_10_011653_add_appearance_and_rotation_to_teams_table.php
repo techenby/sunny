@@ -11,14 +11,14 @@ return new class extends Migration
     {
         Schema::table('teams', function (Blueprint $table) {
             $table->string('appearance')->default(Appearance::Dark->value)->after('address');
-            $table->string('layout')->default('landscape')->after('appearance');
+            $table->integer('rotation')->default(0)->after('appearance');
         });
     }
 
     public function down(): void
     {
         Schema::table('teams', function (Blueprint $table) {
-            $table->dropColumns(['appearance', 'layout']);
+            $table->dropColumns(['appearance', 'rotation']);
         });
     }
 };

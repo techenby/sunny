@@ -24,6 +24,9 @@ class SettingsForm extends Form
     #[Validate(['required', new Enum(Appearance::class)])]
     public string $appearance = Appearance::Dark->value;
 
+    #[Validate('required|int|in:0,90,180,270')]
+    public int $rotation = 0;
+
     #[Validate([
         'address' => 'required|array',
         'address.*' => 'required',
@@ -43,6 +46,7 @@ class SettingsForm extends Form
         $this->timezone = $team->timezone;
         $this->week_start = $team->week_start;
         $this->appearance = $team->appearance->value;
+        $this->rotation = $team->rotation;
         $this->address = $team->address ?? $this->address;
     }
 

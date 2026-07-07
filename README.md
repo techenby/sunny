@@ -94,7 +94,7 @@ erDiagram
 		integer week_start  ""
 		json address  ""
 		varchar appearance  ""
-		varchar layout  ""
+		integer rotation  ""
 		datetime deleted_at  ""
 		datetime created_at  ""
 		datetime updated_at  ""

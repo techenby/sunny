@@ -17,6 +17,7 @@ test('renders successfully', function () {
         'timezone' => 'Asia/Tokyo',
         'week_start' => Carbon::MONDAY,
         'appearance' => Appearance::Light,
+        'rotation' => 90,
     ]);
 
     $user = User::factory()->memberOf($team)->create();
@@ -30,7 +31,8 @@ test('renders successfully', function () {
         ->assertOk()
         ->assertSet('form.timezone', 'Asia/Tokyo')
         ->assertSet('form.week_start', Carbon::MONDAY)
-        ->assertSet('form.appearance', 'light');
+        ->assertSet('form.appearance', 'light')
+        ->assertSet('form.rotation', 90);
 })->group('smoke');
 
 test('can change kiosk settings', function () {
@@ -47,6 +49,7 @@ test('can change kiosk settings', function () {
         ->set('form.timezone', 'America/Sao_Paulo')
         ->set('form.week_start', Carbon::SUNDAY)
         ->set('form.appearance', 'light')
+        ->set('form.rotation', 270)
         ->set('form.address', [
             'address' => '123 Grand Line',
             'city' => 'East Blue',
@@ -61,7 +64,8 @@ test('can change kiosk settings', function () {
     expect($team->fresh())
         ->timezone->toBe('America/Sao_Paulo')
         ->week_start->toBe(Carbon::SUNDAY)
-        ->appearance->toBe(Appearance::Light);
+        ->appearance->toBe(Appearance::Light)
+        ->rotation->toBe(270);
 });
 
 test('options must be valid', function () {
@@ -72,8 +76,9 @@ test('options must be valid', function () {
         ->set('form.timezone', 'Not/AZone')
         ->set('form.week_start', 15)
         ->set('form.appearance', 'sepia')
+        ->set('form.rotation', 45)
         ->call('save')
-        ->assertHasErrors(['form.timezone', 'form.week_start', 'form.appearance']);
+        ->assertHasErrors(['form.timezone', 'form.week_start', 'form.appearance', 'form.rotation']);
 });
 
 describe('device management', function () {

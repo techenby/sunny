@@ -27,6 +27,7 @@ class TeamFactory extends Factory
             'timezone' => 'America/Chicago',
             'week_start' => Carbon::SUNDAY,
             'appearance' => Appearance::Dark,
+            'rotation' => 0,
         ];
     }
 
