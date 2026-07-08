@@ -17,6 +17,7 @@
 - [laravel/boost](https://github.com/laravel/boost)
 - [laravel/chisel](https://github.com/laravel/chisel)
 - [laravel/fortify](https://github.com/laravel/fortify)
+- [laravel/mcp](https://github.com/laravel/mcp)
 - [laravel/pao](https://github.com/laravel/pao)
 - [laravel/pennant](https://github.com/laravel/pennant)
 - [livewire/flux-pro](https://fluxui.dev/)
