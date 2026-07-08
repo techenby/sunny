@@ -5,7 +5,7 @@ use App\Mcp\Tools\Inventory\SearchItems;
 use App\Models\Item;
 use App\Models\User;
 
-test('it searches items by name', function () {
+test('can search items by name', function () {
     $user = User::factory()->create();
     Item::factory()->for($user->currentTeam)->create(['name' => 'Hammer']);
     Item::factory()->for($user->currentTeam)->create(['name' => 'Screwdriver']);
@@ -18,7 +18,7 @@ test('it searches items by name', function () {
         ->assertDontSee('Screwdriver');
 });
 
-test('it filters items by type', function () {
+test('can filters items by type', function () {
     $user = User::factory()->create();
     Item::factory()->location()->for($user->currentTeam)->create(['name' => 'Garage']);
     Item::factory()->item()->for($user->currentTeam)->create(['name' => 'Hammer']);
@@ -30,7 +30,7 @@ test('it filters items by type', function () {
         ->assertDontSee('Hammer');
 });
 
-test('it lists direct children of a parent item', function () {
+test('can lists direct children of a parent item', function () {
     $user = User::factory()->create();
     $garage = Item::factory()->location()->for($user->currentTeam)->create(['name' => 'Garage']);
     Item::factory()->bin()->childOf($garage)->create(['name' => 'Blue Bin']);
@@ -53,7 +53,7 @@ test('it includes a hint to use get-item', function () {
         ->assertSee('get-item');
 });
 
-test('it rejects a limit above 100', function () {
+test('rejects a limit above 100', function () {
     $user = User::factory()->create();
 
     SunnyServer::actingAs($user)
@@ -61,7 +61,7 @@ test('it rejects a limit above 100', function () {
         ->assertHasErrors();
 });
 
-test('it rejects an invalid type', function () {
+test('rejects an invalid type', function () {
     $user = User::factory()->create();
 
     SunnyServer::actingAs($user)
@@ -69,7 +69,7 @@ test('it rejects an invalid type', function () {
         ->assertHasErrors();
 });
 
-test('it does not return items from other teams', function () {
+test('does not return items from other teams', function () {
     $user = User::factory()->create();
     Item::factory()->create(['name' => 'Secret Widget']);
 

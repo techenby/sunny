@@ -64,14 +64,17 @@ class SearchItems extends Tool
                 ->description('Filter items whose name contains this text (partial match).'),
             'type' => $schema->string()
                 ->enum(ItemType::class)
-                ->description('Filter by item type: "location" (e.g. a room or shelf), "bin" (a container), or "item" (a thing).'),
+                ->description('Filter by item type: "location" (e.g. a room or shelf), "bin" (a container), or "item" (a thing).')
+                ->nullable(),
             'parent_id' => $schema->integer()
-                ->description('Only return direct children of the item with this id. Useful for browsing the hierarchy level by level.'),
+                ->description('Only return direct children of the item with this id. Useful for browsing the hierarchy level by level.')
+                ->nullable(),
             'limit' => $schema->integer()
                 ->min(1)
                 ->max(100)
                 ->default(20)
-                ->description('Maximum number of items to return (default 20, max 100).'),
+                ->description('Maximum number of items to return (default 20, max 100).')
+                ->nullable(),
         ];
     }
 }
