@@ -18,6 +18,41 @@ test('can search items by name', function () {
         ->assertDontSee('Screwdriver');
 });
 
+test('falls back to matching individual words in a multi-word search', function () {
+    $user = User::factory()->create();
+    Item::factory()->for($user->currentTeam)->create(['name' => 'GoPro Camera Bag']);
+    Item::factory()->for($user->currentTeam)->create(['name' => 'Camping Tent']);
+
+    SunnyServer::actingAs($user)
+        ->tool(SearchItems::class, ['query' => 'GoPro backpack'])
+        ->assertOk()
+        ->assertSee('GoPro Camera Bag')
+        ->assertDontSee('Camping Tent');
+});
+
+test('searches item names case insensitively', function () {
+    $user = User::factory()->create();
+    Item::factory()->for($user->currentTeam)->create(['name' => 'GoPro Camera Bag']);
+
+    SunnyServer::actingAs($user)
+        ->tool(SearchItems::class, ['query' => 'gopro camera bag'])
+        ->assertOk()
+        ->assertSee('Found 1 item(s)')
+        ->assertSee('GoPro Camera Bag');
+});
+
+test('prioritizes full phrase matches before individual word matches', function () {
+    $user = User::factory()->create();
+    Item::factory()->for($user->currentTeam)->create(['name' => 'GoPro Camera Bag']);
+    Item::factory()->for($user->currentTeam)->create(['name' => 'GoPro Backpack Strap']);
+
+    SunnyServer::actingAs($user)
+        ->tool(SearchItems::class, ['query' => 'GoPro backpack', 'limit' => 1])
+        ->assertOk()
+        ->assertSee('GoPro Backpack Strap')
+        ->assertDontSee('GoPro Camera Bag');
+});
+
 test('can filters items by type', function () {
     $user = User::factory()->create();
     Item::factory()->location()->for($user->currentTeam)->create(['name' => 'Garage']);
@@ -71,11 +106,11 @@ test('rejects an invalid type', function () {
 
 test('does not return items from other teams', function () {
     $user = User::factory()->create();
-    Item::factory()->create(['name' => 'Secret Widget']);
+    Item::factory()->create(['name' => 'Secret GoPro Camera Bag']);
 
     SunnyServer::actingAs($user)
-        ->tool(SearchItems::class, ['query' => 'Secret Widget'])
+        ->tool(SearchItems::class, ['query' => 'GoPro backpack'])
         ->assertOk()
         ->assertSee('No items found')
-        ->assertDontSee('Secret Widget');
+        ->assertDontSee('Secret GoPro Camera Bag');
 });
