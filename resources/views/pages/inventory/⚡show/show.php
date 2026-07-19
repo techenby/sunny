@@ -73,6 +73,11 @@ new #[Title('Inventory: Item')] class extends Component
         $this->redirectRoute('inventory.index');
     }
 
+    public function addMetadata(): void
+    {
+        $this->form->addMetadata();
+    }
+
     public function delete(): void
     {
         $this->authorize('delete', $this->item);
