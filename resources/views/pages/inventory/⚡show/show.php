@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\Inventory\DuplicateItem;
 use App\Actions\Inventory\GenerateItemQrCode;
 use App\Actions\Inventory\MoveItemToTeam;
 use App\Livewire\Forms\Inventory\ItemForm;
@@ -23,6 +24,8 @@ new #[Title('Inventory: Item')] class extends Component
     public ItemForm $form;
 
     public ?int $moveToTeamId = null;
+
+    public int $duplicateCount = 1;
 
     public ?array $qrCode = null;
 
@@ -71,6 +74,22 @@ new #[Title('Inventory: Item')] class extends Component
         (new MoveItemToTeam)->handle($this->item, $team);
 
         $this->redirectRoute('inventory.index');
+    }
+
+    public function duplicate(): void
+    {
+        $this->validate([
+            'duplicateCount' => ['required', 'integer', 'min:1', 'max:25'],
+        ]);
+
+        $this->authorize('create', Item::class);
+
+        $copies = (new DuplicateItem)->handle($this->item, $this->duplicateCount);
+
+        $this->modal('duplicate-item')->close();
+        $this->reset('duplicateCount');
+
+        Flux::toast(__(':count item(s) duplicated.', ['count' => $copies->count()]));
     }
 
     public function delete(): void

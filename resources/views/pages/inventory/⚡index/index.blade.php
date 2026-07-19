@@ -113,6 +113,7 @@
                                 <flux:menu>
                                     <flux:menu.item wire:click="edit({{ $item->id }})" icon="pencil">{{ __('Edit') }}</flux:menu.item>
                                     <flux:menu.item wire:click="showQrCode({{ $item->id }})" icon="qr-code">{{ __('QR Code') }}</flux:menu.item>
+                                    <flux:menu.item wire:click="openDuplicateModal({{ $item->id }})" icon="square-2-stack">{{ __('Duplicate') }}</flux:menu.item>
                                     @if ($this->otherTeams->isNotEmpty())
                                         <flux:menu.item wire:click="openMoveModal({{ $item->id }})" icon="arrow-up-tray">{{ __('Move to Team') }}</flux:menu.item>
                                     @endif
@@ -136,5 +137,6 @@
     @include('pages.inventory.modals.item-form')
     @include('pages.inventory.modals.qr-code')
     @include('pages.inventory.modals.move-item')
+    @include('pages.inventory.modals.duplicate-item')
     @include('pages.inventory.modals.bulk-update-parent')
 </div>
