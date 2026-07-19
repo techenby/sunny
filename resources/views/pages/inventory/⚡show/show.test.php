@@ -64,6 +64,36 @@ test('can edit an item', function () {
         ->parent_id->toBe($bin->id);
 });
 
+test('can duplicate an item multiple times', function () {
+    $user = User::factory()->create();
+    $item = Item::factory()->for($user->currentTeam)->create(['name' => 'Guitar']);
+
+    Livewire::actingAs($user)
+        ->test('pages::inventory.show', ['item' => $item])
+        ->set('duplicateCount', 2)
+        ->call('duplicate')
+        ->assertHasNoErrors()
+        ->assertSet('duplicateCount', 1);
+
+    expect($user->currentTeam->items()->where('name', 'Guitar')->count())->toBe(3);
+});
+
+test('duplicate count must be between 1 and 25', function () {
+    $user = User::factory()->create();
+    $item = Item::factory()->for($user->currentTeam)->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::inventory.show', ['item' => $item])
+        ->set('duplicateCount', 0)
+        ->call('duplicate')
+        ->assertHasErrors(['duplicateCount' => 'min'])
+        ->set('duplicateCount', 26)
+        ->call('duplicate')
+        ->assertHasErrors(['duplicateCount' => 'max']);
+
+    expect(Item::count())->toBe(1);
+});
+
 test('can delete an item and redirects to index', function () {
     $user = User::factory()->create();
     $item = Item::factory()->for($user->currentTeam)->create();

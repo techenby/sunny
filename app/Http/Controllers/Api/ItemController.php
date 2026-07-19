@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Actions\Inventory\CreateItem;
+use App\Actions\Inventory\DuplicateItem;
 use App\Actions\Inventory\UpdateItem;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\DuplicateItemRequest;
 use App\Http\Requests\Api\StoreItemRequest;
 use App\Http\Requests\Api\UpdateItemRequest;
 use App\Http\Resources\ItemResource;
@@ -33,6 +35,15 @@ class ItemController extends Controller
         $item = $action->handle(Auth::user()->currentTeam, $request->validated());
 
         return ItemResource::make($item)
+            ->response()
+            ->setStatusCode(201);
+    }
+
+    public function duplicate(DuplicateItemRequest $request, Item $item, DuplicateItem $action): JsonResponse
+    {
+        $copies = $action->handle($item, $request->validated('count') ?? 1);
+
+        return ItemResource::collection($copies)
             ->response()
             ->setStatusCode(201);
     }
