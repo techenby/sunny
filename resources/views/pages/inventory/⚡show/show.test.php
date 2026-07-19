@@ -89,6 +89,22 @@ test('deleting a parent nullifies children parent_id', function () {
 });
 
 describe('can add item metadata', function () {
+    test('can add a metadata field', function () {
+        $user = User::factory()->create();
+        $item = Item::factory()->for($user->currentTeam)->create([
+            'metadata' => ['color' => 'red'],
+        ]);
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.show', ['item' => $item])
+            ->call('edit')
+            ->call('addMetadata')
+            ->assertSet('form.metadata', [
+                ['key' => 'color', 'value' => 'red'],
+                ['key' => '', 'value' => ''],
+            ]);
+    });
+
     test('can update an item with metadata', function () {
         $user = User::factory()->create();
         $item = Item::factory()->for($user->currentTeam)->create([
