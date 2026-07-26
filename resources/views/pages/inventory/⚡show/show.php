@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\Inventory\DuplicateItem;
 use App\Actions\Inventory\GenerateItemQrCode;
 use App\Actions\Inventory\MoveItemToTeam;
 use App\Livewire\Forms\Inventory\ItemForm;
@@ -23,6 +24,8 @@ new #[Title('Inventory: Item')] class extends Component
     public ItemForm $form;
 
     public ?int $moveToTeamId = null;
+
+    public int $duplicateCount = 1;
 
     public ?array $qrCode = null;
 
@@ -58,21 +61,6 @@ new #[Title('Inventory: Item')] class extends Component
             ->get();
     }
 
-    public function moveToTeam(): void
-    {
-        $this->validate([
-            'moveToTeamId' => ['required', 'integer', Rule::exists('team_members', 'team_id')->where('user_id', Auth::id())],
-        ]);
-
-        $this->authorize('move', $this->item);
-
-        $team = $this->otherTeams->firstWhere('id', $this->moveToTeamId);
-
-        (new MoveItemToTeam)->handle($this->item, $team);
-
-        $this->redirectRoute('inventory.index');
-    }
-
     public function addMetadata(): void
     {
         $this->form->addMetadata();
@@ -88,6 +76,22 @@ new #[Title('Inventory: Item')] class extends Component
 
         $this->redirectRoute('inventory.index', ['parentId' => $parentId]);
     }
+  
+    public function duplicate(): void
+    {
+        $this->validate([
+            'duplicateCount' => ['required', 'integer', 'min:1', 'max:25'],
+        ]);
+
+        $this->authorize('create', Item::class);
+
+        $copies = (new DuplicateItem)->handle($this->item, $this->duplicateCount);
+
+        $this->modal('duplicate-item')->close();
+        $this->reset('duplicateCount');
+
+        Flux::toast(__(':count item(s) duplicated.', ['count' => $copies->count()]));
+    }
 
     public function edit(): void
     {
@@ -95,15 +99,6 @@ new #[Title('Inventory: Item')] class extends Component
 
         $this->form->load($this->item);
         $this->modal('item-form')->show();
-    }
-
-    public function showQrCode(): void
-    {
-        $this->authorize('view', $this->item);
-
-        $this->qrCode = resolve(GenerateItemQrCode::class)->handle($this->item);
-
-        $this->modal('qr-code')->show();
     }
 
     public function removeMetadata(int $index): void
@@ -125,6 +120,21 @@ new #[Title('Inventory: Item')] class extends Component
             $this->form->removePhoto = true;
         }
     }
+  
+    public function moveToTeam(): void
+    {
+        $this->validate([
+            'moveToTeamId' => ['required', 'integer', Rule::exists('team_members', 'team_id')->where('user_id', Auth::id())],
+        ]);
+
+        $this->authorize('move', $this->item);
+
+        $team = $this->otherTeams->firstWhere('id', $this->moveToTeamId);
+
+        (new MoveItemToTeam)->handle($this->item, $team);
+
+        $this->redirectRoute('inventory.index');
+    }
 
     public function save(): void
     {
@@ -133,5 +143,14 @@ new #[Title('Inventory: Item')] class extends Component
         $this->form->save();
         $this->modal('item-form')->close();
         unset($this->parentItems);
+    }
+  
+    public function showQrCode(): void
+    {
+        $this->authorize('view', $this->item);
+
+        $this->qrCode = resolve(GenerateItemQrCode::class)->handle($this->item);
+
+        $this->modal('qr-code')->show();
     }
 };
