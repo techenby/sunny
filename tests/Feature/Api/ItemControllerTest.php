@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Storage;
 test('guests cannot access items', function () {
     $this->getJson(route('api.items.index'))->assertUnauthorized();
     $this->postJson(route('api.items.store'))->assertUnauthorized();
+    $this->postJson(route('api.items.duplicate', 1))->assertUnauthorized();
     $this->getJson(route('api.items.show', 1))->assertUnauthorized();
     $this->patchJson(route('api.items.update', 1))->assertUnauthorized();
     $this->deleteJson(route('api.items.destroy', 1))->assertUnauthorized();
@@ -62,6 +63,59 @@ test('store validates type is a valid enum', function () {
         ])
         ->assertUnprocessable()
         ->assertJsonValidationErrors(['type']);
+});
+
+test('duplicate creates copies and returns them', function () {
+    $user = User::factory()->create();
+    $item = Item::factory()->for($user->currentTeam)->create(['name' => 'Wrench']);
+
+    $this->actingAs($user)
+        ->postJson(route('api.items.duplicate', $item), ['count' => 3])
+        ->assertCreated()
+        ->assertJsonCount(3, 'data')
+        ->assertJsonPath('data.0.name', 'Wrench');
+
+    expect($user->currentTeam->items()->where('name', 'Wrench')->count())->toBe(4);
+});
+
+test('duplicate defaults to a single copy', function () {
+    $user = User::factory()->create();
+    $item = Item::factory()->for($user->currentTeam)->create();
+
+    $this->actingAs($user)
+        ->postJson(route('api.items.duplicate', $item))
+        ->assertCreated()
+        ->assertJsonCount(1, 'data');
+
+    expect(Item::count())->toBe(2);
+});
+
+test('duplicate validates count is between 1 and 25', function () {
+    $user = User::factory()->create();
+    $item = Item::factory()->for($user->currentTeam)->create();
+
+    $this->actingAs($user)
+        ->postJson(route('api.items.duplicate', $item), ['count' => 0])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['count']);
+
+    $this->actingAs($user)
+        ->postJson(route('api.items.duplicate', $item), ['count' => 26])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['count']);
+
+    expect(Item::count())->toBe(1);
+});
+
+test('duplicate returns 403 for another team item', function () {
+    $user = User::factory()->create();
+    $item = Item::factory()->create();
+
+    $this->actingAs($user)
+        ->postJson(route('api.items.duplicate', $item), ['count' => 2])
+        ->assertForbidden();
+
+    expect(Item::count())->toBe(1);
 });
 
 test('show returns an item', function () {

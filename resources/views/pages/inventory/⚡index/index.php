@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\Inventory\DuplicateItem;
 use App\Actions\Inventory\GenerateItemQrCode;
 use App\Actions\Inventory\MoveItemToTeam;
 use App\Livewire\Forms\Inventory\ImportItemsForm;
@@ -34,6 +35,10 @@ new #[Title('Inventory')] class extends Component
     public ?int $moveItemId = null;
 
     public ?int $moveToTeamId = null;
+
+    public ?int $duplicateItemId = null;
+
+    public int $duplicateCount = 1;
 
     public ?array $qrCode = null;
 
@@ -151,6 +156,34 @@ new #[Title('Inventory')] class extends Component
         unset($this->items, $this->parentItems, $this->bulkParentOptions);
 
         Flux::toast(__(':count item(s) updated.', ['count' => $items->count()]));
+    }
+
+    public function openDuplicateModal(int $itemId): void
+    {
+        $this->duplicateItemId = $itemId;
+        $this->duplicateCount = 1;
+        $this->modal('duplicate-item')->show();
+    }
+
+    public function duplicate(): void
+    {
+        $this->validate([
+            'duplicateItemId' => ['required', 'integer'],
+            'duplicateCount' => ['required', 'integer', 'min:1', 'max:25'],
+        ]);
+
+        $item = Auth::user()->currentTeam->items()->findOrFail($this->duplicateItemId);
+
+        $this->authorize('create', Item::class);
+
+        $copies = (new DuplicateItem)->handle($item, $this->duplicateCount);
+
+        $this->modal('duplicate-item')->close();
+        $this->reset('duplicateItemId', 'duplicateCount');
+
+        unset($this->items, $this->parentItems);
+
+        Flux::toast(__(':count item(s) duplicated.', ['count' => $copies->count()]));
     }
 
     public function openMoveModal(int $itemId): void

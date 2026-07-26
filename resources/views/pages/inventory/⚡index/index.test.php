@@ -887,6 +887,53 @@ describe('move to team feature', function () {
     });
 });
 
+describe('can duplicate items', function () {
+    test('can duplicate an item multiple times', function () {
+        $user = User::factory()->create();
+        $item = Item::factory()->for($user->currentTeam)->create(['name' => 'Hammer']);
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->call('openDuplicateModal', $item->id)
+            ->assertSet('duplicateItemId', $item->id)
+            ->assertSet('duplicateCount', 1)
+            ->set('duplicateCount', 3)
+            ->call('duplicate')
+            ->assertHasNoErrors()
+            ->assertSet('duplicateItemId', null)
+            ->assertSet('duplicateCount', 1);
+
+        expect($user->currentTeam->items()->where('name', 'Hammer')->count())->toBe(4);
+    });
+
+    test('duplicate count must be between 1 and 25', function () {
+        $user = User::factory()->create();
+        $item = Item::factory()->for($user->currentTeam)->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->call('openDuplicateModal', $item->id)
+            ->set('duplicateCount', 0)
+            ->call('duplicate')
+            ->assertHasErrors(['duplicateCount' => 'min'])
+            ->set('duplicateCount', 26)
+            ->call('duplicate')
+            ->assertHasErrors(['duplicateCount' => 'max']);
+
+        expect(Item::count())->toBe(1);
+    });
+
+    test('cannot duplicate an item from another team', function () {
+        $user = User::factory()->create();
+        $item = Item::factory()->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->call('openDuplicateModal', $item->id)
+            ->call('duplicate');
+    })->throws(ModelNotFoundException::class);
+});
+
 describe('can filter', function () {
     test('type filter only shows items by type', function () {
         $user = User::factory()->create();

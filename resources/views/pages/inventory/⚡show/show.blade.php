@@ -28,6 +28,9 @@
             <flux:menu>
                 <flux:menu.item wire:click="edit" icon="pencil">{{ __('Edit') }}</flux:menu.item>
                 <flux:menu.item wire:click="showQrCode" icon="qr-code">{{ __('QR Code') }}</flux:menu.item>
+                <flux:modal.trigger name="duplicate-item">
+                    <flux:menu.item icon="square-2-stack">{{ __('Duplicate') }}</flux:menu.item>
+                </flux:modal.trigger>
                 @if ($this->otherTeams->isNotEmpty())
                     <flux:modal.trigger name="move-item">
                         <flux:menu.item icon="arrow-up-tray">{{ __('Move to Team') }}</flux:menu.item>
@@ -62,4 +65,5 @@
     @include('pages.inventory.modals.item-form')
     @include('pages.inventory.modals.qr-code')
     @include('pages.inventory.modals.move-item')
+    @include('pages.inventory.modals.duplicate-item')
 </div>
