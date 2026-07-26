@@ -76,7 +76,7 @@ new #[Title('Inventory: Item')] class extends Component
 
         $this->redirectRoute('inventory.index', ['parentId' => $parentId]);
     }
-  
+
     public function duplicate(): void
     {
         $this->validate([
@@ -120,7 +120,7 @@ new #[Title('Inventory: Item')] class extends Component
             $this->form->removePhoto = true;
         }
     }
-  
+
     public function moveToTeam(): void
     {
         $this->validate([
@@ -144,7 +144,7 @@ new #[Title('Inventory: Item')] class extends Component
         $this->modal('item-form')->close();
         unset($this->parentItems);
     }
-  
+
     public function showQrCode(): void
     {
         $this->authorize('view', $this->item);
