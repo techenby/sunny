@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Factories;
 
+use App\Models\Routine;
 use App\Models\RoutineTask;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -10,15 +13,13 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class RoutineTaskFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
+    /** @return array<string, mixed> */
     public function definition(): array
     {
         return [
-            //
+            'routine_id' => Routine::factory(),
+            'name' => fake()->sentence(3),
+            'order' => fake()->numberBetween(0, 10),
         ];
     }
 }

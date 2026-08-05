@@ -10,6 +10,7 @@
             <flux:navlist aria-label="{{ __('Configuration') }}">
                 <flux:navlist.item :href="route('kiosk.configure.preview')" wire:navigate>{{ __('Preview') }}</flux:navlist.item>
                 <flux:navlist.item :href="route('kiosk.configure.calendar')" wire:navigate>{{ __('Calendar') }}</flux:navlist.item>
+                <flux:navlist.item :href="route('kiosk.configure.routines')" wire:navigate>{{ __('Routines') }}</flux:navlist.item>
                 <flux:navlist.item :href="route('kiosk.configure.settings')" wire:navigate>{{ __('Settings') }}</flux:navlist.item>
             </flux:navlist>
         </div>

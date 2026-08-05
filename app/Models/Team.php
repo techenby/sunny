@@ -45,6 +45,12 @@ class Team extends Model
         return $this->hasMany(CalendarFeed::class);
     }
 
+    /** @return HasMany<Routine, $this> */
+    public function routines(): HasMany
+    {
+        return $this->hasMany(Routine::class);
+    }
+
     public function owner(): ?Model
     {
         return $this->members()

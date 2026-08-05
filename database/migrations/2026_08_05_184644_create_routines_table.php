@@ -12,7 +12,7 @@ return new class extends Migration
     {
         Schema::create('routines', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(Team::class);
+            $table->foreignIdFor(Team::class)->constrained()->cascadeOnDelete();
             $table->string('name');
             $table->string('cadence')->default('daily');
             $table->tinyInteger('reset_weekday')->nullable();
@@ -21,16 +21,16 @@ return new class extends Migration
 
         Schema::create('routine_tasks', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(Routine::class);
+            $table->foreignIdFor(Routine::class)->constrained()->cascadeOnDelete();
             $table->string('name');
-            $table->integer('order');
+            $table->integer('order')->default(0);
             $table->timestamps();
         });
     }
 
     public function down(): void
     {
+        Schema::dropIfExists('routine_tasks');
         Schema::dropIfExists('routines');
-        Schema::dropIfExists('routine_teams');
     }
 };

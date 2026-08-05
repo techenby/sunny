@@ -15,6 +15,7 @@ Route::prefix('{current_team}/kiosk')
     ->group(function (): void {
         Route::livewire('configure/preview', 'pages::kiosk.configure.preview')->name('.configure.preview');
         Route::livewire('configure/calendar', 'pages::kiosk.configure.calendar')->name('.configure.calendar');
+        Route::livewire('configure/routines', 'pages::kiosk.configure.routines')->name('.configure.routines');
         Route::livewire('configure/settings', 'pages::kiosk.configure.settings')->name('.configure.settings');
 
         Route::livewire('calendar', 'pages::kiosk.calendar')->name('.calendar');
