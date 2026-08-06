@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\RoutineCadence;
+use Carbon\CarbonImmutable;
+use Carbon\CarbonInterface;
 use Database\Factories\RoutineFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -17,6 +19,17 @@ class Routine extends Model
 {
     /** @use HasFactory<RoutineFactory> */
     use HasFactory;
+
+    public function periodStartedOn(CarbonImmutable $date): CarbonImmutable
+    {
+        $date = $date->startOfDay();
+
+        if ($this->cadence === RoutineCadence::Daily) {
+            return $date;
+        }
+
+        return $date->startOfWeek($this->reset_weekday ?? CarbonInterface::SUNDAY);
+    }
 
     /** @return HasMany<RoutineTask, $this> */
     public function tasks(): HasMany

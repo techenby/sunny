@@ -1,13 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies;
 
 use App\Models\RoutineTask;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class RoutineTaskPolicy
 {
+    public function complete(User $user, RoutineTask $routineTask): bool
+    {
+        return $routineTask->routine->team_id === $user->current_team_id;
+    }
+
     /**
      * Determine whether the user can view any models.
      */
