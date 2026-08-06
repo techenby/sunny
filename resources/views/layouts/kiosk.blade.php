@@ -83,7 +83,7 @@
         </style>
     </head>
     <body
-        class="min-h-screen bg-white dark:bg-zinc-800"
+        class="min-h-screen bg-white dark:bg-zinc-900"
         @if (auth()->user()->currentTeam->rotation !== 0)
             data-rotation="{{ auth()->user()->currentTeam->rotation }}"
         @endif

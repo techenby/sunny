@@ -1,9 +1,25 @@
-<section class="flex min-h-full items-center justify-center p-6">
-    <div class="w-full max-w-3xl rounded-lg border border-zinc-200 bg-white p-8 text-center dark:border-zinc-700 dark:bg-zinc-900">
-        <flux:icon name="arrow-path-rounded-square" class="mx-auto mb-4 size-10 text-zinc-400" />
-        <flux:heading size="xl">{{ __('Routines') }}</flux:heading>
-        <flux:text class="mt-2 text-zinc-500 dark:text-zinc-400">
-            {{ __('Routine tracking will live here.') }}
-        </flux:text>
+<div class="flex h-full flex-col overflow-hidden" wire:poll.600s>
+    <div class="flex shrink-0 flex-col gap-3 border-b border-zinc-200 px-5 py-4 dark:border-zinc-700 sm:flex-row sm:items-center sm:justify-between">
+        <flux:heading>{{ __('Routines') }}</flux:heading>
+
     </div>
-</section>
+
+    <flux:kanban class="p-4">
+        @foreach ($this->routines as $routine)
+            <flux:kanban.column>
+                <flux:kanban.column.header :heading="$routine->name" :count="count($routine->tasks)">
+                    <x-slot:heading>
+                        <flux:icon :icon="$routine->cadence === \App\Enums\RoutineCadence::Weekly ? 'calendar-days' : 'sun'" variant="micro" class="inline" />
+                        <span>{{ $routine->name }}</span>
+                    </x-slot:heading>
+                </flux:kanban.column.header>
+
+                <flux:kanban.column.cards>
+                    @foreach ($routine->tasks as $task)
+                        <flux:kanban.card :heading="$task->name" as="button" wire:click="toggle('{{ $task->id }}')" />
+                    @endforeach
+                </flux:kanban.column.cards>
+            </flux:kanban.column>
+        @endforeach
+    </flux:kanban>
+</div>
