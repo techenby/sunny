@@ -29,6 +29,10 @@
                     {{ __('Recipes') }}
                 </flux:sidebar.item>
 
+                <flux:sidebar.item icon="arrow-path-rounded-square" :href="route('routines.index')" :current="request()->routeIs('routines.*')" wire:navigate>
+                    {{ __('Routines') }}
+                </flux:sidebar.item>
+
                 <flux:sidebar.item icon="tv" :href="route('kiosk.configure.calendar')" :current="request()->routeIs('kiosk.*')" wire:navigate>
                     {{ __('Kiosk') }}
                 </flux:sidebar.item>
