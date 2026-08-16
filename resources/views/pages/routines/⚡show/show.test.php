@@ -59,17 +59,85 @@ describe('validation', function () {
         expect($step->fresh()->name)->toBe('Weigh in');
     });
 
-    test('ignores a blank step', function () {
+    test('ignores a blank step without erroring', function (string $name) {
         $user = User::factory()->create();
         $routine = Routine::factory()->for($user->currentTeam)->create();
 
         Livewire::actingAs($user)
             ->test('pages::routines.show', ['routine' => $routine])
-            ->set('newStep', '  ')
-            ->call('addStep');
+            ->set('newStep', $name)
+            ->call('addStep')
+            ->assertHasNoErrors();
 
         expect($routine->steps()->count())->toBe(0);
+    })->with(['', '  ']);
+
+    test('a step name at the limit is accepted', function () {
+        $user = User::factory()->create();
+        $routine = Routine::factory()->for($user->currentTeam)->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::routines.show', ['routine' => $routine])
+            ->set('newStep', str_repeat('a', 255))
+            ->call('addStep')
+            ->assertHasNoErrors();
+
+        expect($routine->steps()->count())->toBe(1);
     });
+
+    test('renaming a step to the limit is accepted', function () {
+        $user = User::factory()->create();
+        $routine = Routine::factory()->for($user->currentTeam)->create();
+        $step = RoutineStep::factory()->for($routine)->create(['name' => 'Weigh in']);
+
+        Livewire::actingAs($user)
+            ->test('pages::routines.show', ['routine' => $routine])
+            ->set("names.{$step->id}", str_repeat('a', 255))
+            ->call('rename', $step->id)
+            ->assertHasNoErrors();
+
+        expect($step->fresh()->name)->toBe(str_repeat('a', 255));
+    });
+
+    test('surrounding whitespace is trimmed off a new step', function () {
+        $user = User::factory()->create();
+        $routine = Routine::factory()->for($user->currentTeam)->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::routines.show', ['routine' => $routine])
+            ->set('newStep', '  Brush teeth  ')
+            ->call('addStep');
+
+        expect($routine->steps()->sole()->name)->toBe('Brush teeth');
+    });
+
+    test('surrounding whitespace is trimmed off a rename', function () {
+        $user = User::factory()->create();
+        $routine = Routine::factory()->for($user->currentTeam)->create();
+        $step = RoutineStep::factory()->for($routine)->create(['name' => 'Wiegh in']);
+
+        Livewire::actingAs($user)
+            ->test('pages::routines.show', ['routine' => $routine])
+            ->set("names.{$step->id}", '  Weigh in  ')
+            ->call('rename', $step->id);
+
+        expect($step->fresh()->name)->toBe('Weigh in');
+    });
+
+    test('renaming a step to blank is ignored without erroring', function (string $name) {
+        $user = User::factory()->create();
+        $routine = Routine::factory()->for($user->currentTeam)->create();
+        $step = RoutineStep::factory()->for($routine)->create(['name' => 'Weigh in']);
+
+        Livewire::actingAs($user)
+            ->test('pages::routines.show', ['routine' => $routine])
+            ->set("names.{$step->id}", $name)
+            ->call('rename', $step->id)
+            ->assertHasNoErrors()
+            ->assertSet("names.{$step->id}", 'Weigh in');
+
+        expect($step->fresh()->name)->toBe('Weigh in');
+    })->with(['', '  ']);
 });
 
 describe('crud and actions', function () {

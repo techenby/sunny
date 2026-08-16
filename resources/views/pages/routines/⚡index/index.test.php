@@ -52,6 +52,123 @@ describe('form validation', function () {
             ->call('save')
             ->assertHasErrors(['form.day_of_month' => 'required']);
     });
+
+    test('requires a name', function () {
+        $user = User::factory()->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::routines.index')
+            ->call('create')
+            ->set('form.name', '')
+            ->call('save')
+            ->assertHasErrors(['form.name' => 'required']);
+
+        expect(Routine::count())->toBe(0);
+    });
+
+    test('rejects a name longer than the column', function () {
+        $user = User::factory()->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::routines.index')
+            ->call('create')
+            ->set('form.name', str_repeat('a', 256))
+            ->call('save')
+            ->assertHasErrors(['form.name' => 'max']);
+
+        expect(Routine::count())->toBe(0);
+    });
+
+    test('requires a start date', function () {
+        $user = User::factory()->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::routines.index')
+            ->call('create')
+            ->set('form.name', 'Morning')
+            ->set('form.starts_on', 'not-a-date')
+            ->call('save')
+            ->assertHasErrors(['form.starts_on' => 'date']);
+
+        expect(Routine::count())->toBe(0);
+    });
+
+    test('rejects a frequency or time of day outside the enum', function (string $field, string $value) {
+        $user = User::factory()->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::routines.index')
+            ->call('create')
+            ->set('form.name', 'Morning')
+            ->set("form.{$field}", $value)
+            ->call('save')
+            ->assertHasErrors("form.{$field}");
+
+        expect(Routine::count())->toBe(0);
+    })->with([
+        ['frequency', 'fortnightly'],
+        ['time_of_day', 'midnight'],
+    ]);
+
+    test('rejects a weekday outside the week', function (int $weekday) {
+        $user = User::factory()->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::routines.index')
+            ->call('create')
+            ->set('form.name', 'Sheets')
+            ->set('form.frequency', RoutineFrequency::Weekly->value)
+            ->set('form.weekdays', [$weekday])
+            ->call('save')
+            ->assertHasErrors('form.weekdays.0');
+
+        expect(Routine::count())->toBe(0);
+    })->with([-1, 7, 9]);
+
+    test('accepts every real weekday', function () {
+        $user = User::factory()->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::routines.index')
+            ->call('create')
+            ->set('form.name', 'Sheets')
+            ->set('form.frequency', RoutineFrequency::Weekly->value)
+            ->set('form.weekdays', [Carbon::SUNDAY, Carbon::SATURDAY])
+            ->call('save')
+            ->assertHasNoErrors();
+
+        expect(Routine::sole()->scheduledWeekdays())->toBe([0, 6]);
+    });
+
+    test('rejects a day of month outside the month', function (int $day) {
+        $user = User::factory()->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::routines.index')
+            ->call('create')
+            ->set('form.name', 'Filters')
+            ->set('form.frequency', RoutineFrequency::Monthly->value)
+            ->set('form.day_of_month', $day)
+            ->call('save')
+            ->assertHasErrors(['form.day_of_month' => 'between']);
+
+        expect(Routine::count())->toBe(0);
+    })->with([0, 32]);
+
+    test('accepts the first and last day of the month', function (int $day) {
+        $user = User::factory()->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::routines.index')
+            ->call('create')
+            ->set('form.name', 'Filters')
+            ->set('form.frequency', RoutineFrequency::Monthly->value)
+            ->set('form.day_of_month', $day)
+            ->call('save')
+            ->assertHasNoErrors();
+
+        expect(Routine::sole()->day_of_month)->toBe($day);
+    })->with([1, 31]);
 });
 
 describe('authorization', function () {

@@ -33,6 +33,10 @@
                     {{ __('Routines') }}
                 </flux:sidebar.item>
 
+                <flux:sidebar.item icon="queue-list" :href="route('lists.index')" :current="request()->routeIs('lists.*')" wire:navigate>
+                    {{ __('Lists') }}
+                </flux:sidebar.item>
+
                 <flux:sidebar.item icon="tv" :href="route('kiosk.configure.calendar')" :current="request()->routeIs('kiosk.*')" wire:navigate>
                     {{ __('Kiosk') }}
                 </flux:sidebar.item>
