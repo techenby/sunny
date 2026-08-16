@@ -127,6 +127,52 @@ describe('crud and actions', function () {
             ->team_id->toBe($user->current_team_id);
     });
 
+    test('a one-person household defaults a new list to that person', function () {
+        $user = User::factory()->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::lists.index')
+            ->call('create')
+            ->assertSet('form.user_id', $user->id);
+    });
+
+    test('a shared household defaults a new list to nobody', function () {
+        $user = User::factory()->create();
+        User::factory()->memberOf($user->currentTeam)->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::lists.index')
+            ->call('create')
+            ->assertSet('form.user_id', null);
+    });
+
+    test('the default is only a suggestion and can be cleared', function () {
+        $user = User::factory()->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::lists.index')
+            ->call('create')
+            ->set('form.name', 'Groceries')
+            ->set('form.user_id', null)
+            ->call('save');
+
+        expect(Checklist::sole()->user_id)->toBeNull();
+    });
+
+    test('editing an existing list does not reassign it', function () {
+        $user = User::factory()->create();
+        $list = Checklist::factory()->for($user->currentTeam)->household()->create();
+        ChecklistItem::factory()->for($list)->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::lists.index')
+            ->call('edit', $list->id)
+            ->assertSet('form.user_id', null)
+            ->call('save');
+
+        expect($list->fresh()->user_id)->toBeNull();
+    });
+
     test('creates a list owned by a member', function () {
         $user = User::factory()->create();
 

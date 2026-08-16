@@ -39,6 +39,7 @@ new #[Title('Routines')] class extends Component
 
         $this->form->reset();
         $this->form->starts_on = $this->team()->today()->toDateString();
+        $this->form->user_id = $this->team()->soleMember()?->id;
 
         $this->modal('routine-form')->show();
     }

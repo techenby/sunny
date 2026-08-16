@@ -40,6 +40,7 @@ new #[Title('Lists')] class extends Component
     public function create(): void
     {
         $this->form->reset();
+        $this->form->user_id = $this->team()->soleMember()?->id;
 
         $this->modal('checklist-form')->show();
     }

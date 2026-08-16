@@ -54,7 +54,9 @@ class RoutineOccurrence extends Model
     #[Scope]
     protected function due(Builder $query, mixed $date): void
     {
-        $query->whereDate('due_on', $date);
+        // A plain equality against the stored date, rather than whereDate's
+        // "due_on"::date cast, so the index is matched cleanly.
+        $query->where('due_on', CarbonImmutable::parse($date)->toDateString());
     }
 
     /**

@@ -214,8 +214,53 @@ describe('crud and actions', function () {
         expect($routine)
             ->name->toBe('Morning Routine')
             ->team_id->toBe($user->current_team_id)
-            ->user_id->toBeNull()
             ->is_active->toBeTrue();
+    });
+
+    test('a one-person household defaults a new routine to that person', function () {
+        $user = User::factory()->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::routines.index')
+            ->call('create')
+            ->assertSet('form.user_id', $user->id);
+    });
+
+    test('a shared household defaults a new routine to nobody', function () {
+        $user = User::factory()->create();
+        User::factory()->memberOf($user->currentTeam)->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::routines.index')
+            ->call('create')
+            ->assertSet('form.user_id', null);
+    });
+
+    test('the default is only a suggestion and can be cleared', function () {
+        $user = User::factory()->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::routines.index')
+            ->call('create')
+            ->set('form.name', 'Chores')
+            ->set('form.user_id', null)
+            ->call('save');
+
+        expect(Routine::sole()->user_id)->toBeNull();
+    });
+
+    test('editing an existing routine does not reassign it', function () {
+        $user = User::factory()->create();
+        $routine = Routine::factory()->for($user->currentTeam)->household()->create();
+        RoutineStep::factory()->for($routine)->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::routines.index')
+            ->call('edit', $routine->id)
+            ->assertSet('form.user_id', null)
+            ->call('save');
+
+        expect($routine->fresh()->user_id)->toBeNull();
     });
 
     test('edits an existing routine', function () {
