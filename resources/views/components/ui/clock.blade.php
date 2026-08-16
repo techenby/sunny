@@ -35,6 +35,6 @@
     }'
 >
     <flux:heading size="xl" x-text="formattedDateTime()">
-        {{ Carbon\CarbonImmutable::now($this->timezoneName())->format('D, M j g:i A') }}
+        {{ Carbon\CarbonImmutable::now($timezone)->format('D, M j g:i A') }}
     </flux:heading>
 </div>
