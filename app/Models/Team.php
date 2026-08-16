@@ -85,6 +85,18 @@ class Team extends Model
         return $this->hasMany(Recipe::class);
     }
 
+    /** @return HasMany<Checklist, $this> */
+    public function checklists(): HasMany
+    {
+        return $this->hasMany(Checklist::class);
+    }
+
+    /** @return HasMany<Routine, $this> */
+    public function routines(): HasMany
+    {
+        return $this->hasMany(Routine::class);
+    }
+
     public function purge(): void
     {
         $this->members()->where('current_team_id', $this->id)
