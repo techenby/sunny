@@ -50,53 +50,48 @@
                                 <flux:badge size="sm" color="zinc">{{ $column['timeOfDay'] }}</flux:badge>
                             </div>
 
-                            <div class="mt-2 h-2 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700">
-                                <div
-                                    class="h-full rounded-full bg-(--color-accent) transition-[width] duration-300"
-                                    style="width: {{ $column['total'] > 0 ? round($column['completed'] / $column['total'] * 100) : 0 }}%"
-                                ></div>
-                            </div>
+                            <flux:progress
+                                :value="$column['completed']"
+                                :max="$column['total']"
+                                class="mt-2 h-2"
+                            />
                         </header>
 
                         <div class="min-h-0 flex-1 overflow-y-auto p-4">
                             @if ($column['total'] === 0)
                                 <flux:text variant="subtle">{{ __('No steps yet.') }}</flux:text>
                             @else
-                                <ul class="space-y-2">
+                                <flux:checkbox.group
+                                    variant="cards"
+                                    class="flex-col"
+                                    :aria-label="__('Routine steps')"
+                                >
                                     @foreach ($column['steps'] as $step)
-                                        <li wire:key="routine-occurrence-step-{{ $step->id }}">
-                                            <button
-                                                type="button"
-                                                wire:click="toggle({{ $step->id }})"
-                                                @class([
-                                                    'flex w-full items-center gap-3 rounded-lg border p-3 text-left transition',
-                                                    'border-zinc-200 bg-white hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-zinc-600' => ! $step->isCompleted(),
-                                                    'border-transparent bg-zinc-100 dark:bg-zinc-800/50' => $step->isCompleted(),
-                                                ])
-                                            >
-                                                @if ($step->isCompleted())
-                                                    <flux:icon name="check-circle" variant="solid" class="size-6 shrink-0 text-(--color-accent)" />
-                                                @else
-                                                    <span class="size-6 shrink-0 rounded-full border-2 border-zinc-300 dark:border-zinc-600"></span>
-                                                @endif
+                                        <flux:checkbox
+                                            wire:key="routine-occurrence-step-{{ $step->id }}"
+                                            :value="$step->id"
+                                            :checked="$step->isCompleted()"
+                                            wire:click="toggle({{ $step->id }})"
+                                            class="items-center"
+                                        >
+                                            <flux:checkbox.indicator />
 
-                                                <span @class([
-                                                    'flex-1',
-                                                    'text-zinc-400 line-through dark:text-zinc-500' => $step->isCompleted(),
-                                                    'text-zinc-800 dark:text-zinc-100' => ! $step->isCompleted(),
-                                                ])>
-                                                    {{ $step->step?->name }}
-                                                </span>
+                                            <span @class([
+                                                'flex-1',
+                                                'text-zinc-400 line-through dark:text-zinc-500' => $step->isCompleted(),
+                                                'text-zinc-800 dark:text-zinc-100' => ! $step->isCompleted(),
+                                            ])>
+                                                {{ $step->step?->name }}
+                                            </span>
 
-                                                @if ($step->isCompleted() && $step->completedBy)
-                                                    <flux:text size="sm" variant="subtle" class="shrink-0">
-                                                        {{ $step->completedBy->name }}
-                                                    </flux:text>
-                                                @endif
-                                            </button>
-                                        </li>
+                                            @if ($step->isCompleted() && $step->completedBy)
+                                                <flux:text size="sm" variant="subtle" class="shrink-0">
+                                                    {{ $step->completedBy->name }}
+                                                </flux:text>
+                                            @endif
+                                        </flux:checkbox>
                                     @endforeach
-                                </ul>
+                                </flux:checkbox.group>
                             @endif
                         </div>
                     </section>
