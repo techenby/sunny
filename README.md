@@ -173,6 +173,73 @@ erDiagram
 		datetime updated_at  ""
 	}
 
+	checklists {
+		integer id PK ""
+		integer team_id FK ""
+		integer user_id FK ""
+		varchar type  ""
+		varchar name  ""
+		datetime deleted_at  ""
+		datetime created_at  ""
+		datetime updated_at  ""
+	}
+
+	checklist_items {
+		integer id PK ""
+		integer checklist_id FK ""
+		varchar name  ""
+		integer position  ""
+		datetime completed_at  ""
+		integer completed_by FK ""
+		datetime created_at  ""
+		datetime updated_at  ""
+	}
+
+	routines {
+		integer id PK ""
+		integer team_id FK ""
+		integer user_id FK ""
+		varchar name  ""
+		varchar time_of_day  ""
+		varchar frequency  ""
+		json weekdays  ""
+		integer day_of_month  ""
+		date starts_on  ""
+		boolean is_active  ""
+		datetime deleted_at  ""
+		datetime created_at  ""
+		datetime updated_at  ""
+	}
+
+	routine_steps {
+		integer id PK ""
+		integer routine_id FK ""
+		varchar name  ""
+		integer position  ""
+		datetime deleted_at  ""
+		datetime created_at  ""
+		datetime updated_at  ""
+	}
+
+	routine_occurrences {
+		integer id PK ""
+		integer routine_id FK ""
+		date due_on  ""
+		datetime generated_at  ""
+		datetime created_at  ""
+		datetime updated_at  ""
+	}
+
+	routine_occurrence_steps {
+		integer id PK ""
+		integer routine_occurrence_id FK ""
+		integer routine_step_id FK ""
+		datetime completed_at  ""
+		integer completed_by FK ""
+		datetime created_at  ""
+		datetime updated_at  ""
+	}
+
 	kiosk_devices {
 		integer id PK ""
 		varchar uuid UK ""
@@ -234,14 +301,25 @@ erDiagram
 	users||--o{passkeys:"has"
 	users||--o{kiosk_devices:"paired"
 	users||--o{sessions:"has"
+	users|o--o{checklists:"assigned"
+	users|o--o{checklist_items:"completed"
+	users|o--o{routines:"assigned"
+	users|o--o{routine_occurrence_steps:"completed"
 	teams||--o{team_members:"has members"
 	teams||--o{team_invitations:"has invitations"
 	teams||--o{recipes:"has"
 	teams||--o{items:"has"
 	teams||--o{calendar_feeds:"has"
+	teams||--o{checklists:"has"
+	teams||--o{routines:"has"
 	teams||--o{kiosk_devices:"has"
 	recipes||--o{recipes:"remix of"
 	items||--o{items:"nested in"
+	checklists||--o{checklist_items:"has items"
+	routines||--o{routine_steps:"has steps"
+	routines||--o{routine_occurrences:"generates"
+	routine_steps||--o{routine_occurrence_steps:"instantiated as"
+	routine_occurrences||--o{routine_occurrence_steps:"has steps"
 
 	sessions:::Laravel
 	password_reset_tokens:::Laravel
