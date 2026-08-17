@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\Routines\GenerateRoutineOccurrences;
 use App\Enums\TimeOfDay;
 use App\Models\Routine;
 use App\Models\RoutineOccurrenceStep;
@@ -112,7 +113,7 @@ test('it will not toggle a step from another team', function () {
     $routine = Routine::factory()->daily()->create();
     RoutineStep::factory()->for($routine)->create();
 
-    app(App\Actions\Routines\GenerateRoutineOccurrences::class)->handle($routine->team);
+    resolve(GenerateRoutineOccurrences::class)->handle($routine->team);
     $step = RoutineOccurrenceStep::sole();
 
     Livewire::actingAs($user)

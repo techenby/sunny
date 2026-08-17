@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Routines;
 
+use Illuminate\Contracts\Database\Query\Builder;
 use App\Models\Routine;
 use App\Models\RoutineOccurrence;
 use App\Models\RoutineOccurrenceStep;
@@ -88,9 +89,9 @@ class GenerateRoutineOccurrences
         $isPast = $date->lt($team->today());
 
         return RoutineOccurrence::query()
-            ->whereHas('routine', fn ($query) => $query
+            ->whereHas('routine', fn (Builder $query) => $query
                 ->where('team_id', $team->id)
-                ->when(! $isPast, fn ($query) => $query->where('is_active', true)))
+                ->unless($isPast, fn ($query) => $query->where('is_active', true)))
             ->with(['routine.user', 'steps.step'])
             ->due($date)
             ->get()

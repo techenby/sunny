@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Date;
 use App\Enums\RoutineFrequency;
 use App\Enums\TimeOfDay;
 use App\Models\Routine;
@@ -57,8 +58,8 @@ test('a deleted step is soft deleted so history stays intact', function () {
 test('a daily routine occurs every day', function () {
     $routine = Routine::factory()->daily()->create(['starts_on' => '2026-08-01']);
 
-    expect($routine->occursOn(Carbon::parse('2026-08-10')))->toBeTrue()
-        ->and($routine->occursOn(Carbon::parse('2026-08-11')))->toBeTrue();
+    expect($routine->occursOn(Date::parse('2026-08-10')))->toBeTrue()
+        ->and($routine->occursOn(Date::parse('2026-08-11')))->toBeTrue();
 });
 
 test('a weekly routine occurs only on its chosen weekdays', function () {
@@ -66,9 +67,9 @@ test('a weekly routine occurs only on its chosen weekdays', function () {
         ->weekly([Carbon::MONDAY, Carbon::THURSDAY])
         ->create(['starts_on' => '2026-08-01']);
 
-    expect($routine->occursOn(Carbon::parse('2026-08-10')))->toBeTrue()  // Monday
-        ->and($routine->occursOn(Carbon::parse('2026-08-13')))->toBeTrue()  // Thursday
-        ->and($routine->occursOn(Carbon::parse('2026-08-11')))->toBeFalse(); // Tuesday
+    expect($routine->occursOn(Date::parse('2026-08-10')))->toBeTrue()  // Monday
+        ->and($routine->occursOn(Date::parse('2026-08-13')))->toBeTrue()  // Thursday
+        ->and($routine->occursOn(Date::parse('2026-08-11')))->toBeFalse(); // Tuesday
 });
 
 test('weekdays stored as strings still match', function () {
@@ -78,38 +79,38 @@ test('weekdays stored as strings still match', function () {
         'starts_on' => '2026-08-01',
     ]);
 
-    expect($routine->occursOn(Carbon::parse('2026-08-10')))->toBeTrue()
-        ->and($routine->occursOn(Carbon::parse('2026-08-11')))->toBeFalse();
+    expect($routine->occursOn(Date::parse('2026-08-10')))->toBeTrue()
+        ->and($routine->occursOn(Date::parse('2026-08-11')))->toBeFalse();
 });
 
 test('a monthly routine occurs on its chosen day', function () {
     $routine = Routine::factory()->monthly(15)->create(['starts_on' => '2026-01-01']);
 
-    expect($routine->occursOn(Carbon::parse('2026-08-15')))->toBeTrue()
-        ->and($routine->occursOn(Carbon::parse('2026-09-15')))->toBeTrue()
-        ->and($routine->occursOn(Carbon::parse('2026-08-16')))->toBeFalse();
+    expect($routine->occursOn(Date::parse('2026-08-15')))->toBeTrue()
+        ->and($routine->occursOn(Date::parse('2026-09-15')))->toBeTrue()
+        ->and($routine->occursOn(Date::parse('2026-08-16')))->toBeFalse();
 });
 
 test('a monthly routine set past the end of a short month runs on its last day', function () {
     $routine = Routine::factory()->monthly(31)->create(['starts_on' => '2026-01-01']);
 
-    expect($routine->occursOn(Carbon::parse('2026-02-28')))->toBeTrue()
-        ->and($routine->occursOn(Carbon::parse('2026-02-27')))->toBeFalse()
-        ->and($routine->occursOn(Carbon::parse('2026-03-31')))->toBeTrue()
-        ->and($routine->occursOn(Carbon::parse('2026-03-30')))->toBeFalse();
+    expect($routine->occursOn(Date::parse('2026-02-28')))->toBeTrue()
+        ->and($routine->occursOn(Date::parse('2026-02-27')))->toBeFalse()
+        ->and($routine->occursOn(Date::parse('2026-03-31')))->toBeTrue()
+        ->and($routine->occursOn(Date::parse('2026-03-30')))->toBeFalse();
 });
 
 test('a routine never occurs before it starts', function () {
     $routine = Routine::factory()->daily()->create(['starts_on' => '2026-08-10']);
 
-    expect($routine->occursOn(Carbon::parse('2026-08-09')))->toBeFalse()
-        ->and($routine->occursOn(Carbon::parse('2026-08-10')))->toBeTrue();
+    expect($routine->occursOn(Date::parse('2026-08-09')))->toBeFalse()
+        ->and($routine->occursOn(Date::parse('2026-08-10')))->toBeTrue();
 });
 
 test('an inactive routine never occurs', function () {
     $routine = Routine::factory()->daily()->inactive()->create(['starts_on' => '2026-08-01']);
 
-    expect($routine->occursOn(Carbon::parse('2026-08-10')))->toBeFalse();
+    expect($routine->occursOn(Date::parse('2026-08-10')))->toBeFalse();
 });
 
 test('the active scope excludes paused routines', function () {

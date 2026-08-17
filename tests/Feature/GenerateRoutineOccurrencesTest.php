@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Date;
 use App\Actions\Routines\GenerateRoutineOccurrences;
 use App\Enums\TimeOfDay;
 use App\Models\Routine;
@@ -10,7 +11,7 @@ use App\Models\Team;
 use Carbon\Carbon;
 
 beforeEach(function () {
-    $this->generate = app(GenerateRoutineOccurrences::class);
+    $this->generate = resolve(GenerateRoutineOccurrences::class);
 });
 
 test('it generates an occurrence with a row per step', function () {
@@ -18,7 +19,7 @@ test('it generates an occurrence with a row per step', function () {
     $routine = Routine::factory()->for($team)->daily()->create(['starts_on' => '2026-08-01']);
     RoutineStep::factory()->for($routine)->count(3)->create();
 
-    $created = $this->generate->handle($team, Carbon::parse('2026-08-10'));
+    $created = $this->generate->handle($team, Date::parse('2026-08-10'));
 
     expect($created)->toBe(1)
         ->and(RoutineOccurrence::count())->toBe(1)
@@ -30,7 +31,7 @@ test('it skips routines that are not due', function () {
     $routine = Routine::factory()->for($team)->weekly([Carbon::MONDAY])->create(['starts_on' => '2026-08-01']);
     RoutineStep::factory()->for($routine)->create();
 
-    $created = $this->generate->handle($team, Carbon::parse('2026-08-11')); // Tuesday
+    $created = $this->generate->handle($team, Date::parse('2026-08-11')); // Tuesday
 
     expect($created)->toBe(0)
         ->and(RoutineOccurrence::count())->toBe(0);
@@ -41,7 +42,7 @@ test('it skips paused routines', function () {
     $routine = Routine::factory()->for($team)->daily()->inactive()->create(['starts_on' => '2026-08-01']);
     RoutineStep::factory()->for($routine)->create();
 
-    expect($this->generate->handle($team, Carbon::parse('2026-08-10')))->toBe(0);
+    expect($this->generate->handle($team, Date::parse('2026-08-10')))->toBe(0);
 });
 
 test('running it twice creates nothing the second time', function () {
@@ -49,8 +50,8 @@ test('running it twice creates nothing the second time', function () {
     $routine = Routine::factory()->for($team)->daily()->create(['starts_on' => '2026-08-01']);
     RoutineStep::factory()->for($routine)->count(2)->create();
 
-    $this->generate->handle($team, Carbon::parse('2026-08-10'));
-    $second = $this->generate->handle($team, Carbon::parse('2026-08-10'));
+    $this->generate->handle($team, Date::parse('2026-08-10'));
+    $second = $this->generate->handle($team, Date::parse('2026-08-10'));
 
     expect($second)->toBe(0)
         ->and(RoutineOccurrence::count())->toBe(1)
@@ -62,10 +63,10 @@ test('it preserves completions when run again', function () {
     $routine = Routine::factory()->for($team)->daily()->create(['starts_on' => '2026-08-01']);
     RoutineStep::factory()->for($routine)->create();
 
-    $this->generate->handle($team, Carbon::parse('2026-08-10'));
+    $this->generate->handle($team, Date::parse('2026-08-10'));
     RoutineOccurrenceStep::first()->complete();
 
-    $this->generate->handle($team, Carbon::parse('2026-08-10'));
+    $this->generate->handle($team, Date::parse('2026-08-10'));
 
     expect(RoutineOccurrenceStep::first()->isCompleted())->toBeTrue();
 });
@@ -75,11 +76,11 @@ test('a step added later backfills into an existing occurrence', function () {
     $routine = Routine::factory()->for($team)->daily()->create(['starts_on' => '2026-08-01']);
     RoutineStep::factory()->for($routine)->create();
 
-    $this->generate->handle($team, Carbon::parse('2026-08-10'));
+    $this->generate->handle($team, Date::parse('2026-08-10'));
     expect(RoutineOccurrenceStep::count())->toBe(1);
 
     RoutineStep::factory()->for($routine)->create();
-    $this->generate->handle($team, Carbon::parse('2026-08-10'));
+    $this->generate->handle($team, Date::parse('2026-08-10'));
 
     expect(RoutineOccurrenceStep::count())->toBe(2);
 });
@@ -90,9 +91,9 @@ test('a deleted step stops generating but keeps its history', function () {
     $keep = RoutineStep::factory()->for($routine)->create();
     $remove = RoutineStep::factory()->for($routine)->create();
 
-    $this->generate->handle($team, Carbon::parse('2026-08-10'));
+    $this->generate->handle($team, Date::parse('2026-08-10'));
     $remove->delete();
-    $this->generate->handle($team, Carbon::parse('2026-08-11'));
+    $this->generate->handle($team, Date::parse('2026-08-11'));
 
     $yesterday = RoutineOccurrence::whereDate('due_on', '2026-08-10')->sole();
     $today = RoutineOccurrence::whereDate('due_on', '2026-08-11')->sole();
@@ -107,7 +108,7 @@ test('a removed step still resolves its name on a past day', function () {
     $routine = Routine::factory()->for($team)->daily()->create(['starts_on' => '2026-08-01']);
     $step = RoutineStep::factory()->for($routine)->create(['name' => 'Weigh in']);
 
-    $this->generate->handle($team, Carbon::parse('2026-08-10'));
+    $this->generate->handle($team, Date::parse('2026-08-10'));
     $step->delete();
 
     $occurrenceStep = RoutineOccurrenceStep::first();
@@ -120,7 +121,7 @@ test('it generates across a date range', function () {
     $routine = Routine::factory()->for($team)->daily()->create(['starts_on' => '2026-08-01']);
     RoutineStep::factory()->for($routine)->create();
 
-    $created = $this->generate->handle($team, Carbon::parse('2026-08-10'), Carbon::parse('2026-08-16'));
+    $created = $this->generate->handle($team, Date::parse('2026-08-10'), Date::parse('2026-08-16'));
 
     expect($created)->toBe(7)
         ->and(RoutineOccurrence::count())->toBe(7);
@@ -130,7 +131,7 @@ test('an inverted range generates nothing', function () {
     $team = Team::factory()->create();
     Routine::factory()->for($team)->daily()->create(['starts_on' => '2026-08-01']);
 
-    expect($this->generate->handle($team, Carbon::parse('2026-08-16'), Carbon::parse('2026-08-10')))->toBe(0);
+    expect($this->generate->handle($team, Date::parse('2026-08-16'), Date::parse('2026-08-10')))->toBe(0);
 });
 
 test('it only touches the given team', function () {
@@ -139,7 +140,7 @@ test('it only touches the given team', function () {
     Routine::factory()->for($team)->daily()->create(['starts_on' => '2026-08-01']);
     Routine::factory()->for($other)->daily()->create(['starts_on' => '2026-08-01']);
 
-    $this->generate->handle($team, Carbon::parse('2026-08-10'));
+    $this->generate->handle($team, Date::parse('2026-08-10'));
 
     expect(RoutineOccurrence::count())->toBe(1);
 });
@@ -148,7 +149,7 @@ test('a routine with no steps generates an occurrence with no step rows', functi
     $team = Team::factory()->create();
     Routine::factory()->for($team)->daily()->create(['starts_on' => '2026-08-01']);
 
-    $this->generate->handle($team, Carbon::parse('2026-08-10'));
+    $this->generate->handle($team, Date::parse('2026-08-10'));
 
     expect(RoutineOccurrence::count())->toBe(1)
         ->and(RoutineOccurrenceStep::count())->toBe(0);
@@ -160,7 +161,7 @@ test('the due date follows the team timezone', function () {
     RoutineStep::factory()->for($routine)->create();
 
     // 23:00 UTC on the 10th is already the 11th where this team lives.
-    $this->travelTo(Carbon::parse('2026-08-10 23:00', 'UTC'));
+    $this->travelTo(Date::parse('2026-08-10 23:00', 'UTC'));
     $this->generate->handle($team);
 
     expect(RoutineOccurrence::sole()->due_on->toDateString())->toBe('2026-08-11');
@@ -183,7 +184,7 @@ test('forDate generates and returns the day sorted by time of day', function () 
         RoutineStep::factory()->for($routine)->create();
     }
 
-    $occurrences = $this->generate->forDate($team, Carbon::parse('2026-08-10'));
+    $occurrences = $this->generate->forDate($team, Date::parse('2026-08-10'));
 
     expect($occurrences->pluck('routine.name')->all())
         ->toBe(['Feed the cat', 'Wake up', 'Wind down', 'Water plants']);
@@ -194,10 +195,10 @@ test('forDate still shows a routine that has since been paused', function () {
     $routine = Routine::factory()->for($team)->daily()->create(['starts_on' => '2026-08-01']);
     RoutineStep::factory()->for($routine)->create();
 
-    $this->generate->handle($team, Carbon::parse('2026-08-10'));
+    $this->generate->handle($team, Date::parse('2026-08-10'));
     $routine->update(['is_active' => false]);
 
-    expect($this->generate->forDate($team, Carbon::parse('2026-08-10')))->toHaveCount(1);
+    expect($this->generate->forDate($team, Date::parse('2026-08-10')))->toHaveCount(1);
 });
 
 test('warm generates the next week for every team', function () {
