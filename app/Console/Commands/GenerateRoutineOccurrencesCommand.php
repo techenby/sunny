@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Actions\Routines\GenerateRoutineOccurrences;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
-use App\Actions\Routines\GenerateRoutineOccurrences;
 use Illuminate\Console\Command;
 
 #[Description('Pre-generate routine occurrences so upcoming days are ready before anyone opens the board')]

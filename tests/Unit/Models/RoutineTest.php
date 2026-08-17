@@ -1,6 +1,5 @@
 <?php
 
-use Illuminate\Support\Facades\Date;
 use App\Enums\RoutineFrequency;
 use App\Enums\TimeOfDay;
 use App\Models\Routine;
@@ -11,6 +10,7 @@ use App\Models\Team;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\UniqueConstraintViolationException;
+use Illuminate\Support\Facades\Date;
 
 test('a routine belongs to a team', function () {
     $team = Team::factory()->create();

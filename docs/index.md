@@ -1,10 +1,10 @@
 ---
-title: Sunny Help
+title: Sunny Home Documentation
 description: Learn how to use Sunny in the main app and on a shared kiosk display.
 order: 1
 ---
 
-# Sunny Help
+# Sunny Home Documentation
 
 Sunny helps a household share routines, lists, calendars, recipes, and other
 everyday information.
@@ -33,5 +33,3 @@ everyday information.
   application layers, team scoping, queues, scheduling, and integrations.
 - [HTTP API](/docs/developers/http-api): Integrate with Sunny through Sanctum.
 - [MCP Setup](/docs/developers/mcp/setup): Connect an MCP client to Sunny.
-- [Database ERD](/docs/developers/database): Review Sunny's tables and
-  relationships.

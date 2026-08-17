@@ -5,7 +5,6 @@ use App\Enums\TimeOfDay;
 use App\Models\Routine;
 use App\Models\RoutineOccurrenceStep;
 use App\Models\RoutineStep;
-use App\Models\Team;
 use App\Models\User;
 use Carbon\Carbon;
 use Livewire\Livewire;
@@ -24,18 +23,14 @@ test('renders successfully', function () {
         ->assertOk();
 })->group('smoke');
 
-/**
- * @return array{0: User, 1: Team}
- */
-function routineBoardUser(): array
-{
+$routineBoardUser = function (): array {
     $user = User::factory()->create();
 
     return [$user, $user->currentTeam];
-}
+};
 
-test('it shows a column per routine, labelled with who owns it', function () {
-    [$user, $team] = routineBoardUser();
+test('it shows a column per routine, labelled with who owns it', function () use ($routineBoardUser) {
+    [$user, $team] = $routineBoardUser();
     $other = User::factory()->memberOf($team)->create(['name' => 'Alice']);
 
     $mine = Routine::factory()->for($team)->daily()->assignedTo($user)
@@ -61,8 +56,8 @@ test('it shows a column per routine, labelled with who owns it', function () {
         ->toBe([false, false, true]);
 });
 
-test('two people with the same routine name each get their own column', function () {
-    [$user, $team] = routineBoardUser();
+test('two people with the same routine name each get their own column', function () use ($routineBoardUser) {
+    [$user, $team] = $routineBoardUser();
     $other = User::factory()->memberOf($team)->create(['name' => 'Alice']);
 
     foreach ([$user, $other] as $member) {
@@ -76,8 +71,8 @@ test('two people with the same routine name each get their own column', function
         ->and(collect($columns)->pluck('name')->all())->toBe(['Morning', 'Morning']);
 });
 
-test('a column counts completed steps', function () {
-    [$user, $team] = routineBoardUser();
+test('a column counts completed steps', function () use ($routineBoardUser) {
+    [$user, $team] = $routineBoardUser();
     $routine = Routine::factory()->for($team)->daily()->assignedTo($user)->create();
     RoutineStep::factory()->for($routine)->count(4)->create();
 
@@ -92,8 +87,8 @@ test('a column counts completed steps', function () {
     expect($component->get('columns')[0]['completed'])->toBe(1);
 });
 
-test('toggling a step records the user and can be undone', function () {
-    [$user, $team] = routineBoardUser();
+test('toggling a step records the user and can be undone', function () use ($routineBoardUser) {
+    [$user, $team] = $routineBoardUser();
     $routine = Routine::factory()->for($team)->daily()->household()->create();
     RoutineStep::factory()->for($routine)->create();
 
@@ -108,8 +103,8 @@ test('toggling a step records the user and can be undone', function () {
     expect($step->fresh()->isCompleted())->toBeFalse();
 });
 
-test('it will not toggle a step from another team', function () {
-    [$user] = routineBoardUser();
+test('it will not toggle a step from another team', function () use ($routineBoardUser) {
+    [$user] = $routineBoardUser();
     $routine = Routine::factory()->daily()->create();
     RoutineStep::factory()->for($routine)->create();
 
@@ -124,8 +119,8 @@ test('it will not toggle a step from another team', function () {
     expect($step->fresh()->isCompleted())->toBeFalse();
 });
 
-test('columns are ordered by time of day', function () {
-    [$user, $team] = routineBoardUser();
+test('columns are ordered by time of day', function () use ($routineBoardUser) {
+    [$user, $team] = $routineBoardUser();
 
     foreach ([TimeOfDay::Evening, TimeOfDay::Morning, TimeOfDay::Afternoon] as $timeOfDay) {
         $routine = Routine::factory()->for($team)->daily()->household()
@@ -141,8 +136,8 @@ test('columns are ordered by time of day', function () {
         ->toBe(['morning', 'afternoon', 'evening']);
 });
 
-test('navigating changes the day and keeps completions apart', function () {
-    [$user, $team] = routineBoardUser();
+test('navigating changes the day and keeps completions apart', function () use ($routineBoardUser) {
+    [$user, $team] = $routineBoardUser();
     $routine = Routine::factory()->for($team)->daily()->household()->create([
         'starts_on' => now()->subMonth(),
     ]);
@@ -164,8 +159,8 @@ test('navigating changes the day and keeps completions apart', function () {
         ->and($component->get('columns')[0]['completed'])->toBe(1);
 });
 
-test('a day with no routines shows the empty state', function () {
-    [$user, $team] = routineBoardUser();
+test('a day with no routines shows the empty state', function () use ($routineBoardUser) {
+    [$user, $team] = $routineBoardUser();
     Routine::factory()->for($team)->weekly([Carbon::MONDAY])->create([
         'starts_on' => now()->subMonth(),
     ]);
@@ -175,8 +170,8 @@ test('a day with no routines shows the empty state', function () {
         ->assertSee(__('Nothing to do'));
 });
 
-test('a paused routine drops off the board', function () {
-    [$user, $team] = routineBoardUser();
+test('a paused routine drops off the board', function () use ($routineBoardUser) {
+    [$user, $team] = $routineBoardUser();
     $routine = Routine::factory()->for($team)->daily()->household()->create();
     RoutineStep::factory()->for($routine)->create();
 

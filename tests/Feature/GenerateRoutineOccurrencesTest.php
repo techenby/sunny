@@ -1,6 +1,5 @@
 <?php
 
-use Illuminate\Support\Facades\Date;
 use App\Actions\Routines\GenerateRoutineOccurrences;
 use App\Enums\TimeOfDay;
 use App\Models\Routine;
@@ -9,6 +8,7 @@ use App\Models\RoutineOccurrenceStep;
 use App\Models\RoutineStep;
 use App\Models\Team;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Date;
 
 beforeEach(function () {
     $this->generate = resolve(GenerateRoutineOccurrences::class);
