@@ -94,9 +94,9 @@ class GenerateRoutineOccurrences
             ->with(['routine.user', 'steps.step'])
             ->due($date)
             ->get()
-            ->sortBy([
-                fn (RoutineOccurrence $occurrence): int => $occurrence->routine->time_of_day->getSortOrder(),
-                fn (RoutineOccurrence $occurrence): string => $occurrence->routine->name,
+            ->sortBy(fn (RoutineOccurrence $occurrence): array => [
+                $occurrence->routine->time_of_day->getSortOrder(),
+                $occurrence->routine->name,
             ])
             ->values();
     }

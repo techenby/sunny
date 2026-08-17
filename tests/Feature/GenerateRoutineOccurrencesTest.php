@@ -169,17 +169,24 @@ test('the due date follows the team timezone', function () {
 test('forDate generates and returns the day sorted by time of day', function () {
     $team = Team::factory()->create();
 
-    $evening = Routine::factory()->for($team)->daily()->timeOfDay(TimeOfDay::Evening)->create(['starts_on' => '2026-08-01', 'name' => 'Wind down']);
-    $morning = Routine::factory()->for($team)->daily()->timeOfDay(TimeOfDay::Morning)->create(['starts_on' => '2026-08-01', 'name' => 'Wake up']);
+    $routines = [
+        [TimeOfDay::Evening, 'Wind down'],
+        [TimeOfDay::Morning, 'Wake up'],
+        [TimeOfDay::Anytime, 'Water plants'],
+        [TimeOfDay::Morning, 'Feed the cat'],
+    ];
 
-    RoutineStep::factory()->for($evening)->create();
-    RoutineStep::factory()->for($morning)->create();
+    foreach ($routines as [$timeOfDay, $name]) {
+        $routine = Routine::factory()->for($team)->daily()->timeOfDay($timeOfDay)
+            ->create(['starts_on' => '2026-08-01', 'name' => $name]);
+
+        RoutineStep::factory()->for($routine)->create();
+    }
 
     $occurrences = $this->generate->forDate($team, Carbon::parse('2026-08-10'));
 
-    expect($occurrences)->toHaveCount(2)
-        ->and($occurrences->first()->routine->name)->toBe('Wake up')
-        ->and($occurrences->last()->routine->name)->toBe('Wind down');
+    expect($occurrences->pluck('routine.name')->all())
+        ->toBe(['Feed the cat', 'Wake up', 'Wind down', 'Water plants']);
 });
 
 test('forDate still shows a routine that has since been paused', function () {

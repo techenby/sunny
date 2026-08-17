@@ -23,13 +23,16 @@ new #[Layout('layouts::kiosk')] class extends Component
     }
 
     /**
-     * One column per member with routines today, then the household column for
-     * anything nobody has claimed.
+     * One column per routine due on the focused date, ordered by time of day.
      *
      * @return array<int, array{
      *     key: string,
      *     name: string,
-     *     occurrences: Collection<int, RoutineOccurrence>,
+     *     assignee: string,
+     *     isHousehold: bool,
+     *     icon: string,
+     *     timeOfDay: string,
+     *     steps: Collection<int, RoutineOccurrenceStep>,
      *     completed: int,
      *     total: int
      * }>
@@ -37,24 +40,9 @@ new #[Layout('layouts::kiosk')] class extends Component
     #[Computed]
     public function columns(): array
     {
-        [$household, $assigned] = $this->occurrences()
-            ->partition(fn (RoutineOccurrence $occurrence): bool => $occurrence->routine->user === null);
-
-        $columns = $assigned
-            ->groupBy(fn (RoutineOccurrence $occurrence): int => $occurrence->routine->user->id)
-            ->map(fn (Collection $occurrences): array => $this->column(
-                'user-' . $occurrences->first()->routine->user->id,
-                $occurrences->first()->routine->user->name,
-                $occurrences,
-            ))
-            ->sortBy('name')
-            ->values();
-
-        if ($household->isNotEmpty()) {
-            $columns->push($this->column('household', __('Household'), $household));
-        }
-
-        return $columns->all();
+        return $this->occurrences()
+            ->map(fn (RoutineOccurrence $occurrence): array => $this->column($occurrence))
+            ->all();
     }
 
     #[Computed]
@@ -104,24 +92,31 @@ new #[Layout('layouts::kiosk')] class extends Component
     }
 
     /**
-     * @param Collection<int, RoutineOccurrence> $occurrences
-     *
      * @return array{
      *     key: string,
      *     name: string,
-     *     occurrences: Collection<int, RoutineOccurrence>,
+     *     assignee: string,
+     *     isHousehold: bool,
+     *     icon: string,
+     *     timeOfDay: string,
+     *     steps: Collection<int, RoutineOccurrenceStep>,
      *     completed: int,
      *     total: int
      * }
      */
-    private function column(string $key, string $name, Collection $occurrences): array
+    private function column(RoutineOccurrence $occurrence): array
     {
-        $steps = $occurrences->flatMap(fn (RoutineOccurrence $occurrence) => $occurrence->steps);
+        $routine = $occurrence->routine;
+        $steps = $occurrence->steps;
 
         return [
-            'key' => $key,
-            'name' => $name,
-            'occurrences' => $occurrences,
+            'key' => 'occurrence-' . $occurrence->id,
+            'name' => $routine->name,
+            'assignee' => $routine->user?->name ?? __('Household'),
+            'isHousehold' => $routine->user === null,
+            'icon' => $routine->time_of_day->getIcon(),
+            'timeOfDay' => $routine->time_of_day->getLabel(),
+            'steps' => $steps,
             'completed' => $steps->filter(fn (RoutineOccurrenceStep $step): bool => $step->isCompleted())->count(),
             'total' => $steps->count(),
         ];

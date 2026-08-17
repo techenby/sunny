@@ -32,10 +32,22 @@
                     >
                         <header class="shrink-0 border-b border-zinc-200 p-4 dark:border-zinc-700">
                             <div class="flex items-baseline justify-between gap-2">
-                                <flux:heading size="lg">{{ $column['name'] }}</flux:heading>
+                                <div class="flex min-w-0 items-baseline gap-2">
+                                    <flux:icon :name="$column['icon']" class="size-4 shrink-0 translate-y-0.5 text-zinc-400" />
+                                    <flux:heading size="lg" class="truncate">{{ $column['name'] }}</flux:heading>
+                                </div>
+
                                 <flux:text class="tabular-nums">
                                     {{ $column['completed'] }}/{{ $column['total'] }}
                                 </flux:text>
+                            </div>
+
+                            <div class="mt-2 flex flex-wrap items-center gap-2">
+                                <flux:badge size="sm" :color="$column['isHousehold'] ? 'zinc' : 'blue'">
+                                    {{ $column['assignee'] }}
+                                </flux:badge>
+
+                                <flux:badge size="sm" color="zinc">{{ $column['timeOfDay'] }}</flux:badge>
                             </div>
 
                             <div class="mt-2 h-2 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700">
@@ -46,51 +58,46 @@
                             </div>
                         </header>
 
-                        <div class="min-h-0 flex-1 space-y-5 overflow-y-auto p-4">
-                            @foreach ($column['occurrences'] as $occurrence)
-                                <div wire:key="routine-occurrence-{{ $occurrence->id }}">
-                                    <div class="mb-2 flex items-center gap-2">
-                                        <flux:icon :name="$occurrence->routine->time_of_day->getIcon()" class="size-4 text-zinc-400" />
-                                        <flux:heading class="uppercase tracking-wide">{{ $occurrence->routine->name }}</flux:heading>
-                                    </div>
+                        <div class="min-h-0 flex-1 overflow-y-auto p-4">
+                            @if ($column['total'] === 0)
+                                <flux:text variant="subtle">{{ __('No steps yet.') }}</flux:text>
+                            @else
+                                <ul class="space-y-2">
+                                    @foreach ($column['steps'] as $step)
+                                        <li wire:key="routine-occurrence-step-{{ $step->id }}">
+                                            <button
+                                                type="button"
+                                                wire:click="toggle({{ $step->id }})"
+                                                @class([
+                                                    'flex w-full items-center gap-3 rounded-lg border p-3 text-left transition',
+                                                    'border-zinc-200 bg-white hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-zinc-600' => ! $step->isCompleted(),
+                                                    'border-transparent bg-zinc-100 dark:bg-zinc-800/50' => $step->isCompleted(),
+                                                ])
+                                            >
+                                                @if ($step->isCompleted())
+                                                    <flux:icon name="check-circle" variant="solid" class="size-6 shrink-0 text-(--color-accent)" />
+                                                @else
+                                                    <span class="size-6 shrink-0 rounded-full border-2 border-zinc-300 dark:border-zinc-600"></span>
+                                                @endif
 
-                                    <ul class="space-y-2">
-                                        @foreach ($occurrence->steps as $step)
-                                            <li wire:key="routine-occurrence-step-{{ $step->id }}">
-                                                <button
-                                                    type="button"
-                                                    wire:click="toggle({{ $step->id }})"
-                                                    @class([
-                                                        'flex w-full items-center gap-3 rounded-lg border p-3 text-left transition',
-                                                        'border-zinc-200 bg-white hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-zinc-600' => ! $step->isCompleted(),
-                                                        'border-transparent bg-zinc-100 dark:bg-zinc-800/50' => $step->isCompleted(),
-                                                    ])
-                                                >
-                                                    @if ($step->isCompleted())
-                                                        <flux:icon name="check-circle" variant="solid" class="size-6 shrink-0 text-(--color-accent)" />
-                                                    @else
-                                                        <span class="size-6 shrink-0 rounded-full border-2 border-zinc-300 dark:border-zinc-600"></span>
-                                                    @endif
+                                                <span @class([
+                                                    'flex-1',
+                                                    'text-zinc-400 line-through dark:text-zinc-500' => $step->isCompleted(),
+                                                    'text-zinc-800 dark:text-zinc-100' => ! $step->isCompleted(),
+                                                ])>
+                                                    {{ $step->step?->name }}
+                                                </span>
 
-                                                    <span @class([
-                                                        'flex-1',
-                                                        'text-zinc-400 line-through dark:text-zinc-500' => $step->isCompleted(),
-                                                        'text-zinc-800 dark:text-zinc-100' => ! $step->isCompleted(),
-                                                    ])>
-                                                        {{ $step->step?->name }}
-                                                    </span>
-
-                                                    @if ($step->isCompleted() && $step->completedBy)
-                                                        <flux:text size="sm" variant="subtle" class="shrink-0">
-                                                            {{ $step->completedBy->name }}
-                                                        </flux:text>
-                                                    @endif
-                                                </button>
-                                            </li>
-                                        @endforeach
-                                    </ul>
-                                </div>
-                            @endforeach
+                                                @if ($step->isCompleted() && $step->completedBy)
+                                                    <flux:text size="sm" variant="subtle" class="shrink-0">
+                                                        {{ $step->completedBy->name }}
+                                                    </flux:text>
+                                                @endif
+                                            </button>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            @endif
                         </div>
                     </section>
                 @endforeach

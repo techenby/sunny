@@ -33,13 +33,16 @@ function routineBoardUser(): array
     return [$user, $user->currentTeam];
 }
 
-test('it shows a column per person and a household column', function () {
+test('it shows a column per routine, labelled with who owns it', function () {
     [$user, $team] = routineBoardUser();
     $other = User::factory()->memberOf($team)->create(['name' => 'Alice']);
 
-    $mine = Routine::factory()->for($team)->daily()->assignedTo($user)->create(['name' => 'Morning']);
-    $theirs = Routine::factory()->for($team)->daily()->assignedTo($other)->create(['name' => 'Evening']);
-    $shared = Routine::factory()->for($team)->daily()->household()->create(['name' => 'Chores']);
+    $mine = Routine::factory()->for($team)->daily()->assignedTo($user)
+        ->timeOfDay(TimeOfDay::Morning)->create(['name' => 'Get ready']);
+    $theirs = Routine::factory()->for($team)->daily()->assignedTo($other)
+        ->timeOfDay(TimeOfDay::Afternoon)->create(['name' => 'Homework']);
+    $shared = Routine::factory()->for($team)->daily()->household()
+        ->timeOfDay(TimeOfDay::Evening)->create(['name' => 'Chores']);
 
     foreach ([$mine, $theirs, $shared] as $routine) {
         RoutineStep::factory()->for($routine)->create();
@@ -50,7 +53,26 @@ test('it shows a column per person and a household column', function () {
         ->get('columns');
 
     expect(collect($columns)->pluck('name')->all())
-        ->toBe(['Alice', $user->name, __('Household')]);
+        ->toBe(['Get ready', 'Homework', 'Chores'])
+        ->and(collect($columns)->pluck('assignee')->all())
+        ->toBe([$user->name, 'Alice', __('Household')])
+        ->and(collect($columns)->pluck('isHousehold')->all())
+        ->toBe([false, false, true]);
+});
+
+test('two people with the same routine name each get their own column', function () {
+    [$user, $team] = routineBoardUser();
+    $other = User::factory()->memberOf($team)->create(['name' => 'Alice']);
+
+    foreach ([$user, $other] as $member) {
+        $routine = Routine::factory()->for($team)->daily()->assignedTo($member)->create(['name' => 'Morning']);
+        RoutineStep::factory()->for($routine)->create();
+    }
+
+    $columns = Livewire::actingAs($user)->test('pages::kiosk.routines')->get('columns');
+
+    expect($columns)->toHaveCount(2)
+        ->and(collect($columns)->pluck('name')->all())->toBe(['Morning', 'Morning']);
 });
 
 test('a column counts completed steps', function () {
@@ -101,7 +123,7 @@ test('it will not toggle a step from another team', function () {
     expect($step->fresh()->isCompleted())->toBeFalse();
 });
 
-test('occurrences are ordered by time of day', function () {
+test('columns are ordered by time of day', function () {
     [$user, $team] = routineBoardUser();
 
     foreach ([TimeOfDay::Evening, TimeOfDay::Morning, TimeOfDay::Afternoon] as $timeOfDay) {
@@ -114,7 +136,7 @@ test('occurrences are ordered by time of day', function () {
 
     $columns = Livewire::actingAs($user)->test('pages::kiosk.routines')->get('columns');
 
-    expect($columns[0]['occurrences']->pluck('routine.name')->all())
+    expect(collect($columns)->pluck('name')->all())
         ->toBe(['morning', 'afternoon', 'evening']);
 });
 
