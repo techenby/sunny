@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Concerns\GeneratesUniqueTeamSlugs;
 use App\Enums\Appearance;
 use App\Enums\TeamRole;
+use Carbon\CarbonImmutable;
 use Database\Factories\TeamFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -83,6 +84,39 @@ class Team extends Model
     public function recipes(): HasMany
     {
         return $this->hasMany(Recipe::class);
+    }
+
+    /** @return HasMany<Checklist, $this> */
+    public function checklists(): HasMany
+    {
+        return $this->hasMany(Checklist::class);
+    }
+
+    /** @return HasMany<Routine, $this> */
+    public function routines(): HasMany
+    {
+        return $this->hasMany(Routine::class);
+    }
+
+    /**
+     * The only member of the household, or null once there is more than one.
+     * A one-person team has nobody to share with, so new routines and lists
+     * default to them rather than to the household.
+     */
+    public function soleMember(): ?User
+    {
+        $members = $this->members()->take(2)->get();
+
+        return $members->count() === 1 ? $members->first() : null;
+    }
+
+    /**
+     * Today's calendar date where the team actually lives, which is what
+     * decides whether a routine is due.
+     */
+    public function today(): CarbonImmutable
+    {
+        return CarbonImmutable::now($this->timezone)->startOfDay();
     }
 
     public function purge(): void

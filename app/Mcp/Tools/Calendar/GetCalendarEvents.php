@@ -34,7 +34,7 @@ class GetCalendarEvents extends Tool
         ]);
 
         $team = $request->user()->currentTeam;
-        $timezone = $team->timezone ?: 'America/Chicago';
+        $timezone = $team->timezone;
 
         $days = (int) ($validated['days'] ?? 7);
         $from = isset($validated['from'])

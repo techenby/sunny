@@ -18,5 +18,7 @@ Route::middleware(['auth'])->group(function () {
 require __DIR__ . '/admin.php';
 require __DIR__ . '/inventory.php';
 require __DIR__ . '/kiosk.php';
+require __DIR__ . '/lists.php';
 require __DIR__ . '/recipes.php';
+require __DIR__ . '/routines.php';
 require __DIR__ . '/settings.php';

@@ -57,3 +57,20 @@ test('slug updates when name changes', function () {
 
     expect($team->fresh()->slug)->toBe('updated');
 });
+
+test('a one-person team reports a sole member', function () {
+    $user = User::factory()->create();
+
+    expect($user->currentTeam->soleMember()?->id)->toBe($user->id);
+});
+
+test('a team with more than one member has no sole member', function () {
+    $user = User::factory()->create();
+    User::factory()->memberOf($user->currentTeam)->create();
+
+    expect($user->currentTeam->soleMember())->toBeNull();
+});
+
+test('an empty team has no sole member', function () {
+    expect(Team::factory()->create()->soleMember())->toBeNull();
+});

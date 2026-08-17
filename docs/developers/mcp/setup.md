@@ -1,7 +1,7 @@
 ---
 title: MCP Setup
-group: MCP
 description: Connect MCP clients to Sunny's recipe, inventory, and calendar tools.
+order: 5
 ---
 
 # MCP Setup

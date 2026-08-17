@@ -263,6 +263,6 @@ new #[Layout('layouts::kiosk')] class extends Component
 
     private function timezoneName(): string
     {
-        return Auth::user()->currentTeam->timezone ?: 'America/Chicago';
+        return Auth::user()->currentTeam->timezone;
     }
 };

@@ -1,24 +1,35 @@
 ---
-title: Welcome
-description: The home page of your documentation.
+title: Sunny Home Documentation
+description: Learn how to use Sunny in the main app and on a shared kiosk display.
 order: 1
-# group: Guides              # Bucket this page sits under in the sidebar
-# slug: custom-url           # Override the URL slug (defaults to the file path)
-# hidden: true               # Hide from the sidebar and listings
-# badge: New                 # Small label shown next to the title in the sidebar
-# icon: book                 # Icon name (consumed by your views/macros)
-# tags: [intro, basics]      # Free-form tags
-# updated_at: 2026-01-01     # Shown in the page footer when set
-# author: Jane Doe
-# layout: docs               # Override the Blade layout used to render this page
-# image: /img/social.png     # Social/OG image
-# redirect: /docs/other      # Permanent redirect to another URL
 ---
 
-# Welcome to your documentation
+# Sunny Home Documentation
 
-This page lives at `docs/index.md`. Edit it, add more markdown files,
-and they will automatically appear in the sidebar.
+Sunny helps a household share routines, lists, calendars, recipes, and other
+everyday information.
 
-> [!TIP]
-> Run `php artisan make:doc guide/getting-started` to scaffold a new page.
+## User Guides
+
+- [Routines](/docs/users/routines): Create repeating checklists in the main app and
+  complete scheduled steps from a kiosk.
+- [Lists and Checklists](/docs/users/checklists): Keep shared to-do, shopping, and
+  wish lists updated from the main app or a kiosk.
+- [Recipes](/docs/users/recipes): Create, import, remix, and share recipes.
+- [Inventory](/docs/users/inventory): Record where household belongings are
+  stored.
+- [Teams and Households](/docs/users/teams): Create shared workspaces and invite
+  other people.
+- [Set Up a Kiosk](/docs/users/kiosk/getting-started): Pair a display and understand
+  how it refreshes and records changes.
+- [Calendar Feeds](/docs/users/kiosk/calendar-feeds): Add Proton Calendar or Google
+  Calendar events to the kiosk.
+
+## Developer Guides
+
+- [Local Development](/docs/developers/local-development): Install Sunny and
+  run its development and quality tools.
+- [Architecture and Operations](/docs/developers/architecture): Understand the
+  application layers, team scoping, queues, scheduling, and integrations.
+- [HTTP API](/docs/developers/http-api): Integrate with Sunny through Sanctum.
+- [MCP Setup](/docs/developers/mcp/setup): Connect an MCP client to Sunny.

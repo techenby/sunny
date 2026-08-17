@@ -166,7 +166,7 @@ class FetchCalendarEvents
 
     private function timezoneName(CalendarFeed $feed): string
     {
-        return $feed->team?->timezone ?: 'America/Chicago';
+        return $feed->team?->timezone ?? 'America/Chicago';
     }
 
     /**

@@ -5,12 +5,19 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use App\Enums\CalendarColor;
+use App\Enums\ChecklistType;
 use App\Enums\ItemType;
+use App\Enums\RoutineFrequency;
+use App\Enums\TimeOfDay;
 use App\Models\CalendarFeed;
+use App\Models\Checklist;
 use App\Models\Item;
 use App\Models\Recipe;
+use App\Models\Routine;
 use App\Models\Team;
 use App\Models\User;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Seeder;
 
 class StrawhatsSeeder extends Seeder
@@ -149,5 +156,166 @@ class StrawhatsSeeder extends Seeder
                 ['name' => 'Indian Holidays (Jinbe)', 'url' => 'https://worldpublicholiday.com/calendar-feeds/feed.ics?country=IN&year=' . now()->format('Y'), 'color' => CalendarColor::Orange],
             )
             ->create();
+
+        $this->seedRoutines($strawhats, $crew);
+        $this->seedChecklists($strawhats, $crew);
+    }
+
+    /** @param Collection<int, User> $crew */
+    private function seedRoutines(Team $team, Collection $crew): void
+    {
+        $daily = ['frequency' => RoutineFrequency::Daily];
+        $weekly = fn (array $days): array => ['frequency' => RoutineFrequency::Weekly, 'weekdays' => $days];
+        $monthly = fn (int $day): array => ['frequency' => RoutineFrequency::Monthly, 'day_of_month' => $day];
+
+        $this->routine($team, $crew->firstWhere('name', 'Monkey D. Luffy'), 'Morning', TimeOfDay::Morning, $daily, [
+            'Eat breakfast',
+            'Eat second breakfast',
+            'Check the meat supply',
+            'Stretch',
+        ]);
+
+        $this->routine($team, $crew->firstWhere('name', 'Roronoa Zoro'), 'Training', TimeOfDay::Morning, $daily, [
+            'One thousand push-ups',
+            'Lift the giant weights',
+            'Nap in the crow\'s nest',
+            'Find the way back to the deck',
+        ]);
+
+        $this->routine($team, $crew->firstWhere('name', 'Nami'), 'Navigation Check', TimeOfDay::Morning, $daily, [
+            'Read the Log Pose',
+            'Chart today\'s course',
+            'Record the weather',
+        ]);
+
+        $this->routine($team, $crew->firstWhere('name', 'Sanji'), 'Galley Prep', TimeOfDay::Afternoon, $weekly([Carbon::MONDAY, Carbon::THURSDAY]), [
+            'Inventory the pantry',
+            'Prep the stock',
+            'Sharpen the knives',
+        ]);
+
+        $this->routine($team, $crew->firstWhere('name', 'Franky'), 'Ship Maintenance', TimeOfDay::Anytime, $monthly(1), [
+            'Inspect the Soldier Dock System',
+            'Top up the cola reserves',
+            'Check the paddle wheels',
+        ]);
+
+        $this->routine($team, null, 'Chores', TimeOfDay::Afternoon, $weekly([Carbon::SATURDAY]), [
+            'Swab the deck',
+            'Water the tangerine grove',
+            'Do the laundry',
+            'Restock the sick bay',
+        ]);
+
+        $this->routine($team, null, 'Night Watch', TimeOfDay::Evening, $daily, [
+            'Climb to the crow\'s nest',
+            'Check the Log Pose',
+            'Douse the lamps',
+        ]);
+
+        // Paused, so the management screen has something in that state to show.
+        $this->routine($team, $crew->firstWhere('name', 'Brook'), 'Afternoon Tea', TimeOfDay::Afternoon, $daily, [
+            'Brew the tea',
+            'Practice a new song',
+        ], isActive: false);
+    }
+
+    /**
+     * @param  array<int, string>  $steps
+     */
+    private function routine(
+        Team $team,
+        ?User $user,
+        string $name,
+        TimeOfDay $timeOfDay,
+        array $schedule,
+        array $steps,
+        bool $isActive = true,
+    ): void {
+        $routine = Routine::factory()->for($team)->create([
+            'user_id' => $user?->id,
+            'name' => $name,
+            'time_of_day' => $timeOfDay,
+            'starts_on' => now()->subMonth(),
+            'is_active' => $isActive,
+            ...$schedule,
+        ]);
+
+        $routine->steps()->createMany(
+            array_map(fn (string $step): array => ['name' => $step], $steps),
+        );
+    }
+
+    /** @param Collection<int, User> $crew */
+    private function seedChecklists(Team $team, Collection $crew): void
+    {
+        $this->checklist($team, null, 'Groceries', ChecklistType::Shopping, [
+            'Meat',
+            'More meat',
+            'Tangerines',
+            'Cola',
+            'Rice',
+            'Soy sauce',
+            'Tea leaves',
+        ], completed: 3, completedBy: $crew->firstWhere('name', 'Sanji'));
+
+        $this->checklist($team, $crew->firstWhere('name', 'Tony Tony Chopper'), 'Sick Bay Restock', ChecklistType::Shopping, [
+            'Bandages',
+            'Rumble Balls',
+            'Fever medicine',
+            'Cotton swabs',
+        ]);
+
+        $this->checklist($team, $crew->firstWhere('name', 'Monkey D. Luffy'), 'Luffy\'s Wish List', ChecklistType::Wishlist, [
+            'A mountain of meat',
+            'A bigger mountain of meat',
+            'To be King of the Pirates',
+        ]);
+
+        $this->checklist($team, $crew->firstWhere('name', 'Nico Robin'), 'Robin\'s Wish List', ChecklistType::Wishlist, [
+            'The Rio Poneglyph',
+            'A quiet afternoon in the library',
+            'Coffee that Sanji did not over-sweeten',
+        ]);
+
+        $this->checklist($team, $crew->firstWhere('name', 'Franky'), 'Ship Repairs', ChecklistType::Todo, [
+            'Patch the port hull',
+            'Rewire the Coup de Burst',
+            'Replace the mast rigging',
+        ], completed: 1, completedBy: $crew->firstWhere('name', 'Franky'));
+
+        $this->checklist($team, null, 'Before The Next Island', ChecklistType::Todo, [
+            'Refill the water barrels',
+            'Post the watch rotation',
+            'Hide the emergency meat',
+        ]);
+    }
+
+    /**
+     * @param  array<int, string>  $items
+     * @param  int  $completed  how many of the leading items are already checked off
+     */
+    private function checklist(
+        Team $team,
+        ?User $user,
+        string $name,
+        ChecklistType $type,
+        array $items,
+        int $completed = 0,
+        ?User $completedBy = null,
+    ): void {
+        $checklist = Checklist::factory()->for($team)->create([
+            'user_id' => $user?->id,
+            'name' => $name,
+            'type' => $type,
+        ]);
+
+        foreach ($items as $index => $item) {
+            $created = $checklist->items()->create(['name' => $item]);
+
+            if ($index < $completed) {
+                $created->complete($completedBy);
+            }
+        }
     }
 }
