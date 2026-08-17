@@ -1,7 +1,7 @@
 ---
 title: Calendar Feeds
-group: Kiosk
 description: Add Proton Calendar and Google Calendar events to your kiosk.
+order: 2
 ---
 
 # Calendar Feeds

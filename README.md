@@ -34,7 +34,15 @@
 - [tailwindcss](https://tailwindcss.com/)
 - [tailwindcss/typography](https://github.com/tailwindlabs/tailwindcss-typography)
 
-### Helpful Commands
+## Documentation
+
+Sunny's user and developer documentation lives in [`docs/`](docs/index.md)
+and is served by Laradocs at `/docs`.
+
+- [User Guides](docs/users/_index.md)
+- [Developer Guides](docs/developers/_index.md)
+
+## Helpful Commands
 
 - `composer run setup`
     Sets up the repo for development by installing PHP dependencies, creating the `.env` file if missing, generating the app key, running database migrations, and installing and building the frontend assets with npm.
