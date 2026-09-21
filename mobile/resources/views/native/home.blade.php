@@ -61,9 +61,9 @@
             size="lg"
             font="semibold"
             a11y-label="Register"
-            a11y-hint="Opens the Sunny registration page"
+            a11y-hint="Opens the registration screen"
             class="w-full"
-            @press="openRegister"
+            @navigate='/register'
         >
             Register
         </button>
@@ -73,9 +73,9 @@
             size="lg"
             font="semibold"
             a11y-label="Log in"
-            a11y-hint="Opens the Sunny login page"
+            a11y-hint="Opens the login screen"
             class="w-full"
-            @press="openLogin"
+            @navigate='/login'
         >
             Log in
         </button>

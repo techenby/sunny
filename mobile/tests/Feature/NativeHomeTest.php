@@ -1,5 +1,7 @@
 <?php
 
+use App\NativeComponents\Login;
+use App\NativeComponents\Register;
 use Native\Mobile\Testing\Native;
 
 it('introduces Sunny with native components', function () {
@@ -91,8 +93,8 @@ it('provides accessible authentication actions', function () {
     $screen = Native::visit('/');
 
     foreach ([
-        'login-button' => ['Log in', 'Opens the Sunny login page', 'secondary'],
-        'register-button' => ['Register', 'Opens the Sunny registration page', 'primary'],
+        'login-button' => ['Log in', 'Opens the login screen', 'secondary'],
+        'register-button' => ['Register', 'Opens the registration screen', 'primary'],
     ] as $ref => [$label, $hint, $variant]) {
         $screen->assertElement('button', fn (array $node): bool => ($node['ref'] ?? null) === $ref
             && ($node['props']['label'] ?? null) === $label
@@ -107,20 +109,13 @@ it('provides accessible authentication actions', function () {
     expect($screen->accessibilityViolations())->toBe([]);
 });
 
-it('opens the Sunny authentication pages in the native browser', function () {
-    $bridge = Native::fakeBridge()
-        ->respondTo('Browser.OpenInApp', ['success' => true]);
-
+it('navigates to the native authentication screens', function (string $button, string $uri, string $screen) {
     Native::visit('/')
-        ->tap('login-button')
-        ->tap('register-button');
-
-    $bridge
-        ->assertCalled('Browser.OpenInApp', fn (array $params): bool => $params['url'] === 'https://sunnyhome.app/login')
-        ->assertCalled('Browser.OpenInApp', fn (array $params): bool => $params['url'] === 'https://sunnyhome.app/register')
-        ->assertCalledTimes('Browser.OpenInApp', 2)
-        ->assertCallOrder([
-            'Browser.OpenInApp',
-            'Browser.OpenInApp',
-        ]);
-});
+        ->tap($button)
+        ->assertNavigatedTo($uri)
+        ->follow()
+        ->assertScreen($screen);
+})->with([
+    'log in' => ['login-button', '/login', Login::class],
+    'register' => ['register-button', '/register', Register::class],
+]);
