@@ -41,66 +41,66 @@ return [
 
         'light' => [
             // Primary brand color — used for filled buttons, active states, key accents.
-            'primary' => '#0F766E',
-            'on-primary' => '#FFFFFF',
+            'primary' => '#E85A48',
+            'on-primary' => '#FCF7F6',
 
             // Secondary / muted action color.
-            'secondary' => '#475569',
-            'on-secondary' => '#FFFFFF',
+            'secondary' => '#463E3B',
+            'on-secondary' => '#FCF7F6',
 
             // Surface = cards, sheets, dialogs. Background = page root.
-            'surface' => '#FFFFFF',
-            'on-surface' => '#1B1B18',
-            'background' => '#FAFAFA',
-            'on-background' => '#1B1B18',
+            'surface' => '#FEF9F7',
+            'on-surface' => '#0B0808',
+            'background' => '#FAF1EF',
+            'on-background' => '#0B0808',
 
             // Surface variant = filled text fields, muted tonal surfaces.
             // on-surface-variant = muted label/hint text on those surfaces.
-            'surface-variant' => '#FAFAFA',
-            'on-surface-variant' => '#706F6C',
+            'surface-variant' => '#F0E5E2',
+            'on-surface-variant' => '#5D5350',
 
             // Outline = neutral borders (text fields, dividers, cards).
-            'outline' => '#E5E5E5',
+            'outline' => '#DDD1CE',
 
             // Destructive actions — maps to `variant="destructive"` on components.
             'destructive' => '#B91C1C',
-            'on-destructive' => '#FFFFFF',
+            'on-destructive' => '#FCF7F6',
 
             // Tertiary accent — for highlights, badges, emphasis not covered by primary.
-            'accent' => '#C2410C',
-            'on-accent' => '#FFFFFF',
+            'accent' => '#E85A48',
+            'on-accent' => '#FCF7F6',
         ],
 
         'dark' => [
             // Leave empty or partial to auto-derive from `light` (luminance inversion).
             // Specify any token here to override the derived value.
-            'primary' => '#14B8A6',
-            'on-primary' => '#FFFFFF',
+            'primary' => '#F87966',
+            'on-primary' => '#150A08',
 
-            'secondary' => '#94A3B8',
-            'on-secondary' => '#0F172A',
+            'secondary' => '#DDD1CE',
+            'on-secondary' => '#150A08',
 
-            'surface' => '#161615',
-            'on-surface' => '#EDEDEC',
-            'background' => '#0A0A0A',
-            'on-background' => '#EDEDEC',
+            'surface' => '#1A1413',
+            'on-surface' => '#FEF9F7',
+            'background' => '#0C0807',
+            'on-background' => '#FEF9F7',
 
-            'surface-variant' => '#1F1F1E',
-            'on-surface-variant' => '#A1A09A',
+            'surface-variant' => '#2C2422',
+            'on-surface-variant' => '#A89B98',
 
-            'outline' => '#3E3E3A',
+            'outline' => '#463E3B',
 
             'destructive' => '#F87171',
-            'on-destructive' => '#0F172A',
+            'on-destructive' => '#150A08',
 
-            'accent' => '#FDBA74',
-            'on-accent' => '#0F172A',
+            'accent' => '#F87966',
+            'on-accent' => '#150A08',
         ],
 
         // Corner radii (points / dp).
-        'radius-sm' => 4,
+        'radius-sm' => 5,
         'radius-md' => 8,
-        'radius-lg' => 16,
+        'radius-lg' => 12,
         'radius-full' => 9999,
 
         // Font size scale (points / sp).
@@ -111,9 +111,12 @@ return [
     ],
 
     'fonts' => [
-        'default' => 'System',
-        'accent' => 'Archivo+Black-Regular',
-        'lobster' => 'Lobster+Two-Regular',
+        'default' => 'Nunito-Regular',
+        'medium' => 'Nunito-Medium',
+        'semibold' => 'Nunito-SemiBold',
+        'accent' => 'Nunito-Bold',
+        'mono' => 'UbuntuMono-Regular',
+        'mono-bold' => 'UbuntuMono-Bold',
     ],
 
 ];

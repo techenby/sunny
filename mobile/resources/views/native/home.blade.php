@@ -17,10 +17,10 @@
             />
         </row>
 
-        <text font="accent" ref="welcome-title" class="text-xl font-bold text-center text-theme-on-surface">
+        <text font="accent" ref="welcome-title" class="text-xl font-bold text-center text-theme-primary">
             NativePHP Starter Kit
         </text>
-        <text font="lobster" ref="welcome-subtitle" class="mt-2 mb-8 text-center text-theme-on-surface-variant">
+        <text ref="welcome-subtitle" class="mt-2 mb-8 text-center text-theme-on-surface-variant">
             Your app is ready.
         </text>
 
@@ -71,10 +71,10 @@
         <divider class="w-full my-6 border-theme-outline" />
 
         <column ref="welcome-footer" class="w-full items-center gap-1">
-            <text font="lobster" class="w-full text-center text-theme-on-surface-variant">
+            <text font="mono" class="w-full text-center text-theme-on-surface-variant">
                 Built on NativePHP · Made by Bifrost
             </text>
-            <text font="lobster" class="w-full text-center text-theme-on-surface-variant">
+            <text font="mono" class="w-full text-center text-theme-on-surface-variant">
                 Powered by Laravel
             </text>
         </column>

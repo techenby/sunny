@@ -48,8 +48,8 @@ it('takes every color from the native-ui theme tokens', function () {
             && ($node['style']['bg_color'] ?? null) === $light['surface']
             && ($node['props']['dark_bg_color'] ?? null) === $dark['surface'])
         ->assertElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'welcome-title'
-            && ($node['props']['color'] ?? null) === $light['on-surface']
-            && ($node['props']['dark_color'] ?? null) === $dark['on-surface'])
+            && ($node['props']['color'] ?? null) === $light['primary']
+            && ($node['props']['dark_color'] ?? null) === $dark['primary'])
         ->assertElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'welcome-subtitle'
             && ($node['props']['color'] ?? null) === $light['on-surface-variant']
             && ($node['props']['dark_color'] ?? null) === $dark['on-surface-variant']);
@@ -60,6 +60,31 @@ it('takes every color from the native-ui theme tokens', function () {
             && ($node['style']['border_color'] ?? null) === $light['outline']
             && ($node['props']['dark_bg_color'] ?? null) === $dark['surface-variant']
             && ($node['props']['dark_border_color'] ?? null) === $dark['outline']);
+    }
+});
+
+it('uses the Sunset palette and typography', function () {
+    expect(config('native-ui.theme.light'))
+        ->toMatchArray([
+            'primary' => '#E85A48',
+            'surface' => '#FEF9F7',
+            'background' => '#FAF1EF',
+        ])
+        ->and(config('native-ui.theme.dark'))
+        ->toMatchArray([
+            'primary' => '#F87966',
+            'surface' => '#1A1413',
+            'background' => '#0C0807',
+        ])
+        ->and(config('native-ui.fonts'))
+        ->toMatchArray([
+            'default' => 'Nunito-Regular',
+            'accent' => 'Nunito-Bold',
+            'mono' => 'UbuntuMono-Regular',
+        ]);
+
+    foreach (config('native-ui.fonts') as $font) {
+        expect(resource_path("fonts/{$font}.ttf"))->toBeFile();
     }
 });
 
