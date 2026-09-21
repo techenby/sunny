@@ -8,19 +8,14 @@ use Native\Mobile\Facades\Browser;
 
 class Home extends NativeComponent
 {
-    public function openDocs(): void
+    public function openLogin(): void
     {
-        Browser::inApp('https://nativephp.com/docs/mobile');
+        Browser::inApp('https://sunnyhome.app/login');
     }
 
-    public function openDiscord(): void
+    public function openRegister(): void
     {
-        Browser::open('https://discord.gg/nativephp');
-    }
-
-    public function openGitHub(): void
-    {
-        Browser::open('https://github.com/NativePHP');
+        Browser::inApp('https://sunnyhome.app/register');
     }
 
     public function render(): View
