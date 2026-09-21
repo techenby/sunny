@@ -1,7 +1,7 @@
 @use('App\Icons\Android')
 @use('App\Icons\Ios')
 
-<native:top-bar title="Create account" display-mode="large" back />
+<native:top-bar title="Create account" back />
 
 <scroll-view ref="register-screen" fill class="bg-theme-background">
     <column class="w-full gap-6 px-6 py-6">
