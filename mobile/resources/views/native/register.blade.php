@@ -48,7 +48,14 @@
             />
         </column>
 
-        <button ref="register-submit" variant="primary" size="lg" font="semibold" class="w-full">
+        <button
+            ref="register-submit"
+            variant="primary"
+            size="lg"
+            font="semibold"
+            class="w-full"
+            @navigate.replace='/dashboard'
+        >
             Create account
         </button>
 

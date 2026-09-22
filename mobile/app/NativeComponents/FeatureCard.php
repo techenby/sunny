@@ -17,6 +17,8 @@ class FeatureCard extends NativeComponent
 
     public ?Android $androidIcon = null;
 
+    public bool $navigable = false;
+
     public function render(): View
     {
         return view('native.feature-card');

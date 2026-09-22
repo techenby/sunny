@@ -31,7 +31,14 @@
             <checkbox ref="login-remember" label="Remember me" native:model="remember" />
         </column>
 
-        <button ref="login-submit" variant="primary" size="lg" font="semibold" class="w-full">
+        <button
+            ref="login-submit"
+            variant="primary"
+            size="lg"
+            font="semibold"
+            class="w-full"
+            @navigate.replace='/dashboard'
+        >
             Log in
         </button>
 

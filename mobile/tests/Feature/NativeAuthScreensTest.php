@@ -65,3 +65,12 @@ it('switches between the login and register screens without stacking them', func
     'login to register' => ['/login', 'login-register-link', '/register'],
     'register to login' => ['/register', 'register-login-link', '/login'],
 ]);
+
+it('replaces the form with the dashboard on submit until authentication is integrated', function (string $uri, string $button) {
+    Native::visit($uri)
+        ->tap($button)
+        ->assertReplacedWith('/dashboard');
+})->with([
+    'login' => ['/login', 'login-submit'],
+    'register' => ['/register', 'register-submit'],
+]);
