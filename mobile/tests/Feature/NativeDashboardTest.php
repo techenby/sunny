@@ -9,7 +9,7 @@ it('renders the dashboard', function () {
     Native::visit('/dashboard')
         ->assertNavTitle('Dashboard')
         ->assertSee('Your household at a glance')
-        ->assertSee('Recipes')
+        ->assertSee('Cookbook')
         ->assertSee('Inventory')
         ->assertSee('Teams')
         ->assertElement('top_bar_action', fn (array $node): bool => ($node['props']['id'] ?? null) === 'log-out'
@@ -25,14 +25,14 @@ it('returns to the home screen when logging out', function () {
         ->assertScreen(Home::class);
 });
 
-it('opens recipes and inventory from their cards', function (string $card, string $uri, string $screen) {
+it('opens the cookbook and inventory from their cards', function (string $card, string $uri, string $screen) {
     Native::visit('/dashboard')
         ->tap($card)
         ->assertNavigatedTo($uri)
         ->follow()
         ->assertScreen($screen);
 })->with([
-    'recipes' => ['dashboard-recipes', '/recipes', Recipes::class],
+    'cookbook' => ['dashboard-recipes', '/recipes', Recipes::class],
     'inventory' => ['dashboard-inventory', '/inventory', Inventory::class],
 ]);
 

@@ -2,43 +2,41 @@
 
 namespace App\NativeComponents;
 
-use App\Icons\Android;
-use App\Icons\Ios;
+use App\Enums\ItemType;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
 use Native\Mobile\Edge\NativeComponent;
 
 class Inventory extends NativeComponent
 {
-    /** @var array<string, array{ios: Ios, android: Android}> */
-    private const LOCATION_ICONS = [
-        'Pantry' => ['ios' => Ios::Cabinet, 'android' => Android::Kitchen],
-        'Garage' => ['ios' => Ios::Wrench, 'android' => Android::Garage],
-        'Basement' => ['ios' => Ios::Shippingbox, 'android' => Android::Inventory2],
-    ];
-
     /**
-     * Placeholder inventory until the app syncs with sunnyhome.app.
+     * Placeholder items shaped like the sunnyhome.app Item model, until the app syncs with its API.
      *
-     * @return list<array{id: int, name: string, location: string, spot: string, quantity: int, notes: string}>
+     * @return list<array{id: int, parent_id: int|null, type: ItemType, name: string, metadata: array<string, string>|null}>
      */
     public static function all(): array
     {
         return [
-            ['id' => 1, 'name' => 'Canned tomatoes', 'location' => 'Pantry', 'spot' => 'Middle shelf', 'quantity' => 6, 'notes' => 'Crushed and diced. Used in the chili and lasagna.'],
-            ['id' => 2, 'name' => 'Olive oil', 'location' => 'Pantry', 'spot' => 'Top shelf', 'quantity' => 2, 'notes' => 'One bottle is open.'],
-            ['id' => 3, 'name' => 'Basmati rice', 'location' => 'Pantry', 'spot' => 'Bottom bin', 'quantity' => 1, 'notes' => '10 lb bag, about half left.'],
-            ['id' => 4, 'name' => 'Cordless drill', 'location' => 'Garage', 'spot' => 'Workbench', 'quantity' => 1, 'notes' => 'Spare battery is on the charger.'],
-            ['id' => 5, 'name' => 'Extension cords', 'location' => 'Garage', 'spot' => 'Wall hooks', 'quantity' => 3, 'notes' => 'Two 25 ft and one 50 ft outdoor cord.'],
-            ['id' => 6, 'name' => 'Camping tent', 'location' => 'Garage', 'spot' => 'Overhead rack', 'quantity' => 1, 'notes' => 'Sleeps four. Stakes are in the side pocket.'],
-            ['id' => 7, 'name' => 'Holiday decorations', 'location' => 'Basement', 'spot' => 'Storage room', 'quantity' => 4, 'notes' => 'Bins are labeled by holiday.'],
-            ['id' => 8, 'name' => 'Paper towels', 'location' => 'Basement', 'spot' => 'Shelf B', 'quantity' => 12, 'notes' => 'Bulk pack.'],
-            ['id' => 9, 'name' => 'Spare light bulbs', 'location' => 'Basement', 'spot' => 'Utility closet', 'quantity' => 8, 'notes' => 'Soft white LED, 60 W equivalent.'],
+            ['id' => 1, 'parent_id' => null, 'type' => ItemType::Location, 'name' => 'Kitchen', 'metadata' => null],
+            ['id' => 2, 'parent_id' => 1, 'type' => ItemType::Bin, 'name' => 'Pantry', 'metadata' => null],
+            ['id' => 3, 'parent_id' => 2, 'type' => ItemType::Item, 'name' => 'Canned tomatoes', 'metadata' => ['quantity' => '6', 'expires' => 'March 2027']],
+            ['id' => 4, 'parent_id' => 2, 'type' => ItemType::Item, 'name' => 'Olive oil', 'metadata' => ['quantity' => '2']],
+            ['id' => 5, 'parent_id' => 2, 'type' => ItemType::Item, 'name' => 'Basmati rice', 'metadata' => ['size' => '10 lb bag']],
+            ['id' => 6, 'parent_id' => null, 'type' => ItemType::Location, 'name' => 'Garage', 'metadata' => null],
+            ['id' => 7, 'parent_id' => 6, 'type' => ItemType::Bin, 'name' => 'Tool chest', 'metadata' => ['drawer' => 'Top']],
+            ['id' => 8, 'parent_id' => 7, 'type' => ItemType::Item, 'name' => 'Cordless drill', 'metadata' => ['brand' => 'DeWalt', 'model' => 'DCD771']],
+            ['id' => 9, 'parent_id' => 7, 'type' => ItemType::Item, 'name' => 'Tape measure', 'metadata' => ['length' => '25 ft']],
+            ['id' => 10, 'parent_id' => 6, 'type' => ItemType::Item, 'name' => 'Camping tent', 'metadata' => ['capacity' => '4 people']],
+            ['id' => 11, 'parent_id' => null, 'type' => ItemType::Location, 'name' => 'Basement', 'metadata' => null],
+            ['id' => 12, 'parent_id' => 11, 'type' => ItemType::Bin, 'name' => 'Holiday decorations', 'metadata' => ['color' => 'Red lid']],
+            ['id' => 13, 'parent_id' => 12, 'type' => ItemType::Item, 'name' => 'String lights', 'metadata' => ['quantity' => '3']],
+            ['id' => 14, 'parent_id' => 12, 'type' => ItemType::Item, 'name' => 'Ornaments', 'metadata' => null],
+            ['id' => 15, 'parent_id' => 11, 'type' => ItemType::Item, 'name' => 'Spare light bulbs', 'metadata' => ['quantity' => '8', 'type' => 'LED, 60 W equivalent']],
         ];
     }
 
     /**
-     * @return array{id: int, name: string, location: string, spot: string, quantity: int, notes: string}|null
+     * @return array{id: int, parent_id: int|null, type: ItemType, name: string, metadata: array<string, string>|null}|null
      */
     public static function find(int $id): ?array
     {
@@ -46,20 +44,32 @@ class Inventory extends NativeComponent
     }
 
     /**
-     * @return list<array{location: string, ios: Ios, android: Android, items: list<array{id: int, name: string, location: string, spot: string, quantity: int, notes: string}>}>
+     * The direct children of an item (or the top-level items when null), sorted by name, with their own child counts.
+     *
+     * @return list<array{id: int, parent_id: int|null, type: ItemType, name: string, metadata: array<string, string>|null, children_count: int}>
      */
-    #[Computed(persist: true)]
-    public function locations(): array
+    public static function childrenOf(?int $parentId): array
     {
-        return collect(static::all())
-            ->groupBy('location')
-            ->map(fn ($items, string $location): array => [
-                'location' => $location,
-                ...self::LOCATION_ICONS[$location],
-                'items' => $items->all(),
+        $items = collect(static::all());
+
+        return $items
+            ->where('parent_id', $parentId)
+            ->sortBy('name')
+            ->map(fn (array $item): array => [
+                ...$item,
+                'children_count' => $items->where('parent_id', $item['id'])->count(),
             ])
             ->values()
             ->all();
+    }
+
+    /**
+     * @return list<array{id: int, parent_id: int|null, type: ItemType, name: string, metadata: array<string, string>|null, children_count: int}>
+     */
+    #[Computed(persist: true)]
+    public function items(): array
+    {
+        return static::childrenOf(null);
     }
 
     public function render(): View

@@ -25,14 +25,14 @@
         <column ref="dashboard-sections" class="w-full gap-3">
             <pressable
                 ref="dashboard-recipes"
-                a11y-label="Recipes"
-                a11y-hint="Opens your recipes"
+                a11y-label="Cookbook"
+                a11y-hint="Opens your cookbook"
                 class="w-full"
                 @navigate='/recipes'
             >
                 <native:feature-card
                     key="dashboard-recipes"
-                    title="Recipes"
+                    title="Cookbook"
                     description="Save favorites, track ingredients, and remix your own variations."
                     :ios-icon="Ios::BookPages"
                     :android-icon="Android::MenuBook"

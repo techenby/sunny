@@ -3,49 +3,71 @@
 use App\NativeComponents\InventoryItemDetail;
 use Native\Mobile\Testing\Native;
 
-it('lists inventory grouped by location', function () {
+it('lists the top-level locations', function () {
     Native::visit('/inventory')
         ->assertNavTitle('Inventory')
-        ->assertElement('list_section', fn (array $node): bool => ($node['props']['header'] ?? null) === 'Pantry'
-            && ($node['props']['footer'] ?? null) === '3 items')
-        ->assertElement('list_section', fn (array $node): bool => ($node['props']['header'] ?? null) === 'Garage')
-        ->assertElement('list_section', fn (array $node): bool => ($node['props']['header'] ?? null) === 'Basement')
-        ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === 'Paper towels'
-            && ($node['props']['supporting'] ?? null) === 'Shelf B'
-            && ($node['props']['trailing_type'] ?? null) === 'text'
-            && ($node['props']['trailing_value'] ?? null) === '12')
+        ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === 'Garage'
+            && ($node['props']['supporting'] ?? null) === 'Location · 2 items'
+            && ($node['props']['leading_icon_color'] ?? null) !== null)
+        ->assertSee('Basement')
+        ->assertSee('Kitchen')
+        ->assertDontSee('Cordless drill')
         ->assertAccessible();
 });
 
-it('shows a platform icon for each location', function (string $platform, string $iconName) {
-    Native::visit('/inventory', platform: $platform)
-        ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === 'Cordless drill'
+it('shows a platform icon for each item type', function (string $platform, string $path, string $headline, string $iconName) {
+    Native::visit($path, platform: $platform)
+        ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === $headline
             && ($node['props']['leading_icon'] ?? null) === $iconName);
 })->with([
-    'ios' => ['ios', 'wrench'],
-    'android' => ['android', 'garage'],
+    'ios location' => ['ios', '/inventory', 'Garage', 'mappin'],
+    'ios bin' => ['ios', '/inventory/6', 'Tool chest', 'archivebox'],
+    'ios item' => ['ios', '/inventory/6', 'Camping tent', 'cube'],
+    'android location' => ['android', '/inventory', 'Garage', 'place'],
+    'android bin' => ['android', '/inventory/6', 'Tool chest', 'inventory_2'],
+    'android item' => ['android', '/inventory/6', 'Camping tent', 'view_in_ar'],
 ]);
 
-it('opens an item from the list', function () {
+it('drills into a location’s contents', function () {
     Native::visit('/inventory')
-        ->tap('Camping tent')
+        ->tap('Garage')
         ->assertNavigatedTo('/inventory/6')
         ->follow()
         ->assertScreen(InventoryItemDetail::class)
-        ->assertNavTitle('Camping tent');
+        ->assertNavTitle('Garage')
+        ->assertElement('list_section', fn (array $node): bool => ($node['props']['header'] ?? null) === 'Contents'
+            && ($node['props']['footer'] ?? null) === '2 items')
+        ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === 'Tool chest'
+            && ($node['props']['supporting'] ?? null) === 'Bin · 2 items')
+        ->tap('Tool chest')
+        ->assertNavigatedTo('/inventory/7');
 });
 
-it('shows an item’s location, quantity, and notes', function () {
+it('shows an item’s type, parent, and metadata', function () {
     Native::visit('/inventory/8')
-        ->assertNavTitle('Paper towels')
-        ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === 'Location'
-            && ($node['props']['trailing_value'] ?? null) === 'Basement')
-        ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === 'Spot'
-            && ($node['props']['trailing_value'] ?? null) === 'Shelf B')
-        ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === 'Quantity'
-            && ($node['props']['trailing_value'] ?? null) === '12')
-        ->assertSee('Bulk pack.')
+        ->assertNavTitle('Cordless drill')
+        ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === 'Type'
+            && ($node['props']['trailing_value'] ?? null) === 'Item')
+        ->assertElement('list_item', fn (array $node): bool => ($node['ref'] ?? null) === 'item-parent'
+            && ($node['props']['headline'] ?? null) === 'Tool chest')
+        ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === 'Brand'
+            && ($node['props']['trailing_value'] ?? null) === 'DeWalt')
+        ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === 'Model'
+            && ($node['props']['trailing_value'] ?? null) === 'DCD771')
+        ->assertMissingElement('list_section', fn (array $node): bool => ($node['props']['header'] ?? null) === 'Contents')
         ->assertAccessible();
+});
+
+it('navigates up to the containing item', function () {
+    Native::visit('/inventory/8')
+        ->tap('item-parent')
+        ->assertNavigatedTo('/inventory/7');
+});
+
+it('omits the parent and metadata sections when there are none', function () {
+    Native::visit('/inventory/1')
+        ->assertMissingElement('list_item', fn (array $node): bool => ($node['ref'] ?? null) === 'item-parent')
+        ->assertMissingElement('list_section', fn (array $node): bool => ($node['props']['header'] ?? null) === 'Metadata');
 });
 
 it('explains when an item does not exist', function () {
