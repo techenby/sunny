@@ -110,9 +110,9 @@ return [
     */
 
     'permissions' => [
-        // 'NSCameraUsageDescription' => 'Used to take a profile photo.',
+        'NSCameraUsageDescription' => 'Used to photograph the things you add to your inventory.',
+        'NSPhotoLibraryUsageDescription' => 'Used to pick an existing photo for an inventory item.',
         // 'NSMicrophoneUsageDescription' => 'Used to record audio with your videos.',
-        // 'NSPhotoLibraryUsageDescription' => 'Used to select photos for your post.',
     ],
 
     /*

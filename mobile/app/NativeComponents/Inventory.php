@@ -64,6 +64,17 @@ class Inventory extends NativeComponent
     }
 
     /**
+     * @return array<int, string>
+     */
+    public static function selectableParents(): array
+    {
+        return collect(static::all())
+            ->sortBy('name')
+            ->pluck('name', 'id')
+            ->all();
+    }
+
+    /**
      * @return list<array{id: int, parent_id: int|null, type: ItemType, name: string, metadata: array<string, string>|null, children_count: int}>
      */
     #[Computed(persist: true)]
