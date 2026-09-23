@@ -28,7 +28,9 @@ Content-Type: application/json
 
 The response includes the user, a plaintext `token`, and its `expires_at`
 timestamp. Store the token securely; it is not shown again. This endpoint allows
-5 attempts per minute for each email and IP address, then returns `429`.
+5 failed attempts per minute for each email and IP address, then returns
+`429`; a successful sign-in resets the count. Emails are matched
+case-insensitively, the same as signing in on the web.
 
 ### Two-factor authentication
 
@@ -59,7 +61,9 @@ Content-Type: application/json
 Send `recovery_code` instead of `code` to use a recovery code; it is consumed
 and replaced. A successful response matches the token endpoint's. An invalid
 code returns `422` and the challenge can be retried, up to 5 attempts per
-minute. Each challenge can be completed only once.
+minute for each user across all challenges and IP addresses. Each challenge can
+be completed only once. If two-factor authentication is turned off before the
+challenge is completed, the challenge is rejected; sign in again instead.
 
 ### Token lifetime
 
@@ -73,9 +77,23 @@ Accept: application/json
 ```
 
 The response contains a new `token` and `expires_at`. The old token is revoked
-immediately. An expired token cannot be refreshed; sign in again instead.
+immediately. The new token keeps the original token's lifetime, so a Settings
+token that never expires stays that way. An expired token cannot be refreshed;
+sign in again instead.
 
 Tokens created in Settings use the expiration chosen there.
+
+### Sign out
+
+Revoke the token used for the request when the user signs out:
+
+```http
+POST /api/logout
+Authorization: Bearer YOUR_TOKEN
+Accept: application/json
+```
+
+The response is `204`. Other tokens for the same user are unaffected.
 
 Send the token with every protected request:
 
@@ -109,6 +127,7 @@ team the user belongs to.
 | `GET` | `/api/sync` | Synchronize all accessible teams, recipes, and items. |
 | `POST` | `/api/sanctum/token/two-factor` | Complete a two-factor challenge. |
 | `POST` | `/api/sanctum/token/refresh` | Exchange the current token for a new one. |
+| `POST` | `/api/logout` | Revoke the current token. |
 | `GET` | `/api/teams/{team}/items` | List the team's inventory. |
 | `POST` | `/api/teams/{team}/items` | Create an inventory entry. |
 | `GET` | `/api/teams/{team}/items/{item}` | Read an inventory entry. |

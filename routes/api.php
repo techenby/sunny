@@ -8,9 +8,7 @@ use App\Http\Middleware\EnsureTeamMembership;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::post('sanctum/token', [TokenController::class, 'store'])
-    ->middleware('throttle:login')
-    ->name('api.token');
+Route::post('sanctum/token', [TokenController::class, 'store'])->name('api.token');
 
 Route::post('sanctum/token/two-factor', [TokenController::class, 'twoFactor'])
     ->middleware('throttle:api-two-factor')
@@ -22,6 +20,7 @@ Route::middleware('auth:sanctum')
         Route::get('user', fn (Request $request) => $request->user())->name('user');
         Route::get('sync', SyncController::class)->name('sync');
         Route::post('sanctum/token/refresh', [TokenController::class, 'refresh'])->name('token.refresh');
+        Route::post('logout', [TokenController::class, 'destroy'])->name('logout');
 
         Route::prefix('teams/{team}')
             ->middleware(EnsureTeamMembership::class)

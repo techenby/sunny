@@ -161,3 +161,60 @@ test('challenge attempts are rate limited', function () {
 
     expect($user->tokens()->count())->toBe(0);
 });
+
+test('the challenge is rejected if two factor was disabled after it was issued', function () {
+    [$user] = twoFactorUser();
+    $challenge = requestChallenge($user);
+
+    $user->forceFill([
+        'two_factor_secret' => null,
+        'two_factor_recovery_codes' => null,
+        'two_factor_confirmed_at' => null,
+    ])->save();
+
+    $this->postJson(route('api.token.two-factor'), [
+        'challenge' => $challenge,
+        'code' => '123456',
+    ])->assertUnprocessable()->assertJsonValidationErrors('challenge');
+
+    expect($user->tokens()->count())->toBe(0);
+});
+
+test('the challenge rate limit applies across ip addresses', function () {
+    [$user] = twoFactorUser();
+    $challenge = requestChallenge($user);
+
+    foreach (range(1, 5) as $attempt) {
+        $this->withServerVariables(['REMOTE_ADDR' => "10.0.0.{$attempt}"])
+            ->postJson(route('api.token.two-factor'), [
+                'challenge' => $challenge,
+                'code' => '000000',
+            ])->assertUnprocessable();
+    }
+
+    $this->withServerVariables(['REMOTE_ADDR' => '10.0.0.99'])
+        ->postJson(route('api.token.two-factor'), [
+            'challenge' => $challenge,
+            'recovery_code' => 'recovery-code-1',
+        ])->assertTooManyRequests();
+});
+
+test('the challenge rate limit applies across challenges for the same user', function () {
+    [$user] = twoFactorUser();
+
+    foreach (range(1, 5) as $attempt) {
+        $this->withServerVariables(['REMOTE_ADDR' => "10.0.0.{$attempt}"]);
+
+        $this->postJson(route('api.token.two-factor'), [
+            'challenge' => requestChallenge($user),
+            'code' => '000000',
+        ])->assertUnprocessable();
+    }
+
+    $this->withServerVariables(['REMOTE_ADDR' => '10.0.0.99']);
+
+    $this->postJson(route('api.token.two-factor'), [
+        'challenge' => requestChallenge($user),
+        'recovery_code' => 'recovery-code-1',
+    ])->assertTooManyRequests();
+});

@@ -6,16 +6,21 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Illuminate\Auth\Events\Failed;
+use Illuminate\Auth\Events\Lockout;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Laravel\Fortify\Contracts\LockoutResponse;
 use Laravel\Fortify\Contracts\TwoFactorAuthenticationProvider;
 use Laravel\Fortify\Events\TwoFactorAuthenticationFailed;
 use Laravel\Fortify\Events\ValidTwoFactorAuthenticationCodeProvided;
 use Laravel\Fortify\Fortify;
+use Laravel\Fortify\LoginRateLimiter;
 use Laravel\Sanctum\NewAccessToken;
 use Laravel\Sanctum\PersonalAccessToken;
 
@@ -25,24 +30,35 @@ class TokenController extends Controller
 
     private const int CHALLENGE_MINUTES = 5;
 
-    public function store(Request $request): JsonResponse
+    public static function challengeKey(string $challenge): string
+    {
+        return 'api-two-factor-challenge:' . hash('sha256', $challenge);
+    }
+
+    public function store(Request $request, LoginRateLimiter $limiter): JsonResponse
     {
         $request->validate([
-            'email' => ['required', 'email'],
+            Fortify::username() => ['required', 'email'],
             'password' => ['required'],
             'device_name' => ['required'],
         ]);
 
-        $user = User::firstWhere('email', $request->email);
+        if (config('fortify.lowercase_usernames')) {
+            $request->merge([Fortify::username() => Str::lower($request->input(Fortify::username()))]);
+        }
 
-        throw_if(! $user || ! Hash::check($request->password, $user->password), ValidationException::withMessages([
-            'email' => ['The provided credentials are incorrect.'],
-        ]));
+        if ($limiter->tooManyAttempts($request)) {
+            event(new Lockout($request));
+
+            return app(LockoutResponse::class)->toResponse($request);
+        }
+
+        $user = $this->authenticate($request, $limiter);
 
         if ($user->hasEnabledTwoFactorAuthentication()) {
             $challenge = Str::random(64);
 
-            Cache::put($this->challengeKey($challenge), [
+            Cache::put(self::challengeKey($challenge), [
                 'user_id' => $user->id,
                 'device_name' => $request->device_name,
             ], now()->addMinutes(self::CHALLENGE_MINUTES));
@@ -64,10 +80,10 @@ class TokenController extends Controller
             'recovery_code' => ['nullable', 'string'],
         ]);
 
-        $pending = Cache::get($this->challengeKey($request->challenge));
+        $pending = Cache::get(self::challengeKey($request->challenge));
         $user = $pending ? User::find($pending['user_id']) : null;
 
-        throw_unless($user, ValidationException::withMessages([
+        throw_unless($user?->hasEnabledTwoFactorAuthentication(), ValidationException::withMessages([
             'challenge' => ['The two-factor challenge has expired. Please sign in again.'],
         ]));
 
@@ -85,7 +101,7 @@ class TokenController extends Controller
             ]);
         }
 
-        Cache::forget($this->challengeKey($request->challenge));
+        Cache::forget(self::challengeKey($request->challenge));
 
         event(new ValidTwoFactorAuthenticationCodeProvided($user));
 
@@ -98,14 +114,57 @@ class TokenController extends Controller
 
         abort_unless($current instanceof PersonalAccessToken, 400, 'Only token-authenticated requests can be refreshed.');
 
-        $token = $this->issue($request->user(), $current->name, $current->abilities);
+        $expiresAt = $current->expires_at
+            ? now()->addSeconds($current->created_at->diffInSeconds($current->expires_at))
+            : null;
+
+        $token = $request->user()->createToken($current->name, $current->abilities, $expiresAt);
 
         $current->delete();
 
         return response()->json([
             'token' => $token->plainTextToken,
-            'expires_at' => $token->accessToken->expires_at->toIso8601String(),
+            'expires_at' => $token->accessToken->expires_at?->toIso8601String(),
         ]);
+    }
+
+    public function destroy(Request $request): Response
+    {
+        $current = $request->user()->currentAccessToken();
+
+        abort_unless($current instanceof PersonalAccessToken, 400, 'Only token-authenticated requests can log out.');
+
+        $current->delete();
+
+        return response()->noContent();
+    }
+
+    private function authenticate(Request $request, LoginRateLimiter $limiter): User
+    {
+        $guard = config('fortify.guard');
+        $provider = Auth::guard($guard)->getProvider();
+        $credentials = $request->only(Fortify::username(), 'password');
+
+        /** @var User|null $user */
+        $user = $provider->retrieveByCredentials($credentials);
+
+        if (! $user || ! $provider->validateCredentials($user, $credentials)) {
+            event(new Failed($guard, $user, $credentials));
+
+            $limiter->increment($request);
+
+            throw ValidationException::withMessages([
+                Fortify::username() => [trans('auth.failed')],
+            ]);
+        }
+
+        if (config('hashing.rehash_on_login', true)) {
+            $provider->rehashPasswordIfRequired($user, $credentials);
+        }
+
+        $limiter->clear($request);
+
+        return $user;
     }
 
     private function tokenResponse(User $user, NewAccessToken $token): JsonResponse
@@ -123,10 +182,5 @@ class TokenController extends Controller
     private function issue(User $user, string $name, array $abilities = ['*']): NewAccessToken
     {
         return $user->createToken($name, $abilities, now()->addDays(self::LIFETIME_DAYS));
-    }
-
-    private function challengeKey(string $challenge): string
-    {
-        return 'api-two-factor-challenge:' . hash('sha256', $challenge);
     }
 }
