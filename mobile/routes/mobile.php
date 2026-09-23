@@ -3,6 +3,7 @@
 use App\NativeComponents\CreateInventoryItem;
 use App\NativeComponents\CreateRecipe;
 use App\NativeComponents\Dashboard;
+use App\NativeComponents\EditInventoryItem;
 use App\NativeComponents\EditRecipe;
 use App\NativeComponents\Home;
 use App\NativeComponents\Inventory;
@@ -24,3 +25,4 @@ Route::native('/recipes/{id}/edit', EditRecipe::class);
 Route::native('/inventory', Inventory::class);
 Route::native('/inventory/create', CreateInventoryItem::class);
 Route::native('/inventory/{id}', InventoryItemDetail::class);
+Route::native('/inventory/{id}/edit', EditInventoryItem::class);

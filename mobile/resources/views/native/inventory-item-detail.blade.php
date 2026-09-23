@@ -3,7 +3,18 @@
 
 @php($item = $this->item)
 
-<native:top-bar :title="$item['name'] ?? 'Item'" back />
+<native:top-bar :title="$item['name'] ?? 'Item'" back>
+    @if ($item)
+        <native:top-bar-action
+            ref="edit-item"
+            id="edit-item"
+            label="Edit"
+            :ios-icon="Ios::Pencil"
+            :android-icon="Android::Edit"
+            @navigate('/inventory/'.$item['id'].'/edit')
+        />
+    @endif
+</native:top-bar>
 
 @if ($item)
     <list ref="item-detail" fill class="bg-theme-background">

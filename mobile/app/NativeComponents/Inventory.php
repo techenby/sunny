@@ -64,6 +64,20 @@ class Inventory extends NativeComponent
     }
 
     /**
+     * The ids of everything nested inside an item, at any depth.
+     *
+     * @return list<int>
+     */
+    public static function descendantIdsOf(int $id): array
+    {
+        return collect(static::all())
+            ->where('parent_id', $id)
+            ->flatMap(fn (array $child): array => [$child['id'], ...static::descendantIdsOf($child['id'])])
+            ->values()
+            ->all();
+    }
+
+    /**
      * @return array<int, string>
      */
     public static function selectableParents(): array
