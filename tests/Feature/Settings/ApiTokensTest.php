@@ -31,6 +31,59 @@ test('user can create a token', function () {
     ]);
 });
 
+test('tokens expire after 90 days by default', function () {
+    $this->freezeSecond();
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::settings.api-tokens')
+        ->set('name', 'Raycast')
+        ->call('createToken')
+        ->assertHasNoErrors();
+
+    expect($user->tokens()->sole()->expires_at->equalTo(now()->addDays(90)))->toBeTrue();
+});
+
+test('user can choose when a token expires', function (string $expiration, ?int $days) {
+    $this->freezeSecond();
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::settings.api-tokens')
+        ->set('name', 'Raycast')
+        ->set('expiration', $expiration)
+        ->call('createToken')
+        ->assertHasNoErrors()
+        ->assertSet('expiration', '90');
+
+    expect($user->tokens()->sole()->expires_at?->toDateTimeString())
+        ->toBe($days ? now()->addDays($days)->toDateTimeString() : null);
+})->with([
+    '30 days' => ['30', 30],
+    '1 year' => ['365', 365],
+    'never' => ['never', null],
+]);
+
+test('token expiration must be a known option', function () {
+    Livewire::actingAs(User::factory()->create())
+        ->test('pages::settings.api-tokens')
+        ->set('name', 'Raycast')
+        ->set('expiration', '7')
+        ->call('createToken')
+        ->assertHasErrors(['expiration' => 'in']);
+
+    $this->assertDatabaseCount('personal_access_tokens', 0);
+});
+
+test('expired tokens are marked as expired', function () {
+    $user = User::factory()->create();
+    $user->createToken('Raycast', ['*'], now()->subDay());
+
+    Livewire::actingAs($user)
+        ->test('pages::settings.api-tokens')
+        ->assertSee('Expired');
+});
+
 test('token name is required', function () {
     Livewire::actingAs(User::factory()->create())
         ->test('pages::settings.api-tokens')

@@ -10,17 +10,22 @@ use Livewire\Component;
 new #[Title('API tokens settings')] class extends Component {
     public string $name = '';
 
+    public string $expiration = '90';
+
     public ?string $plainTextToken = null;
 
     public function createToken(): void
     {
         $this->validate([
             'name' => ['required', 'string', 'max:255'],
+            'expiration' => ['required', 'in:30,90,365,never'],
         ]);
 
-        $this->plainTextToken = Auth::user()->createToken($this->name)->plainTextToken;
+        $expiresAt = $this->expiration === 'never' ? null : now()->addDays((int) $this->expiration);
 
-        $this->name = '';
+        $this->plainTextToken = Auth::user()->createToken($this->name, ['*'], $expiresAt)->plainTextToken;
+
+        $this->reset('name', 'expiration');
 
         unset($this->tokens);
 
@@ -62,6 +67,13 @@ new #[Title('API tokens settings')] class extends Component {
         <form wire:submit="createToken" class="my-6 flex w-full items-end gap-2">
             <flux:input wire:model="name" :label="__('Token name')" type="text" :placeholder="__('e.g. Raycast, Claude')" class="flex-1" data-test="token-name-input" />
 
+            <flux:select wire:model="expiration" :label="__('Expires')" variant="listbox" class="max-w-40" data-test="token-expiration-select">
+                <flux:select.option value="30">{{ __('30 days') }}</flux:select.option>
+                <flux:select.option value="90">{{ __('90 days') }}</flux:select.option>
+                <flux:select.option value="365">{{ __('1 year') }}</flux:select.option>
+                <flux:select.option value="never">{{ __('Never') }}</flux:select.option>
+            </flux:select>
+
             <flux:button variant="primary" type="submit" data-test="create-token-button">
                 {{ __('Create') }}
             </flux:button>
@@ -97,6 +109,7 @@ new #[Title('API tokens settings')] class extends Component {
                             <flux:table.column>{{ __('Name') }}</flux:table.column>
                             <flux:table.column>{{ __('Created') }}</flux:table.column>
                             <flux:table.column>{{ __('Last used') }}</flux:table.column>
+                            <flux:table.column>{{ __('Expires') }}</flux:table.column>
                             <flux:table.column></flux:table.column>
                         </flux:table.columns>
 
@@ -106,6 +119,13 @@ new #[Title('API tokens settings')] class extends Component {
                                     <flux:table.cell variant="strong">{{ $token->name }}</flux:table.cell>
                                     <flux:table.cell>{{ $token->created_at->diffForHumans() }}</flux:table.cell>
                                     <flux:table.cell>{{ $token->last_used_at?->diffForHumans() ?? __('Never') }}</flux:table.cell>
+                                    <flux:table.cell>
+                                        @if ($token->expires_at?->isPast())
+                                            <flux:badge size="sm" color="red">{{ __('Expired') }}</flux:badge>
+                                        @else
+                                            {{ $token->expires_at?->diffForHumans() ?? __('Never') }}
+                                        @endif
+                                    </flux:table.cell>
                                     <flux:table.cell align="end">
                                         <flux:modal.trigger name="revoke-token-{{ $token->id }}">
                                             <flux:button variant="danger" size="sm" data-test="revoke-token-button">

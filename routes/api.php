@@ -3,38 +3,20 @@
 use App\Http\Controllers\Api\ItemController;
 use App\Http\Controllers\Api\RecipeController;
 use App\Http\Controllers\Api\SyncController;
-use App\Models\User;
+use App\Http\Controllers\Api\TokenController;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Validation\ValidationException;
 
-Route::post('sanctum/token', function (Request $request) {
-    $request->validate([
-        'email' => ['required', 'email'],
-        'password' => ['required'],
-        'device_name' => ['required'],
-    ]);
-
-    $user = User::firstWhere('email', $request->email);
-
-    if (! $user || ! Hash::check($request->password, $user->password)) {
-        throw ValidationException::withMessages([
-            'email' => ['The provided credentials are incorrect.'],
-        ]);
-    }
-
-    return response()->json([
-        ...$user->toArray(),
-        'token' => $user->createToken($request->device_name)->plainTextToken,
-    ]);
-})->middleware('throttle:login')->name('api.token');
+Route::post('sanctum/token', [TokenController::class, 'store'])
+    ->middleware('throttle:login')
+    ->name('api.token');
 
 Route::middleware('auth:sanctum')
     ->name('api.')
     ->group(function (): void {
         Route::get('user', fn (Request $request) => $request->user())->name('user');
         Route::get('sync', SyncController::class)->name('sync');
+        Route::post('sanctum/token/refresh', [TokenController::class, 'refresh'])->name('token.refresh');
 
         Route::get('items', [ItemController::class, 'index'])->name('items.index');
         Route::post('items', [ItemController::class, 'store'])->name('items.store');
