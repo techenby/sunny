@@ -26,8 +26,23 @@ Content-Type: application/json
 }
 ```
 
-The response includes the user and a plaintext `token`. Store it securely; it
-is not shown again.
+The response includes the user, a plaintext `token`, and its `expires_at`
+timestamp. Store the token securely; it is not shown again. This endpoint allows
+5 attempts per minute for each email and IP address, then returns `429`.
+
+Tokens issued this way expire after 30 days. Before a token expires, exchange it
+for a fresh one:
+
+```http
+POST /api/sanctum/token/refresh
+Authorization: Bearer YOUR_TOKEN
+Accept: application/json
+```
+
+The response contains a new `token` and `expires_at`. The old token is revoked
+immediately. An expired token cannot be refreshed; sign in again instead.
+
+Tokens created in Settings use the expiration chosen there.
 
 Send the token with every protected request:
 
@@ -42,9 +57,13 @@ Accept: application/json
 
 ## Team behavior
 
-Item and recipe endpoints operate on the authenticated user's current team.
-The current team is stored on the user account, so switching teams in Sunny
-also changes which records subsequent API calls list or create.
+Item and recipe endpoints are scoped to a team in the URL:
+`/api/teams/{team}/...`, where `{team}` is the team's `slug` (returned by
+`GET /api/sync`). The user must belong to that team.
+
+The API never changes the user's current team in Sunny, so a client can work
+with several teams at once and switching teams is purely a client-side choice.
+A record requested under a team it doesn't belong to returns `404`.
 
 `GET /api/sync` is different: it returns teams, recipes, and items across every
 team the user belongs to.
@@ -55,17 +74,18 @@ team the user belongs to.
 | --- | --- | --- |
 | `GET` | `/api/user` | Return the authenticated user. |
 | `GET` | `/api/sync` | Synchronize all accessible teams, recipes, and items. |
-| `GET` | `/api/items` | List current-team inventory. |
-| `POST` | `/api/items` | Create an inventory entry. |
-| `GET` | `/api/items/{item}` | Read an inventory entry. |
-| `PATCH` | `/api/items/{item}` | Update an inventory entry. |
-| `DELETE` | `/api/items/{item}` | Delete an inventory entry. |
-| `POST` | `/api/items/{item}/duplicate` | Create 1–25 copies. |
-| `GET` | `/api/recipes` | List current-team recipes. |
-| `POST` | `/api/recipes` | Create a recipe. |
-| `GET` | `/api/recipes/{recipe}` | Read a recipe. |
-| `PATCH` | `/api/recipes/{recipe}` | Update a recipe. |
-| `DELETE` | `/api/recipes/{recipe}` | Delete a recipe. |
+| `POST` | `/api/sanctum/token/refresh` | Exchange the current token for a new one. |
+| `GET` | `/api/teams/{team}/items` | List the team's inventory. |
+| `POST` | `/api/teams/{team}/items` | Create an inventory entry. |
+| `GET` | `/api/teams/{team}/items/{item}` | Read an inventory entry. |
+| `PATCH` | `/api/teams/{team}/items/{item}` | Update an inventory entry. |
+| `DELETE` | `/api/teams/{team}/items/{item}` | Delete an inventory entry. |
+| `POST` | `/api/teams/{team}/items/{item}/duplicate` | Create 1–25 copies. |
+| `GET` | `/api/teams/{team}/recipes` | List the team's recipes. |
+| `POST` | `/api/teams/{team}/recipes` | Create a recipe. |
+| `GET` | `/api/teams/{team}/recipes/{recipe}` | Read a recipe. |
+| `PATCH` | `/api/teams/{team}/recipes/{recipe}` | Update a recipe. |
+| `DELETE` | `/api/teams/{team}/recipes/{recipe}` | Delete a recipe. |
 
 Successful creates return `201`; successful deletes return `204`.
 Collections and single resources use Laravel's standard `data` wrapper.
@@ -87,7 +107,8 @@ Create an item with:
 ```
 
 `type` must be `location`, `bin`, or `item`. `parent_id`, `metadata`, and an
-uploaded image in `photo` are optional. Send image requests as multipart form
+uploaded image in `photo` are optional. `parent_id` must reference an item in
+the same team. Send image requests as multipart form
 data.
 
 Duplicate an entry with an optional count:
@@ -102,7 +123,8 @@ Duplicate an entry with an optional count:
 
 Only `name` is required. Supported optional fields are `source`, `servings`,
 `prep_time`, `cook_time`, `total_time`, `description`, `ingredients`,
-`instructions`, `notes`, `nutrition`, and `parent_id`.
+`instructions`, `notes`, `nutrition`, and `parent_id` (a recipe in the same
+team).
 
 ```json
 {
@@ -130,9 +152,10 @@ offline client can remove local copies.
 
 Expect standard Laravel JSON errors:
 
-- `401` when the token is missing or invalid.
-- `403` when the user is not allowed to access the team-owned record.
-- `404` when the record does not exist.
+- `401` when the token is missing, invalid, or expired.
+- `403` when the user doesn't belong to the team in the URL.
+- `404` when the record doesn't exist or belongs to a different team.
 - `422` when validation fails.
+- `429` when too many token requests are made.
 
 The same Sanctum token can also authenticate Sunny's [MCP server](/docs/developers/mcp/setup).

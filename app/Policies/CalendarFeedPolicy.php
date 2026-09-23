@@ -16,7 +16,7 @@ class CalendarFeedPolicy
 
     public function view(User $user, CalendarFeed $feed): bool
     {
-        return $feed->team_id === $user->current_team_id;
+        return $user->belongsToTeam($feed->team);
     }
 
     public function create(User $user): bool
@@ -26,11 +26,11 @@ class CalendarFeedPolicy
 
     public function update(User $user, CalendarFeed $feed): bool
     {
-        return $feed->team_id === $user->current_team_id;
+        return $user->belongsToTeam($feed->team);
     }
 
     public function delete(User $user, CalendarFeed $feed): bool
     {
-        return $feed->team_id === $user->current_team_id;
+        return $user->belongsToTeam($feed->team);
     }
 }

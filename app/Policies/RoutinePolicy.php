@@ -16,7 +16,7 @@ class RoutinePolicy
 
     public function view(User $user, Routine $routine): bool
     {
-        return $routine->team_id === $user->current_team_id;
+        return $user->belongsToTeam($routine->team);
     }
 
     public function create(User $user): bool
@@ -26,22 +26,22 @@ class RoutinePolicy
 
     public function update(User $user, Routine $routine): bool
     {
-        return $routine->team_id === $user->current_team_id;
+        return $user->belongsToTeam($routine->team);
     }
 
     public function delete(User $user, Routine $routine): bool
     {
-        return $routine->team_id === $user->current_team_id;
+        return $user->belongsToTeam($routine->team);
     }
 
     public function restore(User $user, Routine $routine): bool
     {
-        return $routine->team_id === $user->current_team_id;
+        return $user->belongsToTeam($routine->team);
     }
 
     public function forceDelete(User $user, Routine $routine): bool
     {
-        return $routine->team_id === $user->current_team_id;
+        return $user->belongsToTeam($routine->team);
     }
 
     /**
@@ -50,6 +50,6 @@ class RoutinePolicy
      */
     public function complete(User $user, Routine $routine): bool
     {
-        return $routine->team_id === $user->current_team_id;
+        return $user->belongsToTeam($routine->team);
     }
 }

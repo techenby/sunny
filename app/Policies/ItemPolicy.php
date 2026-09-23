@@ -16,7 +16,7 @@ class ItemPolicy
 
     public function view(User $user, Item $item): bool
     {
-        return $item->team_id === $user->current_team_id;
+        return $user->belongsToTeam($item->team);
     }
 
     public function create(User $user): bool
@@ -26,26 +26,26 @@ class ItemPolicy
 
     public function update(User $user, Item $item): bool
     {
-        return $item->team_id === $user->current_team_id;
+        return $user->belongsToTeam($item->team);
     }
 
     public function delete(User $user, Item $item): bool
     {
-        return $item->team_id === $user->current_team_id;
+        return $user->belongsToTeam($item->team);
     }
 
     public function restore(User $user, Item $item): bool
     {
-        return $item->team_id === $user->current_team_id;
+        return $user->belongsToTeam($item->team);
     }
 
     public function forceDelete(User $user, Item $item): bool
     {
-        return $item->team_id === $user->current_team_id;
+        return $user->belongsToTeam($item->team);
     }
 
     public function move(User $user, Item $item): bool
     {
-        return $item->team_id === $user->current_team_id;
+        return $user->belongsToTeam($item->team);
     }
 }

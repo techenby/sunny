@@ -8,6 +8,7 @@ use App\Enums\ItemType;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
 
 class UpdateItemRequest extends FormRequest
@@ -25,7 +26,7 @@ class UpdateItemRequest extends FormRequest
         return [
             'name' => ['sometimes', 'required', 'string', 'max:255'],
             'type' => ['sometimes', 'required', new Enum(ItemType::class)],
-            'parent_id' => ['nullable', 'integer', 'exists:items,id'],
+            'parent_id' => ['nullable', 'integer', Rule::exists('items', 'id')->where('team_id', $this->route('team')->id)],
             'metadata' => ['nullable', 'array'],
             'photo' => ['nullable', 'image', 'max:10240'],
         ];

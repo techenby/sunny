@@ -16,7 +16,7 @@ class RecipePolicy
 
     public function view(User $user, Recipe $recipe): bool
     {
-        return $recipe->team_id === $user->current_team_id;
+        return $user->belongsToTeam($recipe->team);
     }
 
     public function create(User $user): bool
@@ -26,26 +26,26 @@ class RecipePolicy
 
     public function update(User $user, Recipe $recipe): bool
     {
-        return $recipe->team_id === $user->current_team_id;
+        return $user->belongsToTeam($recipe->team);
     }
 
     public function delete(User $user, Recipe $recipe): bool
     {
-        return $recipe->team_id === $user->current_team_id;
+        return $user->belongsToTeam($recipe->team);
     }
 
     public function copy(User $user, Recipe $recipe): bool
     {
-        return $recipe->team_id === $user->current_team_id;
+        return $user->belongsToTeam($recipe->team);
     }
 
     public function remix(User $user, Recipe $recipe): bool
     {
-        return $recipe->team_id === $user->current_team_id;
+        return $user->belongsToTeam($recipe->team);
     }
 
     public function share(User $user, Recipe $recipe): bool
     {
-        return $recipe->team_id === $user->current_team_id;
+        return $user->belongsToTeam($recipe->team);
     }
 }
