@@ -4,15 +4,17 @@
 <native:top-bar title="Cookbook" back />
 
 <list ref="recipe-list" fill separator class="bg-theme-background">
-    @foreach ($this->recipes as $recipe)
-        <list-item
-            :headline="$recipe['name']"
-            :supporting="$recipe['summary']"
-            :trailingIconIos="Ios::ChevronRight"
-            :trailingIconAndroid="Android::ChevronRight"
-            @navigate="'/recipes/'.$recipe['id']"
-        />
-    @endforeach
+    <list-section>
+        @foreach ($this->recipes as $recipe)
+            <list-item
+                :headline="$recipe['name']"
+                :supporting="$recipe['summary']"
+                :trailingIconIos="Ios::ChevronRight"
+                :trailingIconAndroid="Android::ChevronRight"
+                @navigate="'/recipes/'.$recipe['id']"
+            />
+        @endforeach
+    </list-section>
 </list>
 
 <native:fab
