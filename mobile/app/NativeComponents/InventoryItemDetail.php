@@ -38,6 +38,31 @@ class InventoryItemDetail extends NativeComponent
         return $this->item === null ? [] : Inventory::childrenOf($this->item['id']);
     }
 
+    /**
+     * Follow the "Inside" row up to the containing item.
+     *
+     * Rows pass the screen they were tapped from as `from` navigation data, so
+     * when the parent is the screen directly below this one we pop back to the
+     * live instance instead of pushing a second copy of it onto the stack —
+     * otherwise the back button walks the user through the duplicate.
+     */
+    public function openParent(): void
+    {
+        $parent = $this->parent;
+
+        if ($parent === null) {
+            return;
+        }
+
+        if ($this->data('from') === $parent['id']) {
+            $this->back();
+
+            return;
+        }
+
+        $this->navigate('/inventory/'.$parent['id'], ['from' => $this->item['id']]);
+    }
+
     public function render(): View
     {
         return view('native.inventory-item-detail');

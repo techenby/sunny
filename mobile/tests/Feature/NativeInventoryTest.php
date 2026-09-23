@@ -58,10 +58,25 @@ it('shows an item’s type, parent, and metadata', function () {
         ->assertAccessible();
 });
 
-it('navigates up to the containing item', function () {
+it('navigates up to the containing item when it is not already on the stack', function () {
     Native::visit('/inventory/8')
         ->tap('item-parent')
         ->assertNavigatedTo('/inventory/7');
+});
+
+it('pops back to the containing item instead of pushing a duplicate of it', function () {
+    Native::visit('/inventory')
+        ->tap('Garage')
+        ->follow()
+        ->tap('Camping tent')
+        ->follow()
+        ->assertNavTitle('Camping tent')
+        ->tap('item-parent')
+        ->assertWentBack()
+        ->goBack()
+        ->assertNavTitle('Garage')
+        ->pressBack()
+        ->assertWentBack();
 });
 
 it('omits the parent and metadata sections when there are none', function () {

@@ -11,5 +11,5 @@
     :leadingIconColor="$item['type']->iconColor()"
     :trailingIconIos="Ios::ChevronRight"
     :trailingIconAndroid="Android::ChevronRight"
-    @navigate="'/inventory/'.$item['id']"
+    @navigate('/inventory/'.$item['id'], ['from' => $from])
 />

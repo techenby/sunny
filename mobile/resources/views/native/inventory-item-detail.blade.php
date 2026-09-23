@@ -25,7 +25,7 @@
                     :leadingIconColor="$this->parent['type']->iconColor()"
                     :trailingIconIos="Ios::ChevronRight"
                     :trailingIconAndroid="Android::ChevronRight"
-                    @navigate="'/inventory/'.$this->parent['id']"
+                    @tap="openParent"
                 />
             @endif
         </list-section>
@@ -44,7 +44,7 @@
                 :footer="trans_choice(':count item|:count items', count($this->children))"
             >
                 @foreach ($this->children as $child)
-                    @include('native.inventory-item-row', ['item' => $child])
+                    @include('native.inventory-item-row', ['item' => $child, 'from' => $item['id']])
                 @endforeach
             </list-section>
         @endif
