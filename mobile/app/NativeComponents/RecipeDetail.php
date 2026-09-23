@@ -62,7 +62,7 @@ class RecipeDetail extends NativeComponent
     #[Computed]
     public function ingredients(): array
     {
-        return $this->lines($this->recipe['ingredients'] ?? null);
+        return Recipes::lines($this->recipe['ingredients'] ?? null);
     }
 
     /**
@@ -71,7 +71,7 @@ class RecipeDetail extends NativeComponent
     #[Computed]
     public function instructions(): array
     {
-        return $this->lines($this->recipe['instructions'] ?? null);
+        return Recipes::lines($this->recipe['instructions'] ?? null);
     }
 
     public function openSource(): void
@@ -84,27 +84,5 @@ class RecipeDetail extends NativeComponent
     public function render(): View
     {
         return view('native.recipe-detail');
-    }
-
-    /**
-     * Split the rich-text editor's HTML into plain-text rows: one per list item, or per paragraph/line when there is no list.
-     *
-     * @return list<string>
-     */
-    private function lines(?string $html): array
-    {
-        if (blank($html)) {
-            return [];
-        }
-
-        $blocks = preg_match_all('/<li\b[^>]*>(.*?)<\/li>/is', $html, $matches)
-            ? $matches[1]
-            : preg_split('/<\/p>|<br\s*\/?>|\R/i', $html);
-
-        return collect($blocks)
-            ->map(fn (string $block): string => trim(html_entity_decode(strip_tags($block), ENT_QUOTES | ENT_HTML5, 'UTF-8')))
-            ->filter()
-            ->values()
-            ->all();
     }
 }

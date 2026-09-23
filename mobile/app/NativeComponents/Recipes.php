@@ -146,6 +146,30 @@ class Recipes extends NativeComponent
     }
 
     /**
+     * Split the rich-text editor's HTML into plain-text rows: one per list
+     * item, or per paragraph/line when there is no list. The inverse of the
+     * serialization the create and edit forms perform.
+     *
+     * @return list<string>
+     */
+    public static function lines(?string $html): array
+    {
+        if (blank($html)) {
+            return [];
+        }
+
+        $blocks = preg_match_all('/<li\b[^>]*>(.*?)<\/li>/is', $html, $matches)
+            ? $matches[1]
+            : preg_split('/<\/p>|<br\s*\/?>|\R/i', $html);
+
+        return collect($blocks)
+            ->map(fn (string $block): string => trim(html_entity_decode(strip_tags($block), ENT_QUOTES | ENT_HTML5, 'UTF-8')))
+            ->filter()
+            ->values()
+            ->all();
+    }
+
+    /**
      * @return list<array{id: int, name: string, summary: string|null}>
      */
     #[Computed(persist: true)]

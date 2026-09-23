@@ -4,7 +4,18 @@
 
 @php($recipe = $this->recipe)
 
-<native:top-bar :title="$recipe['name'] ?? 'Recipe'" back />
+<native:top-bar :title="$recipe['name'] ?? 'Recipe'" back>
+    @if ($recipe)
+        <native:top-bar-action
+            ref="edit-recipe"
+            id="edit-recipe"
+            label="Edit"
+            :ios-icon="Ios::Pencil"
+            :android-icon="Android::Edit"
+            @navigate('/recipes/'.$recipe['id'].'/edit')
+        />
+    @endif
+</native:top-bar>
 
 @if ($recipe)
     <list ref="recipe-detail" fill class="bg-theme-background">
