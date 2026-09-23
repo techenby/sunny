@@ -38,7 +38,7 @@ trait ManagesInventoryItemForm
     /**
      * Load an existing item into the form.
      *
-     * @param  array{id: int, parent_id: int|null, type: ItemType, name: string, metadata: array<string, string>|null}  $item
+     * @param  array{id: int, parent_id: int|null, type: ItemType, name: string, metadata: array<string, string>|null, created_at: string, updated_at: string}  $item
      */
     public function fillFromItem(array $item): void
     {

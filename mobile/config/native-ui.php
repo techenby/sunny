@@ -54,6 +54,10 @@ return [
             'background' => '#FAF1EF',
             'on-background' => '#0B0808',
 
+            // iOS systemGroupedBackground — what sectioned lists paint behind
+            // their rows. Forms use it on iOS so they sit alongside those lists.
+            'grouped-background' => '#F2F2F7',
+
             // Surface variant = filled text fields, muted tonal surfaces.
             // on-surface-variant = muted label/hint text on those surfaces.
             'surface-variant' => '#F0E5E2',
@@ -84,6 +88,8 @@ return [
             'on-surface' => '#FEF9F7',
             'background' => '#0C0807',
             'on-background' => '#FEF9F7',
+
+            'grouped-background' => '#000000',
 
             'surface-variant' => '#2C2422',
             'on-surface-variant' => '#A89B98',

@@ -1,7 +1,7 @@
 @use('App\Icons\Android')
 @use('App\Icons\Ios')
 
-<native:top-bar title="Dashboard">
+<native:top-bar title="Dashboard" subtitle="Your household at a glance">
     <native:top-bar-action
         id="log-out"
         label="Log out"
@@ -11,57 +11,81 @@
     />
 </native:top-bar>
 
-<scroll-view ref="dashboard-screen" fill class="bg-theme-background">
-    <column class="w-full gap-6 px-6 py-6">
-        <column class="w-full gap-2">
-            <text font="mono-bold" class="text-sm uppercase tracking-widest text-theme-primary">
-                Welcome home
-            </text>
-            <text ref="dashboard-title" font="accent" class="text-xl leading-tight text-theme-on-background">
-                Your household at a glance
-            </text>
-        </column>
-
-        <column ref="dashboard-sections" class="w-full gap-3">
-            <pressable
-                ref="dashboard-recipes"
-                a11y-label="Cookbook"
-                a11y-hint="Opens your cookbook"
-                class="w-full"
-                @navigate='/recipes'
-            >
-                <native:feature-card
-                    key="dashboard-recipes"
-                    title="Cookbook"
-                    description="Save favorites, track ingredients, and remix your own variations."
-                    :ios-icon="Ios::BookPages"
-                    :android-icon="Android::MenuBook"
-                    navigable
-                />
-            </pressable>
-            <pressable
-                ref="dashboard-inventory"
-                a11y-label="Inventory"
-                a11y-hint="Opens your inventory"
-                class="w-full"
-                @navigate='/inventory'
-            >
-                <native:feature-card
-                    key="dashboard-inventory"
-                    title="Inventory"
-                    description="Organize your garage, basement, and pantry."
-                    :ios-icon="Ios::Archivebox"
-                    :android-icon="Android::Inventory2"
-                    navigable
-                />
-            </pressable>
-            <native:feature-card
-                key="dashboard-teams"
-                title="Teams"
-                description="Invite family members to collaborate."
-                :ios-icon="Ios::Person3"
-                :android-icon="Android::Groups"
+<list ref="dashboard" fill class="bg-theme-background">
+    <list-section
+        header="Recent recipes"
+        :footer="$this->recentRecipes ? null : 'Recipes you add or update will show up here.'"
+    >
+        @foreach ($this->recentRecipes as $recipe)
+            <list-item
+                ref="dashboard-recipes-{{ $recipe['id'] }}"
+                :headline="$recipe['name']"
+                :supporting="$recipe['supporting']"
+                :trailingIconIos="Ios::ChevronRight"
+                :trailingIconAndroid="Android::ChevronRight"
+                @navigate($recipe['url'])
             />
-        </column>
-    </column>
-</scroll-view>
+        @endforeach
+        <list-item
+            ref="dashboard-recipes-all"
+            headline="All recipes"
+            :leadingIconIos="Ios::BookPages"
+            :leadingIconAndroid="Android::MenuBook"
+            :trailingIconIos="Ios::ChevronRight"
+            :trailingIconAndroid="Android::ChevronRight"
+            @navigate('/recipes')
+        />
+        <list-item
+            ref="dashboard-recipes-create"
+            headline="New recipe"
+            :leadingIconIos="Ios::Plus"
+            :leadingIconAndroid="Android::Add"
+            @navigate('/recipes/create')
+        />
+    </list-section>
+
+    <list-section
+        header="Recent items"
+        :footer="$this->recentItems ? null : 'Items you add or update will show up here.'"
+    >
+        @foreach ($this->recentItems as $item)
+            <list-item
+                ref="dashboard-inventory-{{ $item['id'] }}"
+                :headline="$item['name']"
+                :supporting="$item['supporting']"
+                :leadingIconIos="$item['type']->iosIcon()"
+                :leadingIconAndroid="$item['type']->androidIcon()"
+                :leadingIconColor="$item['type']->iconColor()"
+                :trailingIconIos="Ios::ChevronRight"
+                :trailingIconAndroid="Android::ChevronRight"
+                @navigate($item['url'])
+            />
+        @endforeach
+        <list-item
+            ref="dashboard-inventory-all"
+            headline="All items"
+            :leadingIconIos="Ios::Archivebox"
+            :leadingIconAndroid="Android::Inventory2"
+            :trailingIconIos="Ios::ChevronRight"
+            :trailingIconAndroid="Android::ChevronRight"
+            @navigate('/inventory')
+        />
+        <list-item
+            ref="dashboard-inventory-create"
+            headline="New item"
+            :leadingIconIos="Ios::Plus"
+            :leadingIconAndroid="Android::Add"
+            @navigate('/inventory/create')
+        />
+    </list-section>
+
+    <list-section header="Coming soon">
+        <list-item
+            ref="dashboard-teams"
+            headline="Teams"
+            supporting="Invite family members to collaborate."
+            :leadingIconIos="Ios::Person3"
+            :leadingIconAndroid="Android::Groups"
+        />
+    </list-section>
+</list>

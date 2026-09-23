@@ -7,7 +7,7 @@
      properties. Computed values have to be passed in because an @include is
      not bound to $this. --}}
 
-<scroll-view ref="{{ $formRef }}-screen" fill class="bg-theme-background">
+<scroll-view ref="{{ $formRef }}-screen" fill class="bg-theme-background ios:bg-theme-grouped-background">
     <column class="w-full gap-6 px-6 py-6">
         @isset($subtitle)
             <text ref="{{ $formRef }}-subtitle" class="text-base text-theme-on-surface-variant">

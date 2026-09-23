@@ -12,7 +12,7 @@ class Recipes extends NativeComponent
     /**
      * Placeholder recipes shaped like the sunnyhome.app Recipe model, until the app syncs with its API.
      *
-     * @return list<array{id: int, parent_id: int|null, name: string, source: string|null, servings: string|null, prep_time: string|null, cook_time: string|null, total_time: string|null, description: string|null, ingredients: string|null, instructions: string|null, notes: string|null, nutrition: string|null, tags: list<string>|null}>
+     * @return list<array{id: int, parent_id: int|null, name: string, source: string|null, servings: string|null, prep_time: string|null, cook_time: string|null, total_time: string|null, description: string|null, ingredients: string|null, instructions: string|null, notes: string|null, nutrition: string|null, tags: list<string>|null, created_at: string, updated_at: string}>
      */
     public static function all(): array
     {
@@ -32,6 +32,8 @@ class Recipes extends NativeComponent
                 'notes' => 'Let the batter rest for five minutes for taller pancakes.',
                 'nutrition' => null,
                 'tags' => ['breakfast', 'weekend'],
+                'created_at' => '2026-06-02 09:15:00',
+                'updated_at' => '2026-09-21 08:30:00',
             ],
             [
                 'id' => 2,
@@ -48,6 +50,8 @@ class Recipes extends NativeComponent
                 'notes' => null,
                 'nutrition' => "Calories: 410\nProtein: 28 g",
                 'tags' => ['dinner', 'freezer-friendly'],
+                'created_at' => '2026-07-11 18:05:00',
+                'updated_at' => '2026-07-11 18:05:00',
             ],
             [
                 'id' => 3,
@@ -64,6 +68,8 @@ class Recipes extends NativeComponent
                 'notes' => 'Freezes well before baking.',
                 'nutrition' => null,
                 'tags' => ['dinner', 'family favorite'],
+                'created_at' => '2026-05-19 17:40:00',
+                'updated_at' => '2026-08-30 19:10:00',
             ],
             [
                 'id' => 4,
@@ -80,6 +86,8 @@ class Recipes extends NativeComponent
                 'notes' => null,
                 'nutrition' => null,
                 'tags' => ['dinner', 'vegetarian'],
+                'created_at' => '2026-08-04 12:20:00',
+                'updated_at' => '2026-08-04 12:20:00',
             ],
             [
                 'id' => 5,
@@ -96,6 +104,8 @@ class Recipes extends NativeComponent
                 'notes' => null,
                 'nutrition' => null,
                 'tags' => null,
+                'created_at' => '2026-09-18 21:00:00',
+                'updated_at' => '2026-09-18 21:00:00',
             ],
             [
                 'id' => 6,
@@ -112,16 +122,32 @@ class Recipes extends NativeComponent
                 'notes' => null,
                 'nutrition' => null,
                 'tags' => ['dessert'],
+                'created_at' => '2026-04-27 15:45:00',
+                'updated_at' => '2026-06-14 16:00:00',
             ],
         ];
     }
 
     /**
-     * @return array{id: int, parent_id: int|null, name: string, source: string|null, servings: string|null, prep_time: string|null, cook_time: string|null, total_time: string|null, description: string|null, ingredients: string|null, instructions: string|null, notes: string|null, nutrition: string|null, tags: list<string>|null}|null
+     * @return array{id: int, parent_id: int|null, name: string, source: string|null, servings: string|null, prep_time: string|null, cook_time: string|null, total_time: string|null, description: string|null, ingredients: string|null, instructions: string|null, notes: string|null, nutrition: string|null, tags: list<string>|null, created_at: string, updated_at: string}|null
      */
     public static function find(int $id): ?array
     {
         return collect(static::all())->firstWhere('id', $id);
+    }
+
+    /**
+     * The most recently added or updated recipes, newest first.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public static function recent(int $limit = 3): array
+    {
+        return collect(static::all())
+            ->sortByDesc('updated_at')
+            ->take($limit)
+            ->values()
+            ->all();
     }
 
     public static function isSourceUrl(?string $source): bool

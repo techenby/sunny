@@ -10,7 +10,7 @@ use Native\Mobile\Edge\NativeComponent;
 class InventoryItemDetail extends NativeComponent
 {
     /**
-     * @return array{id: int, parent_id: int|null, type: ItemType, name: string, metadata: array<string, string>|null}|null
+     * @return array{id: int, parent_id: int|null, type: ItemType, name: string, metadata: array<string, string>|null, created_at: string, updated_at: string}|null
      */
     #[Computed]
     public function item(): ?array
@@ -19,7 +19,7 @@ class InventoryItemDetail extends NativeComponent
     }
 
     /**
-     * @return array{id: int, parent_id: int|null, type: ItemType, name: string, metadata: array<string, string>|null}|null
+     * @return array{id: int, parent_id: int|null, type: ItemType, name: string, metadata: array<string, string>|null, created_at: string, updated_at: string}|null
      */
     #[Computed]
     public function parent(): ?array
@@ -30,7 +30,7 @@ class InventoryItemDetail extends NativeComponent
     }
 
     /**
-     * @return list<array{id: int, parent_id: int|null, type: ItemType, name: string, metadata: array<string, string>|null, children_count: int}>
+     * @return list<array{id: int, parent_id: int|null, type: ItemType, name: string, metadata: array<string, string>|null, created_at: string, updated_at: string, children_count: int}>
      */
     #[Computed]
     public function children(): array

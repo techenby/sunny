@@ -9,7 +9,7 @@
     'tagRows' => $this->tagRows,
     ])
 @else
-    <column ref="edit-recipe-missing" fill center class="bg-theme-background px-6">
+    <column ref="edit-recipe-missing" fill center class="bg-theme-background ios:bg-theme-grouped-background px-6">
         <text class="text-center text-base text-theme-on-surface-variant">
             This recipe could not be found.
         </text>

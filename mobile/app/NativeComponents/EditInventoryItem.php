@@ -20,7 +20,7 @@ class EditInventoryItem extends NativeComponent
     }
 
     /**
-     * @return array{id: int, parent_id: int|null, type: ItemType, name: string, metadata: array<string, string>|null}|null
+     * @return array{id: int, parent_id: int|null, type: ItemType, name: string, metadata: array<string, string>|null, created_at: string, updated_at: string}|null
      */
     #[Computed]
     public function item(): ?array
