@@ -20,51 +20,11 @@
                 native:model.blur="name"
             />
 
-            <column class="w-full gap-2">
-                <text class="text-sm font-semibold text-theme-on-surface-variant">Photo</text>
-
-                @if ($photoPath)
-                    <image
-                        ref="create-item-photo"
-                        :src="$photoPath"
-                        alt="The photo chosen for this item"
-                        class="w-full rounded-xl"
-                        :height="180"
-                        :fit="2"
-                    />
-                    <pressable
-                        ref="create-item-photo-remove"
-                        class="h-12 items-start justify-center self-start px-2"
-                        @tap="removePhoto"
-                    >
-                        <text class="text-sm font-semibold text-theme-primary">Remove photo</text>
-                    </pressable>
-                @else
-                    <row class="w-full items-center gap-3">
-                        <pressable
-                            ref="create-item-photo-camera"
-                            a11y-label="Take photo"
-                            class="h-12 w-12 items-center justify-center rounded-xl border border-theme-outline bg-theme-surface-variant"
-                            @tap="takePhoto"
-                        >
-                            <native:icon
-                                :ios="Ios::Camera"
-                                :android="Android::PhotoCamera"
-                                :size="24"
-                                class="text-theme-on-surface-variant"
-                            />
-                        </pressable>
-                        <pressable
-                            ref="create-item-photo-library"
-                            class="h-12 items-center justify-center px-2"
-                            a11y-hint="Opens the photo library"
-                            @tap="choosePhoto"
-                        >
-                            <text class="text-sm font-semibold text-theme-primary">View Library</text>
-                        </pressable>
-                    </row>
-                @endif
-            </column>
+            @include('native.photo-field', [
+                'photoPath' => $photoPath,
+                'refPrefix' => 'create-item',
+                'alt' => 'The photo chosen for this item',
+            ])
 
             <column class="w-full gap-2">
                 <text class="text-sm font-semibold text-theme-on-surface-variant">Type</text>

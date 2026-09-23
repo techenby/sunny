@@ -14,3 +14,11 @@
         />
     @endforeach
 </list>
+
+<native:fab
+    ref="recipes-create"
+    :ios="Ios::Plus"
+    :android="Android::Add"
+    a11y-label="New recipe"
+    url="/recipes/create"
+/>

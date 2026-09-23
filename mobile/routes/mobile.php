@@ -1,6 +1,7 @@
 <?php
 
 use App\NativeComponents\CreateInventoryItem;
+use App\NativeComponents\CreateRecipe;
 use App\NativeComponents\Dashboard;
 use App\NativeComponents\Home;
 use App\NativeComponents\Inventory;
@@ -16,6 +17,7 @@ Route::native('/login', Login::class);
 Route::native('/register', Register::class);
 Route::native('/dashboard', Dashboard::class);
 Route::native('/recipes', Recipes::class);
+Route::native('/recipes/create', CreateRecipe::class);
 Route::native('/recipes/{id}', RecipeDetail::class);
 Route::native('/inventory', Inventory::class);
 Route::native('/inventory/create', CreateInventoryItem::class);
