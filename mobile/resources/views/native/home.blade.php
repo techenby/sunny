@@ -54,6 +54,11 @@
         </column>
     </column>
 
+    @if ($error)
+        <text ref="session-error" class="text-sm text-theme-error">{{ $error }}</text>
+        <button ref="session-retry" variant="ghost" @tap="restoreSession">Retry</button>
+    @endif
+
     <column ref="auth-actions" class="w-full gap-3 pt-6">
         <button
             ref="register-button"

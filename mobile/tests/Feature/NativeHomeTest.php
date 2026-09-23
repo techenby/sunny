@@ -4,6 +4,11 @@ use App\NativeComponents\Login;
 use App\NativeComponents\Register;
 use Native\Mobile\Testing\Native;
 
+beforeEach(function () {
+    config(['services.sunny.api_url' => 'https://sunny.example/api']);
+    Native::fakeBridge()->respondTo('SecureStorage.Get', ['value' => '']);
+});
+
 it('introduces Sunny with native components', function () {
     $iconPath = public_path('images/sunny-icon.png');
 

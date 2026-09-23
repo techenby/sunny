@@ -2,6 +2,7 @@
 
 use App\NativeComponents\Login;
 use App\NativeComponents\Register;
+use Native\Mobile\Facades\Browser;
 use Native\Mobile\Testing\Native;
 
 it('renders the login screen', function () {
@@ -11,7 +12,6 @@ it('renders the login screen', function () {
         ->assertSee('Enter your email and password below to log in.')
         ->assertSee('Email address')
         ->assertSee('Password')
-        ->assertSee('Remember me')
         ->assertSee('Log in')
         ->assertSee('Sign up')
         ->assertElement('outlined_text_input', fn (array $node): bool => ($node['ref'] ?? null) === 'login-password'
@@ -23,38 +23,19 @@ it('binds the login fields', function () {
     Native::visit('/login')
         ->input('login-email', 'andy@example.com')
         ->input('login-password', 'secret-password')
-        ->check('login-remember')
         ->assertSet('email', 'andy@example.com')
-        ->assertSet('password', 'secret-password')
-        ->assertSet('remember', true);
+        ->assertSet('password', 'secret-password');
 });
 
-it('renders the register screen', function () {
+it('opens registration in the browser without authenticating', function () {
+    config(['services.sunny.api_url' => 'https://sunny.example/api']);
+    Browser::shouldReceive('open')->once()->with('https://sunny.example/register')->andReturn(true);
+
     Native::visit('/register')
         ->assertScreen(Register::class)
-        ->assertNavTitle('Create account')
-        ->assertSee('Enter your details below to create your account.')
-        ->assertSee('Name')
-        ->assertSee('Email address')
-        ->assertSee('Confirm password')
-        ->assertSee('Create account')
-        ->assertElement('outlined_text_input', fn (array $node): bool => ($node['ref'] ?? null) === 'register-password'
-            && ($node['props']['secure'] ?? null) === true)
-        ->assertElement('outlined_text_input', fn (array $node): bool => ($node['ref'] ?? null) === 'register-password-confirmation'
-            && ($node['props']['secure'] ?? null) === true)
-        ->assertAccessible();
-});
-
-it('binds the register fields', function () {
-    Native::visit('/register')
-        ->input('register-name', 'Andy Swick')
-        ->input('register-email', 'andy@example.com')
-        ->input('register-password', 'secret-password')
-        ->input('register-password-confirmation', 'secret-password')
-        ->assertSet('name', 'Andy Swick')
-        ->assertSet('email', 'andy@example.com')
-        ->assertSet('password', 'secret-password')
-        ->assertSet('passwordConfirmation', 'secret-password');
+        ->assertSee('Create your account on the Sunny website, then return here to log in.')
+        ->tap('register-submit')
+        ->assertNoNavigation();
 });
 
 it('switches between the login and register screens without stacking them', function (string $from, string $link, string $to) {
@@ -66,11 +47,6 @@ it('switches between the login and register screens without stacking them', func
     'register to login' => ['/register', 'register-login-link', '/login'],
 ]);
 
-it('replaces the form with the dashboard on submit until authentication is integrated', function (string $uri, string $button) {
-    Native::visit($uri)
-        ->tap($button)
-        ->assertReplacedWith('/dashboard');
-})->with([
-    'login' => ['/login', 'login-submit'],
-    'register' => ['/register', 'register-submit'],
-]);
+it('validates login before contacting the API', function () {
+    Native::visit('/login')->tap('login-submit')->assertSee('The email field is required.')->assertNoNavigation();
+});

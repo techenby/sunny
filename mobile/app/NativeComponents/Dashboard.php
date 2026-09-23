@@ -3,10 +3,15 @@
 namespace App\NativeComponents;
 
 use App\Enums\ItemType;
+use App\Http\Integrations\Sunny\SunnyAuth;
 use Illuminate\Support\Carbon;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
 use Native\Mobile\Edge\NativeComponent;
+use Native\Mobile\Facades\Dialog;
+use RuntimeException;
+use Saloon\Exceptions\Request\FatalRequestException;
+use Saloon\Exceptions\Request\RequestException;
 
 class Dashboard extends NativeComponent
 {
@@ -45,6 +50,16 @@ class Dashboard extends NativeComponent
 
     public function logOut(): void
     {
+        try {
+            app(SunnyAuth::class)->logout();
+        } catch (RequestException|FatalRequestException) {
+            Dialog::toast('Signed out on this device. Sunny could not revoke the remote session.');
+        } catch (RuntimeException) {
+            Dialog::toast('Unable to clear your saved login. Unlock your device and try again.');
+
+            return;
+        }
+
         $this->replace('/');
     }
 
