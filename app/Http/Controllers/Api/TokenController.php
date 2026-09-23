@@ -80,32 +80,14 @@ class TokenController extends Controller
             'recovery_code' => ['nullable', 'string'],
         ]);
 
-        $pending = Cache::get(self::challengeKey($request->challenge));
-        $user = $pending ? User::find($pending['user_id']) : null;
+        $response = Cache::lock(self::challengeKey($request->challenge) . ':lock', 10)
+            ->get(fn (): JsonResponse => $this->completeChallenge($request, $provider));
 
-        throw_unless($user?->hasEnabledTwoFactorAuthentication(), ValidationException::withMessages([
-            'challenge' => ['The two-factor challenge has expired. Please sign in again.'],
+        throw_if($response === false, ValidationException::withMessages([
+            'challenge' => ['This two-factor challenge is already being verified.'],
         ]));
 
-        $recoveryCode = $request->recovery_code
-            ? collect($user->recoveryCodes())->first(fn (string $code): bool => hash_equals($code, $request->recovery_code))
-            : null;
-
-        if ($recoveryCode) {
-            $user->replaceRecoveryCode($recoveryCode);
-        } elseif (! $request->code || ! $provider->verify(Fortify::currentEncrypter()->decrypt($user->two_factor_secret), $request->code)) {
-            event(new TwoFactorAuthenticationFailed($user));
-
-            throw ValidationException::withMessages([
-                $request->recovery_code ? 'recovery_code' : 'code' => [__('The provided two factor authentication code was invalid.')],
-            ]);
-        }
-
-        Cache::forget(self::challengeKey($request->challenge));
-
-        event(new ValidTwoFactorAuthenticationCodeProvided($user));
-
-        return $this->tokenResponse($user, $this->issue($user, $pending['device_name']));
+        return $response;
     }
 
     public function refresh(Request $request): JsonResponse
@@ -165,6 +147,36 @@ class TokenController extends Controller
         $limiter->clear($request);
 
         return $user;
+    }
+
+    private function completeChallenge(Request $request, TwoFactorAuthenticationProvider $provider): JsonResponse
+    {
+        $pending = Cache::get(self::challengeKey($request->challenge));
+        $user = $pending ? User::find($pending['user_id']) : null;
+
+        throw_unless($user?->hasEnabledTwoFactorAuthentication(), ValidationException::withMessages([
+            'challenge' => ['The two-factor challenge has expired. Please sign in again.'],
+        ]));
+
+        $recoveryCode = $request->recovery_code
+            ? collect($user->recoveryCodes())->first(fn (string $code): bool => hash_equals($code, $request->recovery_code))
+            : null;
+
+        if ($recoveryCode) {
+            $user->replaceRecoveryCode($recoveryCode);
+        } elseif (! $request->code || ! $provider->verify(Fortify::currentEncrypter()->decrypt($user->two_factor_secret), $request->code)) {
+            event(new TwoFactorAuthenticationFailed($user));
+
+            throw ValidationException::withMessages([
+                $request->recovery_code ? 'recovery_code' : 'code' => [__('The provided two factor authentication code was invalid.')],
+            ]);
+        }
+
+        Cache::forget(self::challengeKey($request->challenge));
+
+        event(new ValidTwoFactorAuthenticationCodeProvided($user));
+
+        return $this->tokenResponse($user, $this->issue($user, $pending['device_name']));
     }
 
     private function tokenResponse(User $user, NewAccessToken $token): JsonResponse

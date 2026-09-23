@@ -62,7 +62,8 @@ Send `recovery_code` instead of `code` to use a recovery code; it is consumed
 and replaced. A successful response matches the token endpoint's. An invalid
 code returns `422` and the challenge can be retried, up to 5 attempts per
 minute for each user across all challenges and IP addresses. Each challenge can
-be completed only once. If two-factor authentication is turned off before the
+be completed only once; if two requests for the same challenge arrive at the
+same time, the second returns `422` on `challenge`. If two-factor authentication is turned off before the
 challenge is completed, the challenge is rejected; sign in again instead.
 
 ### Token lifetime

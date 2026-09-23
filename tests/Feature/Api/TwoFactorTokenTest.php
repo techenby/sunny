@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\Api\TokenController;
 use App\Models\User;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
 use Laravel\Fortify\Events\TwoFactorAuthenticationFailed;
 use Laravel\Fortify\Events\ValidTwoFactorAuthenticationCodeProvided;
@@ -217,4 +219,37 @@ test('the challenge rate limit applies across challenges for the same user', fun
         'challenge' => requestChallenge($user),
         'recovery_code' => 'recovery-code-1',
     ])->assertTooManyRequests();
+});
+
+test('a challenge being completed by another request is rejected', function () {
+    [$user] = twoFactorUser();
+    $challenge = requestChallenge($user);
+
+    $lock = Cache::lock(TokenController::challengeKey($challenge) . ':lock', 10);
+    $lock->acquire();
+
+    $this->postJson(route('api.token.two-factor'), [
+        'challenge' => $challenge,
+        'recovery_code' => 'recovery-code-1',
+    ])->assertUnprocessable()->assertJsonValidationErrors('challenge');
+
+    expect($user->tokens()->count())->toBe(0)
+        ->and($user->fresh()->recoveryCodes())->toContain('recovery-code-1');
+
+    $lock->release();
+});
+
+test('a challenge can be retried after an invalid code', function () {
+    [$user] = twoFactorUser();
+    $challenge = requestChallenge($user);
+
+    $this->postJson(route('api.token.two-factor'), [
+        'challenge' => $challenge,
+        'code' => '000000',
+    ])->assertUnprocessable()->assertJsonValidationErrors('code');
+
+    $this->postJson(route('api.token.two-factor'), [
+        'challenge' => $challenge,
+        'recovery_code' => 'recovery-code-1',
+    ])->assertOk()->assertJsonStructure(['token']);
 });
