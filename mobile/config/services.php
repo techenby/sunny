@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'sunny' => [
+        'api_url' => env('SUNNY_API_URL'),
+    ],
+
 ];
