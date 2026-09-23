@@ -28,7 +28,7 @@ Route::post('sanctum/token', function (Request $request) {
         ...$user->toArray(),
         'token' => $user->createToken($request->device_name)->plainTextToken,
     ]);
-});
+})->middleware('throttle:login')->name('api.token');
 
 Route::middleware('auth:sanctum')
     ->name('api.')
