@@ -12,6 +12,10 @@ Route::post('sanctum/token', [TokenController::class, 'store'])
     ->middleware('throttle:login')
     ->name('api.token');
 
+Route::post('sanctum/token/two-factor', [TokenController::class, 'twoFactor'])
+    ->middleware('throttle:api-two-factor')
+    ->name('api.token.two-factor');
+
 Route::middleware('auth:sanctum')
     ->name('api.')
     ->group(function (): void {

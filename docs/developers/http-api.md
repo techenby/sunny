@@ -30,6 +30,39 @@ The response includes the user, a plaintext `token`, and its `expires_at`
 timestamp. Store the token securely; it is not shown again. This endpoint allows
 5 attempts per minute for each email and IP address, then returns `429`.
 
+### Two-factor authentication
+
+If the user has two-factor authentication enabled, the token endpoint returns a
+challenge instead of a token:
+
+```json
+{
+  "two_factor": true,
+  "challenge": "CHALLENGE"
+}
+```
+
+Exchange the challenge and a code from the user's authenticator app for a
+token within 5 minutes:
+
+```http
+POST /api/sanctum/token/two-factor
+Accept: application/json
+Content-Type: application/json
+
+{
+  "challenge": "CHALLENGE",
+  "code": "123456"
+}
+```
+
+Send `recovery_code` instead of `code` to use a recovery code; it is consumed
+and replaced. A successful response matches the token endpoint's. An invalid
+code returns `422` and the challenge can be retried, up to 5 attempts per
+minute. Each challenge can be completed only once.
+
+### Token lifetime
+
 Tokens issued this way expire after 30 days. Before a token expires, exchange it
 for a fresh one:
 
@@ -74,6 +107,7 @@ team the user belongs to.
 | --- | --- | --- |
 | `GET` | `/api/user` | Return the authenticated user. |
 | `GET` | `/api/sync` | Synchronize all accessible teams, recipes, and items. |
+| `POST` | `/api/sanctum/token/two-factor` | Complete a two-factor challenge. |
 | `POST` | `/api/sanctum/token/refresh` | Exchange the current token for a new one. |
 | `GET` | `/api/teams/{team}/items` | List the team's inventory. |
 | `POST` | `/api/teams/{team}/items` | Create an inventory entry. |
@@ -156,6 +190,6 @@ Expect standard Laravel JSON errors:
 - `403` when the user doesn't belong to the team in the URL.
 - `404` when the record doesn't exist or belongs to a different team.
 - `422` when validation fails.
-- `429` when too many token requests are made.
+- `429` when too many token or two-factor requests are made.
 
 The same Sanctum token can also authenticate Sunny's [MCP server](/docs/developers/mcp/setup).
