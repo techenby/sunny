@@ -2,15 +2,19 @@
 
 namespace App\NativeComponents;
 
+use App\Concerns\ChecksSunnySync;
 use App\Enums\ItemType;
 use App\Models\Item;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
+use Native\Mobile\Attributes\On;
 use Native\Mobile\Edge\NativeComponent;
 
 class Inventory extends NativeComponent
 {
+    use ChecksSunnySync;
+
     public string $search = '';
 
     /**
@@ -121,6 +125,19 @@ class Inventory extends NativeComponent
     public function updateSearch(string $query): void
     {
         $this->search = trim($query);
+    }
+
+    #[On('sunny-sync-complete')]
+    public function onSyncComplete(string $status): void
+    {
+        if ($status === 'finished') {
+            $this->refreshLocalSyncedData();
+        }
+    }
+
+    protected function refreshLocalSyncedData(): void
+    {
+        unset($this->items, $this->searchResults);
     }
 
     public function render(): View

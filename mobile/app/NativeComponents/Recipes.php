@@ -2,14 +2,18 @@
 
 namespace App\NativeComponents;
 
+use App\Concerns\ChecksSunnySync;
 use App\Models\Recipe;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
+use Native\Mobile\Attributes\On;
 use Native\Mobile\Edge\NativeComponent;
 
 class Recipes extends NativeComponent
 {
+    use ChecksSunnySync;
+
     public string $search = '';
 
     /**
@@ -107,6 +111,19 @@ class Recipes extends NativeComponent
     public function updateSearch(string $query): void
     {
         $this->search = trim($query);
+    }
+
+    #[On('sunny-sync-complete')]
+    public function onSyncComplete(string $status): void
+    {
+        if ($status === 'finished') {
+            $this->refreshLocalSyncedData();
+        }
+    }
+
+    protected function refreshLocalSyncedData(): void
+    {
+        unset($this->recipes);
     }
 
     public function render(): View

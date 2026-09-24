@@ -2,6 +2,7 @@
 
 namespace App\NativeComponents;
 
+use App\Concerns\ChecksSunnySync;
 use App\Enums\ItemType;
 use App\Http\Integrations\Sunny\SunnyAuth;
 use App\Http\Integrations\Sunny\SunnyStore;
@@ -19,7 +20,6 @@ use Native\Mobile\Attributes\Computed;
 use Native\Mobile\Attributes\On;
 use Native\Mobile\Edge\NativeComponent;
 use Native\Mobile\Events\Alert\ButtonPressed;
-use Native\Mobile\Exceptions\AsyncTaskException;
 use Native\Mobile\Facades\Dialog;
 use RuntimeException;
 use Saloon\Exceptions\Request\FatalRequestException;
@@ -28,6 +28,8 @@ use Saloon\Exceptions\Request\Statuses\UnauthorizedException;
 
 class Dashboard extends NativeComponent
 {
+    use ChecksSunnySync;
+
     public string $syncError = '';
 
     public string $activeTeamName = '';
@@ -94,7 +96,7 @@ class Dashboard extends NativeComponent
 
     /**
      * Download fresh data on a background thread so the dashboard stays responsive.
-     * A task whose result was dropped because the user left the screen stops blocking new syncs after a minute.
+     * The completion event is delivered to whichever screen is active.
      */
     public function syncInBackground(): void
     {
@@ -104,21 +106,24 @@ class Dashboard extends NativeComponent
 
         $this->backgroundSyncStartedAt = now()->getTimestamp();
 
-        $task = app(SunnySyncCoordinator::class)->dispatch(
-            finished: function (): void {
-                $this->backgroundSyncStartedAt = 0;
-                $this->syncError = '';
-                $this->refreshLocalData();
-            },
-            failed: function (AsyncTaskException $exception): void {
-                $this->backgroundSyncStartedAt = 0;
-                $this->syncFailed($exception->originalClass());
-            },
-        );
-
-        if ($task === null) {
+        if (! app(SunnySyncCoordinator::class)->dispatch()) {
             $this->backgroundSyncStartedAt = 0;
         }
+    }
+
+    #[On('sunny-sync-complete')]
+    public function onSyncComplete(string $status, ?string $exceptionClass = null): void
+    {
+        $this->backgroundSyncStartedAt = 0;
+
+        if ($status === 'failed') {
+            $this->syncFailed($exceptionClass ?? RuntimeException::class);
+
+            return;
+        }
+
+        $this->syncError = '';
+        $this->refreshLocalData();
     }
 
     /**
@@ -218,6 +223,11 @@ class Dashboard extends NativeComponent
         $teams = app(SunnyTeam::class);
         $this->activeTeamName = $teams->choices()[$teams->current()?->id] ?? '';
         unset($this->recentRecipes, $this->recentItems, $this->teamOptions, $this->summary, $this->teamInitial);
+    }
+
+    protected function refreshLocalSyncedData(): void
+    {
+        $this->refreshLocalData();
     }
 
     /**

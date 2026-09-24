@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Http\Integrations\Sunny\SunnyStore;
 use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Console\Attributes\Description;
@@ -16,8 +17,12 @@ use Saloon\Exceptions\Request\Statuses\UnauthorizedException;
 #[Description('Synchronize Sunny data opportunistically in the background')]
 class SunnySyncCommand extends Command
 {
-    public function handle(SunnySyncCoordinator $coordinator): int
+    public function handle(SunnySyncCoordinator $coordinator, SunnyStore $store): int
     {
+        if (! $store->isStale()) {
+            return self::SUCCESS;
+        }
+
         try {
             $coordinator->sync();
         } catch (AuthenticationException|UnauthorizedException) {

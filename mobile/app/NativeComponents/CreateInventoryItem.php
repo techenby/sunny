@@ -2,6 +2,7 @@
 
 namespace App\NativeComponents;
 
+use App\Concerns\ChecksSunnySync;
 use App\Concerns\ManagesInventoryItemForm;
 use App\Enums\ItemType;
 use Illuminate\View\View;
@@ -9,6 +10,7 @@ use Native\Mobile\Edge\NativeComponent;
 
 class CreateInventoryItem extends NativeComponent
 {
+    use ChecksSunnySync;
     use ManagesInventoryItemForm;
 
     public function mount(): void

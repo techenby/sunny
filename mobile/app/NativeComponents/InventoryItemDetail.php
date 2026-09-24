@@ -2,13 +2,17 @@
 
 namespace App\NativeComponents;
 
+use App\Concerns\ChecksSunnySync;
 use App\Enums\ItemType;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
+use Native\Mobile\Attributes\On;
 use Native\Mobile\Edge\NativeComponent;
 
 class InventoryItemDetail extends NativeComponent
 {
+    use ChecksSunnySync;
+
     /**
      * @return array{id: int, parent_id: int|null, type: ItemType, name: string, metadata: array<string, string>|null, created_at: string, updated_at: string}|null
      */
@@ -80,6 +84,19 @@ class InventoryItemDetail extends NativeComponent
         }
 
         $this->navigate('/inventory/'.$parent['id'], ['from' => $this->item['id']]);
+    }
+
+    #[On('sunny-sync-complete')]
+    public function onSyncComplete(string $status): void
+    {
+        if ($status === 'finished') {
+            $this->refreshLocalSyncedData();
+        }
+    }
+
+    protected function refreshLocalSyncedData(): void
+    {
+        unset($this->item, $this->parent, $this->path, $this->children);
     }
 
     /**

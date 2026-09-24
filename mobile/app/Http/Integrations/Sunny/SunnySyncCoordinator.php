@@ -4,7 +4,6 @@ namespace App\Http\Integrations\Sunny;
 
 use Illuminate\Support\Facades\Cache;
 use Native\Mobile\AsyncTask;
-use Native\Mobile\PendingAsyncTask;
 use RuntimeException;
 
 class SunnySyncCoordinator
@@ -40,26 +39,22 @@ class SunnySyncCoordinator
         }
     }
 
-    /**
-     * Start a shared async sync using the token captured on the UI thread.
-     *
-     * @param  callable(): void  $finished
-     * @param  callable(\Throwable): void  $failed
-     */
-    public function dispatch(callable $finished, callable $failed): ?PendingAsyncTask
+    /** Start a shared async sync using the token captured on the UI thread. */
+    public function dispatch(): bool
     {
         try {
             $token = $this->tokens->get();
         } catch (RuntimeException) {
-            return null;
+            return false;
         }
 
         if ($token === null) {
-            return null;
+            return false;
         }
 
-        return AsyncTask::dispatch(static fn (): bool => app(self::class)->sync($token))
-            ->finished($finished)
-            ->failed($failed);
+        AsyncTask::dispatch(static fn (): bool => app(self::class)->sync($token))
+            ->shared('sunny-sync-complete');
+
+        return true;
     }
 }

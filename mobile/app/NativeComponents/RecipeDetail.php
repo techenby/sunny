@@ -2,13 +2,17 @@
 
 namespace App\NativeComponents;
 
+use App\Concerns\ChecksSunnySync;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
+use Native\Mobile\Attributes\On;
 use Native\Mobile\Edge\NativeComponent;
 use Native\Mobile\Facades\Browser;
 
 class RecipeDetail extends NativeComponent
 {
+    use ChecksSunnySync;
+
     /**
      * Ingredients ticked off while cooking, by position. Kept on this screen only.
      *
@@ -86,6 +90,19 @@ class RecipeDetail extends NativeComponent
         $this->checkedIngredients = in_array($index, $this->checkedIngredients, true)
             ? array_values(array_diff($this->checkedIngredients, [$index]))
             : [...$this->checkedIngredients, $index];
+    }
+
+    #[On('sunny-sync-complete')]
+    public function onSyncComplete(string $status): void
+    {
+        if ($status === 'finished') {
+            $this->refreshLocalSyncedData();
+        }
+    }
+
+    protected function refreshLocalSyncedData(): void
+    {
+        unset($this->recipe, $this->parent, $this->remixes, $this->details, $this->ingredients, $this->instructions);
     }
 
     public function openSource(): void

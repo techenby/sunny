@@ -44,7 +44,6 @@ class NativeServiceProvider extends ServiceProvider
             CameraServiceProvider::class,
             SecureStorageServiceProvider::class,
             BackgroundTasksServiceProvider::class,
-
         ];
     }
 }

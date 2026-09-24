@@ -2,12 +2,14 @@
 
 namespace App\NativeComponents;
 
+use App\Concerns\ChecksSunnySync;
 use App\Concerns\ManagesRecipeForm;
 use Illuminate\View\View;
 use Native\Mobile\Edge\NativeComponent;
 
 class CreateRecipe extends NativeComponent
 {
+    use ChecksSunnySync;
     use ManagesRecipeForm;
 
     public function mount(): void
