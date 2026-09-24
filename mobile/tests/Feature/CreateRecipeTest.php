@@ -10,7 +10,7 @@ beforeEach(fn () => seedSunnyData());
 
 it('opens the create screen from the cookbook', function () {
     Native::visit('/recipes')
-        ->tap('recipes-create')
+        ->tap('New recipe')
         ->assertNavigatedTo('/recipes/create')
         ->follow()
         ->assertScreen(CreateRecipe::class)

@@ -1,26 +1,44 @@
 @use('App\Icons\Android')
 @use('App\Icons\Ios')
 
-<native:top-bar title="Recipes" back />
+<native:top-bar title="Recipes" display-mode="large" back search-placeholder="Search recipes" search-on-query="updateSearch">
+    <native:top-bar-action
+        id="recipes-create"
+        label="New recipe"
+        :ios-icon="Ios::Plus"
+        :android-icon="Android::Add"
+        url="/recipes/create"
+    />
+</native:top-bar>
 
-<list ref="recipe-list" fill separator class="bg-theme-background">
-    <list-section :footer="$this->recipes ? null : 'No recipes downloaded. Pull down on the dashboard to refresh.'">
-        @foreach ($this->recipes as $recipe)
+<list ref="recipe-list" fill class="bg-theme-background">
+    @if ($this->recipes)
+        <list-section :footer="trans_choice(':count recipe|:count recipes', count($this->recipes))">
+            @foreach ($this->recipes as $recipe)
+                <list-item
+                    :headline="$recipe['name']"
+                    :supporting="$recipe['summary']"
+                    :leadingImage="$recipe['photo']"
+                    :leadingIconIos="$recipe['photo'] ? null : Ios::ForkKnife"
+                    :leadingIconAndroid="$recipe['photo'] ? null : Android::Restaurant"
+                    :leadingIconColor="theme('primary')"
+                    :leadingIconBgColor="theme('primary').'/15'"
+                    :trailingIconIos="Ios::ChevronRight"
+                    :trailingIconAndroid="Android::ChevronRight"
+                    @navigate="'/recipes/'.$recipe['id']"
+                />
+            @endforeach
+        </list-section>
+    @else
+        <list-section>
             <list-item
-                :headline="$recipe['name']"
-                :supporting="$recipe['summary']"
-                :trailingIconIos="Ios::ChevronRight"
-                :trailingIconAndroid="Android::ChevronRight"
-                @navigate="'/recipes/'.$recipe['id']"
+                ref="recipes-empty"
+                :headline="$search !== '' ? 'No recipes match “'.$search.'”' : 'No recipes downloaded'"
+                :supporting="$search !== '' ? 'Try a different search.' : 'Pull down on the dashboard to refresh.'"
+                :leadingIconIos="$search !== '' ? Ios::Magnifyingglass : Ios::ForkKnife"
+                :leadingIconAndroid="$search !== '' ? Android::SearchOff : Android::Restaurant"
+                :leadingIconColor="theme('on-surface-variant')"
             />
-        @endforeach
-    </list-section>
+        </list-section>
+    @endif
 </list>
-
-<native:fab
-    ref="recipes-create"
-    :ios="Ios::Plus"
-    :android="Android::Add"
-    a11y-label="New recipe"
-    url="/recipes/create"
-/>

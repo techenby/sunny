@@ -39,6 +39,18 @@ it('lists recipes alphabetically with their source and total time', function () 
     ]);
 });
 
+it('filters recipes by name as you search', function () {
+    Native::visit('/recipes')
+        ->input('updateSearch', ' LASAGNA ')
+        ->assertSee('Grandma’s Lasagna')
+        ->assertSee('Veggie Lasagna')
+        ->assertDontSee('Weeknight Chili')
+        ->input('updateSearch', 'tacos')
+        ->assertSee('No recipes match “tacos”')
+        ->input('updateSearch', '')
+        ->assertSee('Weeknight Chili');
+});
+
 it('opens a recipe from the list', function () {
     Native::visit('/recipes')
         ->tap('Weeknight Chili')

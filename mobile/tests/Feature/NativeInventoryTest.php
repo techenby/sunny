@@ -31,6 +31,25 @@ it('shows a platform icon for each item type', function (string $platform, strin
     'android item' => ['android', '/inventory/6', 'Camping tent', 'view_in_ar'],
 ]);
 
+it('searches nested items and says where each one lives', function () {
+    Native::visit('/inventory')
+        ->input('updateSearch', 'light')
+        ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === 'String lights'
+            && ($node['props']['supporting'] ?? null) === 'Item · in Holiday decorations')
+        ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === 'Spare light bulbs'
+            && ($node['props']['supporting'] ?? null) === 'Item · in Basement')
+        ->assertDontSee('Kitchen')
+        ->tap('String lights')
+        ->assertNavigatedTo('/inventory/13');
+
+    Native::visit('/inventory')
+        ->input('updateSearch', 'garage')
+        ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === 'Garage'
+            && ($node['props']['supporting'] ?? null) === 'Location')
+        ->input('updateSearch', 'zzz')
+        ->assertSee('No items match “zzz”');
+});
+
 it('drills into a location’s contents', function () {
     Native::visit('/inventory')
         ->tap('Garage')

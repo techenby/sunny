@@ -4,12 +4,15 @@ namespace App\NativeComponents;
 
 use App\Enums\ItemType;
 use App\Models\Item;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
 use Native\Mobile\Edge\NativeComponent;
 
 class Inventory extends NativeComponent
 {
+    public string $search = '';
+
     /**
      * The last downloaded inventory, read entirely from the local database.
      *
@@ -85,6 +88,39 @@ class Inventory extends NativeComponent
     public function items(): array
     {
         return static::childrenOf(null);
+    }
+
+    /**
+     * Every item matching the search, at any depth, with the name of the item it lives in.
+     *
+     * @return list<array{id: int, type: ItemType, name: string, location: string|null}>
+     */
+    #[Computed]
+    public function searchResults(): array
+    {
+        if ($this->search === '') {
+            return [];
+        }
+
+        $items = collect(static::all());
+        $names = $items->pluck('name', 'id');
+
+        return $items
+            ->filter(fn (array $item): bool => Str::contains($item['name'], $this->search, ignoreCase: true))
+            ->sortBy('name')
+            ->map(fn (array $item): array => [
+                'id' => $item['id'],
+                'type' => $item['type'],
+                'name' => $item['name'],
+                'location' => $names[$item['parent_id']] ?? null,
+            ])
+            ->values()
+            ->all();
+    }
+
+    public function updateSearch(string $query): void
+    {
+        $this->search = trim($query);
     }
 
     public function render(): View

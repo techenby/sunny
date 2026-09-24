@@ -12,7 +12,7 @@ beforeEach(fn () => seedSunnyData());
 
 it('opens the create screen from the inventory list', function () {
     Native::visit('/inventory')
-        ->tap('inventory-create')
+        ->tap('New item')
         ->assertNavigatedTo('/inventory/create')
         ->follow()
         ->assertScreen(CreateInventoryItem::class)

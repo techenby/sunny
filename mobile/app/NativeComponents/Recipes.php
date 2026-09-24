@@ -10,6 +10,8 @@ use Native\Mobile\Edge\NativeComponent;
 
 class Recipes extends NativeComponent
 {
+    public string $search = '';
+
     /**
      * The last downloaded recipes, read entirely from the local database.
      *
@@ -84,20 +86,27 @@ class Recipes extends NativeComponent
     }
 
     /**
-     * @return list<array{id: int, name: string, summary: string|null}>
+     * @return list<array{id: int, name: string, summary: string|null, photo: string|null}>
      */
     #[Computed]
     public function recipes(): array
     {
         return collect(static::all())
+            ->filter(fn (array $recipe): bool => $this->search === '' || Str::contains($recipe['name'], $this->search, ignoreCase: true))
             ->sortBy('name')
             ->map(fn (array $recipe): array => [
                 'id' => $recipe['id'],
                 'name' => $recipe['name'],
                 'summary' => collect([static::shortenedSource($recipe['source']), $recipe['total_time']])->filter()->implode(' · ') ?: null,
+                'photo' => $recipe['photo_url'],
             ])
             ->values()
             ->all();
+    }
+
+    public function updateSearch(string $query): void
+    {
+        $this->search = trim($query);
     }
 
     public function render(): View
