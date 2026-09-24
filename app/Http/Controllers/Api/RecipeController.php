@@ -47,7 +47,7 @@ class RecipeController extends Controller
 
     public function update(UpdateRecipeRequest $request, Team $team, Recipe $recipe, UpdateRecipe $action): RecipeResource
     {
-        $recipe = $action->handle($recipe, $request->validated());
+        $recipe = $action->handle($recipe, $request->safe()->except('remove_photo'), $request->boolean('remove_photo'));
 
         return RecipeResource::make($recipe);
     }

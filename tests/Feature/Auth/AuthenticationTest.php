@@ -1,6 +1,10 @@
 <?php
 
 use App\Models\User;
+use Carbon\CarbonInterval;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Sleep;
 use Laravel\Fortify\Features;
 
 test('login screen can be rendered', function () {
@@ -35,6 +39,48 @@ test('users can not authenticate with invalid password', function () {
     $response->assertSessionHasErrorsIn('email');
 
     $this->assertGuest();
+});
+
+test('failed logins are padded to the same duration whether or not the email exists', function (string $email) {
+    User::factory()->create(['email' => 'person@example.com']);
+
+    $this->post(route('login.store'), [
+        'email' => $email,
+        'password' => 'wrong-password',
+    ])->assertSessionHasErrors(['email' => trans('auth.failed')]);
+
+    $this->assertGuest();
+    Sleep::assertSlept(fn (CarbonInterval $duration): bool => $duration->totalMicroseconds > 0);
+})->with([
+    'unknown email' => ['nobody@example.com'],
+    'wrong password' => ['person@example.com'],
+]);
+
+test('successful logins are not padded', function () {
+    $user = User::factory()->create();
+
+    $this->post(route('login.store'), [
+        'email' => $user->email,
+        'password' => 'password',
+    ])->assertSessionHasNoErrors();
+
+    $this->assertAuthenticated();
+    Sleep::assertNeverSlept();
+});
+
+test('outdated password hashes are rehashed on login', function () {
+    $user = User::factory()->create();
+    $outdatedHash = Hash::make('password', ['rounds' => 5]);
+    DB::table('users')->where('id', $user->id)->update(['password' => $outdatedHash]);
+
+    expect(Hash::needsRehash($user->fresh()->password))->toBeTrue();
+
+    $this->post(route('login.store'), [
+        'email' => $user->email,
+        'password' => 'password',
+    ])->assertSessionHasNoErrors();
+
+    expect(Hash::needsRehash($user->fresh()->password))->toBeFalse();
 });
 
 test('users with two factor enabled are redirected to two factor challenge', function () {

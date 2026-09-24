@@ -34,6 +34,9 @@ class StoreRecipeRequest extends FormRequest
             'instructions' => ['nullable', 'string'],
             'notes' => ['nullable', 'string'],
             'nutrition' => ['nullable', 'string'],
+            'tags' => ['nullable', 'array', 'list'],
+            'tags.*' => ['string', 'max:255'],
+            'photo' => ['nullable', 'image', 'max:10240'],
             'parent_id' => ['nullable', 'integer', Rule::exists('recipes', 'id')->where('team_id', $this->route('team')->id)],
         ];
     }

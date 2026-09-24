@@ -13,6 +13,17 @@ use Illuminate\Validation\Rules\Enum;
 
 class UpdateItemRequest extends FormRequest
 {
+    protected function prepareForValidation(): void
+    {
+        if (is_string($this->input('metadata'))) {
+            $metadata = json_decode($this->input('metadata'), true);
+
+            if (json_last_error() === JSON_ERROR_NONE && (is_array($metadata) || $metadata === null)) {
+                $this->merge(['metadata' => $metadata]);
+            }
+        }
+    }
+
     public function authorize(): bool
     {
         return Gate::allows('update', $this->route('item'));
@@ -24,6 +35,7 @@ class UpdateItemRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'remove_photo' => ['sometimes', 'boolean'],
             'name' => ['sometimes', 'required', 'string', 'max:255'],
             'type' => ['sometimes', 'required', new Enum(ItemType::class)],
             'parent_id' => ['nullable', 'integer', Rule::exists('items', 'id')->where('team_id', $this->route('team')->id)],

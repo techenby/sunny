@@ -57,7 +57,7 @@ class ItemController extends Controller
 
     public function update(UpdateItemRequest $request, Team $team, Item $item, UpdateItem $action): ItemResource
     {
-        $item = $action->handle($item, $request->validated());
+        $item = $action->handle($item, $request->safe()->except('remove_photo'), $request->boolean('remove_photo'));
 
         return ItemResource::make($item);
     }

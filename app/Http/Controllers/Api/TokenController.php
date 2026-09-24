@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
+use App\Actions\Fortify\AuthenticateUser;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Auth\Events\Failed;
@@ -123,25 +124,18 @@ class TokenController extends Controller
 
     private function authenticate(Request $request, LoginRateLimiter $limiter): User
     {
-        $guardName = config('fortify.guard');
-        $guard = Auth::guard($guardName);
-        $credentials = $request->only(Fortify::username(), 'password');
+        $user = app(AuthenticateUser::class)->handle($request);
 
-        if (! $guard->validate($credentials)) {
-            event(new Failed($guardName, $guard->getLastAttempted(), $credentials));
+        if (! $user) {
+            $guardName = config('fortify.guard');
+
+            event(new Failed($guardName, Auth::guard($guardName)->getLastAttempted(), $request->only(Fortify::username(), 'password')));
 
             $limiter->increment($request);
 
             throw ValidationException::withMessages([
                 Fortify::username() => [trans('auth.failed')],
             ]);
-        }
-
-        /** @var User $user */
-        $user = $guard->getLastAttempted();
-
-        if (config('hashing.rehash_on_login', true)) {
-            $guard->getProvider()->rehashPasswordIfRequired($user, $credentials);
         }
 
         $limiter->clear($request);

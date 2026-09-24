@@ -14,6 +14,17 @@ use Illuminate\Validation\Rules\Enum;
 
 class StoreItemRequest extends FormRequest
 {
+    protected function prepareForValidation(): void
+    {
+        if (is_string($this->input('metadata'))) {
+            $metadata = json_decode($this->input('metadata'), true);
+
+            if (json_last_error() === JSON_ERROR_NONE && (is_array($metadata) || $metadata === null)) {
+                $this->merge(['metadata' => $metadata]);
+            }
+        }
+    }
+
     public function authorize(): bool
     {
         return Gate::allows('create', Item::class);
