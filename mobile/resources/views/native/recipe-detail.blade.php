@@ -188,8 +188,8 @@
                                     class="w-full px-4 py-3"
                                 >
                                     <row class="w-full items-center gap-3">
-                                        <column class="h-9 w-9 items-center justify-center rounded-full bg-theme-primary/15">
-                                            <icon :ios="Ios::ForkKnife" :android="Android::Restaurant" :size="16" class="text-theme-primary" />
+                                        <column class="h-9 w-9 items-center justify-center rounded-full bg-theme-primary">
+                                            <icon :ios="Ios::ForkKnife" :android="Android::Restaurant" :size="16" class="text-theme-on-primary" />
                                         </column>
                                         <text font="semibold" class="flex-1 text-base text-theme-on-surface">{{ $related['name'] }}</text>
                                         <icon :ios="Ios::ChevronRight" :android="Android::ChevronRight" :size="14" class="text-theme-on-surface-variant" />

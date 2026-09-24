@@ -11,7 +11,7 @@
     />
 </native:top-bar>
 
-<list ref="inventory-list" fill class="bg-theme-background">
+<list ref="inventory-list" fill separator class="bg-theme-background">
     @if ($search !== '')
         <list-section>
             @forelse ($this->searchResults as $result)
@@ -20,8 +20,7 @@
                     :supporting="$result['location'] ? $result['type']->label().' · in '.$result['location'] : $result['type']->label()"
                     :leadingIconIos="$result['type']->iosIcon()"
                     :leadingIconAndroid="$result['type']->androidIcon()"
-                    :leadingIconColor="$result['type']->iconColor()"
-                    :leadingIconBgColor="$result['type']->iconColor().'/15'"
+                    :leadingIconBgColor="$result['type']->iconColor()"
                     :trailingIconIos="Ios::ChevronRight"
                     :trailingIconAndroid="Android::ChevronRight"
                     @navigate('/inventory/'.$result['id'])

@@ -11,7 +11,7 @@
     />
 </native:top-bar>
 
-<list ref="recipe-list" fill class="bg-theme-background">
+<list ref="recipe-list" fill separator class="bg-theme-background">
     @if ($this->recipes)
         <list-section :footer="trans_choice(':count recipe|:count recipes', count($this->recipes))">
             @foreach ($this->recipes as $recipe)
@@ -21,8 +21,7 @@
                     :leadingImage="$recipe['photo']"
                     :leadingIconIos="$recipe['photo'] ? null : Ios::ForkKnife"
                     :leadingIconAndroid="$recipe['photo'] ? null : Android::Restaurant"
-                    :leadingIconColor="theme('primary')"
-                    :leadingIconBgColor="theme('primary').'/15'"
+                    :leadingIconBgColor="theme('primary')"
                     :trailingIconIos="Ios::ChevronRight"
                     :trailingIconAndroid="Android::ChevronRight"
                     @navigate="'/recipes/'.$recipe['id']"

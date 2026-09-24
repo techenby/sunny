@@ -22,8 +22,8 @@
         <column class="w-full gap-6 px-4 pt-2 pb-8">
             <column class="w-full gap-3">
                 <row class="w-full items-center gap-2">
-                    <column class="h-7 w-7 items-center justify-center rounded-full bg-{{ $item['type']->iconColor() }}/15">
-                        <icon :ios="$item['type']->iosIcon()" :android="$item['type']->androidIcon()" :size="14" class="text-{{ $item['type']->iconColor() }}" />
+                    <column class="h-7 w-7 items-center justify-center rounded-full bg-{{ $item['type']->iconColor() }}">
+                        <icon :ios="$item['type']->iosIcon()" :android="$item['type']->androidIcon()" :size="14" class="text-white" />
                     </column>
                     <text ref="item-summary" class="flex-1 text-base text-theme-on-surface-variant">
                         {{ $this->parent ? $item['type']->label().' · in '.$this->parent['name'] : $item['type']->label() }}
@@ -52,8 +52,8 @@
                                 class="w-full py-3 pr-4 pl-{{ 4 + $loop->index * 4 }}"
                             >
                                 <row class="w-full items-center gap-3">
-                                    <column class="h-8 w-8 items-center justify-center rounded-full bg-{{ $ancestor['type']->iconColor() }}/15">
-                                        <icon :ios="$ancestor['type']->iosIcon()" :android="$ancestor['type']->androidIcon()" :size="16" class="text-{{ $ancestor['type']->iconColor() }}" />
+                                    <column class="h-8 w-8 items-center justify-center rounded-full bg-{{ $ancestor['type']->iconColor() }}">
+                                        <icon :ios="$ancestor['type']->iosIcon()" :android="$ancestor['type']->androidIcon()" :size="16" class="text-white" />
                                     </column>
                                     <column class="flex-1 gap-0.5">
                                         <text font="semibold" class="text-base text-theme-on-surface">{{ $ancestor['name'] }}</text>
@@ -106,8 +106,8 @@
                                 class="w-full px-4 py-3"
                             >
                                 <row class="w-full items-center gap-3">
-                                    <column class="h-9 w-9 items-center justify-center rounded-full bg-{{ $child['type']->iconColor() }}/15">
-                                        <icon :ios="$child['type']->iosIcon()" :android="$child['type']->androidIcon()" :size="18" class="text-{{ $child['type']->iconColor() }}" />
+                                    <column class="h-9 w-9 items-center justify-center rounded-full bg-{{ $child['type']->iconColor() }}">
+                                        <icon :ios="$child['type']->iosIcon()" :android="$child['type']->androidIcon()" :size="18" class="text-white" />
                                     </column>
                                     <column class="flex-1 gap-0.5">
                                         <text font="semibold" class="text-base text-theme-on-surface">{{ $child['name'] }}</text>

@@ -8,8 +8,7 @@
         : $item['type']->label()"
     :leadingIconIos="$item['type']->iosIcon()"
     :leadingIconAndroid="$item['type']->androidIcon()"
-    :leadingIconColor="$item['type']->iconColor()"
-    :leadingIconBgColor="$item['type']->iconColor().'/15'"
+    :leadingIconBgColor="$item['type']->iconColor()"
     :trailingIconIos="Ios::ChevronRight"
     :trailingIconAndroid="Android::ChevronRight"
     @navigate('/inventory/'.$item['id'], ['from' => $from])

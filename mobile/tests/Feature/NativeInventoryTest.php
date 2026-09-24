@@ -11,7 +11,7 @@ it('lists the top-level locations', function () {
         ->assertNavTitle('Inventory')
         ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === 'Garage'
             && ($node['props']['supporting'] ?? null) === 'Location · 2 items'
-            && ($node['props']['leading_icon_color'] ?? null) !== null)
+            && ($node['props']['leading_icon_bg_color'] ?? null) !== null)
         ->assertSee('Basement')
         ->assertSee('Kitchen')
         ->assertDontSee('Cordless drill')

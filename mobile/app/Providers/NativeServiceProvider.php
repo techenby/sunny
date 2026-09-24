@@ -7,6 +7,7 @@ use Native\Mobile\Providers\BrowserServiceProvider;
 use Native\Mobile\Providers\CameraServiceProvider;
 use Native\Mobile\Providers\SecureStorageServiceProvider;
 use Native\Mobile\UI\NativeUIServiceProvider;
+use NativePHP\BackgroundTasks\BackgroundTasksServiceProvider;
 
 class NativeServiceProvider extends ServiceProvider
 {
@@ -42,6 +43,8 @@ class NativeServiceProvider extends ServiceProvider
             BrowserServiceProvider::class,
             CameraServiceProvider::class,
             SecureStorageServiceProvider::class,
+            BackgroundTasksServiceProvider::class,
+
         ];
     }
 }

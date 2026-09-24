@@ -5,7 +5,7 @@ namespace App\NativeComponents;
 use App\Enums\ItemType;
 use App\Http\Integrations\Sunny\SunnyAuth;
 use App\Http\Integrations\Sunny\SunnyStore;
-use App\Http\Integrations\Sunny\SunnySync;
+use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Http\Integrations\Sunny\SunnyTeam;
 use App\Http\Integrations\Sunny\SunnyTokenStore;
 use App\Models\Item;
@@ -15,7 +15,6 @@ use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use JsonException;
-use Native\Mobile\AsyncTask;
 use Native\Mobile\Attributes\Computed;
 use Native\Mobile\Attributes\On;
 use Native\Mobile\Edge\NativeComponent;
@@ -83,7 +82,7 @@ class Dashboard extends NativeComponent
         $this->syncError = '';
 
         try {
-            app(SunnySync::class)->sync();
+            app(SunnySyncCoordinator::class)->sync();
         } catch (AuthenticationException|RequestException|FatalRequestException|JsonException|ValidationException|RuntimeException $exception) {
             $this->syncFailed($exception::class);
 
@@ -103,30 +102,23 @@ class Dashboard extends NativeComponent
             return;
         }
 
-        try {
-            $token = app(SunnyTokenStore::class)->get();
-        } catch (RuntimeException) {
-            return;
-        }
-
-        if ($token === null) {
-            $this->syncFailed(AuthenticationException::class);
-
-            return;
-        }
-
         $this->backgroundSyncStartedAt = now()->getTimestamp();
 
-        AsyncTask::dispatch(static fn () => app(SunnySync::class)->sync($token))
-            ->finished(function (): void {
+        $task = app(SunnySyncCoordinator::class)->dispatch(
+            finished: function (): void {
                 $this->backgroundSyncStartedAt = 0;
                 $this->syncError = '';
                 $this->refreshLocalData();
-            })
-            ->failed(function (AsyncTaskException $exception): void {
+            },
+            failed: function (AsyncTaskException $exception): void {
                 $this->backgroundSyncStartedAt = 0;
                 $this->syncFailed($exception->originalClass());
-            });
+            },
+        );
+
+        if ($task === null) {
+            $this->backgroundSyncStartedAt = 0;
+        }
     }
 
     /**

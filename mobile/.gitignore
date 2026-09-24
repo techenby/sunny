@@ -30,6 +30,9 @@ Thumbs.db
 /.mcp.json
 /CLAUDE.md
 /boost.json
+/.agents
+/.codex
+AGENTS.md
 
 # Vibe service (deployed separately from R2)
 vibe-service/

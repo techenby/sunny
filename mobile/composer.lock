@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d3e5b62d9dd22de164a5057b4fca62fa",
+    "content-hash": "43381d6100cd8b17892ed21ae83767ec",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -2461,6 +2461,61 @@
                 "source": "https://github.com/NativePHP/mobile-air/tree/4.5.1"
             },
             "time": "2026-09-19T15:03:37+00:00"
+        },
+        {
+            "name": "nativephp/mobile-background-tasks",
+            "version": "0.1.0",
+            "dist": {
+                "type": "zip",
+                "url": "https://plugins.nativephp.com/dist/nativephp/mobile-background-tasks/nativephp-mobile-background-tasks-ca73df59087c584fee547af0fcaa00006c7ebf36-zip-8d526a.zip",
+                "reference": "ca73df59087c584fee547af0fcaa00006c7ebf36",
+                "shasum": "85ca0c0cdc770767f2bd1053af376f3115f1e456"
+            },
+            "require": {
+                "nativephp/mobile": "^3.0 || ^4.0",
+                "php": "^8.2"
+            },
+            "require-dev": {
+                "orchestra/testbench": "^10.0",
+                "pestphp/pest": "^2.7|^3.0|^4.0"
+            },
+            "type": "nativephp-plugin",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "NativePHP\\BackgroundTasks\\BackgroundTasksServiceProvider"
+                    ]
+                },
+                "nativephp": {
+                    "manifest": "nativephp.json"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "NativePHP\\BackgroundTasks\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Tests\\": "tests/"
+                }
+            },
+            "scripts": {
+                "test": [
+                    "pest"
+                ]
+            },
+            "license": [
+                "proprietary"
+            ],
+            "authors": [
+                {
+                    "name": "NativePHP",
+                    "email": "support@nativephp.com"
+                }
+            ],
+            "description": "Background task scheduling via WorkManager for NativePHP Mobile",
+            "time": "2026-09-20T01:04:33+00:00"
         },
         {
             "name": "nativephp/mobile-browser",

@@ -167,8 +167,8 @@
                             class="w-full px-4 py-3"
                         >
                             <row class="w-full items-center gap-3">
-                                <column class="h-9 w-9 items-center justify-center rounded-full bg-{{ $item['type']->iconColor() }}/15">
-                                    <icon :ios="$item['type']->iosIcon()" :android="$item['type']->androidIcon()" :size="18" class="text-{{ $item['type']->iconColor() }}" />
+                                <column class="h-9 w-9 items-center justify-center rounded-full bg-{{ $item['type']->iconColor() }}">
+                                    <icon :ios="$item['type']->iosIcon()" :android="$item['type']->androidIcon()" :size="18" class="text-white" />
                                 </column>
                                 <column class="flex-1 gap-0.5">
                                     <text font="semibold" max-lines="1" class="text-base text-theme-on-surface">{{ $item['name'] }}</text>
