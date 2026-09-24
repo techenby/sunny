@@ -29,7 +29,7 @@
     />
 </native:top-bar>
 
-<refreshable ref="dashboard" class="bg-theme-background" @refresh="sync">
+<refreshable ref="dashboard" fill class="bg-theme-background" @refresh="sync">
     <column class="w-full gap-6 px-4 pt-2 pb-8">
         @if ($syncError)
             <pressable
