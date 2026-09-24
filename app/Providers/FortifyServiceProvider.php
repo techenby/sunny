@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Actions\Fortify\AuthenticateUser;
 use App\Actions\Fortify\CreateNewUser;
 use App\Actions\Fortify\ResetUserPassword;
 use App\Http\Responses\LoginResponse;
@@ -11,6 +12,8 @@ use App\Http\Responses\PasskeyLoginResponse;
 use App\Http\Responses\RegisterResponse;
 use App\Http\Responses\TwoFactorLoginResponse;
 use App\Http\Responses\VerifyEmailResponse;
+use App\Models\User;
+use App\Support\TwoFactorChallenge;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -45,6 +48,7 @@ class FortifyServiceProvider extends ServiceProvider
     {
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
         Fortify::createUsersUsing(CreateNewUser::class);
+        Fortify::authenticateUsing(fn (Request $request): ?User => resolve(AuthenticateUser::class)->handle($request));
     }
 
     private function configureViews(): void
@@ -68,6 +72,12 @@ class FortifyServiceProvider extends ServiceProvider
             $throttleKey = Str::transliterate(Str::lower($request->input(Fortify::username())) . '|' . $request->ip());
 
             return Limit::perMinute(5)->by($throttleKey);
+        });
+
+        RateLimiter::for('api-two-factor', function (Request $request) {
+            $userId = TwoFactorChallenge::find((string) $request->input('challenge'))?->userId;
+
+            return Limit::perMinute(5)->by($userId ? "user:{$userId}" : $request->ip());
         });
 
         RateLimiter::for('passkeys', function (Request $request) {

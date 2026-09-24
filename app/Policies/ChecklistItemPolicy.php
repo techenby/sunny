@@ -16,7 +16,7 @@ class ChecklistItemPolicy
 
     public function view(User $user, ChecklistItem $item): bool
     {
-        return $item->checklist->team_id === $user->current_team_id;
+        return $user->belongsToTeam($item->checklist->team);
     }
 
     public function create(User $user): bool
@@ -26,16 +26,16 @@ class ChecklistItemPolicy
 
     public function update(User $user, ChecklistItem $item): bool
     {
-        return $item->checklist->team_id === $user->current_team_id;
+        return $user->belongsToTeam($item->checklist->team);
     }
 
     public function delete(User $user, ChecklistItem $item): bool
     {
-        return $item->checklist->team_id === $user->current_team_id;
+        return $user->belongsToTeam($item->checklist->team);
     }
 
     public function complete(User $user, ChecklistItem $item): bool
     {
-        return $item->checklist->team_id === $user->current_team_id;
+        return $user->belongsToTeam($item->checklist->team);
     }
 }

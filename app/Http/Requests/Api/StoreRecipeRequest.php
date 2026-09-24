@@ -8,6 +8,7 @@ use App\Models\Recipe;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 
 class StoreRecipeRequest extends FormRequest
 {
@@ -33,7 +34,10 @@ class StoreRecipeRequest extends FormRequest
             'instructions' => ['nullable', 'string'],
             'notes' => ['nullable', 'string'],
             'nutrition' => ['nullable', 'string'],
-            'parent_id' => ['nullable', 'integer', 'exists:recipes,id'],
+            'tags' => ['nullable', 'array', 'list'],
+            'tags.*' => ['string', 'max:255'],
+            'photo' => ['nullable', 'image', 'max:10240'],
+            'parent_id' => ['nullable', 'integer', Rule::exists('recipes', 'id')->where('team_id', $this->route('team')->id)],
         ];
     }
 }

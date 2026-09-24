@@ -16,7 +16,7 @@ class ChecklistPolicy
 
     public function view(User $user, Checklist $checklist): bool
     {
-        return $checklist->team_id === $user->current_team_id;
+        return $user->belongsToTeam($checklist->team);
     }
 
     public function create(User $user): bool
@@ -26,21 +26,21 @@ class ChecklistPolicy
 
     public function update(User $user, Checklist $checklist): bool
     {
-        return $checklist->team_id === $user->current_team_id;
+        return $user->belongsToTeam($checklist->team);
     }
 
     public function delete(User $user, Checklist $checklist): bool
     {
-        return $checklist->team_id === $user->current_team_id;
+        return $user->belongsToTeam($checklist->team);
     }
 
     public function restore(User $user, Checklist $checklist): bool
     {
-        return $checklist->team_id === $user->current_team_id;
+        return $user->belongsToTeam($checklist->team);
     }
 
     public function forceDelete(User $user, Checklist $checklist): bool
     {
-        return $checklist->team_id === $user->current_team_id;
+        return $user->belongsToTeam($checklist->team);
     }
 }

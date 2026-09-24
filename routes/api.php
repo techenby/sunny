@@ -3,49 +3,41 @@
 use App\Http\Controllers\Api\ItemController;
 use App\Http\Controllers\Api\RecipeController;
 use App\Http\Controllers\Api\SyncController;
-use App\Models\User;
+use App\Http\Controllers\Api\TokenController;
+use App\Http\Middleware\EnsureTeamMembership;
+use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Validation\ValidationException;
 
-Route::post('sanctum/token', function (Request $request) {
-    $request->validate([
-        'email' => ['required', 'email'],
-        'password' => ['required'],
-        'device_name' => ['required'],
-    ]);
+Route::post('sanctum/token', [TokenController::class, 'store'])->name('api.token');
 
-    $user = User::firstWhere('email', $request->email);
-
-    if (! $user || ! Hash::check($request->password, $user->password)) {
-        throw ValidationException::withMessages([
-            'email' => ['The provided credentials are incorrect.'],
-        ]);
-    }
-
-    return response()->json([
-        ...$user->toArray(),
-        'token' => $user->createToken($request->device_name)->plainTextToken,
-    ]);
-});
+Route::post('sanctum/token/two-factor', [TokenController::class, 'twoFactor'])
+    ->middleware('throttle:api-two-factor')
+    ->name('api.token.two-factor');
 
 Route::middleware('auth:sanctum')
     ->name('api.')
     ->group(function (): void {
-        Route::get('user', fn (Request $request) => $request->user())->name('user');
+        Route::get('user', fn (Request $request): UserResource => UserResource::make($request->user()))->name('user');
         Route::get('sync', SyncController::class)->name('sync');
+        Route::post('sanctum/token/refresh', [TokenController::class, 'refresh'])->name('token.refresh');
+        Route::post('logout', [TokenController::class, 'destroy'])->name('logout');
 
-        Route::get('items', [ItemController::class, 'index'])->name('items.index');
-        Route::post('items', [ItemController::class, 'store'])->name('items.store');
-        Route::post('items/{item}/duplicate', [ItemController::class, 'duplicate'])->name('items.duplicate');
-        Route::get('items/{item}', [ItemController::class, 'show'])->name('items.show');
-        Route::patch('items/{item}', [ItemController::class, 'update'])->name('items.update');
-        Route::delete('items/{item}', [ItemController::class, 'destroy'])->name('items.destroy');
+        Route::prefix('teams/{team}')
+            ->middleware(EnsureTeamMembership::class)
+            ->scopeBindings()
+            ->group(function (): void {
+                Route::get('items', [ItemController::class, 'index'])->name('items.index');
+                Route::post('items', [ItemController::class, 'store'])->name('items.store');
+                Route::post('items/{item}/duplicate', [ItemController::class, 'duplicate'])->name('items.duplicate');
+                Route::get('items/{item}', [ItemController::class, 'show'])->name('items.show');
+                Route::patch('items/{item}', [ItemController::class, 'update'])->name('items.update');
+                Route::delete('items/{item}', [ItemController::class, 'destroy'])->name('items.destroy');
 
-        Route::get('recipes', [RecipeController::class, 'index'])->name('recipes.index');
-        Route::post('recipes', [RecipeController::class, 'store'])->name('recipes.store');
-        Route::get('recipes/{recipe}', [RecipeController::class, 'show'])->name('recipes.show');
-        Route::patch('recipes/{recipe}', [RecipeController::class, 'update'])->name('recipes.update');
-        Route::delete('recipes/{recipe}', [RecipeController::class, 'destroy'])->name('recipes.destroy');
+                Route::get('recipes', [RecipeController::class, 'index'])->name('recipes.index');
+                Route::post('recipes', [RecipeController::class, 'store'])->name('recipes.store');
+                Route::get('recipes/{recipe}', [RecipeController::class, 'show'])->name('recipes.show');
+                Route::patch('recipes/{recipe}', [RecipeController::class, 'update'])->name('recipes.update');
+                Route::delete('recipes/{recipe}', [RecipeController::class, 'destroy'])->name('recipes.destroy');
+            });
     });

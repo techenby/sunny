@@ -21,6 +21,7 @@ class UpdateRecipeRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'remove_photo' => ['sometimes', 'boolean'],
             'name' => ['sometimes', 'required', 'string', 'max:255'],
             'source' => ['nullable', 'string', 'max:500'],
             'servings' => ['nullable', 'string', 'max:50'],
@@ -32,6 +33,9 @@ class UpdateRecipeRequest extends FormRequest
             'instructions' => ['nullable', 'string'],
             'notes' => ['nullable', 'string'],
             'nutrition' => ['nullable', 'string'],
+            'tags' => ['nullable', 'array', 'list'],
+            'tags.*' => ['string', 'max:255'],
+            'photo' => ['nullable', 'image', 'max:10240'],
         ];
     }
 }

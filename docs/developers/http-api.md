@@ -26,8 +26,79 @@ Content-Type: application/json
 }
 ```
 
-The response includes the user and a plaintext `token`. Store it securely; it
-is not shown again.
+The response contains the user's `id`, `name`, `email`, `email_verified_at`,
+`two_factor_enabled`, `current_team_id`, `created_at`, and `updated_at`, plus a
+plaintext `token` and its `expires_at` timestamp. Store the token securely; it
+is not shown again. This endpoint allows
+5 failed attempts per minute for each email and IP address, then returns
+`429`; a successful sign-in resets the count. Emails are matched
+case-insensitively, the same as signing in on the web.
+
+### Two-factor authentication
+
+If the user has two-factor authentication enabled, the token endpoint returns a
+challenge instead of a token:
+
+```json
+{
+  "two_factor": true,
+  "challenge": "CHALLENGE"
+}
+```
+
+Exchange the challenge and a code from the user's authenticator app for a
+token within 5 minutes:
+
+```http
+POST /api/sanctum/token/two-factor
+Accept: application/json
+Content-Type: application/json
+
+{
+  "challenge": "CHALLENGE",
+  "code": "123456"
+}
+```
+
+Send `recovery_code` instead of `code` to use a recovery code; it is consumed
+and replaced. A successful response matches the token endpoint's. An invalid
+code returns `422` and the challenge can be retried, up to 5 attempts per
+minute for each user across all challenges and IP addresses. Each challenge can
+be completed only once; if two requests for the same challenge arrive at the
+same time, the second returns `422` on `challenge`. If two-factor authentication is turned off before the
+challenge is completed, the challenge is rejected; sign in again instead.
+
+### Token lifetime
+
+Tokens issued this way expire after 30 days. Before a token expires, exchange it
+for a fresh one:
+
+```http
+POST /api/sanctum/token/refresh
+Authorization: Bearer YOUR_TOKEN
+Accept: application/json
+```
+
+The response contains a new `token` and `expires_at`. The old token is revoked
+immediately. The new token keeps the original token's lifetime, so a Settings
+token that never expires stays that way. An expired token cannot be refreshed;
+sign in again instead.
+
+Tokens created in Settings use the expiration chosen there. Tokens created
+before expiration was introduced were given a 30-day expiration when it was
+rolled out.
+
+### Sign out
+
+Revoke the token used for the request when the user signs out:
+
+```http
+POST /api/logout
+Authorization: Bearer YOUR_TOKEN
+Accept: application/json
+```
+
+The response is `204`. Other tokens for the same user are unaffected.
 
 Send the token with every protected request:
 
@@ -42,9 +113,13 @@ Accept: application/json
 
 ## Team behavior
 
-Item and recipe endpoints operate on the authenticated user's current team.
-The current team is stored on the user account, so switching teams in Sunny
-also changes which records subsequent API calls list or create.
+Item and recipe endpoints are scoped to a team in the URL:
+`/api/teams/{team}/...`, where `{team}` is the team's `slug` (returned by
+`GET /api/sync`). The user must belong to that team.
+
+The API never changes the user's current team in Sunny, so a client can work
+with several teams at once and switching teams is purely a client-side choice.
+A record requested under a team it doesn't belong to returns `404`.
 
 `GET /api/sync` is different: it returns teams, recipes, and items across every
 team the user belongs to.
@@ -53,19 +128,22 @@ team the user belongs to.
 
 | Method | Endpoint | Purpose |
 | --- | --- | --- |
-| `GET` | `/api/user` | Return the authenticated user. |
+| `GET` | `/api/user` | Return the authenticated user, wrapped in `data`, with the same fields as the token response. |
 | `GET` | `/api/sync` | Synchronize all accessible teams, recipes, and items. |
-| `GET` | `/api/items` | List current-team inventory. |
-| `POST` | `/api/items` | Create an inventory entry. |
-| `GET` | `/api/items/{item}` | Read an inventory entry. |
-| `PATCH` | `/api/items/{item}` | Update an inventory entry. |
-| `DELETE` | `/api/items/{item}` | Delete an inventory entry. |
-| `POST` | `/api/items/{item}/duplicate` | Create 1–25 copies. |
-| `GET` | `/api/recipes` | List current-team recipes. |
-| `POST` | `/api/recipes` | Create a recipe. |
-| `GET` | `/api/recipes/{recipe}` | Read a recipe. |
-| `PATCH` | `/api/recipes/{recipe}` | Update a recipe. |
-| `DELETE` | `/api/recipes/{recipe}` | Delete a recipe. |
+| `POST` | `/api/sanctum/token/two-factor` | Complete a two-factor challenge. |
+| `POST` | `/api/sanctum/token/refresh` | Exchange the current token for a new one. |
+| `POST` | `/api/logout` | Revoke the current token. |
+| `GET` | `/api/teams/{team}/items` | List the team's inventory. |
+| `POST` | `/api/teams/{team}/items` | Create an inventory entry. |
+| `GET` | `/api/teams/{team}/items/{item}` | Read an inventory entry. |
+| `PATCH` | `/api/teams/{team}/items/{item}` | Update an inventory entry. |
+| `DELETE` | `/api/teams/{team}/items/{item}` | Delete an inventory entry. |
+| `POST` | `/api/teams/{team}/items/{item}/duplicate` | Create 1–25 copies. |
+| `GET` | `/api/teams/{team}/recipes` | List the team's recipes. |
+| `POST` | `/api/teams/{team}/recipes` | Create a recipe. |
+| `GET` | `/api/teams/{team}/recipes/{recipe}` | Read a recipe. |
+| `PATCH` | `/api/teams/{team}/recipes/{recipe}` | Update a recipe. |
+| `DELETE` | `/api/teams/{team}/recipes/{recipe}` | Delete a recipe. |
 
 Successful creates return `201`; successful deletes return `204`.
 Collections and single resources use Laravel's standard `data` wrapper.
@@ -87,7 +165,8 @@ Create an item with:
 ```
 
 `type` must be `location`, `bin`, or `item`. `parent_id`, `metadata`, and an
-uploaded image in `photo` are optional. Send image requests as multipart form
+uploaded image in `photo` are optional. `parent_id` must reference an item in
+the same team. Send image requests as multipart form
 data.
 
 Duplicate an entry with an optional count:
@@ -102,7 +181,8 @@ Duplicate an entry with an optional count:
 
 Only `name` is required. Supported optional fields are `source`, `servings`,
 `prep_time`, `cook_time`, `total_time`, `description`, `ingredients`,
-`instructions`, `notes`, `nutrition`, and `parent_id`.
+`instructions`, `notes`, `nutrition`, and `parent_id` (a recipe in the same
+team).
 
 ```json
 {
@@ -130,9 +210,10 @@ offline client can remove local copies.
 
 Expect standard Laravel JSON errors:
 
-- `401` when the token is missing or invalid.
-- `403` when the user is not allowed to access the team-owned record.
-- `404` when the record does not exist.
+- `401` when the token is missing, invalid, or expired.
+- `403` when the user doesn't belong to the team in the URL.
+- `404` when the record doesn't exist or belongs to a different team.
 - `422` when validation fails.
+- `429` when too many token or two-factor requests are made.
 
 The same Sanctum token can also authenticate Sunny's [MCP server](/docs/developers/mcp/setup).
