@@ -97,7 +97,7 @@ it('keeps rejected changes on screen and leaves SQLite untouched', function (int
 it('uses the active team and filters parents by team', function (): void {
     Team::create(['id' => 2, 'name' => 'Work', 'slug' => 'work', 'server' => SunnyStore::server()]);
     Item::create(['id' => 99, 'team_id' => 2, 'name' => 'Work bin', 'type' => 'bin', 'server' => SunnyStore::server()]);
-    Native::visit('/dashboard')->select('active-team', 'Work');
+    Native::visit('/dashboard')->tap('active-team')->tap('team-2');
     Native::visit('/inventory/create')->assertSet('teamId', 2)->assertSet('parentOptions', ['Top level', 'Work bin']);
 });
 

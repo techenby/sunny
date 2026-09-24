@@ -12,9 +12,12 @@ class SunnySync
 {
     public function __construct(private readonly SunnyAuth $auth, private readonly SunnyStore $store) {}
 
-    public function sync(): void
+    /**
+     * Pass the token when syncing off the UI thread, where secure storage is not available.
+     */
+    public function sync(#[\SensitiveParameter] ?string $token = null): void
     {
-        $snapshot = $this->auth->authenticatedConnector()->send(new SyncRequest)->json();
+        $snapshot = $this->auth->authenticatedConnector($token)->send(new SyncRequest)->json();
         throw_unless(is_array($snapshot), UnexpectedValueException::class, 'Invalid sync response.');
 
         $rules = ['synced_at' => ['required', 'date']];

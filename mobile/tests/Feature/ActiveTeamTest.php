@@ -24,7 +24,8 @@ beforeEach(function (): void {
 it('switches browsing and recent activity locally and remembers the team', function (): void {
     Saloon::fake([]);
     Native::visit('/dashboard')->assertSee('Buttermilk Pancakes')
-        ->select('active-team', 'Work')->assertSee('Work lunch')->assertSee('Office')->assertDontSee('Buttermilk Pancakes');
+        ->tap('active-team')->assertSet('showTeamPicker', true)
+        ->tap('team-2')->assertSet('showTeamPicker', false)->assertSee('Work lunch')->assertSee('Office')->assertDontSee('Buttermilk Pancakes');
     Native::visit('/recipes')->assertSee('Work lunch')->assertDontSee('Buttermilk Pancakes');
     Native::visit('/inventory')->assertSee('Office')->assertDontSee('Kitchen');
     Native::visit('/dashboard')->assertSet('activeTeamName', 'Work');
@@ -33,6 +34,11 @@ it('switches browsing and recent activity locally and remembers the team', funct
     Native::visit('/recipes/1/edit')->assertSee('This recipe could not be found.');
     Native::visit('/inventory/1')->assertSee('This item could not be found.');
     Saloon::assertNothingSent();
+});
+
+it('only opens the team picker when there is another team to switch to', function (): void {
+    Team::find(2)->delete();
+    Native::visit('/dashboard')->tap('active-team')->assertSet('showTeamPicker', false);
 });
 
 it('creates records in the active team without a form picker', function (string $route, string $ref, string $model): void {
@@ -67,7 +73,8 @@ it('does not silently move an open draft when the active team changes', function
 
 it('distinguishes identically named teams and rejects invalid selections', function (): void {
     Team::find(2)->update(['name' => 'Family']);
-    Native::visit('/dashboard')->select('active-team', 'Family (#2)')->assertSet('activeTeamName', 'Family (#2)')
-        ->select('active-team', 'Missing')->assertSet('activeTeamName', 'Family (#2)');
+    Native::visit('/dashboard')->assertSee('Family (#2)')
+        ->tap('active-team')->tap('team-2')->assertSet('activeTeamName', 'Family (#2)')
+        ->call('selectTeam', 999)->assertSet('activeTeamName', 'Family (#2)');
     expect(app(SunnyTeam::class)->current()->id)->toBe(2);
 });

@@ -13,8 +13,12 @@ use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use JsonException;
+use Native\Mobile\AsyncTask;
 use Native\Mobile\Attributes\Computed;
+use Native\Mobile\Attributes\On;
 use Native\Mobile\Edge\NativeComponent;
+use Native\Mobile\Events\Alert\ButtonPressed;
+use Native\Mobile\Exceptions\AsyncTaskException;
 use Native\Mobile\Facades\Dialog;
 use RuntimeException;
 use Saloon\Exceptions\Request\FatalRequestException;
@@ -27,34 +31,49 @@ class Dashboard extends NativeComponent
 
     public string $activeTeamName = '';
 
+    public bool $showTeamPicker = false;
+
+    public int $backgroundSyncStartedAt = 0;
+
     public function mount(): void
     {
-        if (app(SunnyStore::class)->isStale()) {
-            $this->sync();
-        }
         $this->onResume();
     }
 
     public function onResume(): void
     {
-        $teams = app(SunnyTeam::class);
-        $this->activeTeamName = $teams->choices()[$teams->current()?->id] ?? '';
-        unset($this->recentRecipes, $this->recentItems, $this->teamOptions);
+        if (app(SunnyStore::class)->isStale()) {
+            $this->syncInBackground();
+        }
+        $this->refreshLocalData();
     }
 
+    /**
+     * @return array<int, string>
+     */
     #[Computed]
     public function teamOptions(): array
     {
-        return array_values(app(SunnyTeam::class)->choices());
+        return app(SunnyTeam::class)->choices();
     }
 
-    public function updatedActiveTeamName(): void
+    public function openTeamPicker(): void
     {
-        $id = array_search($this->activeTeamName, app(SunnyTeam::class)->choices(), true);
-        if ($id !== false) {
+        $this->showTeamPicker = count($this->teamOptions) > 1;
+    }
+
+    public function closeTeamPicker(): void
+    {
+        $this->showTeamPicker = false;
+    }
+
+    public function selectTeam(int $id): void
+    {
+        if (array_key_exists($id, app(SunnyTeam::class)->choices())) {
             app(SunnyTeam::class)->select($id);
         }
-        $this->onResume();
+        $this->showTeamPicker = false;
+        $this->refreshLocalData();
     }
 
     public function sync(): void
@@ -62,32 +81,50 @@ class Dashboard extends NativeComponent
         $this->syncError = '';
 
         try {
-            try {
-                app(SunnySync::class)->sync();
-            } catch (UnauthorizedException) {
-                app(SunnyStore::class)->clear();
-                app(SunnyTokenStore::class)->forget();
-                $this->replace('/login');
-            }
-        } catch (AuthenticationException) {
-            app(SunnyStore::class)->clear();
-            $this->replace('/login');
-        } catch (RequestException|FatalRequestException|JsonException|ValidationException|RuntimeException) {
-            $this->syncError = app(SunnyStore::class)->lastSyncedAt()
-                ? 'Unable to sync. Your previously downloaded data is still available.'
-                : 'Unable to download your data. Check your connection and tap Sync to retry.';
+            app(SunnySync::class)->sync();
+        } catch (AuthenticationException|RequestException|FatalRequestException|JsonException|ValidationException|RuntimeException $exception) {
+            $this->syncFailed($exception::class);
+
+            return;
         }
 
-        $this->onResume();
-        unset($this->syncStatus);
+        $this->refreshLocalData();
     }
 
-    #[Computed]
-    public function syncStatus(): string
+    /**
+     * Download fresh data on a background thread so the dashboard stays responsive.
+     * A task whose result was dropped because the user left the screen stops blocking new syncs after a minute.
+     */
+    public function syncInBackground(): void
     {
-        $lastSynced = app(SunnyStore::class)->lastSyncedAt();
+        if ($this->backgroundSyncStartedAt > now()->subMinute()->getTimestamp()) {
+            return;
+        }
 
-        return $lastSynced ? 'Last synced '.Carbon::parse($lastSynced)->diffForHumans() : 'No data downloaded yet';
+        try {
+            $token = app(SunnyTokenStore::class)->get();
+        } catch (RuntimeException) {
+            return;
+        }
+
+        if ($token === null) {
+            $this->syncFailed(AuthenticationException::class);
+
+            return;
+        }
+
+        $this->backgroundSyncStartedAt = now()->getTimestamp();
+
+        AsyncTask::dispatch(static fn () => app(SunnySync::class)->sync($token))
+            ->finished(function (): void {
+                $this->backgroundSyncStartedAt = 0;
+                $this->syncError = '';
+                $this->refreshLocalData();
+            })
+            ->failed(function (AsyncTaskException $exception): void {
+                $this->backgroundSyncStartedAt = 0;
+                $this->syncFailed($exception->originalClass());
+            });
     }
 
     /**
@@ -123,6 +160,22 @@ class Dashboard extends NativeComponent
             ->all();
     }
 
+    public function confirmLogOut(): void
+    {
+        Dialog::alert('Log out?', 'Recipes and inventory downloaded to this device will be removed.', [
+            ['label' => 'Cancel', 'style' => 'cancel'],
+            ['label' => 'Log out', 'style' => 'destructive'],
+        ])->id('log-out')->show();
+    }
+
+    #[On(ButtonPressed::class)]
+    public function onAlertButtonPressed(string $label, ?string $id = null): void
+    {
+        if ($id === 'log-out' && $label === 'Log out') {
+            $this->logOut();
+        }
+    }
+
     public function logOut(): void
     {
         try {
@@ -141,6 +194,33 @@ class Dashboard extends NativeComponent
     public function render(): View
     {
         return view('native.dashboard');
+    }
+
+    private function refreshLocalData(): void
+    {
+        $teams = app(SunnyTeam::class);
+        $this->activeTeamName = $teams->choices()[$teams->current()?->id] ?? '';
+        unset($this->recentRecipes, $this->recentItems, $this->teamOptions);
+    }
+
+    /**
+     * @param  class-string<\Throwable>  $exception
+     */
+    private function syncFailed(string $exception): void
+    {
+        if (is_a($exception, AuthenticationException::class, true) || is_a($exception, UnauthorizedException::class, true)) {
+            app(SunnyStore::class)->clear();
+            rescue(fn () => app(SunnyTokenStore::class)->forget(), report: false);
+            $this->replace('/login');
+
+            return;
+        }
+
+        if (app(SunnyStore::class)->lastSyncedAt()) {
+            Dialog::toast('Unable to sync. Your previously downloaded data is still available.');
+        } else {
+            $this->syncError = 'Unable to download your data. Check your connection and tap here to retry.';
+        }
     }
 
     /**

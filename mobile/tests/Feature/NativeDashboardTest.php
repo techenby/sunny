@@ -8,6 +8,7 @@ use App\NativeComponents\Inventory;
 use App\NativeComponents\InventoryItemDetail;
 use App\NativeComponents\RecipeDetail;
 use App\NativeComponents\Recipes;
+use Native\Mobile\Events\Alert\ButtonPressed;
 use Native\Mobile\Testing\Native;
 
 beforeEach(function () {
@@ -28,18 +29,33 @@ it('renders the dashboard', function () {
         ->assertSet('activeTeamName', 'Family')
         ->assertElement('list_section', fn (array $node): bool => ($node['props']['header'] ?? null) === 'Recent recipes')
         ->assertElement('list_section', fn (array $node): bool => ($node['props']['header'] ?? null) === 'Recent items')
-        ->assertSee('Teams')
         ->assertElement('top_bar_action', fn (array $node): bool => ($node['props']['id'] ?? null) === 'log-out'
             && ($node['props']['label'] ?? null) === 'Log out')
+        ->assertElement('list', fn (array $node): bool => isset($node['props']['on_refresh']))
         ->assertAccessible();
 });
 
-it('returns to the home screen when logging out', function () {
+it('asks for confirmation before logging out', function () {
     Native::visit('/dashboard')
         ->tap('Log out')
+        ->assertNativeCalled('Dialog.Alert', fn (array $params): bool => $params['id'] === 'log-out')
+        ->assertNoNavigation();
+});
+
+it('returns to the home screen when logging out is confirmed', function () {
+    Native::visit('/dashboard')
+        ->tap('Log out')
+        ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Log out', 'id' => 'log-out'])
         ->assertReplacedWith('/')
         ->follow()
         ->assertScreen(Home::class);
+});
+
+it('stays on the dashboard when logging out is cancelled', function () {
+    Native::visit('/dashboard')
+        ->tap('Log out')
+        ->emitNative(ButtonPressed::class, ['index' => 0, 'label' => 'Cancel', 'id' => 'log-out'])
+        ->assertNoNavigation();
 });
 
 it('lists the most recently added or updated recipes', function () {
@@ -78,7 +94,7 @@ it('opens the full list from each section', function (string $ref, string $uri, 
         ->follow()
         ->assertScreen($screen);
 })->with([
-    'cookbook' => ['dashboard-recipes-all', '/recipes', Recipes::class],
+    'recipes' => ['dashboard-recipes-all', '/recipes', Recipes::class],
     'inventory' => ['dashboard-inventory-all', '/inventory', Inventory::class],
 ]);
 

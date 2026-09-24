@@ -4,7 +4,7 @@
 <native:top-bar title="Inventory" back />
 
 <list ref="inventory-list" fill class="bg-theme-background">
-    <list-section :footer="$this->items ? null : 'No items downloaded. Sync from the dashboard to refresh.'">
+    <list-section :footer="$this->items ? null : 'No items downloaded. Pull down on the dashboard to refresh.'">
         @foreach ($this->items as $item)
             @include('native.inventory-item-row', ['item' => $item, 'from' => null])
         @endforeach

@@ -8,7 +8,7 @@ beforeEach(fn () => seedSunnyData());
 
 it('lists recipes alphabetically with their source and total time', function () {
     $screen = Native::visit('/recipes')
-        ->assertNavTitle('Cookbook')
+        ->assertNavTitle('Recipes')
         ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === 'Weeknight Chili'
             && ($node['props']['supporting'] ?? null) === 'budgetbytes.com · 45 minutes')
         ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === 'Grandma’s Lasagna'

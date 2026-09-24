@@ -15,6 +15,7 @@ use App\Models\Team;
 use App\NativeComponents\Inventory;
 use App\NativeComponents\Recipes;
 use Illuminate\Validation\ValidationException;
+use Native\Mobile\AsyncTask;
 use Native\Mobile\Testing\Native;
 use Saloon\Config;
 use Saloon\Exceptions\Request\RequestException;
@@ -122,7 +123,7 @@ it('downloads on first dashboard entry and permits manual refresh without fetchi
     $screen = Native::visit('/dashboard')->assertSee('Soup');
     Native::visit('/dashboard')->assertSee('Soup');
     Saloon::assertSentCount(1);
-    $screen->tap('Sync')->assertSee('Soup');
+    $screen->call('sync')->assertSee('Soup');
     Saloon::assertSentCount(2);
     $this->travel(6)->minutes();
     Native::visit('/dashboard')->assertSee('Soup');
@@ -138,15 +139,45 @@ it('opens downloaded data offline and allows retrying failed sync', function ():
     ]);
     Native::visit('/')->assertReplacedWith('/dashboard');
     $screen = Native::visit('/dashboard')->assertSee('Buttermilk Pancakes')
-        ->assertSee('Unable to sync. Your previously downloaded data is still available.');
+        ->assertNativeCalled('Dialog.Toast', fn (array $params): bool => $params['message'] === 'Unable to sync. Your previously downloaded data is still available.')
+        ->assertSet('syncError', '');
     Saloon::fake([SyncRequest::class => MockResponse::make($this->snapshot)]);
-    $screen->tap('Sync')->assertSee('Soup')->assertSet('syncError', '');
+    $screen->call('sync')->assertSee('Soup');
+});
+
+it('shows a retry row when the first download fails', function (): void {
+    Saloon::fake([SyncRequest::class => MockResponse::make([], 503)]);
+    $screen = Native::visit('/dashboard')
+        ->assertSee('Unable to download your data. Check your connection and tap here to retry.');
+    Saloon::fake([SyncRequest::class => MockResponse::make($this->snapshot)]);
+    $screen->tap('sync-error')->assertSee('Soup')->assertSet('syncError', '')->assertDontSee('Download failed');
+});
+
+it('syncs in the background when returning to a stale dashboard', function (): void {
+    $async = AsyncTask::fake();
+    seedSunnyData();
+    Saloon::fake([SyncRequest::class => MockResponse::make($this->snapshot)]);
+    $recipes = Native::visit('/dashboard')->assertDontSee('Soup')->tap('dashboard-recipes-all')->follow();
+    $async->assertNotDispatched();
+    $this->travel(6)->minutes();
+    $recipes->goBack()->assertSee('Soup');
+    $async->assertDispatchedTimes(1);
+});
+
+it('returns to login when a background sync finds the session revoked', function (): void {
+    $bridge = Native::fakeBridge()->respondTo('SecureStorage.Get', ['value' => 'saved-token'])->respondTo('SecureStorage.Delete', ['success' => true]);
+    seedSunnyData();
+    $this->travel(6)->minutes();
+    Saloon::fake([SyncRequest::class => MockResponse::make([], 401)]);
+    Native::visit('/dashboard')->assertReplacedWith('/login');
+    expect(Recipe::count())->toBe(0);
+    $bridge->assertCalled('SecureStorage.Delete');
 });
 
 it('clears local data when a session is revoked', function (): void {
     seedSunnyData();
     Saloon::fake([SyncRequest::class => MockResponse::make([], 401)]);
-    Native::visit('/dashboard')->tap('Sync')->assertReplacedWith('/login');
+    Native::visit('/dashboard')->call('sync')->assertReplacedWith('/login');
     expect(Recipe::count())->toBe(0)->and(Item::count())->toBe(0)->and(app(SunnyStore::class)->lastSyncedAt())->toBeNull();
 });
 

@@ -5,6 +5,7 @@ use App\Http\Integrations\Sunny\Requests\GetUserRequest;
 use App\Http\Integrations\Sunny\Requests\LogoutRequest;
 use App\Http\Integrations\Sunny\Requests\VerifyTwoFactorRequest;
 use App\Http\Integrations\Sunny\SunnyStore;
+use Native\Mobile\Events\Alert\ButtonPressed;
 use Native\Mobile\Testing\Native;
 use Saloon\Config;
 use Saloon\Http\Faking\MockResponse;
@@ -102,14 +103,18 @@ it('retries session restoration after storage is unlocked', function (): void {
 it('logs out even when remote revocation fails', function (int $status): void {
     $bridge = Native::fakeBridge()->respondTo('SecureStorage.Get', ['value' => 'saved-token']);
     Saloon::fake([LogoutRequest::class => MockResponse::make([], $status)]);
-    Native::visit('/dashboard')->tap('Log out')->assertReplacedWith('/');
+    Native::visit('/dashboard')->tap('Log out')
+        ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Log out', 'id' => 'log-out'])
+        ->assertReplacedWith('/');
     $bridge->assertCalled('SecureStorage.Delete');
 })->with([204, 500]);
 
 it('does not pretend logout succeeded when deleting the token fails', function (): void {
     Native::fakeBridge()->respondTo('SecureStorage.Get', ['value' => 'saved-token'])->respondTo('SecureStorage.Delete', ['success' => false]);
     Saloon::fake([LogoutRequest::class => MockResponse::make([], 204)]);
-    Native::visit('/dashboard')->tap('Log out')->assertNoNavigation();
+    Native::visit('/dashboard')->tap('Log out')
+        ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Log out', 'id' => 'log-out'])
+        ->assertNoNavigation();
 });
 
 it('handles redirects and malformed JSON without crashing the login screen', function (int $status, string $message): void {

@@ -1,27 +1,54 @@
 @use('App\Icons\Android')
 @use('App\Icons\Ios')
 
-<native:top-bar title="Dashboard" :subtitle="$activeTeamName ?: 'Your household at a glance'" :back="false">
-    <native:top-bar-action id="sync" label="Sync" :ios-icon="Ios::ArrowClockwise" :android-icon="Android::Sync" @tap="sync" />
+<native:top-bar title="Dashboard" :back="false">
     <native:top-bar-action
         id="log-out"
         label="Log out"
         :ios-icon="Ios::RectanglePortraitAndArrowRight"
         :android-icon="Android::Logout"
-        @tap="logOut"
+        @tap="confirmLogOut"
     />
 </native:top-bar>
 
-<list ref="dashboard" fill class="bg-theme-background">
+<list ref="dashboard" fill class="bg-theme-background" @refresh="sync">
+    @if ($syncError)
+        <list-section>
+            <list-item
+                ref="sync-error"
+                headline="Download failed"
+                :supporting="$syncError"
+                :supportingColor="theme('destructive')"
+                :leadingIconIos="Ios::ExclamationmarkTriangle"
+                :leadingIconAndroid="Android::Warning"
+                :leadingIconColor="theme('destructive')"
+                @tap="sync"
+            />
+        </list-section>
+    @endif
     <list-section header="Team">
         @if ($this->teamOptions)
-            <native:select ref="active-team" label="Active team" :options="$this->teamOptions" native:model="activeTeamName" class="px-4 py-2" />
+            <list-item
+                ref="active-team"
+                :headline="$activeTeamName"
+                supporting="Active team"
+                :leadingIconIos="Ios::Person3"
+                :leadingIconAndroid="Android::Groups"
+                :trailingIconIos="count($this->teamOptions) > 1 ? Ios::ChevronUpChevronDown : null"
+                :trailingIconAndroid="count($this->teamOptions) > 1 ? Android::UnfoldMore : null"
+                @tap="openTeamPicker"
+            />
+        @elseif ($this->teamOptions)
+            <list-item
+                ref="active-team"
+                :headline="$activeTeamName"
+                supporting="Active team"
+                :leadingIconIos="Ios::Person3"
+                :leadingIconAndroid="Android::Groups"
+            />
         @else
-            <list-item headline="No teams available" supporting="Sync to download your teams." />
+            <list-item headline="No teams available" supporting="Pull down to download your teams." />
         @endif
-    </list-section>
-    <list-section header="Sync">
-        <list-item ref="sync-status" :headline="$this->syncStatus" :supporting="$syncError ?: 'Recipes and inventory are stored on this device for offline browsing.'" />
     </list-section>
     <list-section
         header="Recent recipes"
@@ -32,6 +59,8 @@
                 ref="dashboard-recipes-{{ $recipe['id'] }}"
                 :headline="$recipe['name']"
                 :supporting="$recipe['supporting']"
+                :leadingIconIos="Ios::ForkKnife"
+                :leadingIconAndroid="Android::Restaurant"
                 :trailingIconIos="Ios::ChevronRight"
                 :trailingIconAndroid="Android::ChevronRight"
                 @navigate($recipe['url'])
@@ -51,6 +80,8 @@
             headline="New recipe"
             :leadingIconIos="Ios::Plus"
             :leadingIconAndroid="Android::Add"
+            :leadingIconColor="theme('primary')"
+            :headlineColor="theme('primary')"
             @navigate('/recipes/create')
         />
     </list-section>
@@ -86,17 +117,27 @@
             headline="New item"
             :leadingIconIos="Ios::Plus"
             :leadingIconAndroid="Android::Add"
+            :leadingIconColor="theme('primary')"
+            :headlineColor="theme('primary')"
             @navigate('/inventory/create')
         />
     </list-section>
 
-    <list-section header="Coming soon">
-        <list-item
-            ref="dashboard-teams"
-            headline="Teams"
-            supporting="Invite family members to collaborate."
-            :leadingIconIos="Ios::Person3"
-            :leadingIconAndroid="Android::Groups"
-        />
-    </list-section>
 </list>
+
+<native:bottom-sheet ref="team-picker" :visible="$showTeamPicker" @dismiss="closeTeamPicker" detents="medium">
+    <list fill class="bg-theme-background">
+        <list-section header="Switch team">
+            @foreach ($this->teamOptions as $id => $name)
+                <list-item
+                    ref="team-{{ $id }}"
+                    :headline="$name"
+                    :trailingIconIos="$name === $activeTeamName ? Ios::Checkmark : null"
+                    :trailingIconAndroid="$name === $activeTeamName ? Android::Check : null"
+                    :trailingIconColor="theme('primary')"
+                    @tap="selectTeam({{ $id }})"
+                />
+            @endforeach
+        </list-section>
+    </list>
+</native:bottom-sheet>

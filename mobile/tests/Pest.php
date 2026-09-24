@@ -2,6 +2,7 @@
 
 use App\Http\Integrations\Sunny\SunnyStore;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Native\Mobile\AsyncTask;
 use Tests\TestCase;
 
 /*
@@ -17,6 +18,8 @@ use Tests\TestCase;
 
 pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)
+    ->beforeEach(fn () => AsyncTask::fake())
+    ->afterEach(fn () => AsyncTask::clearFake())
     ->in('Feature');
 
 /*

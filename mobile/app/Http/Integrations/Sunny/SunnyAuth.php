@@ -42,9 +42,9 @@ class SunnyAuth
         return $response;
     }
 
-    public function authenticatedConnector(): SunnyConnector
+    public function authenticatedConnector(#[\SensitiveParameter] ?string $token = null): SunnyConnector
     {
-        $token = $this->tokens->get();
+        $token ??= $this->tokens->get();
 
         throw_if($token === null || $token === '', AuthenticationException::class, 'Sign in to Sunny first.');
 
