@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\ItemType;
+use App\Models\Recipe;
 use App\NativeComponents\CreateInventoryItem;
 use App\NativeComponents\CreateRecipe;
 use App\NativeComponents\Home;
@@ -24,15 +25,21 @@ beforeEach(fn () => seedSunnyData());
 
 it('renders the dashboard', function () {
     Native::visit('/dashboard')
-        ->assertNavTitle('Dashboard')
+        ->assertNavTitle('Summary')
         ->assertSee('Family')
         ->assertSet('activeTeamName', 'Family')
-        ->assertElement('list_section', fn (array $node): bool => ($node['props']['header'] ?? null) === 'Recent recipes')
-        ->assertElement('list_section', fn (array $node): bool => ($node['props']['header'] ?? null) === 'Recent items')
+        ->assertSee('Recent recipes')
+        ->assertSee('Recent items')
         ->assertElement('top_bar_action', fn (array $node): bool => ($node['props']['id'] ?? null) === 'log-out'
             && ($node['props']['label'] ?? null) === 'Log out')
-        ->assertElement('list', fn (array $node): bool => isset($node['props']['on_refresh']))
+        ->assertElement('refreshable', fn (array $node): bool => isset($node['props']['on_refresh']))
         ->assertAccessible();
+});
+
+it('summarizes the active team recipes and inventory', function () {
+    Native::visit('/dashboard')
+        ->assertSet('summary', ['recipes' => 6, 'items' => 9, 'locations' => 3, 'bins' => 3])
+        ->assertSee('3 locations · 3 bins');
 });
 
 it('asks for confirmation before logging out', function () {
@@ -59,12 +66,15 @@ it('stays on the dashboard when logging out is cancelled', function () {
 });
 
 it('lists the most recently added or updated recipes', function () {
-    Native::visit('/dashboard')
-        ->assertSet('recentRecipes', [
-            ['id' => 1, 'name' => 'Buttermilk Pancakes', 'supporting' => 'Updated 2 days ago', 'url' => '/recipes/1'],
-            ['id' => 5, 'name' => 'Overnight Oats', 'supporting' => 'Added 4 days ago', 'url' => '/recipes/5'],
-            ['id' => 3, 'name' => 'Grandma’s Lasagna', 'supporting' => 'Updated 3 weeks ago', 'url' => '/recipes/3'],
-        ]);
+    Recipe::find(5)->update(['total_time' => null, 'photo_url' => 'https://sunny.example/oats.jpg']);
+
+    $recipes = Native::visit('/dashboard')->get('recentRecipes');
+
+    expect(array_slice($recipes, 0, 3))->toBe([
+        ['id' => 1, 'name' => 'Buttermilk Pancakes', 'supporting' => '25 minutes', 'photo' => null, 'url' => '/recipes/1'],
+        ['id' => 5, 'name' => 'Overnight Oats', 'supporting' => 'Added 4 days ago', 'photo' => 'https://sunny.example/oats.jpg', 'url' => '/recipes/5'],
+        ['id' => 3, 'name' => 'Grandma’s Lasagna', 'supporting' => '1 hour 30 minutes', 'photo' => null, 'url' => '/recipes/3'],
+    ]);
 });
 
 it('lists the most recently added or updated items', function () {
@@ -105,6 +115,6 @@ it('adds a new recipe or item from its section', function (string $ref, string $
         ->follow()
         ->assertScreen($screen);
 })->with([
-    'recipe' => ['dashboard-recipes-create', '/recipes/create', CreateRecipe::class],
-    'item' => ['dashboard-inventory-create', '/inventory/create', CreateInventoryItem::class],
+    'recipe' => ['New recipe', '/recipes/create', CreateRecipe::class],
+    'item' => ['New item', '/inventory/create', CreateInventoryItem::class],
 ]);

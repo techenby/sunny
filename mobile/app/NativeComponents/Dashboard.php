@@ -8,6 +8,8 @@ use App\Http\Integrations\Sunny\SunnyStore;
 use App\Http\Integrations\Sunny\SunnySync;
 use App\Http\Integrations\Sunny\SunnyTeam;
 use App\Http\Integrations\Sunny\SunnyTokenStore;
+use App\Models\Item;
+use App\Models\Recipe;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
@@ -128,16 +130,39 @@ class Dashboard extends NativeComponent
     }
 
     /**
-     * @return list<array{id: int, name: string, supporting: string, url: string}>
+     * @return array{recipes: int, items: int, locations: int, bins: int}
+     */
+    #[Computed]
+    public function summary(): array
+    {
+        $itemCounts = Item::forActiveTeam()->toBase()->selectRaw('type, count(*) as aggregate')->groupBy('type')->pluck('aggregate', 'type');
+
+        return [
+            'recipes' => Recipe::forActiveTeam()->count(),
+            'items' => (int) ($itemCounts[ItemType::Item->value] ?? 0),
+            'locations' => (int) ($itemCounts[ItemType::Location->value] ?? 0),
+            'bins' => (int) ($itemCounts[ItemType::Bin->value] ?? 0),
+        ];
+    }
+
+    #[Computed]
+    public function teamInitial(): string
+    {
+        return mb_strtoupper(mb_substr($this->activeTeamName, 0, 1));
+    }
+
+    /**
+     * @return list<array{id: int, name: string, supporting: string, photo: string|null, url: string}>
      */
     #[Computed]
     public function recentRecipes(): array
     {
-        return collect(Recipes::recent())
+        return collect(Recipes::recent(8))
             ->map(fn (array $recipe): array => [
                 'id' => $recipe['id'],
                 'name' => $recipe['name'],
-                'supporting' => $this->activity($recipe),
+                'supporting' => $recipe['total_time'] ?: $this->activity($recipe),
+                'photo' => $recipe['photo_url'],
                 'url' => '/recipes/'.$recipe['id'],
             ])
             ->all();
@@ -200,7 +225,7 @@ class Dashboard extends NativeComponent
     {
         $teams = app(SunnyTeam::class);
         $this->activeTeamName = $teams->choices()[$teams->current()?->id] ?? '';
-        unset($this->recentRecipes, $this->recentItems, $this->teamOptions);
+        unset($this->recentRecipes, $this->recentItems, $this->teamOptions, $this->summary, $this->teamInitial);
     }
 
     /**
