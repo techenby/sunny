@@ -1,8 +1,7 @@
 <?php
 
-use App\Http\Controllers\Api\TokenController;
 use App\Models\User;
-use Illuminate\Support\Facades\Cache;
+use App\Support\TwoFactorChallenge;
 use Illuminate\Support\Facades\Event;
 use Laravel\Fortify\Events\TwoFactorAuthenticationFailed;
 use Laravel\Fortify\Events\ValidTwoFactorAuthenticationCodeProvided;
@@ -225,7 +224,7 @@ test('a challenge being completed by another request is rejected', function () {
     [$user] = twoFactorUser();
     $challenge = requestChallenge($user);
 
-    $lock = Cache::lock(TokenController::challengeKey($challenge) . ':lock', 10);
+    $lock = TwoFactorChallenge::lock($challenge);
     $lock->acquire();
 
     $this->postJson(route('api.token.two-factor'), [
@@ -252,4 +251,36 @@ test('a challenge can be retried after an invalid code', function () {
         'challenge' => $challenge,
         'recovery_code' => 'recovery-code-1',
     ])->assertOk()->assertJsonStructure(['token']);
+});
+
+test('sending both a code and a recovery code is rejected', function () {
+    [$user, $secret] = twoFactorUser();
+
+    $this->postJson(route('api.token.two-factor'), [
+        'challenge' => requestChallenge($user),
+        'code' => app(Google2FA::class)->getCurrentOtp($secret),
+        'recovery_code' => 'recovery-code-1',
+    ])->assertUnprocessable()->assertJsonValidationErrors('recovery_code');
+
+    expect($user->tokens()->count())->toBe(0)
+        ->and($user->fresh()->recoveryCodes())->toContain('recovery-code-1');
+});
+
+test('a stored challenge can be found until it is forgotten or expires', function () {
+    $user = User::factory()->create();
+    $challenge = TwoFactorChallenge::issue($user, 'iPhone');
+
+    expect(TwoFactorChallenge::find($challenge))
+        ->userId->toBe($user->id)
+        ->deviceName->toBe('iPhone')
+        ->and(TwoFactorChallenge::find('unknown'))->toBeNull();
+
+    TwoFactorChallenge::forget($challenge);
+
+    expect(TwoFactorChallenge::find($challenge))->toBeNull();
+
+    $expiring = TwoFactorChallenge::issue($user, 'iPhone');
+    $this->travel(6)->minutes();
+
+    expect(TwoFactorChallenge::find($expiring))->toBeNull();
 });

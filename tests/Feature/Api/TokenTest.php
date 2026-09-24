@@ -319,3 +319,26 @@ test('refreshing a token with a backfilled expiration uses the default lifetime'
         ->assertOk()
         ->assertJsonPath('expires_at', now()->addDays(30)->toIso8601String());
 });
+
+test('refreshing a backfilled token that does not match a known lifetime uses 30 days', function () {
+    $this->freezeSecond();
+    $user = User::factory()->create();
+    $current = $user->createToken('Sunny Mobile', ['*'], now()->addDays(30));
+    $current->accessToken->forceFill(['created_at' => now()->subDays(100)])->save();
+
+    $this->withToken($current->plainTextToken)
+        ->postJson(route('api.token.refresh'))
+        ->assertOk()
+        ->assertJsonPath('expires_at', now()->addDays(30)->toIso8601String());
+});
+
+test('refresh keeps a known lifetime when the timestamps are a second apart', function () {
+    $this->freezeSecond();
+    $user = User::factory()->create();
+    $current = $user->createToken('Raycast', ['*'], now()->addDays(90)->subSecond());
+
+    $this->withToken($current->plainTextToken)
+        ->postJson(route('api.token.refresh'))
+        ->assertOk()
+        ->assertJsonPath('expires_at', now()->addDays(90)->toIso8601String());
+});

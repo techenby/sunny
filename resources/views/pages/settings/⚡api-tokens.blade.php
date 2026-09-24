@@ -1,8 +1,10 @@
 <?php
 
+use App\Enums\TokenLifetime;
 use Flux\Flux;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -10,7 +12,7 @@ use Livewire\Component;
 new #[Title('API tokens settings')] class extends Component {
     public string $name = '';
 
-    public string $expiration = '90';
+    public string $expiration = TokenLifetime::NinetyDays->value;
 
     public ?string $plainTextToken = null;
 
@@ -18,12 +20,12 @@ new #[Title('API tokens settings')] class extends Component {
     {
         $this->validate([
             'name' => ['required', 'string', 'max:255'],
-            'expiration' => ['required', 'in:30,90,365,never'],
+            'expiration' => ['required', Rule::enum(TokenLifetime::class)],
         ]);
 
-        $expiresAt = $this->expiration === 'never' ? null : now()->addDays((int) $this->expiration);
-
-        $this->plainTextToken = Auth::user()->createToken($this->name, ['*'], $expiresAt)->plainTextToken;
+        $this->plainTextToken = Auth::user()
+            ->createToken($this->name, ['*'], TokenLifetime::from($this->expiration)->expiresAt())
+            ->plainTextToken;
 
         $this->reset('name', 'expiration');
 
@@ -68,10 +70,9 @@ new #[Title('API tokens settings')] class extends Component {
             <flux:input wire:model="name" :label="__('Token name')" type="text" :placeholder="__('e.g. Raycast, Claude')" class="flex-1" data-test="token-name-input" />
 
             <flux:select wire:model="expiration" :label="__('Expires')" variant="listbox" class="max-w-40" data-test="token-expiration-select">
-                <flux:select.option value="30">{{ __('30 days') }}</flux:select.option>
-                <flux:select.option value="90">{{ __('90 days') }}</flux:select.option>
-                <flux:select.option value="365">{{ __('1 year') }}</flux:select.option>
-                <flux:select.option value="never">{{ __('Never') }}</flux:select.option>
+                @foreach (TokenLifetime::cases() as $lifetime)
+                    <flux:select.option :value="$lifetime->value">{{ $lifetime->getLabel() }}</flux:select.option>
+                @endforeach
             </flux:select>
 
             <flux:button variant="primary" type="submit" data-test="create-token-button">

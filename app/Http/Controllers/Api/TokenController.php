@@ -5,16 +5,17 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Actions\Fortify\AuthenticateUser;
+use App\Enums\TokenLifetime;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use App\Support\TwoFactorChallenge;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Contracts\LockoutResponse;
@@ -28,17 +29,6 @@ use Laravel\Sanctum\PersonalAccessToken;
 
 class TokenController extends Controller
 {
-    private const int LIFETIME_DAYS = 30;
-
-    private const int MAX_LIFETIME_DAYS = 365;
-
-    private const int CHALLENGE_MINUTES = 5;
-
-    public static function challengeKey(string $challenge): string
-    {
-        return 'api-two-factor-challenge:' . hash('sha256', $challenge);
-    }
-
     public function store(Request $request, LoginRateLimiter $limiter): JsonResponse
     {
         $request->validate([
@@ -60,16 +50,9 @@ class TokenController extends Controller
         $user = $this->authenticate($request, $limiter);
 
         if ($user->hasEnabledTwoFactorAuthentication()) {
-            $challenge = Str::random(64);
-
-            Cache::put(self::challengeKey($challenge), [
-                'user_id' => $user->id,
-                'device_name' => $request->device_name,
-            ], now()->addMinutes(self::CHALLENGE_MINUTES));
-
             return response()->json([
                 'two_factor' => true,
-                'challenge' => $challenge,
+                'challenge' => TwoFactorChallenge::issue($user, $request->device_name),
             ]);
         }
 
@@ -81,10 +64,10 @@ class TokenController extends Controller
         $request->validate([
             'challenge' => ['required', 'string'],
             'code' => ['nullable', 'string', 'required_without:recovery_code'],
-            'recovery_code' => ['nullable', 'string'],
+            'recovery_code' => ['nullable', 'string', 'prohibits:code'],
         ]);
 
-        $response = Cache::lock(self::challengeKey($request->challenge) . ':lock', 10)
+        $response = TwoFactorChallenge::lock($request->challenge)
             ->get(fn (): JsonResponse => $this->completeChallenge($request, $provider));
 
         throw_if($response === false, ValidationException::withMessages([
@@ -100,15 +83,7 @@ class TokenController extends Controller
 
         abort_unless($current instanceof PersonalAccessToken, 400, 'Only token-authenticated requests can be refreshed.');
 
-        $lifetime = $current->expires_at ? (int) $current->created_at->diffInSeconds($current->expires_at) : null;
-
-        if ($lifetime > self::MAX_LIFETIME_DAYS * 86400) {
-            $lifetime = self::LIFETIME_DAYS * 86400;
-        }
-
-        $expiresAt = $lifetime ? now()->addSeconds($lifetime) : null;
-
-        $token = $request->user()->createToken($current->name, $current->abilities, $expiresAt);
+        $token = $request->user()->createToken($current->name, $current->abilities, TokenLifetime::fromToken($current)->expiresAt());
 
         $current->delete();
 
@@ -152,8 +127,8 @@ class TokenController extends Controller
 
     private function completeChallenge(Request $request, TwoFactorAuthenticationProvider $provider): JsonResponse
     {
-        $pending = Cache::get(self::challengeKey($request->challenge));
-        $user = $pending ? User::find($pending['user_id']) : null;
+        $pending = TwoFactorChallenge::find($request->challenge);
+        $user = $pending?->user();
 
         throw_unless($user?->hasEnabledTwoFactorAuthentication(), ValidationException::withMessages([
             'challenge' => ['The two-factor challenge has expired. Please sign in again.'],
@@ -173,11 +148,11 @@ class TokenController extends Controller
             ]);
         }
 
-        Cache::forget(self::challengeKey($request->challenge));
+        TwoFactorChallenge::forget($request->challenge);
 
         event(new ValidTwoFactorAuthenticationCodeProvided($user));
 
-        return $this->tokenResponse($user, $this->issue($user, $pending['device_name']));
+        return $this->tokenResponse($user, $this->issue($user, $pending->deviceName));
     }
 
     private function tokenResponse(User $user, NewAccessToken $token): JsonResponse
@@ -194,6 +169,6 @@ class TokenController extends Controller
      */
     private function issue(User $user, string $name, array $abilities = ['*']): NewAccessToken
     {
-        return $user->createToken($name, $abilities, now()->addDays(self::LIFETIME_DAYS));
+        return $user->createToken($name, $abilities, TokenLifetime::ThirtyDays->expiresAt());
     }
 }

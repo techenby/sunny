@@ -70,7 +70,7 @@ test('token expiration must be a known option', function () {
         ->set('name', 'Raycast')
         ->set('expiration', '7')
         ->call('createToken')
-        ->assertHasErrors(['expiration' => 'in']);
+        ->assertHasErrors('expiration');
 
     $this->assertDatabaseCount('personal_access_tokens', 0);
 });
@@ -115,4 +115,10 @@ test('user cannot revoke another users token', function () {
         ->call('revokeToken', $otherToken->id);
 
     $this->assertDatabaseHas('personal_access_tokens', ['id' => $otherToken->id]);
+});
+
+test('the expiration options come from the token lifetimes', function () {
+    Livewire::actingAs(User::factory()->create())
+        ->test('pages::settings.api-tokens')
+        ->assertSeeInOrder(['30 days', '90 days', '1 year', 'Never']);
 });
