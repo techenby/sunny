@@ -6,7 +6,7 @@
             Create your account on the Sunny website, then return here to log in.
         </text>
         @if ($error)
-            <text class="text-sm text-theme-error">{{ $error }}</text>
+            <text class="text-sm text-theme-destructive">{{ $error }}</text>
         @endif
         <button ref="register-submit" variant="primary" size="lg" font="semibold" class="w-full" @tap="register">
             Create account

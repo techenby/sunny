@@ -108,3 +108,16 @@ it('does not pretend logout succeeded when deleting the token fails', function (
     Saloon::fake([LogoutRequest::class => MockResponse::make([], 204)]);
     Native::visit('/dashboard')->tap('Log out')->assertNoNavigation();
 });
+
+it('handles redirects and malformed JSON without crashing the login screen', function (int $status, string $message): void {
+    Saloon::fake([CreateTokenRequest::class => MockResponse::make('<html>Not an API response</html>', $status, ['Content-Type' => 'text/html'])]);
+
+    Native::visit('/login')->input('login-email', 'person@example.com')->input('login-password', 'secret')
+        ->tap('login-submit')->assertSee($message)->assertSet('password', '')->assertNoNavigation();
+
+    Native::fakeBridge()->assertNotCalled('SecureStorage.Set');
+    Saloon::assertSentCount(1);
+})->with([
+    'HTTPS redirect' => [301, 'Sunny redirected the login request. Check the configured API URL uses HTTPS.'],
+    'HTML success' => [200, 'Sunny returned an invalid response. Check the API URL and try again.'],
+]);

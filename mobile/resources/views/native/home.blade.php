@@ -55,7 +55,7 @@
     </column>
 
     @if ($error)
-        <text ref="session-error" class="text-sm text-theme-error">{{ $error }}</text>
+        <text ref="session-error" class="text-sm text-theme-destructive">{{ $error }}</text>
         <button ref="session-retry" variant="ghost" @tap="restoreSession">Retry</button>
     @endif
 

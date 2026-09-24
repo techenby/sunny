@@ -38,7 +38,7 @@
         @endif
 
         @if ($error)
-            <text ref="login-error" class="text-sm text-theme-error">{{ $error }}</text>
+            <text ref="login-error" class="text-sm text-theme-destructive">{{ $error }}</text>
         @endif
 
         <button

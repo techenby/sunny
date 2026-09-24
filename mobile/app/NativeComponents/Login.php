@@ -5,6 +5,7 @@ namespace App\NativeComponents;
 use App\Http\Integrations\Sunny\SunnyAuth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
+use JsonException;
 use Native\Mobile\Edge\NativeComponent;
 use RuntimeException;
 use Saloon\Exceptions\Request\FatalRequestException;
@@ -63,11 +64,14 @@ class Login extends NativeComponent
         } catch (RequestException $exception) {
             $status = $exception->getResponse()->status();
             $this->error = match ($status) {
+                301, 302, 303, 307, 308 => 'Sunny redirected the login request. Check the configured API URL uses HTTPS.',
                 401 => 'Your credentials were not accepted. Please try again.',
                 422 => $this->twoFactor ? 'The code is invalid or expired. Try again or restart login.' : 'Check your email and password and try again.',
                 429 => 'Too many attempts. Please wait before trying again.',
                 default => 'Sunny is unavailable right now. Please try again.',
             };
+        } catch (JsonException) {
+            $this->error = 'Sunny returned an invalid response. Check the API URL and try again.';
         } catch (FatalRequestException) {
             $this->error = 'Unable to connect to Sunny. Check your connection and try again.';
         } catch (RuntimeException) {

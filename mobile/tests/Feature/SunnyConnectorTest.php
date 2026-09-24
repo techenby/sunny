@@ -121,3 +121,26 @@ it('rejects missing or invalid API configuration', function (?string $url): void
 
     expect(fn () => app(SunnyConnector::class))->toThrow(InvalidArgumentException::class, 'SUNNY_API_URL');
 })->with([null, '', '/api', 'ftp://sunny.example/api']);
+
+it('resolves the development CA inside the app only in the local environment', function (string $environment): void {
+    app()->instance('env', $environment);
+    config(['services.sunny.dev_ca_bundle' => 'tests/Feature/SunnyConnectorTest.php']);
+
+    expect(app(SunnyConnector::class)->config()->get('verify'))->toBe(
+        $environment === 'local' ? base_path('tests/Feature/SunnyConnectorTest.php') : true,
+    );
+})->with(['local', 'testing', 'staging', 'production']);
+
+it('keeps certificate verification enabled when no development CA is configured', function (): void {
+    app()->instance('env', 'local');
+    config(['services.sunny.dev_ca_bundle' => null]);
+
+    expect(app(SunnyConnector::class)->config()->get('verify'))->toBeTrue();
+});
+
+it('fails instead of disabling verification when the development CA is missing', function (): void {
+    app()->instance('env', 'local');
+    config(['services.sunny.dev_ca_bundle' => 'resources/certificates/missing.pem']);
+
+    expect(fn () => app(SunnyConnector::class))->toThrow(InvalidArgumentException::class, 'readable PEM file');
+});

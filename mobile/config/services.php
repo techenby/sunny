@@ -37,6 +37,7 @@ return [
 
     'sunny' => [
         'api_url' => env('SUNNY_API_URL'),
+        'dev_ca_bundle' => env('SUNNY_DEV_CA_BUNDLE'),
     ],
 
 ];

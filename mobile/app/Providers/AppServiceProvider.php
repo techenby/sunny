@@ -18,6 +18,9 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->bind(SunnyConnector::class, fn (): SunnyConnector => new SunnyConnector(
             (string) config('services.sunny.api_url'),
+            app()->environment('local') && config('services.sunny.dev_ca_bundle')
+                ? base_path(config('services.sunny.dev_ca_bundle'))
+                : null,
         ));
     }
 
