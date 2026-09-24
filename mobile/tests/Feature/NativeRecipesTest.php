@@ -57,41 +57,61 @@ it('opens a recipe from the list', function () {
         ->assertNavigatedTo('/recipes/2')
         ->follow()
         ->assertScreen(RecipeDetail::class)
-        ->assertNavTitle('Weeknight Chili');
+        ->assertSee('Weeknight Chili');
 });
 
 it('shows a recipe the way the web app does', function () {
     Native::visit('/recipes/1')
         ->assertNavTitle('Buttermilk Pancakes')
-        ->assertElement('list_item', fn (array $node): bool => ($node['ref'] ?? null) === 'recipe-description'
-            && ($node['props']['headline'] ?? null) === 'Fluffy weekend pancakes that come together in one bowl.'
-            && ($node['props']['supporting'] ?? null) === 'breakfast, weekend')
-        ->assertElement('list_item', fn (array $node): bool => ($node['ref'] ?? null) === 'recipe-source'
-            && ($node['props']['supporting'] ?? null) === 'allrecipes.com')
-        ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === 'Total time'
-            && ($node['props']['trailing_value'] ?? null) === '25 minutes')
+        ->assertElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'recipe-name'
+            && ($node['props']['text'] ?? null) === 'Buttermilk Pancakes')
+        ->assertElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'recipe-description'
+            && ($node['props']['text'] ?? null) === 'Fluffy weekend pancakes that come together in one bowl.')
+        ->assertSee('breakfast')
+        ->assertSee('weekend')
+        ->assertSee('allrecipes.com')
+        ->assertSee('Total time')
+        ->assertSee('25 minutes')
         ->assertSee('2 cups buttermilk')
-        ->assertElement('list_item', fn (array $node): bool => ($node['props']['overline'] ?? null) === 'Step 3'
-            && str_starts_with($node['props']['headline'] ?? '', 'Cook ¼ cup of batter'))
+        ->assertElement('row', fn (array $node): bool => ($node['ref'] ?? null) === 'step-3')
         ->assertSee('Let the batter rest for five minutes for taller pancakes.')
+        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'recipe-add-steps')
         ->assertAccessible();
+});
+
+it('ticks ingredients off while cooking', function () {
+    Native::visit('/recipes/1')
+        ->tap('ingredient-1')
+        ->assertSet('checkedIngredients', [1])
+        ->assertSee('1 of')
+        ->tap('ingredient-0')
+        ->tap('ingredient-1')
+        ->assertSet('checkedIngredients', [0]);
 });
 
 it('skips blank recipe fields', function () {
     Native::visit('/recipes/5')
         ->assertDontSee('Cook time')
         ->assertDontSee('Source')
-        ->assertMissingElement('list_section', fn (array $node): bool => ($node['props']['header'] ?? null) === 'Notes')
-        ->assertMissingElement('list_section', fn (array $node): bool => ($node['props']['header'] ?? null) === 'Nutrition')
-        ->assertMissingElement('list_item', fn (array $node): bool => ($node['ref'] ?? null) === 'recipe-description');
+        ->assertDontSee('Notes')
+        ->assertDontSee('Nutrition')
+        ->assertMissingElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'recipe-description');
 });
 
 it('splits paragraph-formatted ingredients into rows', function () {
     Native::visit('/recipes/5')
-        ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === '1 cup rolled oats')
-        ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === '1 tbsp chia seeds')
-        ->assertElement('list_item', fn (array $node): bool => ($node['props']['overline'] ?? null) === 'Step 1'
-            && ($node['props']['headline'] ?? null) === 'Stir everything together in a jar, cover, and refrigerate overnight.');
+        ->assertSee('1 cup rolled oats')
+        ->assertSee('1 tbsp chia seeds')
+        ->assertElement('row', fn (array $node): bool => ($node['ref'] ?? null) === 'step-1')
+        ->assertSee('Stir everything together in a jar, cover, and refrigerate overnight.');
+});
+
+it('offers to add ingredients and steps when a recipe has none', function () {
+    Recipe::find(5)->update(['ingredients' => null, 'instructions' => null]);
+
+    Native::visit('/recipes/5')
+        ->tap('recipe-add-steps')
+        ->assertNavigatedTo('/recipes/5/edit');
 });
 
 it('opens a URL source in the in-app browser', function () {
@@ -104,19 +124,19 @@ it('opens a URL source in the in-app browser', function () {
 
 it('shows a plain-text source without a link', function () {
     Native::visit('/recipes/3')
-        ->assertElement('list_item', fn (array $node): bool => ($node['ref'] ?? null) === 'recipe-source'
-            && ($node['props']['trailing_value'] ?? null) === 'Grandma’s recipe card'
-            && ! isset($node['props']['on_press']));
+        ->assertSee('Grandma’s recipe card')
+        ->assertElement('column', fn (array $node): bool => ($node['ref'] ?? null) === 'recipe-source')
+        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'recipe-source');
 });
 
 it('links a remix and its original recipe', function () {
     Native::visit('/recipes/3')
-        ->assertElement('list_section', fn (array $node): bool => ($node['props']['header'] ?? null) === 'Remixes')
-        ->tap('Veggie Lasagna')
+        ->assertSee('Remixes')
+        ->tap('related-recipe-4')
         ->assertNavigatedTo('/recipes/4')
         ->follow()
-        ->assertElement('list_section', fn (array $node): bool => ($node['props']['header'] ?? null) === 'Remixed from')
-        ->tap('Grandma’s Lasagna')
+        ->assertSee('Remixed from')
+        ->tap('related-recipe-3')
         ->assertNavigatedTo('/recipes/3');
 });
 
@@ -124,7 +144,7 @@ it('explains when a recipe does not exist', function () {
     Native::visit('/recipes/999')
         ->assertNavTitle('Recipe')
         ->assertSee('This recipe could not be found.')
-        ->assertMissingElement('list');
+        ->assertMissingElement('scroll_view');
 });
 
 it('shows the synced recipe photo with an accessible description', function () {

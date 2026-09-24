@@ -30,6 +30,25 @@ class InventoryItemDetail extends NativeComponent
     }
 
     /**
+     * Every container this item is inside, from the top level down to its direct parent.
+     *
+     * @return list<array{id: int, parent_id: int|null, type: ItemType, name: string, metadata: array<string, string>|null, created_at: string, updated_at: string}>
+     */
+    #[Computed]
+    public function path(): array
+    {
+        $path = [];
+        $ancestor = $this->parent;
+
+        while ($ancestor !== null && count($path) < 50) {
+            array_unshift($path, $ancestor);
+            $ancestor = $ancestor['parent_id'] === null ? null : Inventory::find($ancestor['parent_id']);
+        }
+
+        return $path;
+    }
+
+    /**
      * @return list<array{id: int, parent_id: int|null, type: ItemType, name: string, metadata: array<string, string>|null, created_at: string, updated_at: string, children_count: int}>
      */
     #[Computed]
@@ -61,6 +80,22 @@ class InventoryItemDetail extends NativeComponent
         }
 
         $this->navigate('/inventory/'.$parent['id'], ['from' => $this->item['id']]);
+    }
+
+    /**
+     * Jump to any container in the path. The direct parent goes through {@see openParent()} so it can pop back instead of pushing a duplicate.
+     */
+    public function openAncestor(int $id): void
+    {
+        if ($id === ($this->parent['id'] ?? null)) {
+            $this->openParent();
+
+            return;
+        }
+
+        if (in_array($id, array_column($this->path, 'id'), true)) {
+            $this->navigate('/inventory/'.$id, ['from' => $this->item['id']]);
+        }
     }
 
     public function render(): View

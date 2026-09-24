@@ -10,6 +10,13 @@ use Native\Mobile\Facades\Browser;
 class RecipeDetail extends NativeComponent
 {
     /**
+     * Ingredients ticked off while cooking, by position. Kept on this screen only.
+     *
+     * @var list<int>
+     */
+    public array $checkedIngredients = [];
+
+    /**
      * @return array{id: int, parent_id: int|null, name: string, source: string|null, servings: string|null, prep_time: string|null, cook_time: string|null, total_time: string|null, description: string|null, ingredients: string|null, instructions: string|null, notes: string|null, nutrition: string|null, tags: list<string>|null, created_at: string, updated_at: string}|null
      */
     #[Computed]
@@ -72,6 +79,13 @@ class RecipeDetail extends NativeComponent
     public function instructions(): array
     {
         return Recipes::lines($this->recipe['instructions'] ?? null);
+    }
+
+    public function toggleIngredient(int $index): void
+    {
+        $this->checkedIngredients = in_array($index, $this->checkedIngredients, true)
+            ? array_values(array_diff($this->checkedIngredients, [$index]))
+            : [...$this->checkedIngredients, $index];
     }
 
     public function openSource(): void

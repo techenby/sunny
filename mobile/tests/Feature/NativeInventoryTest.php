@@ -18,17 +18,17 @@ it('lists the top-level locations', function () {
         ->assertAccessible();
 });
 
-it('shows a platform icon for each item type', function (string $platform, string $path, string $headline, string $iconName) {
+it('shows a platform icon for each item type', function (string $platform, string $path, string $iconName) {
     Native::visit($path, platform: $platform)
-        ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === $headline
-            && ($node['props']['leading_icon'] ?? null) === $iconName);
+        ->assertElement('icon', fn (array $node): bool => ($node['props']['name'] ?? null) === $iconName
+            && (float) ($node['props']['size'] ?? 0) === 14.0);
 })->with([
-    'ios location' => ['ios', '/inventory', 'Garage', 'mappin'],
-    'ios bin' => ['ios', '/inventory/6', 'Tool chest', 'archivebox'],
-    'ios item' => ['ios', '/inventory/6', 'Camping tent', 'cube'],
-    'android location' => ['android', '/inventory', 'Garage', 'place'],
-    'android bin' => ['android', '/inventory/6', 'Tool chest', 'inventory_2'],
-    'android item' => ['android', '/inventory/6', 'Camping tent', 'view_in_ar'],
+    'ios location' => ['ios', '/inventory/6', 'mappin'],
+    'ios bin' => ['ios', '/inventory/7', 'archivebox'],
+    'ios item' => ['ios', '/inventory/8', 'cube'],
+    'android location' => ['android', '/inventory/6', 'place'],
+    'android bin' => ['android', '/inventory/7', 'inventory_2'],
+    'android item' => ['android', '/inventory/8', 'view_in_ar'],
 ]);
 
 it('searches nested items and says where each one lives', function () {
@@ -57,27 +57,43 @@ it('drills into a location’s contents', function () {
         ->follow()
         ->assertScreen(InventoryItemDetail::class)
         ->assertNavTitle('Garage')
-        ->assertElement('list_section', fn (array $node): bool => ($node['props']['header'] ?? null) === 'Contents'
-            && ($node['props']['footer'] ?? null) === '2 items')
-        ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === 'Tool chest'
-            && ($node['props']['supporting'] ?? null) === 'Bin · 2 items')
-        ->tap('Tool chest')
+        ->assertSee('Garage')
+        ->assertSee('Contents')
+        ->assertSee('2 items')
+        ->assertSee('Bin · 2 items')
+        ->tap('item-child-7')
         ->assertNavigatedTo('/inventory/7');
 });
 
-it('shows an item’s type, parent, and metadata', function () {
+it('shows an item’s type, path, and metadata', function () {
     Native::visit('/inventory/8')
         ->assertNavTitle('Cordless drill')
-        ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === 'Type'
-            && ($node['props']['trailing_value'] ?? null) === 'Item')
-        ->assertElement('list_item', fn (array $node): bool => ($node['ref'] ?? null) === 'item-parent'
-            && ($node['props']['headline'] ?? null) === 'Tool chest')
-        ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === 'Brand'
-            && ($node['props']['trailing_value'] ?? null) === 'DeWalt')
-        ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === 'Model'
-            && ($node['props']['trailing_value'] ?? null) === 'DCD771')
-        ->assertMissingElement('list_section', fn (array $node): bool => ($node['props']['header'] ?? null) === 'Contents')
+        ->assertElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'item-summary'
+            && trim($node['props']['text'] ?? '') === 'Item · in Tool chest')
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'item-ancestor-6')
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'item-parent')
+        ->assertSee('Brand')
+        ->assertSee('DeWalt')
+        ->assertSee('Model')
+        ->assertSee('DCD771')
+        ->assertDontSee('Contents')
+        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'item-add-child')
         ->assertAccessible();
+});
+
+it('jumps to any container in the path', function () {
+    Native::visit('/inventory/8')
+        ->tap('item-ancestor-6')
+        ->assertNavigatedTo('/inventory/6');
+});
+
+it('adds an item inside a location or bin', function () {
+    Native::visit('/inventory/7')
+        ->tap('item-add-child')
+        ->assertNavigatedTo('/inventory/create')
+        ->follow()
+        ->assertSet('parentName', 'Tool chest')
+        ->assertSet('typeIndex', 2);
 });
 
 it('navigates up to the containing item when it is not already on the stack', function () {
@@ -90,28 +106,29 @@ it('pops back to the containing item instead of pushing a duplicate of it', func
     Native::visit('/inventory')
         ->tap('Garage')
         ->follow()
-        ->tap('Camping tent')
+        ->tap('item-child-10')
         ->follow()
-        ->assertNavTitle('Camping tent')
+        ->assertSee('Camping tent')
         ->tap('item-parent')
         ->assertWentBack()
         ->goBack()
-        ->assertNavTitle('Garage')
+        ->assertSee('Garage')
         ->pressBack()
         ->assertWentBack();
 });
 
 it('omits the parent and metadata sections when there are none', function () {
     Native::visit('/inventory/1')
-        ->assertMissingElement('list_item', fn (array $node): bool => ($node['ref'] ?? null) === 'item-parent')
-        ->assertMissingElement('list_section', fn (array $node): bool => ($node['props']['header'] ?? null) === 'Metadata');
+        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'item-parent')
+        ->assertDontSee('Where it is')
+        ->assertDontSee('Details');
 });
 
 it('explains when an item does not exist', function () {
     Native::visit('/inventory/999')
         ->assertNavTitle('Item')
         ->assertSee('This item could not be found.')
-        ->assertMissingElement('list');
+        ->assertMissingElement('scroll_view');
 });
 
 it('shows the synced item photo with an accessible description', function () {

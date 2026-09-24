@@ -3,6 +3,7 @@
 namespace App\NativeComponents;
 
 use App\Concerns\ManagesInventoryItemForm;
+use App\Enums\ItemType;
 use Illuminate\View\View;
 use Native\Mobile\Edge\NativeComponent;
 
@@ -13,6 +14,12 @@ class CreateInventoryItem extends NativeComponent
     public function mount(): void
     {
         $this->initializeTeam();
+
+        $parentName = $this->parentChoices[(int) $this->data('parent')] ?? null;
+        if ($parentName !== null) {
+            $this->parentName = $parentName;
+            $this->typeIndex = (int) array_search(ItemType::Item, ItemType::cases(), strict: true);
+        }
     }
 
     public function save(): void
