@@ -1,15 +1,15 @@
 @use('App\Icons\Android')
 @use('App\Icons\Ios')
 
-<native:top-bar title="Recipes" display-mode="large" back search-placeholder="Search recipes" search-on-query="updateSearch">
-    <native:top-bar-action
-        id="recipes-create"
-        label="New recipe"
-        :ios-icon="Ios::Plus"
-        :android-icon="Android::Add"
-        url="/recipes/create"
-    />
-</native:top-bar>
+<native:top-bar title="Recipes" display-mode="large" back />
+
+@include('native.search-bottom-bar', [
+    'refPrefix' => 'recipes',
+    'placeholder' => 'Search recipes',
+    'search' => $search,
+    'createLabel' => 'New recipe',
+    'createUrl' => '/recipes/create',
+])
 
 <list ref="recipe-list" fill separator class="bg-theme-background">
     @if ($this->recipes)

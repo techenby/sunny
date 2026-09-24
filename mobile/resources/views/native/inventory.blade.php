@@ -1,15 +1,15 @@
 @use('App\Icons\Android')
 @use('App\Icons\Ios')
 
-<native:top-bar title="Inventory" display-mode="large" back search-placeholder="Search all items" search-on-query="updateSearch">
-    <native:top-bar-action
-        id="inventory-create"
-        label="New item"
-        :ios-icon="Ios::Plus"
-        :android-icon="Android::Add"
-        url="/inventory/create"
-    />
-</native:top-bar>
+<native:top-bar title="Inventory" display-mode="large" back />
+
+@include('native.search-bottom-bar', [
+    'refPrefix' => 'inventory',
+    'placeholder' => 'Search all items',
+    'search' => $search,
+    'createLabel' => 'New item',
+    'createUrl' => '/inventory/create',
+])
 
 <list ref="inventory-list" fill separator class="bg-theme-background">
     @if ($search !== '')
