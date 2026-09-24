@@ -258,7 +258,7 @@ test('sending both a code and a recovery code is rejected', function () {
 
     $this->postJson(route('api.token.two-factor'), [
         'challenge' => requestChallenge($user),
-        'code' => app(Google2FA::class)->getCurrentOtp($secret),
+        'code' => resolve(Google2FA::class)->getCurrentOtp($secret),
         'recovery_code' => 'recovery-code-1',
     ])->assertUnprocessable()->assertJsonValidationErrors('recovery_code');
 
