@@ -4,6 +4,7 @@ use App\Enums\TeamRole;
 use App\Models\Item;
 use App\Models\Team;
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
 test('guests cannot access items', function () {
@@ -259,4 +260,25 @@ test('store rejects a parent from another team', function () {
         ->postJson(route('api.items.store', $user->currentTeam), ['name' => 'Screwdriver', 'type' => 'item', 'parent_id' => $parent->id])
         ->assertUnprocessable()
         ->assertJsonValidationErrors('parent_id');
+});
+
+test('item API accepts JSON metadata alongside photos and removes a photo explicitly', function () {
+    Storage::fake();
+    $user = User::factory()->create();
+    $response = $this->actingAs($user)->post(route('api.items.store', $user->currentTeam), [
+        'name' => 'Measuring tape', 'type' => 'item', 'metadata' => json_encode(['size[inches]' => '12']),
+        'photo' => UploadedFile::fake()->image('tape.jpg'),
+    ], ['Accept' => 'application/json'])->assertCreated()->assertJsonPath('data.metadata', ['size[inches]' => '12']);
+    $item = Item::findOrFail($response->json('data.id'));
+    $path = $item->photo_path;
+    Storage::assertExists($path);
+    $this->post(route('api.items.update', [$user->currentTeam, $item]), [
+        '_method' => 'PATCH', 'metadata' => json_encode(['size[inches]' => '24']),
+        'photo' => UploadedFile::fake()->image('tape.png'),
+    ], ['Accept' => 'application/json'])->assertOk()->assertJsonPath('data.metadata', ['size[inches]' => '24']);
+    Storage::assertMissing($path);
+    $path = $item->fresh()->photo_path;
+    $this->patchJson(route('api.items.update', [$user->currentTeam, $item]), ['remove_photo' => true, 'metadata' => null])
+        ->assertOk()->assertJsonPath('data.photo_url', null)->assertJsonPath('data.metadata', null);
+    Storage::assertMissing($path);
 });

@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\RecipeController;
 use App\Http\Controllers\Api\SyncController;
 use App\Http\Controllers\Api\TokenController;
 use App\Http\Middleware\EnsureTeamMembership;
+use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -17,7 +18,7 @@ Route::post('sanctum/token/two-factor', [TokenController::class, 'twoFactor'])
 Route::middleware('auth:sanctum')
     ->name('api.')
     ->group(function (): void {
-        Route::get('user', fn (Request $request) => $request->user())->name('user');
+        Route::get('user', fn (Request $request): UserResource => UserResource::make($request->user()))->name('user');
         Route::get('sync', SyncController::class)->name('sync');
         Route::post('sanctum/token/refresh', [TokenController::class, 'refresh'])->name('token.refresh');
         Route::post('logout', [TokenController::class, 'destroy'])->name('logout');

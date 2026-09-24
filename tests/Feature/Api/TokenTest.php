@@ -307,3 +307,15 @@ test('session authenticated requests cannot log out through the api', function (
         ->postJson(route('api.logout'))
         ->assertBadRequest();
 });
+
+test('refreshing a token with a backfilled expiration uses the default lifetime', function () {
+    $this->freezeSecond();
+    $user = User::factory()->create();
+    $current = $user->createToken('Sunny Mobile', ['*'], now()->addDays(30));
+    $current->accessToken->forceFill(['created_at' => now()->subYears(2)])->save();
+
+    $this->withToken($current->plainTextToken)
+        ->postJson(route('api.token.refresh'))
+        ->assertOk()
+        ->assertJsonPath('expires_at', now()->addDays(30)->toIso8601String());
+});

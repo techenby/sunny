@@ -26,8 +26,10 @@ Content-Type: application/json
 }
 ```
 
-The response includes the user, a plaintext `token`, and its `expires_at`
-timestamp. Store the token securely; it is not shown again. This endpoint allows
+The response contains the user's `id`, `name`, `email`, `email_verified_at`,
+`two_factor_enabled`, `current_team_id`, `created_at`, and `updated_at`, plus a
+plaintext `token` and its `expires_at` timestamp. Store the token securely; it
+is not shown again. This endpoint allows
 5 failed attempts per minute for each email and IP address, then returns
 `429`; a successful sign-in resets the count. Emails are matched
 case-insensitively, the same as signing in on the web.
@@ -82,7 +84,9 @@ immediately. The new token keeps the original token's lifetime, so a Settings
 token that never expires stays that way. An expired token cannot be refreshed;
 sign in again instead.
 
-Tokens created in Settings use the expiration chosen there.
+Tokens created in Settings use the expiration chosen there. Tokens created
+before expiration was introduced were given a 30-day expiration when it was
+rolled out.
 
 ### Sign out
 
@@ -124,7 +128,7 @@ team the user belongs to.
 
 | Method | Endpoint | Purpose |
 | --- | --- | --- |
-| `GET` | `/api/user` | Return the authenticated user. |
+| `GET` | `/api/user` | Return the authenticated user, wrapped in `data`, with the same fields as the token response. |
 | `GET` | `/api/sync` | Synchronize all accessible teams, recipes, and items. |
 | `POST` | `/api/sanctum/token/two-factor` | Complete a two-factor challenge. |
 | `POST` | `/api/sanctum/token/refresh` | Exchange the current token for a new one. |

@@ -4,6 +4,7 @@ use App\Enums\TeamRole;
 use App\Models\Recipe;
 use App\Models\Team;
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
 test('guests cannot access recipes', function () {
@@ -194,4 +195,42 @@ test('store rejects a parent from another team', function () {
         ->postJson(route('api.recipes.store', $user->currentTeam), ['name' => 'Pancakes', 'parent_id' => $parent->id])
         ->assertUnprocessable()
         ->assertJsonValidationErrors('parent_id');
+});
+
+test('recipe API stores tags and a photo and supports replacing and removing them', function () {
+    Storage::fake();
+    $user = User::factory()->create();
+    $response = $this->actingAs($user)->post(route('api.recipes.store', $user->currentTeam), [
+        'name' => 'Photo cake', 'tags' => ['Dessert', 'Family favorite'],
+        'photo' => UploadedFile::fake()->image('cake.jpg'),
+    ], ['Accept' => 'application/json'])->assertCreated()->assertJsonPath('data.tags', ['Dessert', 'Family favorite']);
+    $recipe = Recipe::findOrFail($response->json('data.id'));
+    $original = $recipe->photo_path;
+    Storage::assertExists($original);
+
+    $this->post(route('api.recipes.update', [$user->currentTeam, $recipe]), [
+        '_method' => 'PATCH', 'tags' => ['Vegan'], 'remove_photo' => '0',
+        'photo' => UploadedFile::fake()->image('replacement.png'),
+    ], ['Accept' => 'application/json'])->assertOk()->assertJsonPath('data.tags', ['Vegan']);
+    $replacement = $recipe->fresh()->photo_path;
+    Storage::assertMissing($original);
+    Storage::assertExists($replacement);
+
+    $this->patchJson(route('api.recipes.update', [$user->currentTeam, $recipe]), ['name' => 'Renamed cake'])
+        ->assertOk()->assertJsonPath('data.tags', ['Vegan']);
+    expect($recipe->fresh()->photo_path)->toBe($replacement);
+
+    $this->patchJson(route('api.recipes.update', [$user->currentTeam, $recipe]), ['tags' => [], 'remove_photo' => true])
+        ->assertOk()->assertJsonPath('data.tags', [])->assertJsonPath('data.photo_url', null);
+    Storage::assertMissing($replacement);
+});
+
+test('recipe API rejects invalid tags and photos on create and update', function () {
+    $user = User::factory()->create();
+    $recipe = Recipe::factory()->for($user->currentTeam)->create();
+    $data = ['name' => 'Bad photo', 'tags' => [123], 'photo' => UploadedFile::fake()->create('not-image.txt')];
+    $this->actingAs($user)->postJson(route('api.recipes.store', $user->currentTeam), $data)
+        ->assertUnprocessable()->assertJsonValidationErrors(['tags.0', 'photo']);
+    $this->patchJson(route('api.recipes.update', [$user->currentTeam, $recipe]), $data)
+        ->assertUnprocessable()->assertJsonValidationErrors(['tags.0', 'photo']);
 });

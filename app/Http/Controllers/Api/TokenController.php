@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Actions\Fortify\AuthenticateUser;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Lockout;
@@ -28,6 +29,8 @@ use Laravel\Sanctum\PersonalAccessToken;
 class TokenController extends Controller
 {
     private const int LIFETIME_DAYS = 30;
+
+    private const int MAX_LIFETIME_DAYS = 365;
 
     private const int CHALLENGE_MINUTES = 5;
 
@@ -97,9 +100,13 @@ class TokenController extends Controller
 
         abort_unless($current instanceof PersonalAccessToken, 400, 'Only token-authenticated requests can be refreshed.');
 
-        $expiresAt = $current->expires_at
-            ? now()->addSeconds($current->created_at->diffInSeconds($current->expires_at))
-            : null;
+        $lifetime = $current->expires_at ? (int) $current->created_at->diffInSeconds($current->expires_at) : null;
+
+        if ($lifetime > self::MAX_LIFETIME_DAYS * 86400) {
+            $lifetime = self::LIFETIME_DAYS * 86400;
+        }
+
+        $expiresAt = $lifetime ? now()->addSeconds($lifetime) : null;
 
         $token = $request->user()->createToken($current->name, $current->abilities, $expiresAt);
 
@@ -176,7 +183,7 @@ class TokenController extends Controller
     private function tokenResponse(User $user, NewAccessToken $token): JsonResponse
     {
         return response()->json([
-            ...$user->toArray(),
+            ...UserResource::make($user)->resolve(),
             'token' => $token->plainTextToken,
             'expires_at' => $token->accessToken->expires_at->toIso8601String(),
         ]);
