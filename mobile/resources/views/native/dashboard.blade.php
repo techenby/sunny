@@ -2,6 +2,7 @@
 @use('App\Icons\Ios')
 
 <native:top-bar title="Dashboard" subtitle="Your household at a glance" :back="false">
+    <native:top-bar-action id="sync" label="Sync" :ios-icon="Ios::ArrowClockwise" :android-icon="Android::Sync" @tap="sync" />
     <native:top-bar-action
         id="log-out"
         label="Log out"
@@ -12,6 +13,9 @@
 </native:top-bar>
 
 <list ref="dashboard" fill class="bg-theme-background">
+    <list-section header="Sync">
+        <list-item ref="sync-status" :headline="$this->syncStatus" :supporting="$syncError ?: 'Recipes and inventory are stored on this device for offline browsing.'" />
+    </list-section>
     <list-section
         header="Recent recipes"
         :footer="$this->recentRecipes ? null : 'Recipes you add or update will show up here.'"

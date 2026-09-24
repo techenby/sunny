@@ -4,6 +4,8 @@ use App\Enums\ItemType;
 use App\NativeComponents\EditInventoryItem;
 use Native\Mobile\Testing\Native;
 
+beforeEach(fn () => seedSunnyData());
+
 it('opens the edit screen from the item', function () {
     Native::visit('/inventory/8')
         ->tap('edit-item')
@@ -62,10 +64,11 @@ it('refuses to update an item without a name', function () {
         ->assertSee('Give the item a name.');
 });
 
-it('returns to the item on update until the inventory API is integrated', function () {
+it('keeps unsaved item edits on the form until uploads are implemented', function () {
     Native::visit('/inventory/8/edit')
         ->tap('edit-item-submit')
-        ->assertWentBack();
+        ->assertNoNavigation()
+        ->assertSet('error', 'Saving changes is not available yet. Please edit this on the Sunny website.');
 });
 
 it('explains when the item does not exist', function () {

@@ -4,7 +4,7 @@
 <native:top-bar title="Cookbook" back />
 
 <list ref="recipe-list" fill separator class="bg-theme-background">
-    <list-section>
+    <list-section :footer="$this->recipes ? null : 'No recipes downloaded. Sync from the dashboard to refresh.'">
         @foreach ($this->recipes as $recipe)
             <list-item
                 :headline="$recipe['name']"

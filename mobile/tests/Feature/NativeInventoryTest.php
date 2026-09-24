@@ -3,6 +3,8 @@
 use App\NativeComponents\InventoryItemDetail;
 use Native\Mobile\Testing\Native;
 
+beforeEach(fn () => seedSunnyData());
+
 it('lists the top-level locations', function () {
     Native::visit('/inventory')
         ->assertNavTitle('Inventory')

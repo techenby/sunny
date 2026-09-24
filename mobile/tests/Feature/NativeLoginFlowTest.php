@@ -4,6 +4,7 @@ use App\Http\Integrations\Sunny\Requests\CreateTokenRequest;
 use App\Http\Integrations\Sunny\Requests\GetUserRequest;
 use App\Http\Integrations\Sunny\Requests\LogoutRequest;
 use App\Http\Integrations\Sunny\Requests\VerifyTwoFactorRequest;
+use App\Http\Integrations\Sunny\SunnyStore;
 use Native\Mobile\Testing\Native;
 use Saloon\Config;
 use Saloon\Http\Faking\MockResponse;
@@ -13,6 +14,7 @@ use Saloon\Laravel\Facades\Saloon;
 beforeEach(function (): void {
     config(['services.sunny.api_url' => 'https://sunny.example/api']);
     Config::preventStrayRequests();
+    seedSunnyData();
     Native::fakeBridge()->respondTo('SecureStorage.Get', ['value' => ''])
         ->respondTo('SecureStorage.Set', ['success' => true])
         ->respondTo('SecureStorage.Delete', ['success' => true]);
@@ -79,6 +81,7 @@ it('restores a valid saved session', function (): void {
 it('deletes expired sessions but preserves tokens during outages', function (int $status): void {
     $bridge = Native::fakeBridge()->respondTo('SecureStorage.Get', ['value' => 'saved-token']);
     Saloon::fake([GetUserRequest::class => MockResponse::make([], $status)]);
+    app(SunnyStore::class)->clear();
     $screen = Native::visit('/')->assertNoNavigation();
     if ($status === 401) {
         $bridge->assertCalled('SecureStorage.Delete');

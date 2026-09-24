@@ -4,6 +4,8 @@ use App\NativeComponents\EditRecipe;
 use App\NativeComponents\Recipes;
 use Native\Mobile\Testing\Native;
 
+beforeEach(fn () => seedSunnyData());
+
 it('opens the edit screen from the recipe', function () {
     Native::visit('/recipes/1')
         ->tap('edit-recipe')
@@ -83,11 +85,12 @@ it('refuses to update a recipe without a name', function () {
         ->assertSee('Give the recipe a name.');
 });
 
-it('returns to the recipe on update until the recipe API is integrated', function () {
+it('keeps unsaved recipe edits on the form until uploads are implemented', function () {
     Native::visit('/recipes/1/edit')
         ->assertSee('Update recipe')
         ->tap('edit-recipe-submit')
-        ->assertWentBack();
+        ->assertNoNavigation()
+        ->assertSet('error', 'Saving changes is not available yet. Please edit this on the Sunny website.');
 });
 
 it('explains when the recipe does not exist', function () {

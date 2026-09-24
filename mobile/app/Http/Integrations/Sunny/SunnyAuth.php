@@ -17,6 +17,7 @@ class SunnyAuth
     public function __construct(
         private readonly SunnyConnector $connector,
         private readonly SunnyTokenStore $tokens,
+        private readonly SunnyStore $store,
     ) {}
 
     public function login(string $email, #[\SensitiveParameter] string $password, string $deviceName): Response
@@ -24,7 +25,7 @@ class SunnyAuth
         $response = $this->connector->send(new CreateTokenRequest($email, $password, $deviceName));
 
         if ($response->json('two_factor') !== true) {
-            $this->storeToken($response);
+            $this->storeToken($response, clearLocalData: true);
         }
 
         return $response;
@@ -36,7 +37,7 @@ class SunnyAuth
         bool $useRecoveryCode = false,
     ): Response {
         $response = $this->connector->send(new VerifyTwoFactorRequest($challenge, $code, $useRecoveryCode));
-        $this->storeToken($response);
+        $this->storeToken($response, clearLocalData: true);
 
         return $response;
     }
@@ -63,6 +64,8 @@ class SunnyAuth
         $token = $this->tokens->get();
 
         if ($token === null) {
+            $this->store->clear();
+
             return;
         }
 
@@ -72,14 +75,19 @@ class SunnyAuth
             // An expired or revoked token is already signed out on the server.
         } finally {
             $this->tokens->forget();
+            $this->store->clear();
         }
     }
 
-    private function storeToken(Response $response): void
+    private function storeToken(Response $response, bool $clearLocalData = false): void
     {
         $token = $response->json('token');
 
         throw_unless(is_string($token) && trim($token) !== '', UnexpectedValueException::class, 'Sunny did not return a valid authentication token.');
+
+        if ($clearLocalData) {
+            $this->store->clear();
+        }
 
         $this->tokens->put($token);
     }

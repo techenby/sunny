@@ -4,6 +4,7 @@ namespace App\NativeComponents;
 
 use App\Http\Integrations\Sunny\Requests\GetUserRequest;
 use App\Http\Integrations\Sunny\SunnyAuth;
+use App\Http\Integrations\Sunny\SunnyStore;
 use App\Http\Integrations\Sunny\SunnyTokenStore;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\View\View;
@@ -31,11 +32,18 @@ class Home extends NativeComponent
                 app(SunnyAuth::class)->authenticatedConnector()->send(new GetUserRequest);
                 $this->replace('/dashboard');
             } catch (UnauthorizedException) {
+                app(SunnyStore::class)->clear();
                 app(SunnyTokenStore::class)->forget();
             }
         } catch (AuthenticationException) {
-            // There is no saved session.
+            app(SunnyStore::class)->clear();
         } catch (RequestException|FatalRequestException) {
+            if (app(SunnyStore::class)->lastSyncedAt()) {
+                $this->replace('/dashboard');
+
+                return;
+            }
+
             $this->error = 'Unable to check your session. Check your connection and try again.';
         } catch (RuntimeException) {
             $this->error = 'Unable to read your saved login. Unlock your device and try again.';

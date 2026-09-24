@@ -6,6 +6,8 @@ use Native\Mobile\Events\Camera\PhotoTaken;
 use Native\Mobile\Events\Gallery\MediaSelected;
 use Native\Mobile\Testing\Native;
 
+beforeEach(fn () => seedSunnyData());
+
 it('opens the create screen from the inventory list', function () {
     Native::visit('/inventory')
         ->tap('inventory-create')
@@ -208,9 +210,10 @@ it('refuses to save an item without a name', function () {
         ->assertSee('Give the item a name.');
 });
 
-it('returns to the list on save until the inventory API is integrated', function () {
+it('keeps unsaved items on the form until uploads are implemented', function () {
     Native::visit('/inventory/create')
         ->input('create-item-name', 'Sleeping bag')
         ->tap('create-item-submit')
-        ->assertWentBack();
+        ->assertNoNavigation()
+        ->assertSet('error', 'Saving changes is not available yet. Please edit this on the Sunny website.');
 });

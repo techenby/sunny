@@ -36,10 +36,7 @@ class EditInventoryItem extends NativeComponent
             return;
         }
 
-        // Inventory is still the hardcoded placeholder list in Inventory::all(),
-        // so the edits cannot be written back yet — return to the item once
-        // the form is valid, until the API is wired up.
-        $this->back();
+        $this->error = 'Saving changes is not available yet. Please edit this on the Sunny website.';
     }
 
     public function render(): View

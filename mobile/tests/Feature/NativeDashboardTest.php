@@ -19,6 +19,8 @@ beforeEach(function () {
     Native::fakeBridge()->respondTo('SecureStorage.Get', ['value' => '']);
 });
 
+beforeEach(fn () => seedSunnyData());
+
 it('renders the dashboard', function () {
     Native::visit('/dashboard')
         ->assertNavTitle('Dashboard')

@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Integrations\Sunny\SunnyStore;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /*
@@ -14,7 +16,7 @@ use Tests\TestCase;
 */
 
 pest()->extend(TestCase::class)
- // ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
+    ->use(RefreshDatabase::class)
     ->in('Feature');
 
 /*
@@ -46,4 +48,17 @@ expect()->extend('toBeOne', function () {
 function something()
 {
     // ..
+}
+
+function seedSunnyData(): void
+{
+    $data = json_decode(file_get_contents(__DIR__.'/Fixtures/sunny.json'), true, flags: JSON_THROW_ON_ERROR);
+    foreach (['recipes', 'items'] as $type) {
+        $data[$type] = array_map(fn (array $record): array => $record + ['team_id' => 1], $data[$type]);
+    }
+    app(SunnyStore::class)->applySnapshot([
+        ...$data,
+        'teams' => [['id' => 1, 'name' => 'Family']],
+        'synced_at' => now()->toIso8601String(),
+    ]);
 }

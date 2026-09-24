@@ -35,10 +35,7 @@ class EditRecipe extends NativeComponent
             return;
         }
 
-        // The cookbook is still the hardcoded placeholder list in
-        // Recipes::all(), so the edits cannot be written back yet — return to
-        // the recipe once the form is valid, until the API is wired up.
-        $this->back();
+        $this->error = 'Saving changes is not available yet. Please edit this on the Sunny website.';
     }
 
     public function render(): View

@@ -3,6 +3,8 @@
 use App\NativeComponents\RecipeDetail;
 use Native\Mobile\Testing\Native;
 
+beforeEach(fn () => seedSunnyData());
+
 it('lists recipes alphabetically with their source and total time', function () {
     $screen = Native::visit('/recipes')
         ->assertNavTitle('Cookbook')

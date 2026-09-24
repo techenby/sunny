@@ -18,10 +18,7 @@ class CreateRecipe extends NativeComponent
             return;
         }
 
-        // The cookbook is still the hardcoded placeholder list in
-        // Recipes::all(), so there is nowhere to write to yet — return to the
-        // list once the form is valid, until the sunnyhome.app API is wired up.
-        $this->back();
+        $this->error = 'Saving changes is not available yet. Please edit this on the Sunny website.';
     }
 
     public function render(): View

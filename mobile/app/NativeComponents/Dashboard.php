@@ -4,17 +4,65 @@ namespace App\NativeComponents;
 
 use App\Enums\ItemType;
 use App\Http\Integrations\Sunny\SunnyAuth;
+use App\Http\Integrations\Sunny\SunnyStore;
+use App\Http\Integrations\Sunny\SunnySync;
+use App\Http\Integrations\Sunny\SunnyTokenStore;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Support\Carbon;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use JsonException;
 use Native\Mobile\Attributes\Computed;
 use Native\Mobile\Edge\NativeComponent;
 use Native\Mobile\Facades\Dialog;
 use RuntimeException;
 use Saloon\Exceptions\Request\FatalRequestException;
 use Saloon\Exceptions\Request\RequestException;
+use Saloon\Exceptions\Request\Statuses\UnauthorizedException;
 
 class Dashboard extends NativeComponent
 {
+    public string $syncError = '';
+
+    public function mount(): void
+    {
+        if (app(SunnyStore::class)->isStale()) {
+            $this->sync();
+        }
+    }
+
+    public function sync(): void
+    {
+        $this->syncError = '';
+
+        try {
+            try {
+                app(SunnySync::class)->sync();
+            } catch (UnauthorizedException) {
+                app(SunnyStore::class)->clear();
+                app(SunnyTokenStore::class)->forget();
+                $this->replace('/login');
+            }
+        } catch (AuthenticationException) {
+            app(SunnyStore::class)->clear();
+            $this->replace('/login');
+        } catch (RequestException|FatalRequestException|JsonException|ValidationException|RuntimeException) {
+            $this->syncError = app(SunnyStore::class)->lastSyncedAt()
+                ? 'Unable to sync. Your previously downloaded data is still available.'
+                : 'Unable to download your data. Check your connection and tap Sync to retry.';
+        }
+
+        unset($this->recentRecipes, $this->recentItems, $this->syncStatus);
+    }
+
+    #[Computed]
+    public function syncStatus(): string
+    {
+        $lastSynced = app(SunnyStore::class)->lastSyncedAt();
+
+        return $lastSynced ? 'Last synced '.Carbon::parse($lastSynced)->diffForHumans() : 'No data downloaded yet';
+    }
+
     /**
      * @return list<array{id: int, name: string, supporting: string, url: string}>
      */
