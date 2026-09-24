@@ -17,7 +17,7 @@ class Inventory extends NativeComponent
      */
     public static function all(): array
     {
-        return Item::forCurrentServer()->orderBy('id')->get()
+        return Item::forActiveTeam()->orderBy('id')->get()
             ->map(fn (Item $item): array => [...$item->toArray(), 'type' => $item->type])->all();
     }
 
@@ -26,7 +26,7 @@ class Inventory extends NativeComponent
      */
     public static function find(int $id): ?array
     {
-        $item = Item::forCurrentServer()->find($id);
+        $item = Item::forActiveTeam()->find($id);
 
         return $item ? [...$item->toArray(), 'type' => $item->type] : null;
     }
@@ -38,7 +38,7 @@ class Inventory extends NativeComponent
      */
     public static function recent(int $limit = 3): array
     {
-        return Item::forCurrentServer()->orderByDesc('updated_at')->limit($limit)->get()
+        return Item::forActiveTeam()->orderByDesc('updated_at')->limit($limit)->get()
             ->map(fn (Item $item): array => [...$item->toArray(), 'type' => $item->type])->all();
     }
 
@@ -49,7 +49,7 @@ class Inventory extends NativeComponent
      */
     public static function childrenOf(?int $parentId): array
     {
-        return Item::forCurrentServer()->where('parent_id', $parentId)->orderBy('name')->withCount('children')->get()
+        return Item::forActiveTeam()->where('parent_id', $parentId)->orderBy('name')->withCount('children')->get()
             ->map(fn (Item $item): array => [...$item->toArray(), 'type' => $item->type])->all();
     }
 

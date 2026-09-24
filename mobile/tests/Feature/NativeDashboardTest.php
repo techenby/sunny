@@ -24,7 +24,8 @@ beforeEach(fn () => seedSunnyData());
 it('renders the dashboard', function () {
     Native::visit('/dashboard')
         ->assertNavTitle('Dashboard')
-        ->assertSee('Your household at a glance')
+        ->assertSee('Family')
+        ->assertSet('activeTeamName', 'Family')
         ->assertElement('list_section', fn (array $node): bool => ($node['props']['header'] ?? null) === 'Recent recipes')
         ->assertElement('list_section', fn (array $node): bool => ($node['props']['header'] ?? null) === 'Recent items')
         ->assertSee('Teams')

@@ -3,8 +3,8 @@
 namespace App\Concerns;
 
 use App\Http\Integrations\Sunny\SunnyStore;
+use App\Http\Integrations\Sunny\SunnyTeam;
 use App\Http\Integrations\Sunny\SunnyWrites;
-use App\Models\Team;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Validation\ValidationException;
 use Native\Mobile\Attributes\Computed;
@@ -13,8 +13,6 @@ use Throwable;
 
 trait SavesSunnyRecord
 {
-    public string $teamName = '';
-
     public bool $saving = false;
 
     public ?int $savedId = null;
@@ -22,34 +20,14 @@ trait SavesSunnyRecord
     public ?int $recordTeamId = null;
 
     #[Computed]
-    public function teamChoices(): array
-    {
-        return Team::query()->where('server', SunnyStore::server())->orderBy('name')->get()
-            ->mapWithKeys(fn (Team $team): array => [$team->id => $team->name.' (#'.$team->id.')'])->all();
-    }
-
-    #[Computed]
-    public function teamOptions(): array
-    {
-        return ['Choose a team', ...array_values($this->teamChoices)];
-    }
-
-    #[Computed]
     public function teamId(): ?int
     {
-        if ($this->recordTeamId !== null) {
-            return $this->recordTeamId;
-        }
-        $id = array_search($this->teamName, $this->teamChoices, true);
-
-        return $id === false ? null : $id;
+        return $this->recordTeamId;
     }
 
     protected function initializeTeam(?int $id = null): void
     {
-        $this->recordTeamId = $id;
-        $this->teamName = $id !== null ? ($this->teamChoices[$id] ?? '')
-            : (count($this->teamChoices) === 1 ? array_values($this->teamChoices)[0] : 'Choose a team');
+        $this->recordTeamId = $id ?? app(SunnyTeam::class)->current()?->id;
     }
 
     protected function saveRecord(string $resource, array $payload, ?int $id = null): void
@@ -58,7 +36,12 @@ trait SavesSunnyRecord
             return;
         }
         if ($this->teamId === null) {
-            $this->error = 'Choose a team. If none are listed, sync with Sunny first.';
+            $this->error = 'Select a team on the dashboard. If none are listed, sync with Sunny first.';
+
+            return;
+        }
+        if ($this->teamId !== app(SunnyTeam::class)->current()?->id) {
+            $this->error = 'The active team changed. Reopen this form from the dashboard before saving.';
 
             return;
         }

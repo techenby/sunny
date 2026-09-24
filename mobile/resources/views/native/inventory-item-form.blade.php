@@ -15,9 +15,6 @@
             </text>
         @endisset
 
-        @isset($teamOptions)
-            <native:select ref="form-team" label="Team" :options="$teamOptions" native:model="teamName" />
-        @endisset
         <column class="w-full gap-4">
             <outlined-text-input
                 ref="{{ $formRef }}-name"

@@ -6,6 +6,7 @@ use App\Enums\ItemType;
 use App\Http\Integrations\Sunny\SunnyAuth;
 use App\Http\Integrations\Sunny\SunnyStore;
 use App\Http\Integrations\Sunny\SunnySync;
+use App\Http\Integrations\Sunny\SunnyTeam;
 use App\Http\Integrations\Sunny\SunnyTokenStore;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Support\Carbon;
@@ -24,11 +25,36 @@ class Dashboard extends NativeComponent
 {
     public string $syncError = '';
 
+    public string $activeTeamName = '';
+
     public function mount(): void
     {
         if (app(SunnyStore::class)->isStale()) {
             $this->sync();
         }
+        $this->onResume();
+    }
+
+    public function onResume(): void
+    {
+        $teams = app(SunnyTeam::class);
+        $this->activeTeamName = $teams->choices()[$teams->current()?->id] ?? '';
+        unset($this->recentRecipes, $this->recentItems, $this->teamOptions);
+    }
+
+    #[Computed]
+    public function teamOptions(): array
+    {
+        return array_values(app(SunnyTeam::class)->choices());
+    }
+
+    public function updatedActiveTeamName(): void
+    {
+        $id = array_search($this->activeTeamName, app(SunnyTeam::class)->choices(), true);
+        if ($id !== false) {
+            app(SunnyTeam::class)->select($id);
+        }
+        $this->onResume();
     }
 
     public function sync(): void
@@ -52,7 +78,8 @@ class Dashboard extends NativeComponent
                 : 'Unable to download your data. Check your connection and tap Sync to retry.';
         }
 
-        unset($this->recentRecipes, $this->recentItems, $this->syncStatus);
+        $this->onResume();
+        unset($this->syncStatus);
     }
 
     #[Computed]

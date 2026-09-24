@@ -154,11 +154,6 @@ trait ManagesInventoryItemForm
         return [];
     }
 
-    public function updatedTeamName(): void
-    {
-        $this->parentName = self::TOP_LEVEL;
-    }
-
     protected function itemPayload(bool $editing = false): array
     {
         return [

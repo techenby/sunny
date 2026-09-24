@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Http\Integrations\Sunny\SunnyStore;
+use App\Http\Integrations\Sunny\SunnyTeam;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -25,6 +26,11 @@ class Recipe extends Model
     public function scopeForCurrentServer(Builder $query): void
     {
         $query->where('server', SunnyStore::server());
+    }
+
+    public function scopeForActiveTeam(Builder $query): void
+    {
+        $query->forCurrentServer()->where('team_id', app(SunnyTeam::class)->current()?->id);
     }
 
     public function team(): BelongsTo

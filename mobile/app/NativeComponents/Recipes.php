@@ -17,7 +17,7 @@ class Recipes extends NativeComponent
      */
     public static function all(): array
     {
-        return Recipe::forCurrentServer()->orderBy('id')->get()->toArray();
+        return Recipe::forActiveTeam()->orderBy('id')->get()->toArray();
     }
 
     /**
@@ -25,7 +25,7 @@ class Recipes extends NativeComponent
      */
     public static function find(int $id): ?array
     {
-        return Recipe::forCurrentServer()->find($id)?->toArray();
+        return Recipe::forActiveTeam()->find($id)?->toArray();
     }
 
     /**
@@ -35,7 +35,7 @@ class Recipes extends NativeComponent
      */
     public static function recent(int $limit = 3): array
     {
-        return Recipe::forCurrentServer()->orderByDesc('updated_at')->limit($limit)->get()->toArray();
+        return Recipe::forActiveTeam()->orderByDesc('updated_at')->limit($limit)->get()->toArray();
     }
 
     public static function isSourceUrl(?string $source): bool

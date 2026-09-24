@@ -94,12 +94,11 @@ it('keeps rejected changes on screen and leaves SQLite untouched', function (int
     [500, 'Unable to confirm the save. Sync with Sunny before retrying to avoid duplicates.'],
 ]);
 
-it('requires a team when multiple are available and filters parents by team', function (): void {
+it('uses the active team and filters parents by team', function (): void {
     Team::create(['id' => 2, 'name' => 'Work', 'slug' => 'work', 'server' => SunnyStore::server()]);
     Item::create(['id' => 99, 'team_id' => 2, 'name' => 'Work bin', 'type' => 'bin', 'server' => SunnyStore::server()]);
-    $screen = Native::visit('/inventory/create')->set('name', 'Laptop')->tap('create-item-submit')->assertNoNavigation()
-        ->assertSee('Choose a team. If none are listed, sync with Sunny first.');
-    $screen->select('form-team', 'Work (#2)')->assertSet('parentOptions', ['Top level', 'Work bin']);
+    Native::visit('/dashboard')->select('active-team', 'Work');
+    Native::visit('/inventory/create')->assertSet('teamId', 2)->assertSet('parentOptions', ['Top level', 'Work bin']);
 });
 
 it('does not resubmit a confirmed create if storing the local copy fails', function (): void {
