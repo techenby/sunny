@@ -43,35 +43,7 @@
                 />
             </column>
 
-            <column class="w-full gap-2">
-                <text class="text-sm font-semibold text-theme-on-surface-variant">Inside</text>
-                <pressable
-                    ref="{{ $formRef }}-parent"
-                    :a11y-label="'Inside '.($selectedParent['name'] ?? 'Top level')"
-                    a11y-hint="Choose where this item lives"
-                    class="h-16 w-full justify-center rounded-xl border border-theme-outline bg-theme-surface px-4"
-                    @tap="openParentPicker"
-                >
-                    <row class="w-full items-center gap-3">
-                        @if ($selectedParent)
-                            <column class="h-8 w-8 items-center justify-center rounded-full bg-{{ $selectedParent['type']->iconColor() }}">
-                                <icon :ios="$selectedParent['type']->iosIcon()" :android="$selectedParent['type']->androidIcon()" :size="16" class="text-white" />
-                            </column>
-                        @else
-                            <column class="h-8 w-8 items-center justify-center rounded-full bg-theme-surface-variant">
-                                <icon :ios="Ios::House" :android="Android::Home" :size="16" class="text-theme-on-surface-variant" />
-                            </column>
-                        @endif
-                        <column class="flex-1 gap-0.5">
-                            <text font="semibold" class="text-base text-theme-on-surface">{{ $selectedParent['name'] ?? 'Top level' }}</text>
-                            @if ($selectedParent['path'] ?? null)
-                                <text class="text-sm text-theme-on-surface-variant" :max-lines="1">in {{ $selectedParent['path'] }}</text>
-                            @endif
-                        </column>
-                        <icon :ios="Ios::ChevronUpChevronDown" :android="Android::UnfoldMore" :size="14" class="text-theme-on-surface-variant" />
-                    </row>
-                </pressable>
-            </column>
+            @include('native.parent-field', ['refPrefix' => $formRef, 'selectedParent' => $selectedParent])
         </column>
 
         <column class="w-full gap-2">
@@ -142,126 +114,9 @@
     </column>
 </scroll-view>
 
-<native:bottom-sheet ref="{{ $formRef }}-parent-picker" :visible="$showParentPicker" @dismiss="closeParentPicker" detents="large">
-    {{-- Rows are only built while the sheet is open: a large inventory would
-         otherwise bloat every render of the form. --}}
-    @if ($showParentPicker)
-        {{-- The search field lives inside the list: iOS lists ignore bg-* classes
-             and paint the system grouped background, so a separate header
-             would never match. --}}
-        <list ref="{{ $formRef }}-parent-list" fill separator>
-            <list-section>
-                <column class="w-full px-4 py-2">
-                    <outlined-text-input
-                        ref="{{ $formRef }}-parent-search"
-                        placeholder="Search locations, bins, and items"
-                        a11y-label="Search destinations"
-                        :ios-leading-icon="Ios::Magnifyingglass"
-                        :android-leading-icon="Android::Search"
-                        native:model.debounce.300ms="parentSearch"
-                    />
-                </column>
-            </list-section>
-
-            @if ($parentSearch !== '')
-                <list-section>
-                    @forelse ($parentPickerRows as $choice)
-                        <list-item
-                            ref="{{ $formRef }}-parent-{{ $choice['id'] }}"
-                            :headline="$choice['name']"
-                            :supporting="$choice['path'] ? $choice['type']->label().' · in '.$choice['path'] : $choice['type']->label()"
-                            :leadingIconIos="$choice['type']->iosIcon()"
-                            :leadingIconAndroid="$choice['type']->androidIcon()"
-                            :leadingIconBgColor="$choice['type']->iconColor()"
-                            :trailingIconIos="($selectedParent['id'] ?? null) === $choice['id'] ? Ios::Checkmark : null"
-                            :trailingIconAndroid="($selectedParent['id'] ?? null) === $choice['id'] ? Android::Check : null"
-                            :trailingIconColor="theme('primary')"
-                            @tap="selectParent({{ $choice['id'] }})"
-                        />
-                    @empty
-                        <list-item
-                            ref="{{ $formRef }}-parent-no-matches"
-                            :headline="'Nothing matches “'.$parentSearch.'”'"
-                            supporting="Try a different search."
-                            :leadingIconIos="Ios::Magnifyingglass"
-                            :leadingIconAndroid="Android::SearchOff"
-                            :leadingIconColor="theme('on-surface-variant')"
-                        />
-                    @endforelse
-                </list-section>
-            @else
-                <list-section>
-                    @if ($browsedParent)
-                        <list-item
-                            ref="{{ $formRef }}-parent-up"
-                            :headline="$browsedParent['path'] ? 'Back to '.\Illuminate\Support\Str::afterLast($browsedParent['path'], ' › ') : 'Back to all locations'"
-                            :leadingIconIos="Ios::ChevronLeft"
-                            :leadingIconAndroid="Android::ChevronLeft"
-                            :leadingIconColor="theme('primary')"
-                            :headlineColor="theme('primary')"
-                            @tap="browseUp"
-                        />
-                        <list-item
-                            ref="{{ $formRef }}-parent-here"
-                            :headline="'Inside '.$browsedParent['name']"
-                            :supporting="$browsedParent['path'] ? $browsedParent['type']->label().' · in '.$browsedParent['path'] : $browsedParent['type']->label()"
-                            :leadingIconIos="$browsedParent['type']->iosIcon()"
-                            :leadingIconAndroid="$browsedParent['type']->androidIcon()"
-                            :leadingIconBgColor="$browsedParent['type']->iconColor()"
-                            :trailingIconIos="($selectedParent['id'] ?? null) === $browsedParent['id'] ? Ios::Checkmark : null"
-                            :trailingIconAndroid="($selectedParent['id'] ?? null) === $browsedParent['id'] ? Android::Check : null"
-                            :trailingIconColor="theme('primary')"
-                            @tap="selectParent({{ $browsedParent['id'] }})"
-                        />
-                    @else
-                        <list-item
-                            ref="{{ $formRef }}-parent-top-level"
-                            headline="Top level"
-                            supporting="Not inside anything"
-                            :leadingIconIos="Ios::House"
-                            :leadingIconAndroid="Android::Home"
-                            :leadingIconColor="theme('on-surface-variant')"
-                            :trailingIconIos="$selectedParent === null ? Ios::Checkmark : null"
-                            :trailingIconAndroid="$selectedParent === null ? Android::Check : null"
-                            :trailingIconColor="theme('primary')"
-                            @tap="selectTopLevel"
-                        />
-                    @endif
-                </list-section>
-
-                @if ($parentPickerRows !== [])
-                    <list-section :header="$browsedParent ? 'In '.$browsedParent['name'] : 'Locations'">
-                        @foreach ($parentPickerRows as $choice)
-                            @if ($choice['children_count'] > 0)
-                                <list-item
-                                    ref="{{ $formRef }}-parent-{{ $choice['id'] }}"
-                                    :headline="$choice['name']"
-                                    :supporting="$choice['type']->label().' · '.trans_choice(':count item|:count items', $choice['children_count'])"
-                                    :leadingIconIos="$choice['type']->iosIcon()"
-                                    :leadingIconAndroid="$choice['type']->androidIcon()"
-                                    :leadingIconBgColor="$choice['type']->iconColor()"
-                                    :trailingIconIos="Ios::ChevronRight"
-                                    :trailingIconAndroid="Android::ChevronRight"
-                                    @tap="browseParent({{ $choice['id'] }})"
-                                />
-                            @else
-                                <list-item
-                                    ref="{{ $formRef }}-parent-{{ $choice['id'] }}"
-                                    :headline="$choice['name']"
-                                    :supporting="$choice['type']->label()"
-                                    :leadingIconIos="$choice['type']->iosIcon()"
-                                    :leadingIconAndroid="$choice['type']->androidIcon()"
-                                    :leadingIconBgColor="$choice['type']->iconColor()"
-                                    :trailingIconIos="($selectedParent['id'] ?? null) === $choice['id'] ? Ios::Checkmark : null"
-                                    :trailingIconAndroid="($selectedParent['id'] ?? null) === $choice['id'] ? Android::Check : null"
-                                    :trailingIconColor="theme('primary')"
-                                    @tap="selectParent({{ $choice['id'] }})"
-                                />
-                            @endif
-                        @endforeach
-                    </list-section>
-                @endif
-            @endif
-        </list>
-    @endif
-</native:bottom-sheet>
+@include('native.parent-picker-sheet', [
+    'refPrefix' => $formRef,
+    'selectedParent' => $selectedParent,
+    'browsedParent' => $browsedParent,
+    'parentPickerRows' => $parentPickerRows,
+])

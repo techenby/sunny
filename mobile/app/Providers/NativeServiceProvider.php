@@ -8,6 +8,7 @@ use Native\Mobile\Providers\CameraServiceProvider;
 use Native\Mobile\Providers\SecureStorageServiceProvider;
 use Native\Mobile\UI\NativeUIServiceProvider;
 use NativePHP\BackgroundTasks\BackgroundTasksServiceProvider;
+use Sunny\ItemScanner\ItemScannerServiceProvider;
 
 class NativeServiceProvider extends ServiceProvider
 {
@@ -44,6 +45,7 @@ class NativeServiceProvider extends ServiceProvider
             CameraServiceProvider::class,
             SecureStorageServiceProvider::class,
             BackgroundTasksServiceProvider::class,
+            ItemScannerServiceProvider::class,
         ];
     }
 }

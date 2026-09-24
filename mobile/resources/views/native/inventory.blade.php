@@ -9,6 +9,8 @@
     'search' => $search,
     'createLabel' => 'New item',
     'createUrl' => '/inventory/create',
+    'scanLabel' => 'Scan items',
+    'scanUrl' => '/inventory/scan',
 ])
 
 <list ref="inventory-list" fill separator class="bg-theme-background">

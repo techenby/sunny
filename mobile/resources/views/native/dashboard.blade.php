@@ -19,6 +19,13 @@
             :android-icon="Android::Inventory2"
             url="/inventory/create"
         />
+        <native:top-bar-action
+            id="scan-items"
+            label="Scan items"
+            :ios-icon="Ios::CameraViewfinder"
+            :android-icon="Android::DocumentScanner"
+            url="/inventory/scan"
+        />
     </native:top-bar-action>
     <native:top-bar-action
         id="log-out"

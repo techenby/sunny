@@ -133,6 +133,20 @@
                                 <text font="semibold" class="flex-1 text-base text-theme-primary">Add item here</text>
                             </row>
                         </pressable>
+                        <divider class="ml-16" />
+                        <pressable
+                            ref="item-scan-children"
+                            @navigate('/inventory/scan', ['parent' => $item['id']])
+                            :a11y-label="'Scan items into '.$item['name']"
+                            class="w-full px-4 py-3"
+                        >
+                            <row class="w-full items-center gap-3">
+                                <column class="h-9 w-9 items-center justify-center rounded-full bg-theme-primary/15">
+                                    <icon :ios="Ios::CameraViewfinder" :android="Android::DocumentScanner" :size="18" class="text-theme-primary" />
+                                </column>
+                                <text font="semibold" class="flex-1 text-base text-theme-primary">Scan items here</text>
+                            </row>
+                        </pressable>
                     </column>
                 </column>
             @endif

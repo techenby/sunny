@@ -52,26 +52,54 @@ trait SavesSunnyRecord
             app(SunnyStore::class)->saveRecord($resource, $record);
             $path = $resource === 'items' ? 'inventory' : 'recipes';
             $this->replace('/'.$path.'/'.$this->savedId);
-        } catch (ValidationException $exception) {
-            $this->error = collect($exception->errors())->flatten()->first() ?? 'Check the form and try again.';
-        } catch (AuthenticationException) {
-            $this->error = 'Your session expired. Log in again before saving.';
-        } catch (RequestException $exception) {
+        } catch (Throwable $exception) {
+            $this->error = $this->savedId !== null && $this->isUnexpectedSaveFailure($exception)
+                ? 'Saved on Sunny, but the local copy could not be updated. Go back and sync to see it.'
+                : $this->saveFailureMessage($exception);
+
+            if ($this->isUnexpectedSaveFailure($exception)) {
+                report($exception);
+            }
+        } finally {
+            $this->saving = false;
+        }
+    }
+
+    /**
+     * Explain to the user why a save to Sunny failed.
+     */
+    protected function saveFailureMessage(Throwable $exception): string
+    {
+        if ($exception instanceof ValidationException) {
+            return collect($exception->errors())->flatten()->first() ?? 'Check the form and try again.';
+        }
+
+        if ($exception instanceof AuthenticationException) {
+            return 'Your session expired. Log in again before saving.';
+        }
+
+        if ($exception instanceof RequestException) {
             $response = $exception->getResponse();
-            $this->error = match ($response->status()) {
+
+            return match ($response->status()) {
                 401 => 'Your session expired. Log in again before saving.',
                 403 => 'You no longer have permission to save to this team.',
                 404 => 'This record or team is no longer available. Sync with Sunny.',
                 422 => collect($response->json('errors') ?? [])->flatten()->first() ?? 'Check the form and try again.',
                 default => 'Unable to confirm the save. Sync with Sunny before retrying to avoid duplicates.',
             };
-        } catch (Throwable $exception) {
-            report($exception);
-            $this->error = $this->savedId !== null
-                ? 'Saved on Sunny, but the local copy could not be updated. Go back and sync to see it.'
-                : 'Unable to confirm the save. Check your connection and sync before retrying to avoid duplicates.';
-        } finally {
-            $this->saving = false;
         }
+
+        return 'Unable to confirm the save. Check your connection and sync before retrying to avoid duplicates.';
+    }
+
+    /**
+     * Whether a save failed for a reason Sunny didn't explain, so it's worth reporting.
+     */
+    protected function isUnexpectedSaveFailure(Throwable $exception): bool
+    {
+        return ! $exception instanceof ValidationException
+            && ! $exception instanceof AuthenticationException
+            && ! $exception instanceof RequestException;
     }
 }

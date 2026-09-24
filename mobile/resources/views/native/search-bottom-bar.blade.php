@@ -3,8 +3,9 @@
 
 {{-- A search field with a create button beside it, pinned above the
      keyboard. Expects $refPrefix, $placeholder, $search, $createLabel and
-     $createUrl; typing calls the including screen's updateSearch(). The
-     top bar's native search can't hold extra buttons, so this replaces it. --}}
+     $createUrl, and optionally $scanLabel and $scanUrl for a scan button;
+     typing calls the including screen's updateSearch(). The top bar's
+     native search can't hold extra buttons, so this replaces it. --}}
 
 <native:bottom-bar>
     <row class="w-full items-center gap-3 px-4 pb-2">
@@ -21,6 +22,16 @@
                 @change="updateSearch"
             />
         </row>
+        @isset($scanUrl)
+            <pressable
+                ref="{{ $refPrefix }}-scan"
+                a11y-label="{{ $scanLabel }}"
+                class="h-12 w-12 items-center justify-center rounded-full glass android:bg-theme-surface"
+                @navigate($scanUrl)
+            >
+                <native:icon :ios="Ios::CameraViewfinder" :android="Android::DocumentScanner" :size="22" class="text-theme-on-surface" />
+            </pressable>
+        @endisset
         <pressable
             ref="{{ $refPrefix }}-create"
             a11y-label="{{ $createLabel }}"

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "43381d6100cd8b17892ed21ae83767ec",
+    "content-hash": "79893d2a77f3169e8ea97c359a8366af",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -4455,6 +4455,49 @@
                 }
             ],
             "time": "2026-08-26T09:13:25+00:00"
+        },
+        {
+            "name": "sunny/item-scanner",
+            "version": "dev-main",
+            "dist": {
+                "type": "path",
+                "url": "packages/sunny/item-scanner",
+                "reference": "8363dec3f0536d58066220170210ea58de2ba80f"
+            },
+            "require": {
+                "nativephp/mobile": "^4.0",
+                "php": "^8.3"
+            },
+            "type": "nativephp-plugin",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Sunny\\ItemScanner\\ItemScannerServiceProvider"
+                    ]
+                },
+                "nativephp": {
+                    "manifest": "nativephp.json"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Sunny\\ItemScanner\\": "src/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Andy Swick",
+                    "email": "andy@techenby.com"
+                }
+            ],
+            "description": "Identifies the items in a photo with Apple's on-device Foundation Models.",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
         },
         {
             "name": "symfony/clock",
@@ -11251,7 +11294,9 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": {
+        "sunny/item-scanner": 20
+    },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
