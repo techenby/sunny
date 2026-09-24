@@ -29,13 +29,19 @@ class EditRecipe extends NativeComponent
 
     public function save(): void
     {
+        if ($this->recipe === null) {
+            $this->error = 'This record could not be found.';
+
+            return;
+        }
+
         $this->error = $this->validationError();
 
         if ($this->error !== '') {
             return;
         }
 
-        $this->error = 'Saving changes is not available yet. Please edit this on the Sunny website.';
+        $this->saveRecord('recipes', $this->recipePayload($this->recipe), $this->recipe['id']);
     }
 
     public function render(): View

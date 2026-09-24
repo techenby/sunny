@@ -15,6 +15,7 @@ use Native\Mobile\Attributes\Computed;
 trait ManagesInventoryItemForm
 {
     use CapturesPhoto;
+    use SavesSunnyRecord;
 
     /** The destination option standing in for "no container at all". */
     public const TOP_LEVEL = 'Top level';
@@ -42,6 +43,8 @@ trait ManagesInventoryItemForm
      */
     public function fillFromItem(array $item): void
     {
+        $this->initializeTeam($item['team_id']);
+        $this->existingPhotoUrl = $item['photo_url'] ?? null;
         $this->name = $item['name'];
         $this->typeIndex = (int) array_search($item['type'], ItemType::cases(), strict: true);
         $this->parentName = $item['parent_id'] === null
@@ -79,7 +82,12 @@ trait ManagesInventoryItemForm
     #[Computed]
     public function parentChoices(): array
     {
-        return array_diff_key(Inventory::selectableParents(), array_flip($this->unselectableParentIds()));
+        $items = collect(Inventory::all())->where('team_id', $this->teamId)->keyBy('id')
+            ->except($this->unselectableParentIds())->sortBy('name');
+        $duplicates = $items->pluck('name')->duplicates()->all();
+
+        return $items->mapWithKeys(fn (array $item): array => [$item['id'] => in_array($item['name'], [...$duplicates, self::TOP_LEVEL], true)
+            ? $item['name'].' (#'.$item['id'].')' : $item['name']])->all();
     }
 
     /**
@@ -146,10 +154,31 @@ trait ManagesInventoryItemForm
         return [];
     }
 
+    public function updatedTeamName(): void
+    {
+        $this->parentName = self::TOP_LEVEL;
+    }
+
+    protected function itemPayload(bool $editing = false): array
+    {
+        return [
+            'name' => trim($this->name), 'type' => $this->type->value,
+            'parent_id' => $this->parentId, 'metadata' => $this->metadataMap,
+            ...($editing ? ['remove_photo' => $this->photoRemoved] : []),
+        ];
+    }
+
     protected function validationError(): string
     {
         if (trim($this->name) === '') {
             return 'Give the item a name.';
+        }
+
+        if (mb_strlen(trim($this->name)) > 255) {
+            return 'The name is too long (255 characters max).';
+        }
+        if ($this->parentName !== self::TOP_LEVEL && $this->parentId === null) {
+            return 'Choose a parent in the same team.';
         }
 
         $keys = collect($this->metadata)

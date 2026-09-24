@@ -15,6 +15,7 @@ use Native\Mobile\Attributes\Computed;
 trait ManagesRecipeForm
 {
     use CapturesPhoto;
+    use SavesSunnyRecord;
 
     /**
      * The tag vocabulary the web app's recipe form offers.
@@ -71,6 +72,8 @@ trait ManagesRecipeForm
      */
     public function fillFromRecipe(array $recipe): void
     {
+        $this->initializeTeam($recipe['team_id']);
+        $this->existingPhotoUrl = $recipe['photo_url'] ?? null;
         $this->name = (string) ($recipe['name'] ?? '');
         $this->source = (string) ($recipe['source'] ?? '');
         $this->tags = array_values($recipe['tags'] ?? []);
@@ -178,6 +181,28 @@ trait ManagesRecipeForm
     public function instructionsHtml(): ?string
     {
         return $this->htmlList($this->instructions, 'ol');
+    }
+
+    protected function recipePayload(?array $original = null): array
+    {
+        $payload = [
+            'name' => trim($this->name), 'source' => $this->source ?: null,
+            'tags' => $this->tags, 'servings' => $this->servings ?: null,
+            'prep_time' => $this->prepTime ?: null, 'cook_time' => $this->cookTime ?: null,
+            'total_time' => $this->totalTime ?: null, 'description' => $this->description ?: null,
+            'ingredients' => $this->ingredientsHtml, 'instructions' => $this->instructionsHtml,
+            'notes' => $this->notes ?: null, 'nutrition' => $this->nutrition ?: null,
+        ];
+        if ($original !== null) {
+            $payload['remove_photo'] = $this->photoRemoved;
+            foreach (['ingredients', 'instructions'] as $field) {
+                if ($this->{$field} === implode("\n", Recipes::lines($original[$field] ?? null))) {
+                    unset($payload[$field]);
+                }
+            }
+        }
+
+        return $payload;
     }
 
     /**

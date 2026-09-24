@@ -9,6 +9,9 @@
 
 <scroll-view ref="{{ $formRef }}-screen" fill class="bg-theme-background ios:bg-theme-grouped-background">
     <column class="w-full gap-6 px-6 py-6">
+        @isset($teamOptions)
+            <native:select ref="form-team" label="Team" :options="$teamOptions" native:model="teamName" />
+        @endisset
         <column class="w-full gap-4">
             <outlined-text-input
                 ref="recipe-name"
@@ -30,7 +33,7 @@
             />
 
             @include('native.photo-field', [
-                'photoPath' => $photoPath,
+                'photoPath' => $photoPath ?? $existingPhotoUrl,
                 'refPrefix' => $formRef,
                 'alt' => 'The photo chosen for this recipe',
             ])
@@ -138,6 +141,7 @@
             size="lg"
             font="semibold"
             class="w-full"
+            :disabled="$saving || $savedId !== null"
             @tap="save"
         >
             {{ $submitLabel }}

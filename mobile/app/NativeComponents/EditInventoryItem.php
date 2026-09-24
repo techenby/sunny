@@ -30,13 +30,19 @@ class EditInventoryItem extends NativeComponent
 
     public function save(): void
     {
+        if ($this->item === null) {
+            $this->error = 'This record could not be found.';
+
+            return;
+        }
+
         $this->error = $this->validationError();
 
         if ($this->error !== '') {
             return;
         }
 
-        $this->error = 'Saving changes is not available yet. Please edit this on the Sunny website.';
+        $this->saveRecord('items', $this->itemPayload(true), $this->item['id']);
     }
 
     public function render(): View

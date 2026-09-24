@@ -1,10 +1,12 @@
 <?php
 
 use App\Enums\ItemType;
+use App\Http\Integrations\Sunny\Requests\SaveRecordRequest;
 use App\NativeComponents\CreateInventoryItem;
 use Native\Mobile\Events\Camera\PhotoTaken;
 use Native\Mobile\Events\Gallery\MediaSelected;
 use Native\Mobile\Testing\Native;
+use Saloon\Http\Faking\MockResponse;
 
 beforeEach(fn () => seedSunnyData());
 
@@ -210,10 +212,13 @@ it('refuses to save an item without a name', function () {
         ->assertSee('Give the item a name.');
 });
 
-it('keeps unsaved items on the form until uploads are implemented', function () {
+it('keeps unsaved items on the form when the API rejects the save', function () {
+    Native::fakeBridge()->respondTo('SecureStorage.Get', ['value' => 'saved-token']);
+    Saloon::fake([SaveRecordRequest::class => MockResponse::make([], 401)]);
+
     Native::visit('/inventory/create')
         ->input('create-item-name', 'Sleeping bag')
         ->tap('create-item-submit')
         ->assertNoNavigation()
-        ->assertSet('error', 'Saving changes is not available yet. Please edit this on the Sunny website.');
+        ->assertSet('error', 'Your session expired. Log in again before saving.');
 });

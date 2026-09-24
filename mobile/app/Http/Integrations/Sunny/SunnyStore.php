@@ -33,18 +33,14 @@ class SunnyStore
             Team::query()->whereNotIn('id', $teamIds)->delete();
 
             foreach ($teams as $team) {
-                Team::query()->updateOrCreate(['id' => $team['id']], ['server' => self::server(), 'name' => $team['name']]);
+                Team::query()->updateOrCreate(['id' => $team['id']], ['server' => self::server(), 'name' => $team['name'], 'slug' => $team['slug'] ?? null]);
             }
 
             foreach (['recipes' => Recipe::class, 'items' => Item::class] as $type => $model) {
                 $records = collect($snapshot[$type])->filter(fn (array $record): bool => empty($record['deleted_at']) && $teamIds->contains($record['team_id']));
                 $model::query()->whereNotIn('id', $records->pluck('id'))->delete();
-                $fields = $type === 'recipes'
-                    ? ['team_id', 'parent_id', 'name', 'source', 'servings', 'prep_time', 'cook_time', 'total_time', 'description', 'ingredients', 'instructions', 'notes', 'nutrition', 'tags', 'created_at', 'updated_at']
-                    : ['team_id', 'parent_id', 'type', 'name', 'metadata', 'created_at', 'updated_at'];
-
                 foreach ($records as $record) {
-                    $model::query()->updateOrCreate(['id' => $record['id']], ['server' => self::server(), ...Arr::only($record, $fields)]);
+                    $this->saveRecord($type, $record);
                 }
             }
 
@@ -53,6 +49,15 @@ class SunnyStore
                 'fetched_at' => now(),
             ]);
         });
+    }
+
+    public function saveRecord(string $type, array $record): void
+    {
+        $model = $type === 'recipes' ? Recipe::class : Item::class;
+        $fields = $type === 'recipes'
+            ? ['team_id', 'parent_id', 'name', 'source', 'servings', 'prep_time', 'cook_time', 'total_time', 'description', 'ingredients', 'instructions', 'notes', 'nutrition', 'tags', 'photo_url', 'created_at', 'updated_at']
+            : ['team_id', 'parent_id', 'type', 'name', 'metadata', 'photo_url', 'created_at', 'updated_at'];
+        $model::query()->updateOrCreate(['id' => $record['id']], ['server' => self::server(), ...Arr::only($record, $fields)]);
     }
 
     public function clear(): void

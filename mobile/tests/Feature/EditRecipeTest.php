@@ -1,8 +1,10 @@
 <?php
 
+use App\Http\Integrations\Sunny\Requests\SaveRecordRequest;
 use App\NativeComponents\EditRecipe;
 use App\NativeComponents\Recipes;
 use Native\Mobile\Testing\Native;
+use Saloon\Http\Faking\MockResponse;
 
 beforeEach(fn () => seedSunnyData());
 
@@ -85,12 +87,15 @@ it('refuses to update a recipe without a name', function () {
         ->assertSee('Give the recipe a name.');
 });
 
-it('keeps unsaved recipe edits on the form until uploads are implemented', function () {
+it('keeps unsaved recipe edits on the form when the API rejects the save', function () {
+    Native::fakeBridge()->respondTo('SecureStorage.Get', ['value' => 'saved-token']);
+    Saloon::fake([SaveRecordRequest::class => MockResponse::make([], 401)]);
+
     Native::visit('/recipes/1/edit')
         ->assertSee('Update recipe')
         ->tap('edit-recipe-submit')
         ->assertNoNavigation()
-        ->assertSet('error', 'Saving changes is not available yet. Please edit this on the Sunny website.');
+        ->assertSet('error', 'Your session expired. Log in again before saving.');
 });
 
 it('explains when the recipe does not exist', function () {

@@ -19,6 +19,10 @@ trait CapturesPhoto
     /** On-device path to the captured or picked photo, once there is one. */
     public ?string $photoPath = null;
 
+    public ?string $existingPhotoUrl = null;
+
+    public bool $photoRemoved = false;
+
     public function takePhoto(): void
     {
         Camera::getPhoto()->start();
@@ -32,12 +36,15 @@ trait CapturesPhoto
     public function removePhoto(): void
     {
         $this->photoPath = null;
+        $this->photoRemoved = true;
+        $this->existingPhotoUrl = null;
     }
 
     #[On(PhotoTaken::class)]
     public function photoTaken(string $path): void
     {
         $this->photoPath = $path;
+        $this->photoRemoved = false;
     }
 
     /**
@@ -58,6 +65,7 @@ trait CapturesPhoto
 
         if ($path !== null) {
             $this->photoPath = $path;
+            $this->photoRemoved = false;
         }
     }
 }

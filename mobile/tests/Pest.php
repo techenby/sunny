@@ -58,7 +58,7 @@ function seedSunnyData(): void
     }
     app(SunnyStore::class)->applySnapshot([
         ...$data,
-        'teams' => [['id' => 1, 'name' => 'Family']],
+        'teams' => [['id' => 1, 'name' => 'Family', 'slug' => 'family']],
         'synced_at' => now()->toIso8601String(),
     ]);
 }

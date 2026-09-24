@@ -33,6 +33,10 @@ class SunnySync
             $rules[$type.'.*.updated_at'] = ['required', 'date'];
         }
 
+        $rules['teams.*.slug'] = ['nullable', 'string'];
+        $rules['recipes.*.photo_url'] = ['nullable', 'url'];
+        $rules['items.*.photo_url'] = ['nullable', 'url'];
+
         $rules['items.*.type'] = ['required', Rule::enum(ItemType::class)];
         $rules['items.*.metadata'] = ['nullable', 'array'];
         $rules['recipes.*.tags'] = ['nullable', 'array'];
@@ -44,9 +48,9 @@ class SunnySync
 
         Validator::make($snapshot, $rules)->validate();
         $snapshot['recipes'] = array_map(fn (array $recipe): array => $recipe + array_fill_keys([
-            'parent_id', 'source', 'servings', 'prep_time', 'cook_time', 'total_time', 'description', 'ingredients', 'instructions', 'notes', 'nutrition', 'tags',
+            'photo_url', 'parent_id', 'source', 'servings', 'prep_time', 'cook_time', 'total_time', 'description', 'ingredients', 'instructions', 'notes', 'nutrition', 'tags',
         ], null), $snapshot['recipes']);
-        $snapshot['items'] = array_map(fn (array $item): array => $item + ['parent_id' => null, 'metadata' => null], $snapshot['items']);
+        $snapshot['items'] = array_map(fn (array $item): array => $item + ['parent_id' => null, 'metadata' => null, 'photo_url' => null], $snapshot['items']);
 
         $this->store->applySnapshot($snapshot);
     }

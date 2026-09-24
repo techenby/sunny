@@ -15,6 +15,9 @@
             </text>
         @endisset
 
+        @isset($teamOptions)
+            <native:select ref="form-team" label="Team" :options="$teamOptions" native:model="teamName" />
+        @endisset
         <column class="w-full gap-4">
             <outlined-text-input
                 ref="{{ $formRef }}-name"
@@ -27,7 +30,7 @@
             />
 
             @include('native.photo-field', [
-                'photoPath' => $photoPath,
+                'photoPath' => $photoPath ?? $existingPhotoUrl,
                 'refPrefix' => $formRef,
                 'alt' => 'The photo chosen for this item',
             ])
@@ -110,6 +113,7 @@
             size="lg"
             font="semibold"
             class="w-full"
+            :disabled="$saving || $savedId !== null"
             @tap="save"
         >
             {{ $submitLabel }}

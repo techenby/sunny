@@ -1,8 +1,10 @@
 <?php
 
+use App\Http\Integrations\Sunny\Requests\SaveRecordRequest;
 use App\NativeComponents\CreateRecipe;
 use Native\Mobile\Events\Camera\PhotoTaken;
 use Native\Mobile\Testing\Native;
+use Saloon\Http\Faking\MockResponse;
 
 beforeEach(fn () => seedSunnyData());
 
@@ -178,12 +180,15 @@ it('enforces the web form’s length limits', function (string $property, int $m
     'total time' => ['totalTime', 50, 'Total time is too long (50 characters max).'],
 ]);
 
-it('keeps unsaved recipes on the form until uploads are implemented', function () {
+it('keeps unsaved recipes on the form when the API rejects the save', function () {
+    Native::fakeBridge()->respondTo('SecureStorage.Get', ['value' => 'saved-token']);
+    Saloon::fake([SaveRecordRequest::class => MockResponse::make([], 401)]);
+
     Native::visit('/recipes/create')
         ->input('recipe-name', 'Buttermilk Pancakes')
         ->tap('create-recipe-submit')
         ->assertNoNavigation()
-        ->assertSet('error', 'Saving changes is not available yet. Please edit this on the Sunny website.');
+        ->assertSet('error', 'Your session expired. Log in again before saving.');
 });
 
 it('gives every tappable control at least a 48dp touch target', function () {

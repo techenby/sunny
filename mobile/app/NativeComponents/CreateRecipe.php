@@ -10,6 +10,11 @@ class CreateRecipe extends NativeComponent
 {
     use ManagesRecipeForm;
 
+    public function mount(): void
+    {
+        $this->initializeTeam();
+    }
+
     public function save(): void
     {
         $this->error = $this->validationError();
@@ -18,7 +23,7 @@ class CreateRecipe extends NativeComponent
             return;
         }
 
-        $this->error = 'Saving changes is not available yet. Please edit this on the Sunny website.';
+        $this->saveRecord('recipes', $this->recipePayload());
     }
 
     public function render(): View
