@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Recipe;
 use App\NativeComponents\RecipeDetail;
 use Native\Mobile\Testing\Native;
 
@@ -112,4 +113,17 @@ it('explains when a recipe does not exist', function () {
         ->assertNavTitle('Recipe')
         ->assertSee('This recipe could not be found.')
         ->assertMissingElement('list');
+});
+
+it('shows the synced recipe photo with an accessible description', function () {
+    $recipe = Recipe::findOrFail(1);
+    $recipe->update(['photo_url' => 'https://sunny.example/photos/1.jpg']);
+
+    Native::visit('/recipes/1')
+        ->assertElement('image', fn (array $node): bool => ($node['props']['src'] ?? null) === 'https://sunny.example/photos/1.jpg')
+        ->assertAccessible();
+});
+
+it('omits the photo when the recipe has none', function () {
+    Native::visit('/recipes/1')->assertMissingElement('image');
 });

@@ -19,6 +19,19 @@
 
 @if ($recipe)
     <list ref="recipe-detail" fill class="bg-theme-background">
+        @if ($recipe['photo_url'] ?? null)
+            <list-section>
+                <native:image
+                    ref="recipe-photo"
+                    :src="$recipe['photo_url']"
+                    :alt="'Photo of '.$recipe['name']"
+                    :height="240"
+                    :fit="1"
+                    class="w-full rounded-xl"
+                />
+            </list-section>
+        @endif
+
         @if ($recipe['description'] || $recipe['tags'])
             <list-section header="Description">
                 <list-item

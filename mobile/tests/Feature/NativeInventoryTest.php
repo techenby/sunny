@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Item;
 use App\NativeComponents\InventoryItemDetail;
 use Native\Mobile\Testing\Native;
 
@@ -92,4 +93,17 @@ it('explains when an item does not exist', function () {
         ->assertNavTitle('Item')
         ->assertSee('This item could not be found.')
         ->assertMissingElement('list');
+});
+
+it('shows the synced item photo with an accessible description', function () {
+    $item = Item::findOrFail(1);
+    $item->update(['photo_url' => 'https://sunny.example/photos/1.jpg']);
+
+    Native::visit('/inventory/1')
+        ->assertElement('image', fn (array $node): bool => ($node['props']['src'] ?? null) === 'https://sunny.example/photos/1.jpg')
+        ->assertAccessible();
+});
+
+it('omits the photo when the item has none', function () {
+    Native::visit('/inventory/1')->assertMissingElement('image');
 });

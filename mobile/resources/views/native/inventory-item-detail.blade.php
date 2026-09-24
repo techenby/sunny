@@ -18,6 +18,19 @@
 
 @if ($item)
     <list ref="item-detail" fill class="bg-theme-background">
+        @if ($item['photo_url'] ?? null)
+            <list-section>
+                <native:image
+                    ref="item-photo"
+                    :src="$item['photo_url']"
+                    :alt="'Photo of '.$item['name']"
+                    :height="240"
+                    :fit="1"
+                    class="w-full rounded-xl"
+                />
+            </list-section>
+        @endif
+
         <list-section header="Details">
             <list-item
                 headline="Type"
