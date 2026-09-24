@@ -67,7 +67,7 @@ test('invalid credentials fire the failed event', function () {
         'device_name' => 'iPhone',
     ])->assertUnprocessable()->assertJsonPath('errors.email.0', trans('auth.failed'));
 
-    Event::assertDispatched(Failed::class, fn (Failed $event): bool => $event->user->is($user));
+    Event::assertDispatched(fn (Failed $event): bool => $event->user->is($user));
 });
 
 test('outdated password hashes are rehashed on sign in', function () {

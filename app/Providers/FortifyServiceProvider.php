@@ -49,7 +49,7 @@ class FortifyServiceProvider extends ServiceProvider
     {
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
         Fortify::createUsersUsing(CreateNewUser::class);
-        Fortify::authenticateUsing(fn (Request $request): ?User => app(AuthenticateUser::class)->handle($request));
+        Fortify::authenticateUsing(fn (Request $request): ?User => resolve(AuthenticateUser::class)->handle($request));
     }
 
     private function configureViews(): void

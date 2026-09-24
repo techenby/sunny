@@ -54,7 +54,7 @@ class TokenController extends Controller
         if ($limiter->tooManyAttempts($request)) {
             event(new Lockout($request));
 
-            return app(LockoutResponse::class)->toResponse($request);
+            return resolve(LockoutResponse::class)->toResponse($request);
         }
 
         $user = $this->authenticate($request, $limiter);
@@ -131,7 +131,7 @@ class TokenController extends Controller
 
     private function authenticate(Request $request, LoginRateLimiter $limiter): User
     {
-        $user = app(AuthenticateUser::class)->handle($request);
+        $user = resolve(AuthenticateUser::class)->handle($request);
 
         if (! $user) {
             $guardName = config('fortify.guard');

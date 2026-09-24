@@ -10,7 +10,7 @@ use PragmaRX\Google2FA\Google2FA;
 
 function twoFactorUser(): array
 {
-    $secret = app(Google2FA::class)->generateSecretKey();
+    $secret = resolve(Google2FA::class)->generateSecretKey();
 
     $user = User::factory()->withTwoFactor()->create([
         'two_factor_secret' => encrypt($secret),
@@ -51,7 +51,7 @@ test('a valid code completes the challenge and issues a token', function () {
 
     $this->postJson(route('api.token.two-factor'), [
         'challenge' => $challenge,
-        'code' => app(Google2FA::class)->getCurrentOtp($secret),
+        'code' => resolve(Google2FA::class)->getCurrentOtp($secret),
     ])
         ->assertOk()
         ->assertJsonPath('id', $user->id)
@@ -134,7 +134,7 @@ test('an expired challenge is rejected', function () {
 
     $this->postJson(route('api.token.two-factor'), [
         'challenge' => $challenge,
-        'code' => app(Google2FA::class)->getCurrentOtp($secret),
+        'code' => resolve(Google2FA::class)->getCurrentOtp($secret),
     ])->assertUnprocessable()->assertJsonValidationErrors('challenge');
 });
 
