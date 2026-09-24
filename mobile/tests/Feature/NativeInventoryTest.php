@@ -92,7 +92,7 @@ it('adds an item inside a location or bin', function () {
         ->tap('item-add-child')
         ->assertNavigatedTo('/inventory/create')
         ->follow()
-        ->assertSet('parentName', 'Tool chest')
+        ->assertSet('parentId', 7)
         ->assertSet('typeIndex', 2);
 });
 

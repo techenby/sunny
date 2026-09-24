@@ -25,7 +25,6 @@ it('prefills the form from the item', function () {
     Native::visit('/inventory/8/edit')
         ->assertSet('name', 'Cordless drill')
         ->assertSet('type', ItemType::Item)
-        ->assertSet('parentName', 'Tool chest')
         ->assertSet('parentId', 7)
         ->assertSet('metadata', [
             ['key' => 'brand', 'value' => 'DeWalt'],
@@ -37,22 +36,24 @@ it('prefills the form from the item', function () {
 it('prefills a top-level item with no metadata', function () {
     Native::visit('/inventory/6/edit')
         ->assertSet('type', ItemType::Location)
-        ->assertSet('parentName', 'Top level')
+        ->assertSet('parentId', null)
         ->assertSet('metadata', []);
 });
 
 it('does not offer the item or anything inside it as a destination', function () {
-    Native::visit('/inventory/6/edit')
-        ->assertElement('select', fn (array $node): bool => ($node['props']['options'] ?? null) === [
-            'Top level', 'Basement', 'Basmati rice', 'Canned tomatoes', 'Holiday decorations', 'Kitchen',
-            'Olive oil', 'Ornaments', 'Pantry', 'Spare light bulbs', 'String lights',
-        ]);
+    expect(array_column(Native::visit('/inventory/6/edit')->get('parentChoices'), 'name'))->toBe([
+        'Basement', 'Holiday decorations', 'Ornaments', 'String lights', 'Spare light bulbs',
+        'Kitchen', 'Pantry', 'Basmati rice', 'Canned tomatoes', 'Olive oil',
+    ]);
 });
 
 it('edits a field and keeps the rest intact', function () {
     Native::visit('/inventory/8/edit')
         ->input('edit-item-name', 'Hammer drill')
-        ->select('edit-item-parent', 'Garage')
+        ->tap('edit-item-parent')
+        ->tap('edit-item-parent-up')
+        ->tap('edit-item-parent-6')
+        ->tap('edit-item-parent-here')
         ->assertSet('name', 'Hammer drill')
         ->assertSet('parentId', 6)
         ->assertSet('metadataMap', ['brand' => 'DeWalt', 'model' => 'DCD771']);

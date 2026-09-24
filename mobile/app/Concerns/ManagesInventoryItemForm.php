@@ -4,6 +4,8 @@ namespace App\Concerns;
 
 use App\Enums\ItemType;
 use App\NativeComponents\Inventory;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use Native\Mobile\Attributes\Computed;
 
 /**
@@ -17,15 +19,20 @@ trait ManagesInventoryItemForm
     use CapturesPhoto;
     use SavesSunnyRecord;
 
-    /** The destination option standing in for "no container at all". */
-    public const TOP_LEVEL = 'Top level';
-
     public string $name = '';
 
     /** Index into {@see ItemType::cases()} — bound to the type selector. */
     public int $typeIndex = 0;
 
-    public string $parentName = self::TOP_LEVEL;
+    /** The item this one lives inside, or null for the top level. */
+    public ?int $parentId = null;
+
+    public bool $showParentPicker = false;
+
+    public string $parentSearch = '';
+
+    /** The container whose contents the destination picker is showing, or null for the top level. */
+    public ?int $parentBrowseId = null;
 
     /**
      * Metadata as the editable key/value pairs the form renders.
@@ -47,9 +54,7 @@ trait ManagesInventoryItemForm
         $this->existingPhotoUrl = $item['photo_url'] ?? null;
         $this->name = $item['name'];
         $this->typeIndex = (int) array_search($item['type'], ItemType::cases(), strict: true);
-        $this->parentName = $item['parent_id'] === null
-            ? self::TOP_LEVEL
-            : ($this->parentChoices[$item['parent_id']] ?? self::TOP_LEVEL);
+        $this->parentId = $this->parentChoice($item['parent_id']) === null ? null : $item['parent_id'];
         $this->metadata = collect($item['metadata'] ?? [])
             ->map(fn (string $value, string $key): array => ['key' => $key, 'value' => $value])
             ->values()
@@ -75,36 +80,100 @@ trait ManagesInventoryItemForm
     }
 
     /**
-     * The items this one may be placed inside, keyed by id.
+     * The items this one may be placed inside, walked depth-first so each
+     * location is followed by its bins and then its items.
      *
-     * @return array<int, string>
+     * @return list<array{id: int, parent_id: int|null, name: string, type: ItemType, depth: int, path: string|null, children_count: int}>
      */
     #[Computed]
     public function parentChoices(): array
     {
         $items = collect(Inventory::all())->where('team_id', $this->teamId)->keyBy('id')
-            ->except($this->unselectableParentIds())->sortBy('name');
-        $duplicates = $items->pluck('name')->duplicates()->all();
+            ->except($this->unselectableParentIds());
 
-        return $items->mapWithKeys(fn (array $item): array => [$item['id'] => in_array($item['name'], [...$duplicates, self::TOP_LEVEL], true)
-            ? $item['name'].' (#'.$item['id'].')' : $item['name']])->all();
+        $childrenByParent = $items->groupBy(fn (array $item): int => $items->has($item['parent_id']) ? $item['parent_id'] : 0);
+
+        return $this->flattenParentChoices($childrenByParent, 0, []);
     }
 
     /**
-     * @return list<string>
+     * The rows the destination picker shows: every match while searching,
+     * otherwise the contents of the container being browsed.
+     *
+     * @return list<array{id: int, parent_id: int|null, name: string, type: ItemType, depth: int, path: string|null, children_count: int}>
      */
     #[Computed]
-    public function parentOptions(): array
+    public function parentPickerRows(): array
     {
-        return [self::TOP_LEVEL, ...array_values($this->parentChoices)];
+        $search = trim($this->parentSearch);
+        $choices = collect($this->parentChoices);
+
+        $rows = $search === ''
+            ? $choices->where('parent_id', $this->browsedParent['id'] ?? null)
+            : $choices->filter(fn (array $choice): bool => Str::contains($choice['name'], $search, ignoreCase: true));
+
+        return $rows->values()->all();
     }
 
+    /**
+     * @return array{id: int, parent_id: int|null, name: string, type: ItemType, depth: int, path: string|null, children_count: int}|null
+     */
     #[Computed]
-    public function parentId(): ?int
+    public function selectedParent(): ?array
     {
-        $id = array_search($this->parentName, $this->parentChoices, strict: true);
+        return $this->parentChoice($this->parentId);
+    }
 
-        return $id === false ? null : $id;
+    /**
+     * @return array{id: int, parent_id: int|null, name: string, type: ItemType, depth: int, path: string|null, children_count: int}|null
+     */
+    #[Computed]
+    public function browsedParent(): ?array
+    {
+        return $this->parentChoice($this->parentBrowseId);
+    }
+
+    /**
+     * Open the picker on the container holding the current choice, so its
+     * neighbours are one tap away.
+     */
+    public function openParentPicker(): void
+    {
+        $this->parentSearch = '';
+        $this->parentBrowseId = $this->selectedParent['parent_id'] ?? null;
+        $this->showParentPicker = true;
+    }
+
+    public function closeParentPicker(): void
+    {
+        $this->showParentPicker = false;
+    }
+
+    public function browseParent(int $id): void
+    {
+        if ($this->parentChoice($id) !== null) {
+            $this->parentBrowseId = $id;
+        }
+    }
+
+    public function browseUp(): void
+    {
+        $this->parentBrowseId = $this->browsedParent['parent_id'] ?? null;
+    }
+
+    public function selectParent(int $id): void
+    {
+        if ($this->parentChoice($id) !== null) {
+            $this->parentId = $id;
+        }
+
+        $this->showParentPicker = false;
+    }
+
+    public function selectTopLevel(): void
+    {
+        $this->parentId = null;
+        $this->showParentPicker = false;
     }
 
     public function addMetadata(): void
@@ -154,6 +223,42 @@ trait ManagesInventoryItemForm
         return [];
     }
 
+    /**
+     * @return array{id: int, parent_id: int|null, name: string, type: ItemType, depth: int, path: string|null, children_count: int}|null
+     */
+    protected function parentChoice(?int $id): ?array
+    {
+        return $id === null ? null : collect($this->parentChoices)->firstWhere('id', $id);
+    }
+
+    /**
+     * @param  Collection<int, Collection<int, array<string, mixed>>>  $childrenByParent
+     * @param  list<string>  $ancestors
+     * @return list<array{id: int, parent_id: int|null, name: string, type: ItemType, depth: int, path: string|null, children_count: int}>
+     */
+    protected function flattenParentChoices(Collection $childrenByParent, int $parentKey, array $ancestors): array
+    {
+        return $childrenByParent->get($parentKey, collect())
+            ->sortBy([
+                fn (array $a, array $b): int => array_search($a['type'], ItemType::cases(), true) <=> array_search($b['type'], ItemType::cases(), true),
+                fn (array $a, array $b): int => strnatcasecmp($a['name'], $b['name']),
+            ])
+            ->flatMap(fn (array $item): array => [
+                [
+                    'id' => $item['id'],
+                    'parent_id' => $ancestors === [] ? null : $item['parent_id'],
+                    'name' => $item['name'],
+                    'type' => $item['type'],
+                    'depth' => count($ancestors),
+                    'path' => $ancestors === [] ? null : implode(' › ', $ancestors),
+                    'children_count' => $childrenByParent->get($item['id'], collect())->count(),
+                ],
+                ...$this->flattenParentChoices($childrenByParent, $item['id'], [...$ancestors, $item['name']]),
+            ])
+            ->values()
+            ->all();
+    }
+
     protected function itemPayload(bool $editing = false): array
     {
         return [
@@ -172,7 +277,7 @@ trait ManagesInventoryItemForm
         if (mb_strlen(trim($this->name)) > 255) {
             return 'The name is too long (255 characters max).';
         }
-        if ($this->parentName !== self::TOP_LEVEL && $this->parentId === null) {
+        if ($this->parentId !== null && $this->selectedParent === null) {
             return 'Choose a parent in the same team.';
         }
 

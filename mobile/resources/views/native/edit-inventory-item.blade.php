@@ -7,7 +7,9 @@
         'formRef' => 'edit-item',
         'submitLabel' => 'Update item',
         'typeOptions' => $this->typeOptions,
-        'parentOptions' => $this->parentOptions,
+        'selectedParent' => $this->selectedParent,
+        'browsedParent' => $this->browsedParent,
+        'parentPickerRows' => $this->parentPickerRows,
     ])
 @else
     <column ref="edit-item-missing" fill center class="bg-theme-background ios:bg-theme-grouped-background px-6">

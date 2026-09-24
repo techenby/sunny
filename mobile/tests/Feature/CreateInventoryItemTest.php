@@ -30,28 +30,105 @@ it('renders the form', function () {
         ->assertAccessible();
 });
 
-it('offers every item as a destination, plus the top level', function () {
-    Native::visit('/inventory/create')
-        ->assertElement('select', fn (array $node): bool => ($node['props']['options'] ?? null) === [
-            'Top level', 'Basement', 'Basmati rice', 'Camping tent', 'Canned tomatoes', 'Cordless drill',
-            'Garage', 'Holiday decorations', 'Kitchen', 'Olive oil', 'Ornaments', 'Pantry',
-            'Spare light bulbs', 'String lights', 'Tape measure', 'Tool chest',
-        ]);
+it('offers every item as a destination, grouped by location then bin then item', function () {
+    $screen = Native::visit('/inventory/create');
+
+    expect(array_map(
+        fn (array $choice): array => [$choice['name'], $choice['depth'], $choice['path']],
+        $screen->get('parentChoices'),
+    ))->toBe([
+        ['Basement', 0, null],
+        ['Holiday decorations', 1, 'Basement'],
+        ['Ornaments', 2, 'Basement › Holiday decorations'],
+        ['String lights', 2, 'Basement › Holiday decorations'],
+        ['Spare light bulbs', 1, 'Basement'],
+        ['Garage', 0, null],
+        ['Tool chest', 1, 'Garage'],
+        ['Cordless drill', 2, 'Garage › Tool chest'],
+        ['Tape measure', 2, 'Garage › Tool chest'],
+        ['Camping tent', 1, 'Garage'],
+        ['Kitchen', 0, null],
+        ['Pantry', 1, 'Kitchen'],
+        ['Basmati rice', 2, 'Kitchen › Pantry'],
+        ['Canned tomatoes', 2, 'Kitchen › Pantry'],
+        ['Olive oil', 2, 'Kitchen › Pantry'],
+    ])
+        ->and(array_column($screen->get('parentPickerRows'), 'name'))
+        ->toBe(['Basement', 'Garage', 'Kitchen']);
 });
 
-it('binds the form fields', function () {
+it('only builds the destination rows while the picker is open', function () {
+    Native::visit('/inventory/create')
+        ->assertMissingElement('list_item', fn (array $node): bool => ($node['ref'] ?? null) === 'create-item-parent-6')
+        ->tap('create-item-parent')
+        ->assertElement('list_item', fn (array $node): bool => ($node['ref'] ?? null) === 'create-item-parent-6');
+});
+
+it('browses into a location and chooses it', function () {
     Native::visit('/inventory/create')
         ->input('create-item-name', 'Sleeping bag')
-        ->select('create-item-parent', 'Garage')
+        ->tap('create-item-parent')
+        ->assertSet('showParentPicker', true)
+        ->tap('create-item-parent-6')
+        ->assertSet('parentBrowseId', 6)
+        ->assertSet('showParentPicker', true)
+        ->tap('create-item-parent-here')
         ->assertSet('name', 'Sleeping bag')
-        ->assertSet('parentName', 'Garage');
+        ->assertSet('parentId', 6)
+        ->assertSet('showParentPicker', false)
+        ->assertSee('Garage');
 });
 
-it('resolves the chosen destination to its item id', function () {
+it('browses down to a bin, picks something in it, and reopens beside the choice', function () {
+    $screen = Native::visit('/inventory/create')
+        ->tap('create-item-parent')
+        ->tap('create-item-parent-6');
+
+    expect(array_column($screen->get('parentPickerRows'), 'name'))->toBe(['Tool chest', 'Camping tent']);
+
+    $screen->tap('create-item-parent-7')
+        ->tap('create-item-parent-9')
+        ->assertSet('parentId', 9)
+        ->assertSee('in Garage › Tool chest')
+        ->tap('create-item-parent')
+        ->assertSet('parentBrowseId', 7)
+        ->tap('create-item-parent-up')
+        ->assertSet('parentBrowseId', 6)
+        ->tap('create-item-parent-up')
+        ->assertSet('parentBrowseId', null);
+});
+
+it('moves the item back to the top level', function () {
     Native::visit('/inventory/create')
-        ->set('parentName', 'Tool chest')
+        ->set('parentId', 7)
+        ->tap('create-item-parent')
+        ->tap('create-item-parent-up')
+        ->tap('create-item-parent-top-level')
+        ->assertSet('parentId', null);
+});
+
+it('searches destinations at any depth and shows where each match lives', function () {
+    $screen = Native::visit('/inventory/create')
+        ->tap('create-item-parent')
+        ->set('parentSearch', 'ch');
+
+    expect(array_map(fn (array $choice): array => [$choice['name'], $choice['path']], $screen->get('parentPickerRows')))
+        ->toBe([['Tool chest', 'Garage'], ['Kitchen', null]]);
+
+    $screen->assertSee('Bin · in Garage')
+        ->assertMissingElement('list_item', fn (array $node): bool => ($node['ref'] ?? null) === 'create-item-parent-top-level')
+        ->tap('create-item-parent-7')
         ->assertSet('parentId', 7)
-        ->set('parentName', 'Top level')
+        ->tap('create-item-parent')
+        ->set('parentSearch', 'sleeping bag')
+        ->assertSee('Nothing matches “sleeping bag”');
+});
+
+it('closes the destination picker when dismissed without changing the choice', function () {
+    Native::visit('/inventory/create')
+        ->tap('create-item-parent')
+        ->dismissSheet('create-item-parent-picker')
+        ->assertSet('showParentPicker', false)
         ->assertSet('parentId', null);
 });
 
@@ -124,7 +201,8 @@ it('keeps the current photo when a gallery selection fails or is cancelled', fun
 it('gives every tappable control at least a 48dp touch target', function () {
     $harness = Native::visit('/inventory/create')
         ->tap('metadata-add')
-        ->set('photoPath', '/tmp/captured.jpg');
+        ->set('photoPath', '/tmp/captured.jpg')
+        ->tap('create-item-parent');
 
     $undersized = [];
 

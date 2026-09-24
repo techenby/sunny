@@ -17,9 +17,9 @@ class CreateInventoryItem extends NativeComponent
     {
         $this->initializeTeam();
 
-        $parentName = $this->parentChoices[(int) $this->data('parent')] ?? null;
-        if ($parentName !== null) {
-            $this->parentName = $parentName;
+        $parent = $this->parentChoice((int) $this->data('parent'));
+        if ($parent !== null) {
+            $this->parentId = $parent['id'];
             $this->typeIndex = (int) array_search(ItemType::Item, ItemType::cases(), strict: true);
         }
     }
