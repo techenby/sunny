@@ -1,11 +1,13 @@
 <?php
 
 use App\Models\User;
+use Carbon\CarbonInterval;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Sleep;
 use Laravel\Sanctum\PersonalAccessToken;
 
 test('valid credentials return a token', function () {
@@ -83,6 +85,33 @@ test('outdated password hashes are rehashed on sign in', function () {
 
     expect($user->fresh()->password)->not->toBe($outdatedHash)
         ->and(Hash::needsRehash($user->fresh()->password))->toBeFalse();
+});
+
+test('failed sign ins are padded to the same duration whether or not the email exists', function (string $email) {
+    User::factory()->create(['email' => 'person@example.com']);
+
+    $this->postJson(route('api.token'), [
+        'email' => $email,
+        'password' => 'wrong-password',
+        'device_name' => 'iPhone',
+    ])->assertUnprocessable()->assertJsonPath('errors.email.0', trans('auth.failed'));
+
+    Sleep::assertSlept(fn (CarbonInterval $duration): bool => $duration->totalMicroseconds > 0);
+})->with([
+    'unknown email' => ['nobody@example.com'],
+    'wrong password' => ['person@example.com'],
+]);
+
+test('successful sign ins return without padding', function () {
+    $user = User::factory()->create();
+
+    $this->postJson(route('api.token'), [
+        'email' => $user->email,
+        'password' => 'password',
+        'device_name' => 'iPhone',
+    ])->assertOk();
+
+    Sleep::assertNeverSlept();
 });
 
 test('invalid credentials are rejected', function () {

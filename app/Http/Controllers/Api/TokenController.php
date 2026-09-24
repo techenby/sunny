@@ -123,15 +123,12 @@ class TokenController extends Controller
 
     private function authenticate(Request $request, LoginRateLimiter $limiter): User
     {
-        $guard = config('fortify.guard');
-        $provider = Auth::guard($guard)->getProvider();
+        $guardName = config('fortify.guard');
+        $guard = Auth::guard($guardName);
         $credentials = $request->only(Fortify::username(), 'password');
 
-        /** @var User|null $user */
-        $user = $provider->retrieveByCredentials($credentials);
-
-        if (! $user || ! $provider->validateCredentials($user, $credentials)) {
-            event(new Failed($guard, $user, $credentials));
+        if (! $guard->validate($credentials)) {
+            event(new Failed($guardName, $guard->getLastAttempted(), $credentials));
 
             $limiter->increment($request);
 
@@ -140,8 +137,11 @@ class TokenController extends Controller
             ]);
         }
 
+        /** @var User $user */
+        $user = $guard->getLastAttempted();
+
         if (config('hashing.rehash_on_login', true)) {
-            $provider->rehashPasswordIfRequired($user, $credentials);
+            $guard->getProvider()->rehashPasswordIfRequired($user, $credentials);
         }
 
         $limiter->clear($request);
