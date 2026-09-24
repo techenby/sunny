@@ -1,7 +1,7 @@
 @use('App\Icons\Android')
 @use('App\Icons\Ios')
 
-<native:top-bar title="Dashboard" subtitle="Your household at a glance">
+<native:top-bar title="Dashboard" subtitle="Your household at a glance" :back="false">
     <native:top-bar-action
         id="log-out"
         label="Log out"
