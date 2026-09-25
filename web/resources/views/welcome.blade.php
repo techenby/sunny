@@ -7,7 +7,7 @@
         {{-- Header --}}
         <header class="flex items-center justify-between px-6 py-4 lg:px-10">
             <div class="flex items-center gap-2">
-                <flux:avatar :src="asset('icon.png')" size="sm" />
+                <flux:avatar :src="asset('icon.svg')" size="sm" />
                 <span class="text-lg font-semibold">{{ config('app.name') }}</span>
             </div>
 

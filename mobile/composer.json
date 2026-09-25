@@ -27,6 +27,7 @@
     ],
     "require": {
         "php": "^8.3",
+        "cweagans/composer-patches": "^2.0",
         "laravel/framework": "^13.0",
         "laravel/tinker": "^3.0",
         "nativephp/mobile": "^4.5",
@@ -98,6 +99,14 @@
     "extra": {
         "laravel": {
             "dont-discover": []
+        },
+        "patches": {
+            "nativephp/mobile-ui": [
+                {
+                    "description": "iOS: focus outlined/filled text inputs when their padded box is tapped (upstream issue #19 in our scratchpad)",
+                    "url": "patches/nativephp-mobile-ui-text-input-tap-to-focus.patch"
+                }
+            ]
         }
     },
     "config": {
@@ -106,7 +115,8 @@
         "sort-packages": true,
         "allow-plugins": {
             "pestphp/pest-plugin": true,
-            "php-http/discovery": true
+            "php-http/discovery": true,
+            "cweagans/composer-patches": true
         }
     },
     "minimum-stability": "stable",

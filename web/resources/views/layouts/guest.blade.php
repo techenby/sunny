@@ -7,7 +7,7 @@
         <div class="mx-auto max-w-4xl px-6 py-10">
             <div class="mb-8 flex items-center gap-3">
                 <a href="{{ route('home') }}">
-                    <flux:avatar :src="asset('icon.png')" />
+                    <flux:avatar :src="asset('icon.svg')" />
                 </a>
                 <flux:heading size="lg">{{ config('app.name') }}</flux:heading>
             </div>

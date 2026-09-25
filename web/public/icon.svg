@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title description">
+    <title id="title">Sunny sunset</title>
+    <desc id="description">A white sun setting over two horizon lines on a warm orange background.</desc>
+
+    <defs>
+        <linearGradient id="sky" x1="28" y1="18" x2="228" y2="238" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#ff7a1a" />
+            <stop offset="1" stop-color="#ff5a1f" />
+        </linearGradient>
+        <radialGradient id="glow" cx="0" cy="0" r="1" gradientTransform="translate(128 127) rotate(90) scale(112)" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#ffc21c" stop-opacity=".95" />
+            <stop offset=".5" stop-color="#ff9d18" stop-opacity=".42" />
+            <stop offset="1" stop-color="#ff7a1a" stop-opacity="0" />
+        </radialGradient>
+    </defs>
+
+    <rect x=".5" y=".5" width="255" height="255" rx="32" fill="url(#sky)" />
+    <rect x=".5" y=".5" width="255" height="255" rx="32" fill="url(#glow)" />
+    <rect x=".5" y=".5" width="255" height="255" rx="32" fill="none" stroke="#7c220f" stroke-opacity=".7" />
+
+    <g fill="none" stroke="#fff" stroke-width="17" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M59 131h33a36 36 0 0 1 72 0h33" />
+        <path d="M59 164h138" />
+        <path d="M82 197h92" />
+        <path d="M128 59v31" />
+        <path d="m79 80 22 22" />
+        <path d="m177 80-22 22" />
+    </g>
+</svg>

@@ -1,0 +1,92 @@
+diff --git a/resources/ios/NativeUIFilledTextInputRenderer.swift b/resources/ios/NativeUIFilledTextInputRenderer.swift
+index 2f9284e..63c0e0d 100644
+--- a/resources/ios/NativeUIFilledTextInputRenderer.swift
++++ b/resources/ios/NativeUIFilledTextInputRenderer.swift
+@@ -18,6 +18,7 @@ struct NativeUIFilledTextInputRenderer: View {
+ 
+     @ObservedObject private var themeStore = NativeUITheme.shared
+     @Environment(\.colorScheme) private var colorScheme
++    @State private var focusRequest = 0
+ 
+     var body: some View {
+         let theme = themeStore.resolve(for: colorScheme)
+@@ -82,7 +83,8 @@ struct NativeUIFilledTextInputRenderer: View {
+                         node: node,
+                         textSize: metrics.textSize,
+                         contentColor: disabled ? theme.onSurface.opacity(0.6) : theme.onSurface,
+-                        tintColor: isError ? theme.destructive : theme.primary
++                        tintColor: isError ? theme.destructive : theme.primary,
++                        focusRequest: focusRequest
+                     )
+                     .frame(maxWidth: .infinity, alignment: .leading)
+ 
+@@ -120,6 +122,10 @@ struct NativeUIFilledTextInputRenderer: View {
+                 )
+                 .fill(theme.surfaceVariant)
+             )
++            // The fill is drawn as a background, which doesn't hit-test, so
++            // without this only the TextField's own line takes a tap.
++            .contentShape(Rectangle())
++            .onTapGesture { focusRequest += 1 }
+             .opacity(disabled ? 0.6 : 1.0)
+             .allowsHitTesting(!disabled && !readOnly)
+ 
+diff --git a/resources/ios/NativeUIOutlinedTextInputRenderer.swift b/resources/ios/NativeUIOutlinedTextInputRenderer.swift
+index 09729bb..8ab76f8 100644
+--- a/resources/ios/NativeUIOutlinedTextInputRenderer.swift
++++ b/resources/ios/NativeUIOutlinedTextInputRenderer.swift
+@@ -18,6 +18,7 @@ struct NativeUIOutlinedTextInputRenderer: View {
+ 
+     @ObservedObject private var themeStore = NativeUITheme.shared
+     @Environment(\.colorScheme) private var colorScheme
++    @State private var focusRequest = 0
+ 
+     var body: some View {
+         let theme = themeStore.resolve(for: colorScheme)
+@@ -83,7 +84,8 @@ struct NativeUIOutlinedTextInputRenderer: View {
+                     node: node,
+                     textSize: metrics.textSize,
+                     contentColor: disabled ? theme.onSurface.opacity(0.6) : theme.onSurface,
+-                    tintColor: isError ? theme.destructive : theme.primary
++                    tintColor: isError ? theme.destructive : theme.primary,
++                    focusRequest: focusRequest
+                 )
+                 .frame(maxWidth: .infinity, alignment: .leading)
+ 
+@@ -115,6 +117,10 @@ struct NativeUIOutlinedTextInputRenderer: View {
+                 )
+                 .stroke(borderColor, lineWidth: isError ? 2 : 1)
+             )
++            // The stroke only hit-tests on its 1pt line and the padding not at
++            // all, so without this only the TextField's own line takes a tap.
++            .contentShape(Rectangle())
++            .onTapGesture { focusRequest += 1 }
+             .opacity(disabled ? 0.6 : 1.0)
+             .allowsHitTesting(!disabled && !readOnly)
+ 
+diff --git a/resources/ios/NativeUITextInputCore.swift b/resources/ios/NativeUITextInputCore.swift
+index 22f04c3..e259733 100644
+--- a/resources/ios/NativeUITextInputCore.swift
++++ b/resources/ios/NativeUITextInputCore.swift
+@@ -20,6 +20,9 @@ struct NativeUITextInputCore: View {
+     let textSize: CGFloat
+     let contentColor: Color
+     let tintColor: Color
++    /// Bumped by the wrapping variant when its padded box is tapped, so a tap
++    /// anywhere inside the visible field focuses it, not just on the text line.
++    var focusRequest: Int = 0
+ 
+     @State private var text: String = ""
+     @State private var lastSentValue: String = ""
+@@ -120,6 +123,11 @@ struct NativeUITextInputCore: View {
+             if filtered != newValue { text = filtered }
+             handleLocalChange(filtered, mode: syncMode, debounceMs: debounceMs, onChangeCb: onChangeCb)
+         }
++        .onChange(of: focusRequest) { _, _ in
++            if !disabled && !readOnly {
++                isFocused = true
++            }
++        }
+         .onChange(of: isFocused) { _, focused in
+             // On blur, flush any pending change — covers both `blur` mode
+             // (never dispatched mid-typing) and `debounce` mode (in-flight

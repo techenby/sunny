@@ -122,7 +122,7 @@ enum ItemScannerModel {
             return
         }
 
-        let session = LanguageModelSession(tools: [OCRTool()], instructions: instructions)
+        let session = LanguageModelSession(tools: tools(), instructions: instructions)
         let names = Array(knownNames.prefix(maxKnownNames))
 
         do {
@@ -161,9 +161,20 @@ enum ItemScannerModel {
         Look at the photo and list each distinct physical object someone would want to keep track of. \
         Ignore furniture, walls, floors, shelving and other fixtures unless they are clearly the subject. \
         Use short, plain names a person would search for, like "Cordless drill" or "Cast iron skillet". \
-        Only give a brand or model when it is printed on the item or unmistakable; use the OCR tool to read labels. \
+        Only give a brand or model when it is printed on the item or unmistakable; read printed labels with the OCR tool when you have one. \
         List identical items once and set the quantity instead.
         """
+
+    /// The OCR tool helps read brand and model names off labels. It lives in
+    /// the Vision × FoundationModels overlay, which the simulator SDK lacks.
+    @available(iOS 27.0, *)
+    static func tools() -> [any Tool] {
+        #if canImport(_Vision_FoundationModels)
+        return [OCRTool()]
+        #else
+        return []
+        #endif
+    }
 
     static func prompt(knownNames: [String], place: String?) -> String {
         var lines = ["List the items in this photo."]
