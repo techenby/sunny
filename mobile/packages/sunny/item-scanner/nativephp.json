@@ -1,0 +1,36 @@
+{
+    "namespace": "ItemScanner",
+    "platforms": [
+        "ios"
+    ],
+    "bridge_functions": [
+        {
+            "name": "ItemScanner.Availability",
+            "ios": "ItemScannerFunctions.Availability",
+            "description": "Whether the on-device model can identify items in photos (synchronous)"
+        },
+        {
+            "name": "ItemScanner.Identify",
+            "ios": "ItemScannerFunctions.Identify",
+            "description": "Identify the items in a photo (async, emits ItemsIdentified or IdentificationFailed)"
+        }
+    ],
+    "android": {
+        "min_version": 26,
+        "permissions": [],
+        "dependencies": {
+            "implementation": []
+        }
+    },
+    "ios": {
+        "min_version": "18.2",
+        "dependencies": {
+            "swift_packages": [],
+            "pods": []
+        }
+    },
+    "events": [
+        "Sunny\\ItemScanner\\Events\\ItemsIdentified",
+        "Sunny\\ItemScanner\\Events\\IdentificationFailed"
+    ]
+}
