@@ -1,0 +1,28 @@
+name: Web CI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'web/**'
+      - '.github/workflows/web-*.yml'
+  pull_request:
+    paths:
+      - 'web/**'
+      - '.github/workflows/web-*.yml'
+
+jobs:
+  rector:
+    uses: ./.github/workflows/web-rector-fix.yml
+    secrets: inherit
+
+  duster:
+    needs: rector
+    uses: ./.github/workflows/web-duster-fix-blame.yml
+    secrets: inherit
+
+  tests:
+    needs: duster
+    uses: ./.github/workflows/web-tests.yml
+    secrets: inherit

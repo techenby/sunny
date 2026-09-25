@@ -1,0 +1,50 @@
+name: Mobile Tests
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'mobile/**'
+      - '.github/workflows/mobile-*.yml'
+  pull_request:
+    paths:
+      - 'mobile/**'
+      - '.github/workflows/mobile-*.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: mobile
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite
+          coverage: none
+
+      - name: Add NativePHP Credentials Loaded From ENV
+        run: composer config http-basic.plugins.nativephp.com "${{ secrets.NATIVEPHP_LICENSE_EMAIL }}" "${{ secrets.NATIVEPHP_LICENSE_KEY }}"
+
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Copy environment file
+        run: cp .env.example .env
+
+      - name: Generate app key
+        run: php artisan key:generate
+
+      - name: Execute tests
+        run: php artisan test
