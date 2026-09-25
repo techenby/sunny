@@ -1,4 +1,4 @@
-name: Duster Fix
+name: Web Duster Fix
 
 # Commits made in here will not trigger any workflows
 # Checkout Duster's documentation for a workaround
@@ -19,10 +19,23 @@ jobs:
           ref: ${{ github.event.pull_request.head.ref || github.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
 
-      - name: "Duster Fix"
-        uses: tighten/duster-action@v3
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
         with:
-          args: fix
+          php-version: '8.4'
+          tools: composer:v2
+
+      - name: Add Flux Credentials Loaded From ENV
+        working-directory: web
+        run: composer config http-basic.composer.fluxui.dev "${{ secrets.FLUX_USERNAME }}" "${{ secrets.FLUX_LICENSE_KEY }}"
+
+      - name: Install Dependencies
+        working-directory: web
+        run: composer install --no-interaction --prefer-dist
+
+      - name: "Duster Fix"
+        working-directory: web
+        run: ./vendor/bin/duster fix
 
       - uses: stefanzweifel/git-auto-commit-action@v5
         id: auto_commit_action

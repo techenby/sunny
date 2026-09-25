@@ -1,4 +1,4 @@
-name: Rector Fix
+name: Web Rector Fix
 
 on:
     workflow_call:
@@ -9,6 +9,10 @@ jobs:
 
     permissions:
       contents: write
+
+    defaults:
+      run:
+        working-directory: web
 
     steps:
       - uses: actions/checkout@v4

@@ -1,4 +1,4 @@
-name: tests
+name: Web Tests
 
 on:
   workflow_call:
@@ -7,6 +7,9 @@ jobs:
   ci:
     runs-on: ubuntu-latest
     environment: Testing
+    defaults:
+      run:
+        working-directory: web
     strategy:
       matrix:
         php-version: ['8.4', '8.5']
