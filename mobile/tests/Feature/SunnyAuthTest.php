@@ -6,6 +6,8 @@ use App\Http\Integrations\Sunny\Requests\LogoutRequest;
 use App\Http\Integrations\Sunny\Requests\RefreshTokenRequest;
 use App\Http\Integrations\Sunny\Requests\VerifyTwoFactorRequest;
 use App\Http\Integrations\Sunny\SunnyAuth;
+use App\Http\Integrations\Sunny\SunnyStore;
+use App\Models\Recipe;
 use Illuminate\Auth\AuthenticationException;
 use Native\Mobile\Testing\FakeBridge;
 use Saloon\Config;
@@ -92,6 +94,17 @@ it('clears local credentials on logout including server failures', function (int
     $bridge->assertCalled('SecureStorage.Delete');
     Saloon::assertSentCount(1);
 })->with([204, 401, 500]);
+
+it('keeps local data when deleting the token fails on logout', function (): void {
+    seedSunnyData();
+    FakeBridge::enable()->respondTo('SecureStorage.Get', ['value' => 'token'])
+        ->respondTo('SecureStorage.Delete', ['success' => false]);
+    Saloon::fake([LogoutRequest::class => MockResponse::make([], 204)]);
+
+    expect(fn () => app(SunnyAuth::class)->logout())->toThrow(RuntimeException::class)
+        ->and(Recipe::count())->toBeGreaterThan(0)
+        ->and(app(SunnyStore::class)->lastSyncedAt())->not->toBeNull();
+});
 
 it('requires a stored token for authenticated calls and allows an already signed out logout', function (): void {
     FakeBridge::enable()->respondTo('SecureStorage.Get', ['value' => '']);

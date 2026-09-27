@@ -14,7 +14,7 @@ class DestroySession
 
     public function handle(): void
     {
-        $this->store->clear();
         $this->tokens->forget();
+        $this->store->clear();
     }
 }
