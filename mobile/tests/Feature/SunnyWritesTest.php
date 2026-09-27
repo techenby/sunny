@@ -56,6 +56,30 @@ it('sends the entire recipe form and preserves unedited rich text', function ():
     });
 });
 
+it('leaves unedited rich text out even when a sync changes it while the form is open', function (): void {
+    Saloon::fake([SaveRecordRequest::class => MockResponse::make(['data' => Recipe::find(1)->toArray()])]);
+    $harness = Native::visit('/recipes/1/edit');
+    Recipe::find(1)->update(['ingredients' => '<ul><li><strong>Flour</strong> from the web</li></ul>', 'instructions' => '<p>Edited remotely</p>']);
+    $harness->set('name', 'Weekend Pancakes')->tap('edit-recipe-submit')->assertSet('error', '');
+    Saloon::assertSent(function (SaveRecordRequest $request): bool {
+        expect($request->body()->all())->not->toHaveKeys(['ingredients', 'instructions']);
+
+        return true;
+    });
+});
+
+it('only sends remove_photo when editing a recipe', function (): void {
+    $record = Recipe::find(1)->toArray();
+    $record['id'] = 90;
+    Saloon::fake([SaveRecordRequest::class => MockResponse::make(['data' => $record], 201)]);
+    Native::visit('/recipes/create')->set('name', 'New recipe')->tap('create-recipe-submit')->assertSet('error', '');
+    Saloon::assertSent(function (SaveRecordRequest $request): bool {
+        expect($request->body()->all())->not->toHaveKey('remove_photo');
+
+        return true;
+    });
+});
+
 it('uploads a photo with method spoofing and retains metadata keys', function (): void {
     $photo = UploadedFile::fake()->image('photo.jpg');
     Saloon::fake([SaveRecordRequest::class => MockResponse::make(['data' => Item::find(1)->toArray()])]);
