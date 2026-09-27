@@ -81,12 +81,16 @@ trait ManagesInventoryItemForm
 
     public function setMetadataKey(int $index, string $key): void
     {
-        $this->metadata[$index]['key'] = $key;
+        if (isset($this->metadata[$index])) {
+            $this->metadata[$index]['key'] = $key;
+        }
     }
 
     public function setMetadataValue(int $index, string $value): void
     {
-        $this->metadata[$index]['value'] = $value;
+        if (isset($this->metadata[$index])) {
+            $this->metadata[$index]['value'] = $value;
+        }
     }
 
     /**
