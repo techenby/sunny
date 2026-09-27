@@ -2,13 +2,13 @@
 
 namespace App\NativeComponents;
 
+use App\Actions\DestroySession;
 use App\Concerns\ChecksSunnySync;
 use App\Enums\ItemType;
 use App\Http\Integrations\Sunny\SunnyAuth;
 use App\Http\Integrations\Sunny\SunnyStore;
 use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Http\Integrations\Sunny\SunnyTeam;
-use App\Http\Integrations\Sunny\SunnyTokenStore;
 use App\Models\Item;
 use App\Models\Recipe;
 use Illuminate\Auth\AuthenticationException;
@@ -236,8 +236,7 @@ class Dashboard extends NativeComponent
     private function syncFailed(string $exception): void
     {
         if (is_a($exception, AuthenticationException::class, true) || is_a($exception, UnauthorizedException::class, true)) {
-            app(SunnyStore::class)->clear();
-            rescue(fn () => app(SunnyTokenStore::class)->forget(), report: false);
+            rescue(fn () => app(DestroySession::class)->handle(), report: false);
             $this->replace('/login');
 
             return;

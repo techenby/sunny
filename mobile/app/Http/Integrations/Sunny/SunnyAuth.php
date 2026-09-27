@@ -2,6 +2,7 @@
 
 namespace App\Http\Integrations\Sunny;
 
+use App\Actions\DestroySession;
 use App\Http\Integrations\Sunny\Requests\CreateTokenRequest;
 use App\Http\Integrations\Sunny\Requests\LogoutRequest;
 use App\Http\Integrations\Sunny\Requests\RefreshTokenRequest;
@@ -18,6 +19,7 @@ class SunnyAuth
         private readonly SunnyConnector $connector,
         private readonly SunnyTokenStore $tokens,
         private readonly SunnyStore $store,
+        private readonly DestroySession $destroySession,
     ) {}
 
     public function login(string $email, #[\SensitiveParameter] string $password, string $deviceName): Response
@@ -74,8 +76,7 @@ class SunnyAuth
         } catch (UnauthorizedException) {
             // An expired or revoked token is already signed out on the server.
         } finally {
-            $this->tokens->forget();
-            $this->store->clear();
+            $this->destroySession->handle();
         }
     }
 
