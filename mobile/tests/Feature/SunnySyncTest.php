@@ -18,14 +18,11 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
 use Native\Mobile\AsyncTask;
 use Native\Mobile\Testing\Native;
-use Saloon\Config;
 use Saloon\Exceptions\Request\RequestException;
 use Saloon\Exceptions\Request\Statuses\UnauthorizedException;
 use Saloon\Http\Faking\MockResponse;
 
 beforeEach(function (): void {
-    config(['services.sunny.api_url' => 'https://sunny.example/api']);
-    Config::preventStrayRequests();
     Native::fakeBridge()->respondTo('SecureStorage.Get', ['value' => 'saved-token'])
         ->respondTo('SecureStorage.Set', ['success' => true])
         ->respondTo('SecureStorage.Delete', ['success' => true]);

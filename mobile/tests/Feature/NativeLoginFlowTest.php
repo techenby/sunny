@@ -7,14 +7,11 @@ use App\Http\Integrations\Sunny\Requests\VerifyTwoFactorRequest;
 use App\Http\Integrations\Sunny\SunnyStore;
 use Native\Mobile\Events\Alert\ButtonPressed;
 use Native\Mobile\Testing\Native;
-use Saloon\Config;
 use Saloon\Http\Faking\MockResponse;
 use Saloon\Http\Request;
 use Saloon\Laravel\Facades\Saloon;
 
 beforeEach(function (): void {
-    config(['services.sunny.api_url' => 'https://sunny.example/api']);
-    Config::preventStrayRequests();
     seedSunnyData();
     Native::fakeBridge()->respondTo('SecureStorage.Get', ['value' => ''])
         ->respondTo('SecureStorage.Set', ['success' => true])

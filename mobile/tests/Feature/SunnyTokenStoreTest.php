@@ -3,10 +3,6 @@
 use App\Http\Integrations\Sunny\SunnyTokenStore;
 use Native\Mobile\Testing\FakeBridge;
 
-beforeEach(function (): void {
-    config(['services.sunny.api_url' => 'https://sunny.example/api']);
-});
-
 afterEach(fn () => FakeBridge::disable());
 
 it('stores, reads and deletes tokens using an API-specific secure key', function (): void {

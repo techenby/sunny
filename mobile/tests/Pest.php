@@ -3,6 +3,7 @@
 use App\Http\Integrations\Sunny\SunnyStore;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Native\Mobile\AsyncTask;
+use Saloon\Config;
 use Tests\TestCase;
 
 /*
@@ -15,6 +16,8 @@ use Tests\TestCase;
 | need to change it using the "pest()" function to bind a different classes or traits.
 |
 */
+
+Config::preventStrayRequests();
 
 pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)

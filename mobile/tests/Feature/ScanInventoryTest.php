@@ -9,15 +9,12 @@ use Native\Mobile\Events\Camera\PhotoTaken;
 use Native\Mobile\Events\Gallery\MediaSelected;
 use Native\Mobile\Testing\Native;
 use Native\Mobile\Testing\TestableComponent;
-use Saloon\Config;
 use Saloon\Http\Faking\MockResponse;
 use Saloon\Http\PendingRequest;
 use Sunny\ItemScanner\Events\IdentificationFailed;
 use Sunny\ItemScanner\Events\ItemsIdentified;
 
 beforeEach(function (): void {
-    config(['services.sunny.api_url' => 'https://sunny.example/api']);
-    Config::preventStrayRequests();
     seedSunnyData();
 });
 

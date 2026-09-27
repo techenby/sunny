@@ -11,12 +11,9 @@ use App\NativeComponents\Recipes;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\Facades\DB;
 use Native\Mobile\Testing\Native;
-use Saloon\Config;
 use Saloon\Http\Faking\MockResponse;
 
 beforeEach(function (): void {
-    config(['services.sunny.api_url' => 'https://sunny.example/api']);
-    Config::preventStrayRequests();
     seedSunnyData();
     Team::create(['id' => 2, 'server' => SunnyStore::server(), 'name' => 'Work', 'slug' => 'work']);
     Recipe::create([...Recipe::find(1)->toArray(), 'id' => 90, 'team_id' => 2, 'name' => 'Work lunch']);

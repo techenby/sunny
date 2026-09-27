@@ -28,7 +28,6 @@ it('binds the login fields', function () {
 });
 
 it('opens registration in the browser without authenticating', function () {
-    config(['services.sunny.api_url' => 'https://sunny.example/api']);
     Browser::shouldReceive('open')->once()->with('https://sunny.example/register')->andReturn(true);
 
     Native::visit('/register')

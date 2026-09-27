@@ -17,7 +17,6 @@ beforeEach(function () {
 });
 
 beforeEach(function () {
-    config(['services.sunny.api_url' => 'https://sunny.example/api']);
     Native::fakeBridge()->respondTo('SecureStorage.Get', ['value' => '']);
 });
 

@@ -10,13 +10,10 @@ use App\Models\Recipe;
 use App\Models\Team;
 use Illuminate\Http\UploadedFile;
 use Native\Mobile\Testing\Native;
-use Saloon\Config;
 use Saloon\Enums\Method;
 use Saloon\Http\Faking\MockResponse;
 
 beforeEach(function (): void {
-    config(['services.sunny.api_url' => 'https://sunny.example/api']);
-    Config::preventStrayRequests();
     Native::fakeBridge()->respondTo('SecureStorage.Get', ['value' => 'saved-token']);
     seedSunnyData();
 });

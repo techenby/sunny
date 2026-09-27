@@ -5,7 +5,6 @@ use App\NativeComponents\Register;
 use Native\Mobile\Testing\Native;
 
 beforeEach(function () {
-    config(['services.sunny.api_url' => 'https://sunny.example/api']);
     Native::fakeBridge()->respondTo('SecureStorage.Get', ['value' => '']);
 });
 

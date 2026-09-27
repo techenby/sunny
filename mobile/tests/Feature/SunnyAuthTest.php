@@ -10,17 +10,11 @@ use App\Http\Integrations\Sunny\SunnyStore;
 use App\Models\Recipe;
 use Illuminate\Auth\AuthenticationException;
 use Native\Mobile\Testing\FakeBridge;
-use Saloon\Config;
 use Saloon\Exceptions\Request\RequestException;
 use Saloon\Http\Faking\MockResponse;
 use Saloon\Http\Request;
 use Saloon\Http\Response;
 use Saloon\Laravel\Facades\Saloon;
-
-beforeEach(function (): void {
-    config(['services.sunny.api_url' => 'https://sunny.example/api']);
-    Config::preventStrayRequests();
-});
 
 afterEach(fn () => FakeBridge::disable());
 
