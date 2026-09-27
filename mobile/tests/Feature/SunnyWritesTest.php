@@ -9,6 +9,7 @@ use App\Models\Item;
 use App\Models\Recipe;
 use App\Models\Team;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Arr;
 use Native\Mobile\Testing\Native;
 use Saloon\Enums\Method;
 use Saloon\Http\Faking\MockResponse;
@@ -75,6 +76,15 @@ it('only sends remove_photo when editing a recipe', function (): void {
 
         return true;
     });
+});
+
+it('stores fields the save response leaves out as empty locally', function (): void {
+    Recipe::find(1)->update(['notes' => 'Old local note']);
+    $record = Arr::except(Recipe::find(1)->toArray(), ['notes', 'server']);
+    Saloon::fake([SaveRecordRequest::class => MockResponse::make(['data' => $record])]);
+    Native::visit('/recipes/1/edit')->tap('edit-recipe-submit')->assertSet('error', '');
+
+    expect(Recipe::find(1)->notes)->toBeNull();
 });
 
 it('uploads a photo with method spoofing and retains metadata keys', function (): void {

@@ -81,6 +81,19 @@ it('updates rows idempotently and removes deleted or absent records', function (
     expect(Recipe::count())->toBe(0)->and(Item::count())->toBe(0);
 });
 
+it('clears local fields the API leaves out of a later snapshot', function (): void {
+    $this->snapshot['recipes'][0]['notes'] = 'Simmer longer';
+    $this->snapshot['items'][0]['metadata'] = ['brand' => 'Acme'];
+    Saloon::fake([SyncRequest::class => MockResponse::make($this->snapshot)]);
+    app(SunnySync::class)->sync();
+    expect(Recipe::find(42)->notes)->toBe('Simmer longer')->and(Item::find(10)->metadata)->toBe(['brand' => 'Acme']);
+
+    unset($this->snapshot['recipes'][0]['notes'], $this->snapshot['items'][0]['metadata']);
+    Saloon::fake([SyncRequest::class => MockResponse::make($this->snapshot)]);
+    app(SunnySync::class)->sync();
+    expect(Recipe::find(42)->notes)->toBeNull()->and(Item::find(10)->metadata)->toBeNull();
+});
+
 it('removes records for teams that were deleted or are no longer accessible', function (bool $deleted): void {
     Saloon::fake([SyncRequest::class => MockResponse::make($this->snapshot)]);
     app(SunnySync::class)->sync();

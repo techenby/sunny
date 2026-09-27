@@ -57,7 +57,7 @@ class SunnyStore
         $fields = $type === 'recipes'
             ? ['team_id', 'parent_id', 'name', 'source', 'servings', 'prep_time', 'cook_time', 'total_time', 'description', 'ingredients', 'instructions', 'notes', 'nutrition', 'tags', 'photo_url', 'created_at', 'updated_at']
             : ['team_id', 'parent_id', 'type', 'name', 'metadata', 'photo_url', 'created_at', 'updated_at'];
-        $model::query()->updateOrCreate(['id' => $record['id']], ['server' => self::server(), ...Arr::only($record, $fields)]);
+        $model::query()->updateOrCreate(['id' => $record['id']], ['server' => self::server(), ...array_fill_keys($fields, null), ...Arr::only($record, $fields)]);
     }
 
     public function clear(): void
