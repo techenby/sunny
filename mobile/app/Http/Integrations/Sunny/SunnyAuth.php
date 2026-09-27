@@ -22,26 +22,33 @@ class SunnyAuth
         private readonly DestroySession $destroySession,
     ) {}
 
-    public function login(string $email, #[\SensitiveParameter] string $password, string $deviceName): Response
+    /**
+     * @return string|null The two-factor challenge to verify, or null once signed in.
+     */
+    public function login(string $email, #[\SensitiveParameter] string $password, string $deviceName): ?string
     {
         $response = $this->connector->send(new CreateTokenRequest($email, $password, $deviceName));
 
         if ($response->json('two_factor') !== true) {
             $this->storeToken($response, clearLocalData: true);
+
+            return null;
         }
 
-        return $response;
+        $challenge = $response->json('challenge');
+
+        throw_unless(is_string($challenge) && $challenge !== '', UnexpectedValueException::class, 'Sunny did not return a valid two-factor challenge.');
+
+        return $challenge;
     }
 
     public function verifyTwoFactor(
         #[\SensitiveParameter] string $challenge,
         #[\SensitiveParameter] string $code,
         bool $useRecoveryCode = false,
-    ): Response {
+    ): void {
         $response = $this->connector->send(new VerifyTwoFactorRequest($challenge, $code, $useRecoveryCode));
         $this->storeToken($response, clearLocalData: true);
-
-        return $response;
     }
 
     public function authenticatedConnector(#[\SensitiveParameter] ?string $token = null): SunnyConnector
@@ -53,12 +60,9 @@ class SunnyAuth
         return (clone $this->connector)->authenticate(new TokenAuthenticator($token));
     }
 
-    public function refresh(): Response
+    public function refresh(): void
     {
-        $response = $this->authenticatedConnector()->send(new RefreshTokenRequest);
-        $this->storeToken($response);
-
-        return $response;
+        $this->storeToken($this->authenticatedConnector()->send(new RefreshTokenRequest));
     }
 
     public function logout(): void

@@ -51,7 +51,7 @@ it('waits for two factor verification before storing a token', function (bool $r
         VerifyTwoFactorRequest::class => MockResponse::make(['token' => 'verified-token']),
     ]);
     $auth = app(SunnyAuth::class);
-    expect($auth->login('person@example.com', 'secret', 'My phone')->json('challenge'))->toBe('challenge');
+    expect($auth->login('person@example.com', 'secret', 'My phone'))->toBe('challenge');
     $bridge->assertNotCalled('SecureStorage.Set');
     $auth->verifyTwoFactor('challenge', '012345', $recovery);
     $bridge->assertCalled('SecureStorage.Set', fn (array $params): bool => $params['value'] === 'verified-token');
@@ -124,6 +124,8 @@ it('does not store tokens from unsuccessful or malformed login responses', funct
     'invalid credentials' => [['message' => 'Invalid credentials'], 422, RequestException::class],
     'missing token' => [[], 200, UnexpectedValueException::class],
     'empty token' => [['token' => ''], 200, UnexpectedValueException::class],
+    'missing two-factor challenge' => [['two_factor' => true], 200, UnexpectedValueException::class],
+    'empty two-factor challenge' => [['two_factor' => true, 'challenge' => ''], 200, UnexpectedValueException::class],
 ]);
 
 it('does not report login success when secure storage fails', function (): void {

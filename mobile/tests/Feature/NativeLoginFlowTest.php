@@ -62,6 +62,17 @@ it('stays on login when saving the token fails', function (): void {
         ->tap('login-submit')->assertSee('Unable to securely complete login. Unlock your device and try again.')->assertNoNavigation();
 });
 
+it('explains a malformed login response instead of blaming device storage', function (array $body): void {
+    Saloon::fake([CreateTokenRequest::class => MockResponse::make($body)]);
+    Native::visit('/login')->input('login-email', 'person@example.com')->input('login-password', 'secret')
+        ->tap('login-submit')->assertSee('Sunny returned an invalid response. Check the API URL and try again.')
+        ->assertSet('twoFactor', false)->assertNoNavigation();
+    Native::fakeBridge()->assertNotCalled('SecureStorage.Set');
+})->with([
+    'missing token' => [[]],
+    'missing two-factor challenge' => [['two_factor' => true]],
+]);
+
 it('allows retrying an invalid code and restarting an expired challenge', function (): void {
     Saloon::fake([
         CreateTokenRequest::class => MockResponse::make(['two_factor' => true, 'challenge' => 'challenge']),
