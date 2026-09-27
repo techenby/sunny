@@ -44,8 +44,6 @@ class SunnyStore
                 }
             }
 
-            app(SunnyTeam::class)->current();
-
             DB::table('sunny_sync_states')->updateOrInsert(['server' => self::server()], [
                 'synced_at' => $snapshot['synced_at'],
                 'fetched_at' => now(),
