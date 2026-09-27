@@ -82,11 +82,25 @@ it('shows a recipe the way the web app does', function () {
 it('ticks ingredients off while cooking', function () {
     Native::visit('/recipes/1')
         ->tap('ingredient-1')
-        ->assertSet('checkedIngredients', [1])
-        ->assertSee('1 of')
+        ->assertSet('checkedIngredients', [1 => '2 cups buttermilk'])
+        ->assertSee('1 of 6')
         ->tap('ingredient-0')
         ->tap('ingredient-1')
-        ->assertSet('checkedIngredients', [0]);
+        ->assertSet('checkedIngredients', [0 => '2 cups flour']);
+});
+
+it('stops counting a ticked ingredient once a sync changes that line', function () {
+    $screen = Native::visit('/recipes/1')
+        ->tap('ingredient-1')
+        ->tap('ingredient-5')
+        ->assertSee('2 of 6');
+
+    Recipe::find(1)->update(['ingredients' => '<ul><li>2 cups flour</li><li>1 cup oat milk</li></ul>']);
+
+    $screen->emitNative('sunny-sync-complete', ['status' => 'finished'])
+        ->assertDontSee('of 2')
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'ingredient-1'
+            && ($node['props']['a11y_label'] ?? null) === '1 cup oat milk');
 });
 
 it('skips blank recipe fields', function () {

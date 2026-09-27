@@ -97,13 +97,13 @@
                 <column class="w-full gap-3">
                     <row class="w-full items-center">
                         <text font="semibold" class="flex-1 text-xl text-theme-on-background">Ingredients</text>
-                        @if ($checkedIngredients)
-                            <text class="text-sm text-theme-on-surface-variant">{{ count($checkedIngredients) }} of {{ count($this->ingredients) }}</text>
+                        @if ($this->checkedCount)
+                            <text class="text-sm text-theme-on-surface-variant">{{ $this->checkedCount }} of {{ count($this->ingredients) }}</text>
                         @endif
                     </row>
                     <column class="w-full rounded-xl bg-theme-surface">
                         @foreach ($this->ingredients as $index => $ingredient)
-                            @php($checked = in_array($index, $checkedIngredients, true))
+                            @php($checked = $this->isChecked($index))
                             <pressable
                                 ref="ingredient-{{ $index }}"
                                 @press="toggleIngredient({{ $index }})"
