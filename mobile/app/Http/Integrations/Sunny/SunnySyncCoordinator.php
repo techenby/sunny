@@ -12,9 +12,14 @@ class SunnySyncCoordinator
 
     private const LOCK_SECONDS = 120;
 
+    private const DISPATCH_KEY = 'sunny-sync-dispatched';
+
+    private const DISPATCH_SECONDS = 300;
+
     public function __construct(
         private readonly SunnySync $sync,
         private readonly SunnyTokenStore $tokens,
+        private readonly SunnyStore $store,
     ) {}
 
     /**
@@ -39,22 +44,33 @@ class SunnySyncCoordinator
         }
     }
 
-    /** Start a shared async sync using the token captured on the UI thread. */
-    public function dispatch(): bool
+    /**
+     * Start a shared async sync when local data is stale and no background sync is in flight.
+     * The marker is only cleared on success, so a failed sync backs off until it expires.
+     */
+    public function dispatchIfStale(): void
     {
+        if (! $this->store->isStale() || ! Cache::add(self::DISPATCH_KEY, true, self::DISPATCH_SECONDS)) {
+            return;
+        }
+
         try {
             $token = $this->tokens->get();
         } catch (RuntimeException) {
-            return false;
+            $token = null;
         }
 
         if ($token === null) {
-            return false;
+            Cache::forget(self::DISPATCH_KEY);
+
+            return;
         }
 
-        AsyncTask::dispatch(static fn (): bool => app(self::class)->sync($token))
-            ->shared('sunny-sync-complete');
+        AsyncTask::dispatch(static function () use ($token): bool {
+            $synced = app(self::class)->sync($token);
+            Cache::forget(self::DISPATCH_KEY);
 
-        return true;
+            return $synced;
+        })->shared('sunny-sync-complete');
     }
 }

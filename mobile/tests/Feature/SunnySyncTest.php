@@ -14,6 +14,7 @@ use App\Models\Recipe;
 use App\Models\Team;
 use App\NativeComponents\Inventory;
 use App\NativeComponents\Recipes;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
 use Native\Mobile\AsyncTask;
 use Native\Mobile\Testing\Native;
@@ -189,6 +190,32 @@ it('starts a shared sync while the recipes screen stays open', function (): void
 
     $async->assertShared('sunny-sync-complete');
     expect(Recipe::find(42)->name)->toBe('Soup');
+});
+
+it('backs off after a failed background sync instead of retrying on every poll', function (): void {
+    seedSunnyData();
+    $async = AsyncTask::fake();
+    Saloon::fake([SyncRequest::class => MockResponse::make([], 503)]);
+    $this->travel(6)->minutes();
+    $screen = Native::visit('/dashboard');
+    $screen->firePoll('pollSunnySync');
+    Native::visit('/recipes')->firePoll('pollSunnySync');
+    $async->assertDispatchedTimes(1);
+
+    $this->travel(6)->minutes();
+    $screen->firePoll('pollSunnySync');
+    $async->assertDispatchedTimes(2);
+});
+
+it('does not start a background sync while another is in flight', function (): void {
+    seedSunnyData();
+    $async = AsyncTask::fake();
+    $this->travel(6)->minutes();
+    Cache::add('sunny-sync-dispatched', true, 300);
+
+    Native::visit('/dashboard')->firePoll('pollSunnySync');
+
+    $async->assertNotDispatched();
 });
 
 it('only runs a scheduled sync when local data is stale', function (): void {

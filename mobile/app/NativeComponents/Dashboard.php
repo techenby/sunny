@@ -36,8 +36,6 @@ class Dashboard extends NativeComponent
 
     public bool $showTeamPicker = false;
 
-    public int $backgroundSyncStartedAt = 0;
-
     public function mount(): void
     {
         $this->onResume();
@@ -45,9 +43,7 @@ class Dashboard extends NativeComponent
 
     public function onResume(): void
     {
-        if (app(SunnyStore::class)->isStale()) {
-            $this->syncInBackground();
-        }
+        app(SunnySyncCoordinator::class)->dispatchIfStale();
         $this->refreshLocalData();
     }
 
@@ -94,28 +90,9 @@ class Dashboard extends NativeComponent
         $this->refreshLocalData();
     }
 
-    /**
-     * Download fresh data on a background thread so the dashboard stays responsive.
-     * The completion event is delivered to whichever screen is active.
-     */
-    public function syncInBackground(): void
-    {
-        if ($this->backgroundSyncStartedAt > now()->subMinute()->getTimestamp()) {
-            return;
-        }
-
-        $this->backgroundSyncStartedAt = now()->getTimestamp();
-
-        if (! app(SunnySyncCoordinator::class)->dispatch()) {
-            $this->backgroundSyncStartedAt = 0;
-        }
-    }
-
     #[On('sunny-sync-complete')]
     public function onSyncComplete(string $status, ?string $exceptionClass = null): void
     {
-        $this->backgroundSyncStartedAt = 0;
-
         if ($status === 'failed') {
             $this->syncFailed($exceptionClass ?? RuntimeException::class);
 

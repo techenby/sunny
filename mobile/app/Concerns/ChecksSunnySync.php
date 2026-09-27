@@ -2,7 +2,6 @@
 
 namespace App\Concerns;
 
-use App\Http\Integrations\Sunny\SunnyStore;
 use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use Native\Mobile\Attributes\Poll;
 
@@ -13,9 +12,7 @@ trait ChecksSunnySync
     {
         $this->refreshLocalSyncedData();
 
-        if (app(SunnyStore::class)->isStale()) {
-            app(SunnySyncCoordinator::class)->dispatch();
-        }
+        app(SunnySyncCoordinator::class)->dispatchIfStale();
     }
 
     protected function refreshLocalSyncedData(): void {}
