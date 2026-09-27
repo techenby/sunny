@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\RouteKey;
 use App\Concerns\GeneratesUniqueTeamSlugs;
 use App\Enums\Appearance;
 use App\Enums\TeamRole;
@@ -18,6 +19,7 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable(['name', 'slug', 'is_personal', 'address', 'timezone', 'week_start', 'appearance', 'rotation'])]
+#[RouteKey('slug')]
 class Team extends Model
 {
     /** @use HasFactory<TeamFactory> */
@@ -129,11 +131,6 @@ class Team extends Model
         $this->recipes()->delete();
 
         $this->delete();
-    }
-
-    public function getRouteKeyName(): string
-    {
-        return 'slug';
     }
 
     /** @return array<string, string> */

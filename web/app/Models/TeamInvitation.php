@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\RouteKey;
 use App\Enums\TeamRole;
 use Database\Factories\TeamInvitationFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -13,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
 
 #[Fillable(['team_id', 'email', 'role', 'invited_by', 'expires_at', 'accepted_at'])]
+#[RouteKey('code')]
 class TeamInvitation extends Model
 {
     /** @use HasFactory<TeamInvitationFactory> */
@@ -49,11 +51,6 @@ class TeamInvitation extends Model
     public function isExpired(): bool
     {
         return $this->expires_at !== null && $this->expires_at->isPast();
-    }
-
-    public function getRouteKeyName(): string
-    {
-        return 'code';
     }
 
     /** @return array<string, string> */

@@ -118,21 +118,21 @@ class Routine extends Model
         return min($this->day_of_month ?? 1, $date->daysInMonth);
     }
 
-    /** @param Builder<Routine> $query */
+    /** @param Builder<static> $query */
     #[Scope]
     protected function active(Builder $query): void
     {
         $query->where('is_active', true);
     }
 
-    /** @param Builder<Routine> $query */
+    /** @param Builder<static> $query */
     #[Scope]
     protected function forTimeOfDay(Builder $query, TimeOfDay $timeOfDay): void
     {
         $query->where('time_of_day', $timeOfDay);
     }
 
-    /** @param  Builder<Routine>  $query */
+    /** @param Builder<static> $query */
     #[Scope]
     protected function household(Builder $query): void
     {

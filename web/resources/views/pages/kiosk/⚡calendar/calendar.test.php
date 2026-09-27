@@ -27,24 +27,15 @@ test('kiosk layout follows the team appearance setting', function () {
     $team = Team::factory()->create(['appearance' => Appearance::Dark]);
     $user = User::factory()->memberOf($team)->create();
 
-    actingAs($user)
-        ->get(route('kiosk.calendar'))
-        ->assertSee('class="dark"', false)
-        ->assertSee("window.localStorage.setItem('flux.appearance', 'dark')", false);
+    actingAs($user)->get(route('kiosk.calendar'))->assertSeeHtml('class="dark"')->assertSeeHtml("window.localStorage.setItem('flux.appearance', 'dark')");
 
     $team->update(['appearance' => Appearance::Light]);
 
-    actingAs($user)
-        ->get(route('kiosk.calendar'))
-        ->assertDontSee('class="dark"', false)
-        ->assertSee("window.localStorage.setItem('flux.appearance', 'light')", false);
+    actingAs($user)->get(route('kiosk.calendar'))->assertDontSeeHtml('class="dark"')->assertSeeHtml("window.localStorage.setItem('flux.appearance', 'light')");
 
     $team->update(['appearance' => Appearance::System]);
 
-    actingAs($user)
-        ->get(route('kiosk.calendar'))
-        ->assertDontSee('class="dark"', false)
-        ->assertSee("window.localStorage.setItem('flux.appearance', 'system')", false);
+    actingAs($user)->get(route('kiosk.calendar'))->assertDontSeeHtml('class="dark"')->assertSeeHtml("window.localStorage.setItem('flux.appearance', 'system')");
 });
 
 test('kiosk layout follows the team rotation setting', function () {

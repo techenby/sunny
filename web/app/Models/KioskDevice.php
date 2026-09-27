@@ -63,14 +63,14 @@ class KioskDevice extends Model
         return $this->paired_at !== null;
     }
 
-    /** @param Builder<KioskDevice> $query */
+    /** @param Builder<static> $query */
     #[Scope]
     protected function pending(Builder $query): void
     {
         $query->whereNull('paired_at')->where('expires_at', '>', now());
     }
 
-    /** @param Builder<KioskDevice> $query */
+    /** @param Builder<static> $query */
     #[Scope]
     protected function paired(Builder $query): void
     {
