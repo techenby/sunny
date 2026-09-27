@@ -7,6 +7,7 @@ use App\Http\Integrations\Sunny\Requests\RefreshTokenRequest;
 use App\Http\Integrations\Sunny\Requests\VerifyTwoFactorRequest;
 use App\Http\Integrations\Sunny\SunnyAuth;
 use App\Http\Integrations\Sunny\SunnyStore;
+use App\Http\Integrations\Sunny\SunnyTokenStore;
 use App\Models\Recipe;
 use Illuminate\Auth\AuthenticationException;
 use Native\Mobile\Testing\FakeBridge;
@@ -52,14 +53,8 @@ it('waits for two factor verification before storing a token', function (bool $r
 })->with([false, true]);
 
 it('replaces the secure token after refreshing and reads the replacement on the next request', function (): void {
-    $token = 'old-token';
-    FakeBridge::enable()->respondTo('SecureStorage.Get', function () use (&$token): array {
-        return ['value' => $token];
-    })->respondTo('SecureStorage.Set', function (array $params) use (&$token): array {
-        $token = $params['value'];
-
-        return ['success' => true];
-    });
+    fakeSecureStorage();
+    app(SunnyTokenStore::class)->put('old-token');
     Saloon::fake([
         RefreshTokenRequest::class => MockResponse::make(['token' => 'new-token']),
         GetUserRequest::class => MockResponse::make(['id' => 1]),
@@ -68,7 +63,7 @@ it('replaces the secure token after refreshing and reads the replacement on the 
     $auth->refresh();
     Saloon::assertSent(fn (Request $request, Response $response): bool => $request instanceof RefreshTokenRequest
         && $response->getPendingRequest()->headers()->get('Authorization') === 'Bearer old-token');
-    expect($token)->toBe('new-token');
+    expect(app(SunnyTokenStore::class)->get())->toBe('new-token');
     $auth->authenticatedConnector()->send(new GetUserRequest);
     Saloon::assertSent(fn (Request $request, Response $response): bool => $request instanceof GetUserRequest
         && $response->getPendingRequest()->headers()->get('Authorization') === 'Bearer new-token');
