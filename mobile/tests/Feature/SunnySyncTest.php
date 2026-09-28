@@ -11,12 +11,14 @@ use App\Http\Integrations\Sunny\SunnyAuth;
 use App\Http\Integrations\Sunny\SunnyOutbox;
 use App\Http\Integrations\Sunny\SunnyStore;
 use App\Http\Integrations\Sunny\SunnySync;
+use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Models\Item;
 use App\Models\PendingWrite;
 use App\Models\Recipe;
 use App\Models\Team;
 use App\NativeComponents\Inventory;
 use App\NativeComponents\Recipes;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
 use Native\Mobile\AsyncTask;
@@ -335,10 +337,44 @@ it('clears the previous account data on login or logout but keeps it on token re
         'logout' => $auth->logout(),
         'refresh' => $auth->refresh(),
     };
-    expect(Recipe::count())->toBe($action === 'refresh' ? 6 : 0)
+    expect(Recipe::pluck('name')->all())->toBe($action === 'refresh' ? Recipe::pluck('name')->all() : ['Soup'])
+        ->and(Recipe::count())->toBe($action === 'refresh' ? 6 : 1)
         ->and(Item::count())->toBe($action === 'refresh' ? 15 : 0)
-        ->and(PendingWrite::count())->toBe($action === 'refresh' ? 1 : 0);
+        ->and(Team::pluck('id')->all())->toBe([1])
+        ->and(PendingWrite::count())->toBe(1);
 })->with(['login', 'logout', 'refresh']);
+
+it('sends changes kept through signing out once the same account signs back in', function (): void {
+    seedSunnyData();
+    $photo = UploadedFile::fake()->image('photo.jpg');
+    app(SunnyOutbox::class)->queue('recipes', 1, ['name' => 'Soup'], 1, $photo->getPathname());
+    Saloon::fake([LogoutRequest::class => MockResponse::make([], 204), CreateTokenRequest::class => MockResponse::make(['token' => 'new-token'])]);
+    app(SunnyAuth::class)->logout();
+    app(SunnyAuth::class)->login('person@example.com', 'password', 'phone');
+    expect(PendingWrite::sole()->photo_path)->toBeFile();
+
+    $saved = [...Recipe::find(1)->toArray(), 'name' => 'Soup', 'photo_url' => 'https://sunny.example/soup.jpg'];
+    Saloon::fake([
+        SaveRecordRequest::class => MockResponse::make(['data' => $saved]),
+        SyncRequest::class => MockResponse::make(['teams' => [['id' => 1, 'name' => 'Family', 'slug' => 'family']], 'recipes' => [$saved], 'items' => [], 'synced_at' => now()->toIso8601String()]),
+    ]);
+    app(SunnySyncCoordinator::class)->sync();
+
+    Saloon::assertSent(fn ($request): bool => $request instanceof SaveRecordRequest && $request->resolveEndpoint() === '/teams/family/recipes/1');
+    expect(PendingWrite::count())->toBe(0)->and(Recipe::find(1)->name)->toBe('Soup');
+});
+
+it('drops kept changes when the account that signs in cannot reach their team', function (): void {
+    seedSunnyData();
+    app(SunnyOutbox::class)->queue('recipes', 1, ['name' => 'Soup'], 1);
+    Saloon::fake([LogoutRequest::class => MockResponse::make([], 204)]);
+    app(SunnyAuth::class)->logout();
+
+    Saloon::fake([SyncRequest::class => MockResponse::make($this->snapshot)]);
+    app(SunnySync::class)->sync();
+
+    expect(PendingWrite::count())->toBe(0)->and(Team::pluck('id')->all())->toBe([7])->and(Recipe::find(1))->toBeNull();
+});
 
 it('does not expose another API server data', function (): void {
     seedSunnyData();

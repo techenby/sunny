@@ -9,7 +9,6 @@ use App\Models\Team;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\File;
 
 class SunnyStore
 {
@@ -68,16 +67,19 @@ class SunnyStore
         self::model($type)::query()->updateOrCreate(['id' => $record['id']], ['server' => self::server(), ...array_fill_keys($fields, null), ...Arr::only($record, $fields)]);
     }
 
+    /**
+     * Forget downloaded data, keeping changes that haven't reached Sunny yet. The next download drops any for teams the signed-in account can't reach.
+     */
     public function clear(): void
     {
         DB::transaction(function (): void {
-            Item::query()->delete();
-            Recipe::query()->delete();
-            Team::query()->delete();
-            PendingWrite::query()->delete();
+            $pending = PendingWrite::query()->get();
+            Item::query()->whereNotIn('id', $pending->where('resource', 'items')->pluck('record_id'))->delete();
+            Recipe::query()->whereNotIn('id', $pending->where('resource', 'recipes')->pluck('record_id'))->delete();
+            Team::query()->whereNotIn('id', $pending->pluck('team_id'))->delete();
             DB::table('sunny_sync_states')->delete();
         });
-        File::deleteDirectory(SunnyOutbox::photoDirectory());
+        app(SunnyOutbox::class)->prunePhotos();
     }
 
     /**
