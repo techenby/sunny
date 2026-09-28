@@ -2,7 +2,7 @@
 @use('App\Icons\Ios')
 
 {{-- Expects $refPrefix and $queuedChange; the including screen supplies
-     discardQueuedChange via the ShowsQueuedChange trait. --}}
+     confirmDiscardQueuedChange via the ShowsQueuedChange trait. --}}
 
 @if ($change = $queuedChange)
     @if ($change['error'])
@@ -12,7 +12,7 @@
                 <text font="semibold" class="flex-1 text-base text-theme-on-surface">Not saved to Sunny</text>
             </row>
             <text class="text-sm text-theme-on-surface-variant">{{ $change['error'] }} Edit to try again, or discard the change.</text>
-            <pressable ref="{{ $refPrefix }}-sync-discard" class="h-10 justify-center self-start" @tap="discardQueuedChange">
+            <pressable ref="{{ $refPrefix }}-sync-discard" class="h-10 justify-center self-start" @tap="confirmDiscardQueuedChange">
                 <text class="text-sm font-semibold text-theme-destructive">Discard change</text>
             </pressable>
         </column>

@@ -13,6 +13,7 @@ use App\Models\Recipe;
 use App\Models\Team;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
+use Native\Mobile\Events\Alert\ButtonPressed;
 use Native\Mobile\Testing\Native;
 use Saloon\Enums\Method;
 use Saloon\Exceptions\Request\RequestException;
@@ -155,8 +156,22 @@ it('discards a refused edit and leaves the record for the next download', functi
     Saloon::fake([SaveRecordRequest::class => MockResponse::make([], 403)]);
     Native::visit('/recipes/1/edit')->set('name', 'Unsaved')->tap('edit-recipe-submit');
 
-    Native::visit('/recipes/1')->tap('recipe-sync-discard')->assertNoNavigation()->assertDontSee('Not saved to Sunny');
+    Native::visit('/recipes/1')->tap('recipe-sync-discard')
+        ->assertNativeCalled('Dialog.Alert', fn (array $params): bool => $params['id'] === 'discard-queued-change'
+            && $params['message'] === 'Your edit will be replaced by the recipe on Sunny the next time this phone syncs.')
+        ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Discard', 'id' => 'discard-queued-change'])
+        ->assertNoNavigation()->assertDontSee('Not saved to Sunny');
     expect(PendingWrite::count())->toBe(0);
+});
+
+it('keeps a refused change when discarding it is cancelled', function (): void {
+    Saloon::fake([SaveRecordRequest::class => MockResponse::make([], 403)]);
+    Native::visit('/recipes/1/edit')->set('name', 'Unsaved')->tap('edit-recipe-submit');
+
+    Native::visit('/recipes/1')->tap('recipe-sync-discard')
+        ->emitNative(ButtonPressed::class, ['index' => 0, 'label' => 'Cancel', 'id' => 'discard-queued-change'])
+        ->assertSee('Not saved to Sunny');
+    expect(PendingWrite::sole()->error)->not->toBeNull()->and(Recipe::find(1)->name)->toBe('Unsaved');
 });
 
 it('discards a refused new item, moving what was put inside it to the top level', function (): void {
@@ -166,7 +181,10 @@ it('discards a refused new item, moving what was put inside it to the top level'
     $outbox->queue('items', 1, ['name' => 'Hammer', 'type' => 'item', 'parent_id' => $shelf, 'metadata' => null]);
     app(SunnyWrites::class)->push();
 
-    Native::visit('/inventory/'.$shelf)->tap('item-sync-discard')->assertWentBack();
+    Native::visit('/inventory/'.$shelf)->tap('item-sync-discard')
+        ->assertNativeCalled('Dialog.Alert', fn (array $params): bool => $params['message'] === 'This item never reached Sunny, so it will be deleted from this phone.')
+        ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Discard', 'id' => 'discard-queued-change'])
+        ->assertWentBack();
 
     expect(Item::find($shelf))->toBeNull()
         ->and(Item::firstWhere('name', 'Hammer')->parent_id)->toBeNull()
