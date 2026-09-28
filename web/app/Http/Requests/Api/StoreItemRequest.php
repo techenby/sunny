@@ -30,6 +30,7 @@ class StoreItemRequest extends FormRequest
             'parent_id' => ['nullable', 'integer', Rule::exists('items', 'id')->where('team_id', $this->route('team')->id)],
             'metadata' => ['nullable', 'array'],
             'photo' => ['nullable', 'image', 'max:10240'],
+            'client_uuid' => ['nullable', 'uuid'],
         ];
     }
 

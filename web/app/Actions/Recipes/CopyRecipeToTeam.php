@@ -11,7 +11,7 @@ class CopyRecipeToTeam
 {
     public function handle(Recipe $recipe, Team $team): Recipe
     {
-        $copy = $recipe->replicate()
+        $copy = $recipe->replicate(['client_uuid'])
             ->fill([
                 'team_id' => $team->id,
                 'parent_id' => $recipe->id,

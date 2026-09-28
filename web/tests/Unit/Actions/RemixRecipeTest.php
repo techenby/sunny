@@ -34,3 +34,11 @@ test('it sets the parent relationship', function () {
     expect($remix->parent->id)->toBe($recipe->id);
     expect($recipe->fresh()->remixes)->toHaveCount(1);
 });
+
+test('it does not copy the client uuid', function () {
+    $recipe = Recipe::factory()->create(['client_uuid' => '9b2f6c1e-3d4a-4f5b-8c7d-1e2f3a4b5c6d']);
+
+    $remix = (new RemixRecipe)->handle($recipe);
+
+    expect($remix->client_uuid)->toBeNull();
+});

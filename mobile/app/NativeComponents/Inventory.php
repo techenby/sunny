@@ -33,7 +33,7 @@ class Inventory extends NativeComponent
      */
     public static function find(int $id): ?array
     {
-        $item = Item::forActiveTeam()->find($id);
+        $item = Item::forActiveTeam()->where(fn ($query) => $query->whereKey($id)->orWhere('local_id', $id))->first();
 
         return $item ? [...$item->toArray(), 'type' => $item->type] : null;
     }

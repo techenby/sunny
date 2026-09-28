@@ -2,8 +2,10 @@
 
 use App\Http\Integrations\Sunny\Requests\SaveRecordRequest;
 use App\Models\Item;
+use App\Models\PendingWrite;
 use App\NativeComponents\ScanInventory;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\File;
 use Native\Mobile\Events\Camera\PhotoTaken;
 use Native\Mobile\Events\Gallery\MediaSelected;
@@ -168,6 +170,7 @@ it('adds the checked finds to Sunny under the chosen place with their details an
         ->assertReplacedWith('/inventory/7');
 
     $fields = fn (SaveRecordRequest $request): array => collect($request->body()->all())
+        ->reject(fn ($part): bool => $part->name === 'client_uuid')
         ->mapWithKeys(fn ($part): array => [$part->name => $part->name === 'photo' ? (string) $part->value : $part->value])
         ->all();
     Saloon::assertSentCount(2);
@@ -195,12 +198,12 @@ it('still adds a find whose photo has since been cleared from the phone', functi
         ->assertSet('error', '')
         ->assertReplacedWith('/inventory');
 
-    Saloon::assertSent(fn (SaveRecordRequest $request): bool => $request->body()->all() === [
+    Saloon::assertSent(fn (SaveRecordRequest $request): bool => Arr::except($request->body()->all(), 'client_uuid') === [
         'name' => 'Hammer', 'type' => 'item', 'parent_id' => null, 'metadata' => null,
     ]);
 });
 
-it('stops at the first failed save and keeps what was not added', function () {
+it('adds every checked find and flags the one Sunny refuses', function () {
     $responses = [
         MockResponse::make(['data' => ['id' => 100, 'team_id' => 1, 'parent_id' => null, 'type' => 'item', 'name' => 'Hammer', 'metadata' => null]], 201),
         MockResponse::make([], 403),
@@ -213,13 +216,13 @@ it('stops at the first failed save and keeps what was not added', function () {
 
     $screen->emitNative(ItemsIdentified::class, ['id' => $scan, 'items' => [['name' => 'Hammer'], ['name' => 'Level'], ['name' => 'Saw']]])
         ->tap('scan-submit')
-        ->assertNoNavigation()
-        ->assertSee('Some items weren’t added. Fix the one marked below and try again.')
-        ->assertSee('You no longer have permission to save to this team.');
+        ->assertSet('error', '')
+        ->assertReplacedWith('/inventory');
 
-    Saloon::assertSentCount(2);
-    expect(array_column($screen->get('candidates'), 'name'))->toBe(['Level', 'Saw'])
-        ->and(Item::find(100)?->name)->toBe('Hammer');
+    Saloon::assertSentCount(3);
+    expect(Item::whereIn('id', [100, 101])->pluck('name')->all())->toBe(['Hammer', 'Saw'])
+        ->and(PendingWrite::sole()->error)->toBe('You no longer have permission to save to this team.');
+    Native::visit('/inventory/'.PendingWrite::sole()->record_id)->assertSee('Level')->assertSee('Not saved to Sunny');
 });
 
 it('refuses to add nothing or an unnamed item', function (array $changes, string $message) {

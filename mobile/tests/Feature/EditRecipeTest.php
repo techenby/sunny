@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Integrations\Sunny\Requests\SaveRecordRequest;
+use App\Models\PendingWrite;
 use App\NativeComponents\EditRecipe;
 use App\NativeComponents\Recipes;
 use Native\Mobile\Testing\Native;
@@ -87,15 +88,17 @@ it('refuses to update a recipe without a name', function () {
         ->assertSee('Give the recipe a name.');
 });
 
-it('keeps unsaved recipe edits on the form when the API rejects the save', function () {
+it('keeps the recipe edit queued on the phone when Sunny rejects the session', function () {
     Native::fakeBridge()->respondTo('SecureStorage.Get', ['value' => 'saved-token']);
     Saloon::fake([SaveRecordRequest::class => MockResponse::make([], 401)]);
 
     Native::visit('/recipes/1/edit')
         ->assertSee('Update recipe')
         ->tap('edit-recipe-submit')
-        ->assertNoNavigation()
-        ->assertSet('error', 'Your session expired. Log in again before saving.');
+        ->assertSet('error', '')
+        ->assertReplacedWith('/recipes/1');
+
+    expect(PendingWrite::sole()->error)->toBeNull();
 });
 
 it('explains when the recipe does not exist', function () {

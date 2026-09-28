@@ -43,7 +43,7 @@ class Dashboard extends NativeComponent
 
     public function onResume(): void
     {
-        app(SunnySyncCoordinator::class)->dispatchIfStale();
+        app(SunnySyncCoordinator::class)->dispatchIfDue();
         $this->refreshLocalData();
     }
 

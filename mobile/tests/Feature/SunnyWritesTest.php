@@ -2,24 +2,29 @@
 
 use App\Http\Integrations\Sunny\Requests\SaveRecordRequest;
 use App\Http\Integrations\Sunny\Requests\SyncRequest;
+use App\Http\Integrations\Sunny\SunnyOutbox;
 use App\Http\Integrations\Sunny\SunnyStore;
 use App\Http\Integrations\Sunny\SunnySync;
+use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Http\Integrations\Sunny\SunnyWrites;
 use App\Models\Item;
+use App\Models\PendingWrite;
 use App\Models\Recipe;
 use App\Models\Team;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
 use Native\Mobile\Testing\Native;
 use Saloon\Enums\Method;
+use Saloon\Exceptions\Request\RequestException;
 use Saloon\Http\Faking\MockResponse;
+use Saloon\Http\PendingRequest;
 
 beforeEach(function (): void {
     Native::fakeBridge()->respondTo('SecureStorage.Get', ['value' => 'saved-token']);
     seedSunnyData();
 });
 
-it('creates and edits recipes and items then stores the confirmed server response', function (string $resource, string $route, string $ref, bool $editing): void {
+it('saves on the phone, opens the record, then stores what Sunny confirms', function (string $resource, string $route, string $ref, bool $editing): void {
     $model = $resource === 'recipes' ? Recipe::class : Item::class;
     $record = $model::find(1)->toArray();
     $record['id'] = $editing ? 1 : 90;
@@ -27,15 +32,26 @@ it('creates and edits recipes and items then stores the confirmed server respons
     Saloon::fake([SaveRecordRequest::class => MockResponse::make(['data' => $record], $editing ? 200 : 201)]);
     Native::visit('/'.$route.($editing ? '/1/edit' : '/create'))
         ->set('name', 'Draft name')->tap($ref.'-submit')
-        ->assertSet('error', '')->assertReplacedWith('/'.$route.'/'.$record['id']);
-    expect($model::find($record['id'])->name)->toBe('Saved by Sunny');
+        ->assertSet('error', '')->assertReplacedWith('/'.$route.'/'.($editing ? 1 : -1));
+    expect($model::find($record['id'])->name)->toBe('Saved by Sunny')
+        ->and(PendingWrite::count())->toBe(0);
     Saloon::assertSent(fn (SaveRecordRequest $request): bool => $request->resolveEndpoint() === '/teams/family/'.$resource.($editing ? '/1' : '')
         && $request->getMethod() === ($editing ? Method::PATCH : Method::POST)
-        && $request->body()->get('name') === 'Draft name');
+        && $request->body()->get('name') === 'Draft name'
+        && ($request->body()->get('client_uuid') !== null) === ! $editing);
 })->with([
     ['recipes', 'recipes', 'create-recipe', false], ['recipes', 'recipes', 'edit-recipe', true],
     ['items', 'inventory', 'create-item', false], ['items', 'inventory', 'edit-item', true],
 ]);
+
+it('finds a new record by the id it opened with after Sunny assigns one', function (): void {
+    $record = [...Recipe::find(1)->toArray(), 'id' => 90, 'name' => 'Soup'];
+    Saloon::fake([SaveRecordRequest::class => MockResponse::make(['data' => $record], 201)]);
+    Native::visit('/recipes/create')->set('name', 'Soup')->tap('create-recipe-submit')->assertReplacedWith('/recipes/-1');
+
+    Native::visit('/recipes/-1')->assertSee('Soup')->assertMissingElement('row', fn (array $node): bool => ($node['ref'] ?? null) === 'recipe-sync-pending');
+    expect(Recipe::find(90)->local_id)->toBe(-1);
+});
 
 it('sends the entire recipe form and preserves unedited rich text', function (): void {
     Recipe::find(1)->update(['ingredients' => '<p><strong>Flour</strong></p>']);
@@ -114,16 +130,123 @@ it('removes an existing recipe photo explicitly', function (): void {
     expect(Recipe::find(1)->photo_url)->toBeNull();
 });
 
-it('keeps rejected changes on screen and leaves SQLite untouched', function (int $status, string $message): void {
-    $name = Recipe::find(1)->name;
+it('keeps a change Sunny refuses on the phone and explains why', function (int $status, string $message): void {
     Saloon::fake([SaveRecordRequest::class => MockResponse::make(['errors' => ['name' => ['That name is taken.']]], $status)]);
-    Native::visit('/recipes/1/edit')->set('name', 'Unsaved')->tap('edit-recipe-submit')
-        ->assertNoNavigation()->assertSet('name', 'Unsaved')->assertSet('error', $message);
-    expect(Recipe::find(1)->name)->toBe($name);
+    Native::visit('/recipes/1/edit')->set('name', 'Unsaved')->tap('edit-recipe-submit')->assertReplacedWith('/recipes/1');
+
+    expect(Recipe::find(1)->name)->toBe('Unsaved')
+        ->and(PendingWrite::sole()->error)->toBe($message);
+    Native::visit('/recipes/1')->assertSee('Not saved to Sunny')->assertSee($message);
 })->with([
     [422, 'That name is taken.'], [403, 'You no longer have permission to save to this team.'],
-    [500, 'Unable to confirm the save. Sync with Sunny before retrying to avoid duplicates.'],
+    [404, 'This record or team is no longer on Sunny.'],
 ]);
+
+it('keeps sending a change after Sunny fails for a reason that may pass', function (): void {
+    Saloon::fake([SaveRecordRequest::class => MockResponse::make([], 500)]);
+    Native::visit('/recipes/1/edit')->set('name', 'Unsaved')->tap('edit-recipe-submit')->assertReplacedWith('/recipes/1');
+
+    expect(PendingWrite::sole()->error)->toBeNull();
+    Native::visit('/recipes/1')->assertSee('Saved on this phone · syncing with Sunny');
+    expect(app(SunnySyncCoordinator::class)->isDue())->toBeTrue();
+});
+
+it('discards a refused edit and leaves the record for the next download', function (): void {
+    Saloon::fake([SaveRecordRequest::class => MockResponse::make([], 403)]);
+    Native::visit('/recipes/1/edit')->set('name', 'Unsaved')->tap('edit-recipe-submit');
+
+    Native::visit('/recipes/1')->tap('recipe-sync-discard')->assertNoNavigation()->assertDontSee('Not saved to Sunny');
+    expect(PendingWrite::count())->toBe(0);
+});
+
+it('discards a refused new item, moving what was put inside it to the top level', function (): void {
+    Saloon::fake([SaveRecordRequest::class => MockResponse::make([], 403)]);
+    $outbox = app(SunnyOutbox::class);
+    $shelf = $outbox->queue('items', 1, ['name' => 'Shelf', 'type' => 'bin', 'parent_id' => null, 'metadata' => null]);
+    $outbox->queue('items', 1, ['name' => 'Hammer', 'type' => 'item', 'parent_id' => $shelf, 'metadata' => null]);
+    app(SunnyWrites::class)->push();
+
+    Native::visit('/inventory/'.$shelf)->tap('item-sync-discard')->assertWentBack();
+
+    expect(Item::find($shelf))->toBeNull()
+        ->and(Item::firstWhere('name', 'Hammer')->parent_id)->toBeNull()
+        ->and(PendingWrite::sole()->payload['parent_id'])->toBeNull();
+});
+
+it('sends a new item only after the new item it is inside has an id', function (): void {
+    $nextId = 100;
+    Saloon::fake([SaveRecordRequest::class => function (PendingRequest $request) use (&$nextId): MockResponse {
+        return MockResponse::make(['data' => [...$request->body()->all(), 'id' => $nextId++, 'team_id' => 1]], 201);
+    }]);
+    $outbox = app(SunnyOutbox::class);
+    $hammer = $outbox->queue('items', 1, ['name' => 'Hammer', 'type' => 'item', 'parent_id' => null, 'metadata' => null]);
+    $shelf = $outbox->queue('items', 1, ['name' => 'Shelf', 'type' => 'bin', 'parent_id' => null, 'metadata' => null]);
+    $outbox->queue('items', 1, ['name' => 'Hammer', 'type' => 'item', 'parent_id' => $shelf, 'metadata' => null], $hammer);
+
+    app(SunnyWrites::class)->push();
+
+    expect(Item::find(100)->name)->toBe('Shelf')
+        ->and(Item::find(101)->parent_id)->toBe(100)
+        ->and(PendingWrite::count())->toBe(0);
+});
+
+it('sends an edit made while the new record was being created as a follow-up update', function (): void {
+    $outbox = app(SunnyOutbox::class);
+    $id = $outbox->queue('recipes', 1, ['name' => 'Soup']);
+    Saloon::fake([SaveRecordRequest::class => function (PendingRequest $request) use ($outbox, $id): MockResponse {
+        if ($request->getMethod() === Method::POST) {
+            $outbox->queue('recipes', 1, ['name' => 'Tomato soup'], $id);
+        }
+
+        return MockResponse::make(['data' => [...Recipe::find(1)->toArray(), 'id' => 90, 'name' => $request->body()->get('name')]]);
+    }]);
+
+    app(SunnyWrites::class)->push();
+
+    Saloon::assertSentCount(2);
+    Saloon::assertSent(fn (SaveRecordRequest $request): bool => $request->resolveEndpoint() === '/teams/family/recipes/90'
+        && $request->body()->get('name') === 'Tomato soup' && $request->body()->get('client_uuid') === null);
+    expect(Recipe::find(90)->name)->toBe('Tomato soup')->and(PendingWrite::count())->toBe(0);
+});
+
+it('folds a second edit into the change still waiting, keeping an earlier photo removal', function (): void {
+    Recipe::find(1)->update(['photo_url' => 'https://sunny.example/photo.jpg']);
+    $outbox = app(SunnyOutbox::class);
+    $outbox->queue('recipes', 1, ['name' => 'First', 'remove_photo' => true], 1);
+    $outbox->queue('recipes', 1, ['notes' => 'Second', 'remove_photo' => false], 1);
+
+    expect(PendingWrite::sole()->payload)->toBe(['name' => 'First', 'remove_photo' => true, 'notes' => 'Second'])
+        ->and(Recipe::find(1)->only('name', 'notes', 'photo_url'))->toBe(['name' => 'First', 'notes' => 'Second', 'photo_url' => null]);
+});
+
+it('retries a new record with the same client id so Sunny can spot the repeat', function (): void {
+    Saloon::fake([SaveRecordRequest::class => MockResponse::make([], 503)]);
+    $id = app(SunnyOutbox::class)->queue('recipes', 1, ['name' => 'Soup']);
+    $uuid = PendingWrite::sole()->client_uuid;
+    expect(fn () => app(SunnyWrites::class)->push())->toThrow(RequestException::class);
+
+    Saloon::fake([SaveRecordRequest::class => MockResponse::make(['data' => [...Recipe::find(1)->toArray(), 'id' => 90]], 200)]);
+    app(SunnyWrites::class)->push();
+
+    Saloon::assertSent(fn (SaveRecordRequest $request): bool => $request->body()->get('client_uuid') === $uuid);
+    expect(Recipe::find($id))->toBeNull()->and(Recipe::find(90))->not->toBeNull();
+});
+
+it('keeps queued changes when a download lands before they are sent', function (): void {
+    $id = app(SunnyOutbox::class)->queue('recipes', 1, ['name' => 'Soup']);
+    app(SunnyOutbox::class)->queue('recipes', 1, ['name' => 'Local edit'], 2);
+    $uuid = PendingWrite::firstWhere('record_id', $id)->client_uuid;
+    $snapshot = [
+        'teams' => [['id' => 1, 'name' => 'Family', 'slug' => 'family']],
+        'recipes' => [[...Recipe::find(2)->toArray(), 'name' => 'Remote edit'], [...Recipe::find(1)->toArray(), 'id' => 90, 'name' => 'Soup', 'client_uuid' => $uuid]],
+        'items' => [], 'synced_at' => now()->toIso8601String(),
+    ];
+    Saloon::fake([SyncRequest::class => MockResponse::make($snapshot)]);
+
+    app(SunnySync::class)->sync();
+
+    expect(Recipe::pluck('name', 'id')->all())->toBe([$id => 'Soup', 2 => 'Local edit']);
+});
 
 it('uses the active team and filters parents by team', function (): void {
     Team::create(['id' => 2, 'name' => 'Work', 'slug' => 'work', 'server' => SunnyStore::server()]);
@@ -133,23 +256,12 @@ it('uses the active team and filters parents by team', function (): void {
     expect(array_column($screen->get('parentChoices'), 'name'))->toBe(['Work bin']);
 });
 
-it('does not resubmit a confirmed create if storing the local copy fails', function (): void {
-    $record = Recipe::find(1)->toArray();
-    $record['id'] = 90;
-    Saloon::fake([SaveRecordRequest::class => MockResponse::make(['data' => $record], 201)]);
-    $this->mock(SunnyStore::class)->shouldReceive('saveRecord')->once()->andThrow(new RuntimeException('Disk full'));
-    Native::visit('/recipes/create')->set('name', 'Soup')->call('save')->assertSet('savedId', 90)
-        ->assertSee('Saved on Sunny, but the local copy could not be updated. Go back and sync to see it.')
-        ->call('save');
-    Saloon::assertSentCount(1);
-});
-
-it('keeps the draft when the network fails without changing local records', function (): void {
-    $this->mock(SunnyWrites::class)->shouldReceive('save')->once()->andThrow(new RuntimeException('Connection lost'));
+it('saves a new recipe on the phone while Sunny is unreachable', function (): void {
+    Saloon::fake([SaveRecordRequest::class => MockResponse::make([], 503)]);
     Native::visit('/recipes/create')->set('name', 'Offline draft')->tap('create-recipe-submit')
-        ->assertNoNavigation()->assertSet('name', 'Offline draft')
-        ->assertSee('Unable to confirm the save. Check your connection and sync before retrying to avoid duplicates.');
-    expect(Recipe::count())->toBe(6);
+        ->assertReplacedWith('/recipes/-1');
+    Native::visit('/recipes/-1')->assertSee('Offline draft')->assertSee('Saved on this phone · syncing with Sunny');
+    Native::visit('/recipes')->assertSee('Offline draft');
 });
 
 it('rejects a missing photo before sending a request', function (): void {
@@ -160,12 +272,13 @@ it('rejects a missing photo before sending a request', function (): void {
     Saloon::assertNothingSent();
 });
 
-it('rejects responses for another team without writing them locally', function (): void {
+it('flags responses for another team without writing them locally', function (): void {
     $record = Recipe::find(1)->toArray();
     $record['team_id'] = 999;
     Saloon::fake([SaveRecordRequest::class => MockResponse::make(['data' => $record])]);
-    Native::visit('/recipes/1/edit')->set('name', 'Draft')->tap('edit-recipe-submit')->assertNoNavigation();
-    expect(Recipe::find(1)->team_id)->toBe(1)->and(Recipe::find(1)->name)->not->toBe('Draft');
+    Native::visit('/recipes/1/edit')->set('name', 'Draft')->tap('edit-recipe-submit');
+    expect(Recipe::find(1)->team_id)->toBe(1)->and(Recipe::find(1)->name)->toBe('Draft')
+        ->and(PendingWrite::sole()->error)->toBe('Sunny didn’t confirm this change. Edit it to try again.');
 });
 
 it('syncs team route keys and remote photo URLs for subsequent edits', function (): void {

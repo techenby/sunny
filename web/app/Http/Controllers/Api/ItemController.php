@@ -32,11 +32,13 @@ class ItemController extends Controller
 
     public function store(StoreItemRequest $request, Team $team, CreateItem $action): JsonResponse
     {
-        $item = $action->handle($team, $request->validated());
+        $existing = $request->filled('client_uuid')
+            ? $team->items()->withTrashed()->firstWhere('client_uuid', $request->validated('client_uuid'))
+            : null;
 
-        return ItemResource::make($item)
+        return ItemResource::make($existing ?? $action->handle($team, $request->validated()))
             ->response()
-            ->setStatusCode(201);
+            ->setStatusCode($existing ? 200 : 201);
     }
 
     public function duplicate(DuplicateItemRequest $request, Team $team, Item $item, DuplicateItem $action): JsonResponse

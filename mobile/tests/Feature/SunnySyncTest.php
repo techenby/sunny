@@ -5,11 +5,14 @@ use App\Http\Integrations\Sunny\Requests\CreateTokenRequest;
 use App\Http\Integrations\Sunny\Requests\GetUserRequest;
 use App\Http\Integrations\Sunny\Requests\LogoutRequest;
 use App\Http\Integrations\Sunny\Requests\RefreshTokenRequest;
+use App\Http\Integrations\Sunny\Requests\SaveRecordRequest;
 use App\Http\Integrations\Sunny\Requests\SyncRequest;
 use App\Http\Integrations\Sunny\SunnyAuth;
+use App\Http\Integrations\Sunny\SunnyOutbox;
 use App\Http\Integrations\Sunny\SunnyStore;
 use App\Http\Integrations\Sunny\SunnySync;
 use App\Models\Item;
+use App\Models\PendingWrite;
 use App\Models\Recipe;
 use App\Models\Team;
 use App\NativeComponents\Inventory;
@@ -241,6 +244,37 @@ it('only runs a scheduled sync when local data is stale', function (): void {
     Saloon::assertSentCount(1);
 });
 
+it('runs a scheduled sync while changes are waiting even when local data is fresh', function (): void {
+    seedSunnyData();
+    app(SunnyOutbox::class)->queue('recipes', 1, ['name' => 'Soup'], 1);
+    Saloon::fake([
+        SaveRecordRequest::class => MockResponse::make(['data' => [...Recipe::find(1)->toArray(), 'name' => 'Soup']]),
+        SyncRequest::class => MockResponse::make($this->snapshot),
+    ]);
+
+    $this->artisan('sunny:sync')->assertSuccessful();
+
+    Saloon::assertSent(SaveRecordRequest::class);
+    Saloon::assertSent(SyncRequest::class);
+    expect(PendingWrite::count())->toBe(0);
+});
+
+it('starts a background sync on the next poll while changes are waiting', function (): void {
+    seedSunnyData();
+    $async = AsyncTask::fake();
+    $screen = Native::visit('/recipes');
+    $screen->firePoll('pollSunnySync');
+    $async->assertNotDispatched();
+
+    PendingWrite::create(['server' => SunnyStore::server(), 'resource' => 'recipes', 'record_id' => 1, 'team_id' => 1, 'payload' => ['name' => 'Soup'], 'error' => 'Refused']);
+    $screen->firePoll('pollSunnySync');
+    $async->assertNotDispatched();
+
+    PendingWrite::query()->update(['error' => null]);
+    $screen->firePoll('pollSunnySync');
+    $async->assertDispatchedTimes(1);
+});
+
 it('returns to login when a background sync finds the session revoked', function (): void {
     $bridge = Native::fakeBridge()->respondTo('SecureStorage.Get', ['value' => 'saved-token'])->respondTo('SecureStorage.Delete', ['success' => true]);
     seedSunnyData();
@@ -289,6 +323,7 @@ it('lets a new login start a background sync after an earlier sync failed', func
 
 it('clears the previous account data on login or logout but keeps it on token refresh', function (string $action): void {
     seedSunnyData();
+    app(SunnyOutbox::class)->queue('recipes', 1, ['name' => 'Soup'], 1);
     Saloon::fake([
         CreateTokenRequest::class => MockResponse::make(['token' => 'new-token']),
         LogoutRequest::class => MockResponse::make([], 204),
@@ -301,7 +336,8 @@ it('clears the previous account data on login or logout but keeps it on token re
         'refresh' => $auth->refresh(),
     };
     expect(Recipe::count())->toBe($action === 'refresh' ? 6 : 0)
-        ->and(Item::count())->toBe($action === 'refresh' ? 15 : 0);
+        ->and(Item::count())->toBe($action === 'refresh' ? 15 : 0)
+        ->and(PendingWrite::count())->toBe($action === 'refresh' ? 1 : 0);
 })->with(['login', 'logout', 'refresh']);
 
 it('does not expose another API server data', function (): void {
