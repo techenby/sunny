@@ -325,9 +325,10 @@ it('lets a new login start a background sync after an earlier sync failed', func
 
 it('clears the previous account data on login or logout but keeps it on token refresh', function (string $action): void {
     seedSunnyData();
+    app(SunnyStore::class)->rememberAccount(5);
     app(SunnyOutbox::class)->queue('recipes', 1, ['name' => 'Soup'], 1);
     Saloon::fake([
-        CreateTokenRequest::class => MockResponse::make(['token' => 'new-token']),
+        CreateTokenRequest::class => MockResponse::make(['id' => 5, 'token' => 'new-token']),
         LogoutRequest::class => MockResponse::make([], 204),
         RefreshTokenRequest::class => MockResponse::make(['token' => 'refreshed-token']),
     ]);
@@ -347,8 +348,10 @@ it('clears the previous account data on login or logout but keeps it on token re
 it('sends changes kept through signing out once the same account signs back in', function (): void {
     seedSunnyData();
     $photo = UploadedFile::fake()->image('photo.jpg');
+    Saloon::fake([GetUserRequest::class => MockResponse::make(['data' => ['id' => 5]])]);
+    Native::visit('/')->assertReplacedWith('/dashboard');
     app(SunnyOutbox::class)->queue('recipes', 1, ['name' => 'Soup'], 1, $photo->getPathname());
-    Saloon::fake([LogoutRequest::class => MockResponse::make([], 204), CreateTokenRequest::class => MockResponse::make(['token' => 'new-token'])]);
+    Saloon::fake([LogoutRequest::class => MockResponse::make([], 204), CreateTokenRequest::class => MockResponse::make(['id' => 5, 'token' => 'new-token'])]);
     app(SunnyAuth::class)->logout();
     app(SunnyAuth::class)->login('person@example.com', 'password', 'phone');
     expect(PendingWrite::sole()->photo_path)->toBeFile();
@@ -363,6 +366,24 @@ it('sends changes kept through signing out once the same account signs back in',
     Saloon::assertSent(fn ($request): bool => $request instanceof SaveRecordRequest && $request->resolveEndpoint() === '/teams/family/recipes/1');
     expect(PendingWrite::count())->toBe(0)->and(Recipe::find(1)->name)->toBe('Soup');
 });
+
+it('drops kept changes when a different or unknown account signs in', function (array $login): void {
+    seedSunnyData();
+    app(SunnyStore::class)->rememberAccount(5);
+    $photo = UploadedFile::fake()->image('photo.jpg');
+    app(SunnyOutbox::class)->queue('recipes', 1, ['name' => 'Soup'], 1, $photo->getPathname());
+    $keptPhoto = PendingWrite::sole()->photo_path;
+    Saloon::fake([LogoutRequest::class => MockResponse::make([], 204), CreateTokenRequest::class => MockResponse::make([...$login, 'token' => 'new-token'])]);
+    app(SunnyAuth::class)->logout();
+
+    app(SunnyAuth::class)->login('other@example.com', 'password', 'phone');
+
+    expect(PendingWrite::count())->toBe(0)->and(Recipe::count())->toBe(0)->and(Team::count())->toBe(0)
+        ->and($keptPhoto)->not->toBeFile();
+})->with([
+    'different account' => [['id' => 6]],
+    'unknown account' => [[]],
+]);
 
 it('drops kept changes when the account that signs in cannot reach their team', function (): void {
     seedSunnyData();

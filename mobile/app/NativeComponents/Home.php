@@ -29,7 +29,10 @@ class Home extends NativeComponent
 
         try {
             try {
-                app(SunnyAuth::class)->authenticatedConnector()->send(new GetUserRequest);
+                $userId = app(SunnyAuth::class)->authenticatedConnector()->send(new GetUserRequest)->json('data.id');
+                if (is_int($userId)) {
+                    app(SunnyStore::class)->rememberAccount($userId);
+                }
                 $this->replace('/dashboard');
             } catch (UnauthorizedException) {
                 app(DestroySession::class)->handle();

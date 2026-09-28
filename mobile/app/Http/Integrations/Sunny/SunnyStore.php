@@ -68,6 +68,29 @@ class SunnyStore
     }
 
     /**
+     * Clear local data for a new sign-in. Changes kept from an earlier session only survive when the same account signs back in.
+     */
+    public function startSession(?int $userId): void
+    {
+        $previous = DB::table('sunny_accounts')->where('server', self::server())->value('user_id');
+
+        if ($userId === null || $previous === null || (int) $previous !== $userId) {
+            PendingWrite::query()->forCurrentServer()->delete();
+        }
+
+        $this->clear();
+
+        if ($userId !== null) {
+            $this->rememberAccount($userId);
+        }
+    }
+
+    public function rememberAccount(int $userId): void
+    {
+        DB::table('sunny_accounts')->updateOrInsert(['server' => self::server()], ['user_id' => $userId]);
+    }
+
+    /**
      * Forget downloaded data, keeping changes that haven't reached Sunny yet. The next download drops any for teams the signed-in account can't reach.
      */
     public function clear(): void
