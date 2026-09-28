@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Date;
 use App\Actions\Routines\GenerateRoutineOccurrences;
 use App\Enums\TimeOfDay;
 use App\Models\Routine;
@@ -160,13 +161,14 @@ test('navigating changes the day and keeps completions apart', function () use (
 });
 
 test('a day with no routines shows the empty state', function () use ($routineBoardUser) {
+    $this->travelTo(Date::parse('2026-08-11 12:00')); // Tuesday
     [$user, $team] = $routineBoardUser();
     Routine::factory()->for($team)->weekly([Carbon::MONDAY])->create([
         'starts_on' => now()->subMonth(),
     ]);
 
     Livewire::actingAs($user)
-        ->test('pages::kiosk.routines', ['focusedDate' => '2026-08-11']) // Tuesday
+        ->test('pages::kiosk.routines')
         ->assertSee(__('Nothing to do'));
 });
 

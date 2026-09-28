@@ -3,6 +3,8 @@
 use App\Http\Integrations\Sunny\SunnyStore;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Native\Mobile\AsyncTask;
+use Native\Mobile\Testing\FakeBridge;
+use Saloon\Config;
 use Tests\TestCase;
 
 /*
@@ -15,6 +17,8 @@ use Tests\TestCase;
 | need to change it using the "pest()" function to bind a different classes or traits.
 |
 */
+
+Config::preventStrayRequests();
 
 pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)
@@ -51,6 +55,26 @@ expect()->extend('toBeOne', function () {
 function something()
 {
     // ..
+}
+
+function fakeSecureStorage(): FakeBridge
+{
+    $values = [];
+
+    return FakeBridge::enable()
+        ->respondTo('SecureStorage.Set', function (array $params) use (&$values): array {
+            $values[$params['key']] = $params['value'];
+
+            return ['success' => true];
+        })
+        ->respondTo('SecureStorage.Get', function (array $params) use (&$values): array {
+            return ['value' => $values[$params['key']] ?? ''];
+        })
+        ->respondTo('SecureStorage.Delete', function (array $params) use (&$values): array {
+            unset($values[$params['key']]);
+
+            return ['success' => true];
+        });
 }
 
 function seedSunnyData(): void

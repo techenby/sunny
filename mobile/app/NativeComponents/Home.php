@@ -2,10 +2,10 @@
 
 namespace App\NativeComponents;
 
+use App\Actions\DestroySession;
 use App\Http\Integrations\Sunny\Requests\GetUserRequest;
 use App\Http\Integrations\Sunny\SunnyAuth;
 use App\Http\Integrations\Sunny\SunnyStore;
-use App\Http\Integrations\Sunny\SunnyTokenStore;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\View\View;
 use Native\Mobile\Edge\NativeComponent;
@@ -32,8 +32,7 @@ class Home extends NativeComponent
                 app(SunnyAuth::class)->authenticatedConnector()->send(new GetUserRequest);
                 $this->replace('/dashboard');
             } catch (UnauthorizedException) {
-                app(SunnyStore::class)->clear();
-                app(SunnyTokenStore::class)->forget();
+                app(DestroySession::class)->handle();
             }
         } catch (AuthenticationException) {
             app(SunnyStore::class)->clear();

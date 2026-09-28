@@ -8,13 +8,12 @@ use App\Models\Recipe;
 use App\Models\Team;
 use App\NativeComponents\Inventory;
 use App\NativeComponents\Recipes;
+use Illuminate\Database\Events\QueryExecuted;
+use Illuminate\Support\Facades\DB;
 use Native\Mobile\Testing\Native;
-use Saloon\Config;
 use Saloon\Http\Faking\MockResponse;
 
 beforeEach(function (): void {
-    config(['services.sunny.api_url' => 'https://sunny.example/api']);
-    Config::preventStrayRequests();
     seedSunnyData();
     Team::create(['id' => 2, 'server' => SunnyStore::server(), 'name' => 'Work', 'slug' => 'work']);
     Recipe::create([...Recipe::find(1)->toArray(), 'id' => 90, 'team_id' => 2, 'name' => 'Work lunch']);
@@ -62,6 +61,27 @@ it('preserves selection through sync and falls back when membership disappears',
     app(SunnyStore::class)->clear();
     expect(app(SunnyTeam::class)->current())->toBeNull();
     Native::visit('/recipes/create')->set('name', 'No team')->tap('create-recipe-submit')->assertNoNavigation();
+});
+
+it('falls back to the lowest team id without writing when no team is selected', function (): void {
+    Team::query()->update(['is_active' => false]);
+    $writes = 0;
+    DB::listen(function (QueryExecuted $query) use (&$writes): void {
+        $writes += preg_match('/^\s*(insert|update|delete)/i', $query->sql);
+    });
+
+    expect(app(SunnyTeam::class)->current()->id)->toBe(1)
+        ->and(Team::where('is_active', true)->exists())->toBeFalse()
+        ->and($writes)->toBe(0);
+});
+
+it('keeps the synced fallback team when a team with a lower id is added', function (): void {
+    $snapshot = ['teams' => [Team::find(2)->only(['id', 'name', 'slug'])], 'recipes' => [], 'items' => [], 'synced_at' => now()->toIso8601String()];
+    app(SunnyStore::class)->applySnapshot($snapshot);
+    $snapshot['teams'][] = ['id' => 1, 'name' => 'Family', 'slug' => 'family'];
+    app(SunnyStore::class)->applySnapshot($snapshot);
+
+    expect(app(SunnyTeam::class)->current()->id)->toBe(2);
 });
 
 it('does not silently move an open draft when the active team changes', function (): void {

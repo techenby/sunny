@@ -7,14 +7,11 @@ use App\Http\Integrations\Sunny\Requests\VerifyTwoFactorRequest;
 use App\Http\Integrations\Sunny\SunnyStore;
 use Native\Mobile\Events\Alert\ButtonPressed;
 use Native\Mobile\Testing\Native;
-use Saloon\Config;
 use Saloon\Http\Faking\MockResponse;
 use Saloon\Http\Request;
 use Saloon\Laravel\Facades\Saloon;
 
 beforeEach(function (): void {
-    config(['services.sunny.api_url' => 'https://sunny.example/api']);
-    Config::preventStrayRequests();
     seedSunnyData();
     Native::fakeBridge()->respondTo('SecureStorage.Get', ['value' => ''])
         ->respondTo('SecureStorage.Set', ['success' => true])
@@ -62,6 +59,17 @@ it('stays on login when saving the token fails', function (): void {
         ->tap('login-submit')->assertSee('Unable to securely complete login. Unlock your device and try again.')->assertNoNavigation();
 });
 
+it('explains a malformed login response instead of blaming device storage', function (array $body): void {
+    Saloon::fake([CreateTokenRequest::class => MockResponse::make($body)]);
+    Native::visit('/login')->input('login-email', 'person@example.com')->input('login-password', 'secret')
+        ->tap('login-submit')->assertSee('Sunny returned an invalid response. Check the API URL and try again.')
+        ->assertSet('twoFactor', false)->assertNoNavigation();
+    Native::fakeBridge()->assertNotCalled('SecureStorage.Set');
+})->with([
+    'missing token' => [[]],
+    'missing two-factor challenge' => [['two_factor' => true]],
+]);
+
 it('allows retrying an invalid code and restarting an expired challenge', function (): void {
     Saloon::fake([
         CreateTokenRequest::class => MockResponse::make(['two_factor' => true, 'challenge' => 'challenge']),
@@ -91,6 +99,13 @@ it('deletes expired sessions but preserves tokens during outages', function (int
         $screen->assertSee('Unable to check your session. Check your connection and try again.');
     }
 })->with([401, 500]);
+
+it('clears local data from an expired session even when deleting the token fails', function (): void {
+    Native::fakeBridge()->respondTo('SecureStorage.Get', ['value' => 'saved-token'])->respondTo('SecureStorage.Delete', ['success' => false]);
+    Saloon::fake([GetUserRequest::class => MockResponse::make([], 401)]);
+    Native::visit('/')->assertSee('Unable to read your saved login. Unlock your device and try again.');
+    expect(app(SunnyStore::class)->lastSyncedAt())->toBeNull();
+});
 
 it('retries session restoration after storage is unlocked', function (): void {
     Native::fakeBridge()->respondTo('SecureStorage.Get', ['status' => 'unavailable']);

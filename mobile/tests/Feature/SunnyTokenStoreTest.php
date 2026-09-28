@@ -3,28 +3,10 @@
 use App\Http\Integrations\Sunny\SunnyTokenStore;
 use Native\Mobile\Testing\FakeBridge;
 
-beforeEach(function (): void {
-    config(['services.sunny.api_url' => 'https://sunny.example/api']);
-});
-
 afterEach(fn () => FakeBridge::disable());
 
 it('stores, reads and deletes tokens using an API-specific secure key', function (): void {
-    $values = [];
-    $bridge = FakeBridge::enable()
-        ->respondTo('SecureStorage.Set', function (array $params) use (&$values): array {
-            $values[$params['key']] = $params['value'];
-
-            return ['success' => true];
-        })
-        ->respondTo('SecureStorage.Get', function (array $params) use (&$values): array {
-            return ['value' => $values[$params['key']] ?? ''];
-        })
-        ->respondTo('SecureStorage.Delete', function (array $params) use (&$values): array {
-            unset($values[$params['key']]);
-
-            return ['success' => true];
-        });
+    $bridge = fakeSecureStorage();
 
     $store = app(SunnyTokenStore::class);
     expect($store->get())->toBeNull();

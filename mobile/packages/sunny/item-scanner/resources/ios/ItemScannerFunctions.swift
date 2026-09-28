@@ -32,22 +32,28 @@ enum ItemScannerFunctions {
     // MARK: - ItemScanner.Identify
 
     /// Parameters:
+    ///   - id: string - chosen by PHP and echoed back on the result event
     ///   - path: string - the photo to identify items in
-    ///   - id: string - echoed back on the result event
     ///   - knownNames: [string] - (optional) items already in inventory, for duplicate matching
     ///   - place: string - (optional) where the photo was taken, e.g. "Garage › Tool chest"
+    ///
+    /// Once there is an id, exactly one result event is sent for it.
     class Identify: BridgeFunction {
         func execute(parameters: [String: Any]) throws -> [String: Any] {
-            guard let path = parameters["path"] as? String, !path.isEmpty else {
-                throw BridgeError.invalidParameters("path is required")
+            guard let id = parameters["id"] as? String, !id.isEmpty else {
+                throw BridgeError.invalidParameters("id is required")
             }
 
-            let id = (parameters["id"] as? String).flatMap { $0.isEmpty ? nil : $0 } ?? UUID().uuidString.lowercased()
+            guard let path = parameters["path"] as? String, !path.isEmpty else {
+                ItemScannerEvents.failed(id: id, message: ItemScannerModel.unreadablePhotoMessage)
+                return BridgeResponse.success(data: ["started": false, "id": id])
+            }
+
             let knownNames = parameters["knownNames"] as? [String] ?? []
             let place = (parameters["place"] as? String).flatMap { $0.isEmpty ? nil : $0 }
 
             guard #available(iOS 27.0, *) else {
-                ItemScannerEvents.failed(id: id, message: "Scanning needs iOS 27 or later.")
+                ItemScannerEvents.failed(id: id, message: ItemScannerModel.message(forUnavailable: "unsupportedOS"))
                 return BridgeResponse.success(data: ["started": false, "id": id])
             }
 
@@ -89,6 +95,8 @@ enum ItemScannerModel {
     /// prompt stays well inside the on-device context window.
     static let maxKnownNames = 150
 
+    static let unreadablePhotoMessage = "Couldn't read that photo. Try taking it again."
+
     static func unavailableReason() -> String? {
         guard #available(iOS 27.0, *) else {
             return "unsupportedOS"
@@ -118,7 +126,7 @@ enum ItemScannerModel {
         }
 
         guard let image = loadImage(path: path) else {
-            ItemScannerEvents.failed(id: id, message: "Couldn't read that photo. Try taking it again.")
+            ItemScannerEvents.failed(id: id, message: unreadablePhotoMessage)
             return
         }
 

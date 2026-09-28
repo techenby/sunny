@@ -43,7 +43,7 @@ class EditRecipe extends NativeComponent
             return;
         }
 
-        $this->saveRecord('recipes', $this->recipePayload($this->recipe), $this->recipe['id']);
+        $this->saveRecord('recipes', $this->recipePayload(), $this->recipe['id']);
     }
 
     public function render(): View

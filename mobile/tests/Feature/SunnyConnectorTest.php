@@ -7,8 +7,8 @@ use App\Http\Integrations\Sunny\Requests\RefreshTokenRequest;
 use App\Http\Integrations\Sunny\Requests\SyncRequest;
 use App\Http\Integrations\Sunny\Requests\VerifyTwoFactorRequest;
 use App\Http\Integrations\Sunny\SunnyConnector;
-use Saloon\Config;
 use Saloon\Exceptions\Request\RequestException;
+use Saloon\Exceptions\StrayRequestException;
 use Saloon\Http\Auth\TokenAuthenticator;
 use Saloon\Http\Faking\MockResponse;
 use Saloon\Http\Request;
@@ -17,7 +17,6 @@ use Saloon\Laravel\Facades\Saloon;
 
 beforeEach(function (): void {
     config(['services.sunny.api_url' => 'https://sunny.example/api/']);
-    Config::preventStrayRequests();
 });
 
 it('sends login credentials as JSON and exposes tokens or two factor challenges', function (array $body): void {
@@ -143,4 +142,8 @@ it('fails instead of disabling verification when the development CA is missing',
     config(['services.sunny.dev_ca_bundle' => 'resources/certificates/missing.pem']);
 
     expect(fn () => app(SunnyConnector::class))->toThrow(InvalidArgumentException::class, 'readable PEM file');
+});
+
+it('blocks requests that no test has faked', function (): void {
+    expect(fn () => app(SunnyConnector::class)->send(new GetUserRequest))->toThrow(StrayRequestException::class);
 });

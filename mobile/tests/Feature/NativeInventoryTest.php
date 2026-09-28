@@ -1,7 +1,9 @@
 <?php
 
 use App\Models\Item;
+use App\NativeComponents\Inventory;
 use App\NativeComponents\InventoryItemDetail;
+use Illuminate\Support\Facades\DB;
 use Native\Mobile\Testing\Native;
 
 beforeEach(fn () => seedSunnyData());
@@ -142,4 +144,18 @@ it('shows the synced item photo with an accessible description', function () {
 
 it('omits the photo when the item has none', function () {
     Native::visit('/inventory/1')->assertMissingElement('image');
+});
+
+it('finds everything nested inside an item with a single query', function () {
+    DB::enableQueryLog();
+
+    expect(Inventory::descendantIdsOf(6))->toEqualCanonicalizing([7, 8, 9, 10])
+        ->and(Inventory::descendantIdsOf(8))->toBe([])
+        ->and(collect(DB::getQueryLog())->filter(fn (array $query): bool => str_contains($query['query'], '"items"')))->toHaveCount(2);
+});
+
+it('stops walking descendants when the synced data contains a parent cycle', function () {
+    Item::find(6)->update(['parent_id' => 8]);
+
+    expect(Inventory::descendantIdsOf(6))->toEqualCanonicalizing([7, 8, 9, 10]);
 });

@@ -50,10 +50,6 @@ class SunnySync
         }
 
         Validator::make($snapshot, $rules)->validate();
-        $snapshot['recipes'] = array_map(fn (array $recipe): array => $recipe + array_fill_keys([
-            'photo_url', 'parent_id', 'source', 'servings', 'prep_time', 'cook_time', 'total_time', 'description', 'ingredients', 'instructions', 'notes', 'nutrition', 'tags',
-        ], null), $snapshot['recipes']);
-        $snapshot['items'] = array_map(fn (array $item): array => $item + ['parent_id' => null, 'metadata' => null, 'photo_url' => null], $snapshot['items']);
 
         $this->store->applySnapshot($snapshot);
     }

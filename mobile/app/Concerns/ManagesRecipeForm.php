@@ -64,6 +64,9 @@ trait ManagesRecipeForm
 
     public string $error = '';
 
+    /** @var array{ingredients: string, instructions: string}|null */
+    public ?array $loadedLines = null;
+
     /**
      * Load an existing recipe into the form, turning the stored rich-text
      * HTML back into the one-per-line text the fields edit.
@@ -86,6 +89,7 @@ trait ManagesRecipeForm
         $this->instructions = implode("\n", Recipes::lines($recipe['instructions'] ?? null));
         $this->notes = (string) ($recipe['notes'] ?? '');
         $this->nutrition = (string) ($recipe['nutrition'] ?? '');
+        $this->loadedLines = ['ingredients' => $this->ingredients, 'instructions' => $this->instructions];
     }
 
     /**
@@ -183,7 +187,7 @@ trait ManagesRecipeForm
         return $this->htmlList($this->instructions, 'ol');
     }
 
-    protected function recipePayload(?array $original = null): array
+    protected function recipePayload(): array
     {
         $payload = [
             'name' => trim($this->name), 'source' => $this->source ?: null,
@@ -193,10 +197,10 @@ trait ManagesRecipeForm
             'ingredients' => $this->ingredientsHtml, 'instructions' => $this->instructionsHtml,
             'notes' => $this->notes ?: null, 'nutrition' => $this->nutrition ?: null,
         ];
-        if ($original !== null) {
+        if ($this->loadedLines !== null) {
             $payload['remove_photo'] = $this->photoRemoved;
             foreach (['ingredients', 'instructions'] as $field) {
-                if ($this->{$field} === implode("\n", Recipes::lines($original[$field] ?? null))) {
+                if ($this->{$field} === $this->loadedLines[$field]) {
                     unset($payload[$field]);
                 }
             }

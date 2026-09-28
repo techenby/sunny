@@ -10,6 +10,7 @@ use Native\Mobile\Edge\NativeComponent;
 use RuntimeException;
 use Saloon\Exceptions\Request\FatalRequestException;
 use Saloon\Exceptions\Request\RequestException;
+use UnexpectedValueException;
 
 class Login extends NativeComponent
 {
@@ -47,11 +48,9 @@ class Login extends NativeComponent
             if ($this->twoFactor) {
                 $auth->verifyTwoFactor($this->challenge, $this->code, $this->useRecoveryCode);
             } else {
-                $response = $auth->login($this->email, $this->password, 'Sunny Mobile');
+                $challenge = $auth->login($this->email, $this->password, 'Sunny Mobile');
 
-                if ($response->json('two_factor') === true) {
-                    $challenge = $response->json('challenge');
-                    throw_unless(is_string($challenge) && $challenge !== '', RuntimeException::class);
+                if ($challenge !== null) {
                     $this->challenge = $challenge;
                     $this->twoFactor = true;
 
@@ -70,7 +69,7 @@ class Login extends NativeComponent
                 429 => 'Too many attempts. Please wait before trying again.',
                 default => 'Sunny is unavailable right now. Please try again.',
             };
-        } catch (JsonException) {
+        } catch (JsonException|UnexpectedValueException) {
             $this->error = 'Sunny returned an invalid response. Check the API URL and try again.';
         } catch (FatalRequestException) {
             $this->error = 'Unable to connect to Sunny. Check your connection and try again.';

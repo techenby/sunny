@@ -61,28 +61,31 @@ class Inventory extends NativeComponent
     }
 
     /**
-     * The ids of everything nested inside an item, at any depth.
+     * The ids of everything nested inside an item, at any depth, in no particular order.
      *
      * @return list<int>
      */
     public static function descendantIdsOf(int $id): array
     {
-        return collect(static::all())
-            ->where('parent_id', $id)
-            ->flatMap(fn (array $child): array => [$child['id'], ...static::descendantIdsOf($child['id'])])
-            ->values()
-            ->all();
-    }
+        $childIds = Item::forActiveTeam()->whereNotNull('parent_id')->get(['id', 'parent_id'])
+            ->groupBy('parent_id')
+            ->map(fn ($children): array => $children->pluck('id')->all());
 
-    /**
-     * @return array<int, string>
-     */
-    public static function selectableParents(): array
-    {
-        return collect(static::all())
-            ->sortBy('name')
-            ->pluck('name', 'id')
-            ->all();
+        $descendants = [];
+        $pending = $childIds->get($id, []);
+
+        while ($pending !== []) {
+            $childId = array_pop($pending);
+
+            if ($childId === $id || isset($descendants[$childId])) {
+                continue;
+            }
+
+            $descendants[$childId] = true;
+            array_push($pending, ...$childIds->get($childId, []));
+        }
+
+        return array_keys($descendants);
     }
 
     /**

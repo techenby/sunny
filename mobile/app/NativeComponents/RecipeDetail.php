@@ -14,9 +14,10 @@ class RecipeDetail extends NativeComponent
     use ChecksSunnySync;
 
     /**
-     * Ingredients ticked off while cooking, by position. Kept on this screen only.
+     * Ingredients ticked off while cooking, as position => text so a tick stops
+     * counting once a sync changes that line. Kept on this screen only.
      *
-     * @var list<int>
+     * @var array<int, string>
      */
     public array $checkedIngredients = [];
 
@@ -85,11 +86,30 @@ class RecipeDetail extends NativeComponent
         return Recipes::lines($this->recipe['instructions'] ?? null);
     }
 
+    #[Computed]
+    public function checkedCount(): int
+    {
+        return collect($this->ingredients)->keys()->filter(fn (int $index): bool => $this->isChecked($index))->count();
+    }
+
+    public function isChecked(int $index): bool
+    {
+        return isset($this->ingredients[$index]) && ($this->checkedIngredients[$index] ?? null) === $this->ingredients[$index];
+    }
+
     public function toggleIngredient(int $index): void
     {
-        $this->checkedIngredients = in_array($index, $this->checkedIngredients, true)
-            ? array_values(array_diff($this->checkedIngredients, [$index]))
-            : [...$this->checkedIngredients, $index];
+        if (! isset($this->ingredients[$index])) {
+            return;
+        }
+
+        if ($this->isChecked($index)) {
+            unset($this->checkedIngredients[$index]);
+        } else {
+            $this->checkedIngredients[$index] = $this->ingredients[$index];
+        }
+
+        unset($this->checkedCount);
     }
 
     #[On('sunny-sync-complete')]
@@ -102,7 +122,7 @@ class RecipeDetail extends NativeComponent
 
     protected function refreshLocalSyncedData(): void
     {
-        unset($this->recipe, $this->parent, $this->remixes, $this->details, $this->ingredients, $this->instructions);
+        unset($this->recipe, $this->parent, $this->remixes, $this->details, $this->ingredients, $this->instructions, $this->checkedCount);
     }
 
     public function openSource(): void

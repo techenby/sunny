@@ -250,6 +250,19 @@ it('adds, fills, and removes metadata fields', function () {
         ->assertMissingElement('outlined_text_input', fn (array $node): bool => ($node['ref'] ?? null) === 'metadata-key-1');
 });
 
+it('ignores a late metadata edit for a row that was already removed', function () {
+    Native::visit('/inventory/create')
+        ->tap('metadata-add')
+        ->input('metadata-key-0', 'brand')
+        ->tap('metadata-remove-0')
+        ->call('setMetadataKey', 0, 'stale')
+        ->call('setMetadataValue', 0, 'stale')
+        ->assertSet('metadata', [])
+        ->set('name', 'Tent')
+        ->tap('create-item-submit')
+        ->assertDontSee('Undefined array key');
+});
+
 it('collapses the metadata pairs into the shape the item model stores', function () {
     Native::visit('/inventory/create')
         ->set('metadata', [

@@ -9,12 +9,7 @@ class SunnyTeam
 {
     public function current(): ?Team
     {
-        $team = Team::query()->where('server', SunnyStore::server())->orderByDesc('is_active')->orderBy('id')->first();
-        if ($team && ! $team->is_active) {
-            $this->select($team->id);
-        }
-
-        return $team;
+        return Team::query()->where('server', SunnyStore::server())->orderByDesc('is_active')->orderBy('id')->first();
     }
 
     public function select(int $id): void

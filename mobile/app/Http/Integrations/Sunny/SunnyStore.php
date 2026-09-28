@@ -36,6 +36,10 @@ class SunnyStore
                 Team::query()->updateOrCreate(['id' => $team['id']], ['server' => self::server(), 'name' => $team['name'], 'slug' => $team['slug'] ?? null]);
             }
 
+            if (! Team::query()->where('server', self::server())->where('is_active', true)->exists()) {
+                Team::query()->where('server', self::server())->orderBy('id')->first()?->update(['is_active' => true]);
+            }
+
             foreach (['recipes' => Recipe::class, 'items' => Item::class] as $type => $model) {
                 $records = collect($snapshot[$type])->filter(fn (array $record): bool => empty($record['deleted_at']) && $teamIds->contains($record['team_id']));
                 $model::query()->whereNotIn('id', $records->pluck('id'))->delete();
@@ -43,8 +47,6 @@ class SunnyStore
                     $this->saveRecord($type, $record);
                 }
             }
-
-            app(SunnyTeam::class)->current();
 
             DB::table('sunny_sync_states')->updateOrInsert(['server' => self::server()], [
                 'synced_at' => $snapshot['synced_at'],
@@ -59,7 +61,7 @@ class SunnyStore
         $fields = $type === 'recipes'
             ? ['team_id', 'parent_id', 'name', 'source', 'servings', 'prep_time', 'cook_time', 'total_time', 'description', 'ingredients', 'instructions', 'notes', 'nutrition', 'tags', 'photo_url', 'created_at', 'updated_at']
             : ['team_id', 'parent_id', 'type', 'name', 'metadata', 'photo_url', 'created_at', 'updated_at'];
-        $model::query()->updateOrCreate(['id' => $record['id']], ['server' => self::server(), ...Arr::only($record, $fields)]);
+        $model::query()->updateOrCreate(['id' => $record['id']], ['server' => self::server(), ...array_fill_keys($fields, null), ...Arr::only($record, $fields)]);
     }
 
     public function clear(): void
