@@ -84,15 +84,15 @@ it('clears local credentials on logout including server failures', function (int
     Saloon::assertSentCount(1);
 })->with([204, 401, 500]);
 
-it('keeps local data when deleting the token fails on logout', function (): void {
+it('clears local data even when deleting the token fails on logout', function (): void {
     seedSunnyData();
     FakeBridge::enable()->respondTo('SecureStorage.Get', ['value' => 'token'])
         ->respondTo('SecureStorage.Delete', ['success' => false]);
     Saloon::fake([LogoutRequest::class => MockResponse::make([], 204)]);
 
     expect(fn () => app(SunnyAuth::class)->logout())->toThrow(RuntimeException::class)
-        ->and(Recipe::count())->toBeGreaterThan(0)
-        ->and(app(SunnyStore::class)->lastSyncedAt())->not->toBeNull();
+        ->and(Recipe::count())->toBe(0)
+        ->and(app(SunnyStore::class)->lastSyncedAt())->toBeNull();
 });
 
 it('requires a stored token for authenticated calls and allows an already signed out logout', function (): void {
