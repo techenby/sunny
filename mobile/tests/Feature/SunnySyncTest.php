@@ -253,11 +253,38 @@ it('returns to login when a background sync finds the session revoked', function
     $bridge->assertCalled('SecureStorage.Delete');
 });
 
+it('starts a fresh background sync after signing back in from a revoked session', function (): void {
+    Native::fakeBridge()->respondTo('SecureStorage.Get', ['value' => 'saved-token'])->respondTo('SecureStorage.Delete', ['success' => true]);
+    seedSunnyData();
+    $async = AsyncTask::fake();
+    $this->travel(6)->minutes();
+    Cache::add('sunny-sync-dispatched', true, 300);
+    Native::visit('/dashboard')
+        ->emitNative('sunny-sync-complete', ['status' => 'failed', 'exceptionClass' => UnauthorizedException::class])
+        ->assertReplacedWith('/login');
+
+    Native::visit('/dashboard');
+
+    $async->assertDispatchedTimes(1);
+});
+
 it('clears local data when a session is revoked', function (): void {
     seedSunnyData();
     Saloon::fake([SyncRequest::class => MockResponse::make([], 401)]);
     Native::visit('/dashboard')->call('sync')->assertReplacedWith('/login');
     expect(Recipe::count())->toBe(0)->and(Item::count())->toBe(0)->and(app(SunnyStore::class)->lastSyncedAt())->toBeNull();
+});
+
+it('lets a new login start a background sync after an earlier sync failed', function (): void {
+    Native::fakeBridge()->respondTo('SecureStorage.Get', ['value' => 'new-token'])->respondTo('SecureStorage.Set', ['success' => true]);
+    $async = AsyncTask::fake();
+    Cache::add('sunny-sync-dispatched', true, 300);
+    Saloon::fake([CreateTokenRequest::class => MockResponse::make(['token' => 'new-token'])]);
+
+    app(SunnyAuth::class)->login('person@example.com', 'password', 'phone');
+    Native::visit('/dashboard');
+
+    $async->assertDispatchedTimes(1);
 });
 
 it('clears the previous account data on login or logout but keeps it on token refresh', function (string $action): void {

@@ -64,6 +64,7 @@ it('preserves selection through sync and falls back when membership disappears',
 });
 
 it('falls back to the lowest team id without writing when no team is selected', function (): void {
+    Team::query()->update(['is_active' => false]);
     $writes = 0;
     DB::listen(function (QueryExecuted $query) use (&$writes): void {
         $writes += preg_match('/^\s*(insert|update|delete)/i', $query->sql);
@@ -72,6 +73,15 @@ it('falls back to the lowest team id without writing when no team is selected', 
     expect(app(SunnyTeam::class)->current()->id)->toBe(1)
         ->and(Team::where('is_active', true)->exists())->toBeFalse()
         ->and($writes)->toBe(0);
+});
+
+it('keeps the synced fallback team when a team with a lower id is added', function (): void {
+    $snapshot = ['teams' => [Team::find(2)->only(['id', 'name', 'slug'])], 'recipes' => [], 'items' => [], 'synced_at' => now()->toIso8601String()];
+    app(SunnyStore::class)->applySnapshot($snapshot);
+    $snapshot['teams'][] = ['id' => 1, 'name' => 'Family', 'slug' => 'family'];
+    app(SunnyStore::class)->applySnapshot($snapshot);
+
+    expect(app(SunnyTeam::class)->current()->id)->toBe(2);
 });
 
 it('does not silently move an open draft when the active team changes', function (): void {

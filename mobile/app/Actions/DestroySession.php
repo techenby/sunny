@@ -3,6 +3,7 @@
 namespace App\Actions;
 
 use App\Http\Integrations\Sunny\SunnyStore;
+use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Http\Integrations\Sunny\SunnyTokenStore;
 
 class DestroySession
@@ -15,6 +16,7 @@ class DestroySession
     public function handle(): void
     {
         $this->store->clear();
+        SunnySyncCoordinator::forgetDispatch();
         $this->tokens->forget();
     }
 }

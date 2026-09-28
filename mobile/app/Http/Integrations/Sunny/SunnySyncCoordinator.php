@@ -46,7 +46,7 @@ class SunnySyncCoordinator
 
     /**
      * Start a shared async sync when local data is stale and no background sync is in flight.
-     * The marker is only cleared on success, so a failed sync backs off until it expires.
+     * A failed sync leaves the marker in place, so retries back off until it expires or a new session starts.
      */
     public function dispatchIfStale(): void
     {
@@ -72,5 +72,10 @@ class SunnySyncCoordinator
 
             return $synced;
         })->shared('sunny-sync-complete');
+    }
+
+    public static function forgetDispatch(): void
+    {
+        Cache::forget(self::DISPATCH_KEY);
     }
 }

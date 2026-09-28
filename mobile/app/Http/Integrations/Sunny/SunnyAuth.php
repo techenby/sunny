@@ -92,6 +92,7 @@ class SunnyAuth
 
         if ($clearLocalData) {
             $this->store->clear();
+            SunnySyncCoordinator::forgetDispatch();
         }
 
         $this->tokens->put($token);

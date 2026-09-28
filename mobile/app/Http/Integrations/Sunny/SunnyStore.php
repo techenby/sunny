@@ -36,6 +36,10 @@ class SunnyStore
                 Team::query()->updateOrCreate(['id' => $team['id']], ['server' => self::server(), 'name' => $team['name'], 'slug' => $team['slug'] ?? null]);
             }
 
+            if (! Team::query()->where('server', self::server())->where('is_active', true)->exists()) {
+                Team::query()->where('server', self::server())->orderBy('id')->first()?->update(['is_active' => true]);
+            }
+
             foreach (['recipes' => Recipe::class, 'items' => Item::class] as $type => $model) {
                 $records = collect($snapshot[$type])->filter(fn (array $record): bool => empty($record['deleted_at']) && $teamIds->contains($record['team_id']));
                 $model::query()->whereNotIn('id', $records->pluck('id'))->delete();
