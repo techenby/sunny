@@ -1,0 +1,17 @@
+name: sunny
+icon: web/public/icon.png
+processes:
+  'M: Watch Sim':
+    command: php artisan native:watch ios 9A09A020-8C4E-493C-B243-70FC48AA3DDF
+    working_dir: /Users/techenby/Sites/Personal/sunny/mobile
+    auto_start: false
+    auto_restart: false
+    restart_when_changed: []
+    env: {}
+  'W: Dev':
+    command: npm run dev
+    working_dir: /Users/techenby/Sites/Personal/sunny/web
+    auto_start: true
+    auto_restart: false
+    restart_when_changed: []
+    env: {}
