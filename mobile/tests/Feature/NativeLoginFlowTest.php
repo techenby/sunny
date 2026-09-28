@@ -100,6 +100,13 @@ it('deletes expired sessions but preserves tokens during outages', function (int
     }
 })->with([401, 500]);
 
+it('clears local data from an expired session even when deleting the token fails', function (): void {
+    Native::fakeBridge()->respondTo('SecureStorage.Get', ['value' => 'saved-token'])->respondTo('SecureStorage.Delete', ['success' => false]);
+    Saloon::fake([GetUserRequest::class => MockResponse::make([], 401)]);
+    Native::visit('/')->assertSee('Unable to read your saved login. Unlock your device and try again.');
+    expect(app(SunnyStore::class)->lastSyncedAt())->toBeNull();
+});
+
 it('retries session restoration after storage is unlocked', function (): void {
     Native::fakeBridge()->respondTo('SecureStorage.Get', ['status' => 'unavailable']);
     Saloon::fake([GetUserRequest::class => MockResponse::make(['id' => 1])]);
