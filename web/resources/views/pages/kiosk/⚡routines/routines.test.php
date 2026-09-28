@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Date;
 use App\Actions\Routines\GenerateRoutineOccurrences;
 use App\Enums\TimeOfDay;
 use App\Models\Routine;
@@ -160,7 +161,7 @@ test('navigating changes the day and keeps completions apart', function () use (
 });
 
 test('a day with no routines shows the empty state', function () use ($routineBoardUser) {
-    $this->travelTo(Carbon::parse('2026-08-11 12:00')); // Tuesday
+    $this->travelTo(Date::parse('2026-08-11 12:00')); // Tuesday
     [$user, $team] = $routineBoardUser();
     Routine::factory()->for($team)->weekly([Carbon::MONDAY])->create([
         'starts_on' => now()->subMonth(),
