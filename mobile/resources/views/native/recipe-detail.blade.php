@@ -36,6 +36,8 @@
 
                 <text ref="recipe-name" font="accent" class="text-3xl text-theme-on-background">{{ $recipe['name'] }}</text>
 
+                @include('native.queued-change', ['refPrefix' => 'recipe', 'queuedChange' => $this->queuedChange])
+
                 @if ($recipe['description'])
                     <text ref="recipe-description" class="text-base text-theme-on-surface-variant">{{ $recipe['description'] }}</text>
                 @endif

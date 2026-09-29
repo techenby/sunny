@@ -3,6 +3,7 @@
 namespace App\NativeComponents;
 
 use App\Concerns\ChecksSunnySync;
+use App\Concerns\ShowsQueuedChange;
 use App\Enums\ItemType;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
@@ -12,6 +13,7 @@ use Native\Mobile\Edge\NativeComponent;
 class InventoryItemDetail extends NativeComponent
 {
     use ChecksSunnySync;
+    use ShowsQueuedChange;
 
     /**
      * @return array{id: int, parent_id: int|null, type: ItemType, name: string, metadata: array<string, string>|null, created_at: string, updated_at: string}|null
@@ -96,7 +98,7 @@ class InventoryItemDetail extends NativeComponent
 
     protected function refreshLocalSyncedData(): void
     {
-        unset($this->item, $this->parent, $this->path, $this->children);
+        unset($this->item, $this->parent, $this->path, $this->children, $this->queuedChange);
     }
 
     /**
@@ -113,6 +115,16 @@ class InventoryItemDetail extends NativeComponent
         if (in_array($id, array_column($this->path, 'id'), true)) {
             $this->navigate('/inventory/'.$id, ['from' => $this->item['id']]);
         }
+    }
+
+    protected function queuedResource(): string
+    {
+        return 'items';
+    }
+
+    protected function queuedRecordId(): ?int
+    {
+        return $this->item['id'] ?? null;
     }
 
     public function render(): View

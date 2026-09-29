@@ -6,9 +6,9 @@ use App\Concerns\ChecksSunnySync;
 use App\Concerns\ChoosesInventoryParent;
 use App\Concerns\SavesSunnyRecord;
 use App\Enums\ItemType;
-use App\Http\Integrations\Sunny\SunnyStore;
+use App\Http\Integrations\Sunny\SunnyOutbox;
+use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Http\Integrations\Sunny\SunnyTeam;
-use App\Http\Integrations\Sunny\SunnyWrites;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
@@ -171,9 +171,9 @@ class ScanInventory extends NativeComponent
     }
 
     /**
-     * Add the chosen finds to Sunny one at a time. The first failure stops
-     * the run and stays in the list with its reason, so a retry only sends
-     * what hasn't been saved. A find whose photo the system has since
+     * Keep the chosen finds on this phone and queue them for Sunny. The first
+     * failure stops the run and stays in the list with its reason, so a retry
+     * only adds what hasn't been kept. A find whose photo the system has since
      * cleared out is still added, just without the photo.
      */
     public function save(): void
@@ -189,7 +189,6 @@ class ScanInventory extends NativeComponent
         }
 
         $this->saving = true;
-        $localCopyFailed = false;
 
         try {
             foreach ($this->candidates as $index => $candidate) {
@@ -198,28 +197,17 @@ class ScanInventory extends NativeComponent
                 }
 
                 try {
-                    $record = app(SunnyWrites::class)->save(
+                    app(SunnyOutbox::class)->queue(
                         'items',
                         $this->teamId,
                         $this->candidatePayload($candidate),
                         photoPath: is_file($candidate['photoPath']) ? $candidate['photoPath'] : null,
                     );
                 } catch (Throwable $exception) {
-                    if ($this->isUnexpectedSaveFailure($exception)) {
-                        report($exception);
-                    }
-
                     $this->candidates[$index]['error'] = $this->saveFailureMessage($exception);
                     $this->error = 'Some items weren’t added. Fix the one marked below and try again.';
 
                     break;
-                }
-
-                try {
-                    app(SunnyStore::class)->saveRecord('items', $record);
-                } catch (Throwable $exception) {
-                    report($exception);
-                    $localCopyFailed = true;
                 }
 
                 unset($this->candidates[$index]);
@@ -227,19 +215,12 @@ class ScanInventory extends NativeComponent
         } finally {
             $this->candidates = array_values($this->candidates);
             $this->saving = false;
+            app(SunnySyncCoordinator::class)->dispatch();
         }
 
-        if ($this->error !== '') {
-            return;
+        if ($this->error === '') {
+            $this->replace($this->parentId === null ? '/inventory' : '/inventory/'.$this->parentId);
         }
-
-        if ($localCopyFailed) {
-            $this->error = 'Added to Sunny, but some items aren’t on this phone yet. Sync to see them.';
-
-            return;
-        }
-
-        $this->replace($this->parentId === null ? '/inventory' : '/inventory/'.$this->parentId);
     }
 
     public function render(): View

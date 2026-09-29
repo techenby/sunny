@@ -47,6 +47,43 @@ test('store creates an item and returns it', function () {
     ]);
 });
 
+test('store returns the existing item when a client uuid is retried', function () {
+    $user = User::factory()->create();
+    $uuid = '9b2f6c1e-3d4a-4f5b-8c7d-1e2f3a4b5c6d';
+
+    $first = $this->actingAs($user)
+        ->postJson(route('api.items.store', $user->currentTeam), ['name' => 'Screwdriver', 'type' => 'item', 'client_uuid' => $uuid])
+        ->assertCreated()
+        ->assertJsonPath('data.client_uuid', $uuid);
+
+    $this->actingAs($user)
+        ->postJson(route('api.items.store', $user->currentTeam), ['name' => 'Screwdriver', 'type' => 'item', 'client_uuid' => $uuid])
+        ->assertOk()
+        ->assertJsonPath('data.id', $first->json('data.id'));
+
+    expect(Item::where('client_uuid', $uuid)->count())->toBe(1);
+});
+
+test('store rejects a client uuid that is not a uuid', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->postJson(route('api.items.store', $user->currentTeam), ['name' => 'Screwdriver', 'type' => 'item', 'client_uuid' => 'nope'])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['client_uuid']);
+});
+
+test('duplicate does not copy the client uuid', function () {
+    $user = User::factory()->create();
+    $item = Item::factory()->for($user->currentTeam)->create(['client_uuid' => '9b2f6c1e-3d4a-4f5b-8c7d-1e2f3a4b5c6d']);
+
+    $this->actingAs($user)
+        ->postJson(route('api.items.duplicate', [$user->currentTeam, $item]), ['count' => 2])
+        ->assertCreated()
+        ->assertJsonPath('data.0.client_uuid', null)
+        ->assertJsonPath('data.1.client_uuid', null);
+});
+
 test('store validates required fields', function () {
     $user = User::factory()->create();
 

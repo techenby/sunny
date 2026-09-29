@@ -91,7 +91,8 @@ class SunnyAuth
         throw_unless(is_string($token) && trim($token) !== '', UnexpectedValueException::class, 'Sunny did not return a valid authentication token.');
 
         if ($clearLocalData) {
-            $this->store->clear();
+            $userId = $response->json('id');
+            $this->store->startSession(is_int($userId) ? $userId : null);
             SunnySyncCoordinator::forgetDispatch();
         }
 

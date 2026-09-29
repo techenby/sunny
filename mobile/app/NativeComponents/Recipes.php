@@ -31,7 +31,7 @@ class Recipes extends NativeComponent
      */
     public static function find(int $id): ?array
     {
-        return Recipe::forActiveTeam()->find($id)?->toArray();
+        return Recipe::forActiveTeam()->where(fn ($query) => $query->whereKey($id)->orWhere('local_id', $id))->first()?->toArray();
     }
 
     /**

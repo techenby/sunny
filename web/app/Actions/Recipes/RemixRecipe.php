@@ -10,7 +10,7 @@ class RemixRecipe
 {
     public function handle(Recipe $recipe): Recipe
     {
-        $remix = $recipe->replicate()
+        $remix = $recipe->replicate(['client_uuid'])
             ->fill([
                 'name' => $recipe->name . ' (Remix)',
                 'parent_id' => $recipe->id,

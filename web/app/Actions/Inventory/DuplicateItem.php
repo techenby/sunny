@@ -15,7 +15,7 @@ class DuplicateItem
     public function handle(Item $item, int $count = 1): Collection
     {
         return Collection::times($count, function () use ($item): Item {
-            $copy = $item->replicate(['photo_path']);
+            $copy = $item->replicate(['photo_path', 'client_uuid']);
             $copy->save();
 
             if ($item->photo_path) {

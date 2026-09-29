@@ -31,11 +31,13 @@ class RecipeController extends Controller
 
     public function store(StoreRecipeRequest $request, Team $team, CreateRecipe $action): JsonResponse
     {
-        $recipe = $action->handle($team, $request->validated());
+        $existing = $request->filled('client_uuid')
+            ? $team->recipes()->withTrashed()->firstWhere('client_uuid', $request->validated('client_uuid'))
+            : null;
 
-        return RecipeResource::make($recipe)
+        return RecipeResource::make($existing ?? $action->handle($team, $request->validated()))
             ->response()
-            ->setStatusCode(201);
+            ->setStatusCode($existing ? 200 : 201);
     }
 
     public function show(Team $team, Recipe $recipe): RecipeResource

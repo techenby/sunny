@@ -12,7 +12,7 @@ trait ChecksSunnySync
     {
         $this->refreshLocalSyncedData();
 
-        app(SunnySyncCoordinator::class)->dispatchIfStale();
+        app(SunnySyncCoordinator::class)->dispatchIfDue();
     }
 
     protected function refreshLocalSyncedData(): void {}

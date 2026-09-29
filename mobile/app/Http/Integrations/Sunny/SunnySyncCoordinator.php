@@ -18,12 +18,14 @@ class SunnySyncCoordinator
 
     public function __construct(
         private readonly SunnySync $sync,
+        private readonly SunnyWrites $writes,
+        private readonly SunnyOutbox $outbox,
         private readonly SunnyTokenStore $tokens,
         private readonly SunnyStore $store,
     ) {}
 
     /**
-     * Run one sync if another foreground or background sync is not already active.
+     * Send queued changes and then download, if another foreground or background sync is not already active.
      *
      * @return bool Whether this invocation performed a sync.
      */
@@ -36,6 +38,7 @@ class SunnySyncCoordinator
         }
 
         try {
+            $this->writes->push($token);
             $this->sync->sync($token);
 
             return true;
@@ -44,13 +47,25 @@ class SunnySyncCoordinator
         }
     }
 
+    public function isDue(): bool
+    {
+        return $this->store->isStale() || $this->outbox->hasPending();
+    }
+
+    public function dispatchIfDue(): void
+    {
+        if ($this->isDue()) {
+            $this->dispatch();
+        }
+    }
+
     /**
-     * Start a shared async sync when local data is stale and no background sync is in flight.
+     * Start a shared async sync unless a background sync is in flight.
      * A failed sync leaves the marker in place, so retries back off until it expires or a new session starts.
      */
-    public function dispatchIfStale(): void
+    public function dispatch(): void
     {
-        if (! $this->store->isStale() || ! Cache::add(self::DISPATCH_KEY, true, self::DISPATCH_SECONDS)) {
+        if (! Cache::add(self::DISPATCH_KEY, true, self::DISPATCH_SECONDS)) {
             return;
         }
 

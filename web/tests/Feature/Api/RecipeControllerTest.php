@@ -47,6 +47,22 @@ test('store creates a recipe and returns it', function () {
     ]);
 });
 
+test('store returns the existing recipe when a client uuid is retried', function () {
+    $user = User::factory()->create();
+    $uuid = '9b2f6c1e-3d4a-4f5b-8c7d-1e2f3a4b5c6d';
+
+    $first = $this->actingAs($user)
+        ->postJson(route('api.recipes.store', $user->currentTeam), ['name' => 'Soup', 'client_uuid' => $uuid])
+        ->assertCreated();
+
+    $this->actingAs($user)
+        ->postJson(route('api.recipes.store', $user->currentTeam), ['name' => 'Soup', 'client_uuid' => $uuid])
+        ->assertOk()
+        ->assertJsonPath('data.id', $first->json('data.id'));
+
+    expect(Recipe::where('client_uuid', $uuid)->count())->toBe(1);
+});
+
 test('store validates required fields', function () {
     $user = User::factory()->create();
 

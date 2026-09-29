@@ -2,6 +2,7 @@
 
 use App\Enums\ItemType;
 use App\Http\Integrations\Sunny\Requests\SaveRecordRequest;
+use App\Models\PendingWrite;
 use App\NativeComponents\EditInventoryItem;
 use Native\Mobile\Testing\Native;
 use Saloon\Http\Faking\MockResponse;
@@ -67,14 +68,16 @@ it('refuses to update an item without a name', function () {
         ->assertSee('Give the item a name.');
 });
 
-it('keeps unsaved item edits on the form when the API rejects the save', function () {
+it('keeps the item edit queued on the phone when Sunny rejects the session', function () {
     Native::fakeBridge()->respondTo('SecureStorage.Get', ['value' => 'saved-token']);
     Saloon::fake([SaveRecordRequest::class => MockResponse::make([], 401)]);
 
     Native::visit('/inventory/8/edit')
         ->tap('edit-item-submit')
-        ->assertNoNavigation()
-        ->assertSet('error', 'Your session expired. Log in again before saving.');
+        ->assertSet('error', '')
+        ->assertReplacedWith('/inventory/8');
+
+    expect(PendingWrite::sole()->error)->toBeNull();
 });
 
 it('explains when the item does not exist', function () {

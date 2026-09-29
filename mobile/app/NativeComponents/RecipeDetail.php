@@ -3,6 +3,7 @@
 namespace App\NativeComponents;
 
 use App\Concerns\ChecksSunnySync;
+use App\Concerns\ShowsQueuedChange;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
 use Native\Mobile\Attributes\On;
@@ -12,6 +13,7 @@ use Native\Mobile\Facades\Browser;
 class RecipeDetail extends NativeComponent
 {
     use ChecksSunnySync;
+    use ShowsQueuedChange;
 
     /**
      * Ingredients ticked off while cooking, as position => text so a tick stops
@@ -122,7 +124,7 @@ class RecipeDetail extends NativeComponent
 
     protected function refreshLocalSyncedData(): void
     {
-        unset($this->recipe, $this->parent, $this->remixes, $this->details, $this->ingredients, $this->instructions, $this->checkedCount);
+        unset($this->recipe, $this->parent, $this->remixes, $this->details, $this->ingredients, $this->instructions, $this->checkedCount, $this->queuedChange);
     }
 
     public function openSource(): void
@@ -130,6 +132,16 @@ class RecipeDetail extends NativeComponent
         if (Recipes::isSourceUrl($this->recipe['source'] ?? null)) {
             Browser::inApp($this->recipe['source']);
         }
+    }
+
+    protected function queuedResource(): string
+    {
+        return 'recipes';
+    }
+
+    protected function queuedRecordId(): ?int
+    {
+        return $this->recipe['id'] ?? null;
     }
 
     public function render(): View

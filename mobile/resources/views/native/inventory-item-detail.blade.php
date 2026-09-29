@@ -30,6 +30,8 @@
                     </text>
                 </row>
 
+                @include('native.queued-change', ['refPrefix' => 'item', 'queuedChange' => $this->queuedChange])
+
                 @if ($item['photo_url'] ?? null)
                     <image
                         ref="item-photo"
