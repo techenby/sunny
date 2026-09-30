@@ -42,6 +42,17 @@ it('explains how to start when the team has no lists', function () {
     Native::visit('/lists')->assertSee('No lists yet');
 });
 
+it('filters lists by name as you search', function () {
+    Native::visit('/lists')
+        ->input('updateSearch', ' GROC ')
+        ->assertSee('Groceries')
+        ->assertDontSee('Chores')
+        ->input('updateSearch', 'camping')
+        ->assertSee('No lists match “camping”')
+        ->input('updateSearch', '')
+        ->assertSee('Chores');
+});
+
 it('opens a list from the overview', function () {
     Native::visit('/lists')
         ->tap('Groceries')
@@ -164,7 +175,7 @@ it('shows a missing list', function () {
 
 it('opens the create screen from the overview', function () {
     Native::visit('/lists')
-        ->tap('create-list')
+        ->tap('New list')
         ->assertNavigatedTo('/lists/create')
         ->follow()
         ->assertScreen(CreateList::class)

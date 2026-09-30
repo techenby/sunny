@@ -6,6 +6,7 @@ use App\Concerns\ChecksSunnySync;
 use App\Enums\ChecklistType;
 use App\Models\Checklist;
 use App\Models\ChecklistItem;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
 use Native\Mobile\Attributes\On;
@@ -14,6 +15,8 @@ use Native\Mobile\Edge\NativeComponent;
 class Lists extends NativeComponent
 {
     use ChecksSunnySync;
+
+    public string $search = '';
 
     /**
      * @return array{id: int, team_id: int, user_id: int|null, type: ChecklistType, name: string, created_at: string, updated_at: string}|null
@@ -43,6 +46,7 @@ class Lists extends NativeComponent
             ->withCount(['items', 'items as completed_items_count' => fn ($query) => $query->whereNotNull('completed_at')])
             ->orderBy('name')
             ->get()
+            ->filter(fn (Checklist $checklist): bool => $this->search === '' || Str::contains($checklist->name, $this->search, ignoreCase: true))
             ->map(fn (Checklist $checklist): array => [
                 'id' => $checklist->id,
                 'name' => $checklist->name,
@@ -51,7 +55,13 @@ class Lists extends NativeComponent
                     ? 'No items'
                     : "{$checklist->completed_items_count} of {$checklist->items_count} done"),
             ])
+            ->values()
             ->all();
+    }
+
+    public function updateSearch(string $query): void
+    {
+        $this->search = trim($query);
     }
 
     #[On('sunny-sync-complete')]

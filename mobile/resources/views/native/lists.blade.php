@@ -1,16 +1,15 @@
 @use('App\Icons\Android')
 @use('App\Icons\Ios')
 
-<native:top-bar title="Lists" display-mode="large" :back="false">
-    <native:top-bar-action
-        ref="create-list"
-        id="create-list"
-        label="New list"
-        :ios-icon="Ios::Plus"
-        :android-icon="Android::Add"
-        @navigate('/lists/create')
-    />
-</native:top-bar>
+<native:top-bar title="Lists" display-mode="large" :back="false" />
+
+@include('native.search-bottom-bar', [
+    'refPrefix' => 'lists',
+    'placeholder' => 'Search lists',
+    'search' => $search,
+    'createLabel' => 'New list',
+    'createUrl' => '/lists/create',
+])
 
 <list ref="checklist-list" fill separator class="bg-theme-background">
     @if ($this->lists)
@@ -32,10 +31,10 @@
         <list-section>
             <list-item
                 ref="lists-empty"
-                headline="No lists yet"
-                supporting="Tap + to start a to-do, shopping, or wish list."
-                :leadingIconIos="Ios::ListBullet"
-                :leadingIconAndroid="Android::FormatListBulleted"
+                :headline="$search !== '' ? 'No lists match “'.$search.'”' : 'No lists yet'"
+                :supporting="$search !== '' ? 'Try a different search.' : 'Tap + to start a to-do, shopping, or wish list.'"
+                :leadingIconIos="$search !== '' ? Ios::Magnifyingglass : Ios::ListBullet"
+                :leadingIconAndroid="$search !== '' ? Android::SearchOff : Android::FormatListBulleted"
                 :leadingIconColor="theme('on-surface-variant')"
             />
         </list-section>
