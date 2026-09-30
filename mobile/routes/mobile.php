@@ -1,5 +1,6 @@
 <?php
 
+use App\Layouts\TabsLayout;
 use App\NativeComponents\CreateInventoryItem;
 use App\NativeComponents\CreateRecipe;
 use App\NativeComponents\Dashboard;
@@ -18,13 +19,15 @@ use Illuminate\Support\Facades\Route;
 Route::native('/', Home::class);
 Route::native('/login', Login::class);
 Route::native('/register', Register::class);
-Route::native('/dashboard', Dashboard::class);
-Route::native('/recipes', Recipes::class);
-Route::native('/recipes/create', CreateRecipe::class);
-Route::native('/recipes/{id}', RecipeDetail::class);
-Route::native('/recipes/{id}/edit', EditRecipe::class);
-Route::native('/inventory', Inventory::class);
-Route::native('/inventory/create', CreateInventoryItem::class);
-Route::native('/inventory/scan', ScanInventory::class);
-Route::native('/inventory/{id}', InventoryItemDetail::class);
-Route::native('/inventory/{id}/edit', EditInventoryItem::class);
+Route::nativeGroup(TabsLayout::class, function () {
+    Route::native('/dashboard', Dashboard::class);
+    Route::native('/recipes', Recipes::class);
+    Route::native('/recipes/create', CreateRecipe::class);
+    Route::native('/recipes/{id}', RecipeDetail::class);
+    Route::native('/recipes/{id}/edit', EditRecipe::class);
+    Route::native('/inventory', Inventory::class);
+    Route::native('/inventory/create', CreateInventoryItem::class);
+    Route::native('/inventory/scan', ScanInventory::class);
+    Route::native('/inventory/{id}', InventoryItemDetail::class);
+    Route::native('/inventory/{id}/edit', EditInventoryItem::class);
+});

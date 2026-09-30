@@ -86,7 +86,7 @@
         <row class="w-full gap-3">
             <pressable
                 ref="dashboard-recipes-all"
-                @navigate('/recipes')
+                @navigate.replace('/recipes')
                 a11y-label="Recipes"
                 :press-scale="0.97"
                 class="flex-1 gap-3 rounded-xl bg-theme-surface p-4 shadow-sm"
@@ -102,7 +102,7 @@
             </pressable>
             <pressable
                 ref="dashboard-inventory-all"
-                @navigate('/inventory')
+                @navigate.replace('/inventory')
                 a11y-label="Inventory"
                 :press-scale="0.97"
                 class="flex-1 gap-3 rounded-xl bg-theme-surface p-4 shadow-sm"
