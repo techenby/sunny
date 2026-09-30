@@ -1,13 +1,13 @@
 ---
 title: HTTP API
-description: Authenticate with Sanctum and work with Sunny's recipe, inventory, and sync endpoints.
+description: Authenticate with Sanctum and work with Sunny's recipe, inventory, list, and sync endpoints.
 order: 3
 ---
 
 # HTTP API
 
 Sunny exposes a Sanctum-protected JSON API under `/api`. It currently supports
-inventory items, recipes, user details, and multi-team synchronization.
+inventory items, recipes, lists, user details, and multi-team synchronization.
 
 ## Create a token
 
@@ -113,7 +113,7 @@ Accept: application/json
 
 ## Team behavior
 
-Item and recipe endpoints are scoped to a team in the URL:
+Item, recipe, and list endpoints are scoped to a team in the URL:
 `/api/teams/{team}/...`, where `{team}` is the team's `slug` (returned by
 `GET /api/sync`). The user must belong to that team.
 
@@ -121,15 +121,15 @@ The API never changes the user's current team in Sunny, so a client can work
 with several teams at once and switching teams is purely a client-side choice.
 A record requested under a team it doesn't belong to returns `404`.
 
-`GET /api/sync` is different: it returns teams, recipes, and items across every
-team the user belongs to.
+`GET /api/sync` is different: it returns teams, recipes, items, lists, and list
+items across every team the user belongs to.
 
 ## Endpoints
 
 | Method | Endpoint | Purpose |
 | --- | --- | --- |
 | `GET` | `/api/user` | Return the authenticated user, wrapped in `data`, with the same fields as the token response. |
-| `GET` | `/api/sync` | Synchronize all accessible teams, recipes, and items. |
+| `GET` | `/api/sync` | Synchronize all accessible teams, recipes, items, and lists. |
 | `POST` | `/api/sanctum/token/two-factor` | Complete a two-factor challenge. |
 | `POST` | `/api/sanctum/token/refresh` | Exchange the current token for a new one. |
 | `POST` | `/api/logout` | Revoke the current token. |
@@ -144,6 +144,16 @@ team the user belongs to.
 | `GET` | `/api/teams/{team}/recipes/{recipe}` | Read a recipe. |
 | `PATCH` | `/api/teams/{team}/recipes/{recipe}` | Update a recipe. |
 | `DELETE` | `/api/teams/{team}/recipes/{recipe}` | Delete a recipe. |
+| `GET` | `/api/teams/{team}/checklists` | List the team's lists with their items. |
+| `POST` | `/api/teams/{team}/checklists` | Create a list. |
+| `GET` | `/api/teams/{team}/checklists/{checklist}` | Read a list with its items. |
+| `PATCH` | `/api/teams/{team}/checklists/{checklist}` | Update a list. |
+| `DELETE` | `/api/teams/{team}/checklists/{checklist}` | Delete a list. |
+| `GET` | `/api/teams/{team}/checklists/{checklist}/items` | List a list's items in order. |
+| `POST` | `/api/teams/{team}/checklists/{checklist}/items` | Add an item to the end of a list. |
+| `GET` | `/api/teams/{team}/checklists/{checklist}/items/{item}` | Read a list item. |
+| `PATCH` | `/api/teams/{team}/checklists/{checklist}/items/{item}` | Rename, check, or uncheck a list item. |
+| `DELETE` | `/api/teams/{team}/checklists/{checklist}/items/{item}` | Remove a list item. |
 
 Successful creates return `201`; successful deletes return `204`.
 Collections and single resources use Laravel's standard `data` wrapper.
@@ -194,6 +204,43 @@ team).
 }
 ```
 
+## List payloads
+
+Lists are called checklists in the API. Create one with:
+
+```json
+{
+  "name": "Groceries",
+  "type": "shopping",
+  "user_id": 7
+}
+```
+
+`type` must be `todo`, `shopping`, or `wishlist`. `user_id` is optional and
+must be a member of the team; leave it `null` for a list that belongs to the
+whole household.
+
+Add an item with a `name`, and optionally `completed`. Check or uncheck an
+existing item by sending `completed`:
+
+```json
+{
+  "completed": true
+}
+```
+
+Sunny records when the item was checked and by whom in `completed_at` and
+`completed_by`. Checking an item that is already checked, or unchecking one
+that isn't, leaves it unchanged, so a client can safely send the same change
+again.
+
+## Retrying creates
+
+Item, recipe, list, and list item creates accept an optional `client_uuid`. If
+a request with the same `client_uuid` has already created a record, Sunny
+returns that record with `200` instead of creating another, so an offline
+client can retry a create without making duplicates.
+
 ## Incremental synchronization
 
 Pass an ISO-8601 timestamp to return records updated since a previous sync:
@@ -202,9 +249,12 @@ Pass an ISO-8601 timestamp to return records updated since a previous sync:
 GET /api/sync?since=2026-08-16T12:00:00Z
 ```
 
-The response contains `teams`, `recipes`, `items`, and a new `synced_at`
-timestamp to use for the next request. Deleted records are included so an
-offline client can remove local copies.
+The response contains `teams`, `recipes`, `items`, `checklists`,
+`checklist_items`, and a new `synced_at` timestamp to use for the next
+request. Deleted records are included so an offline client can remove local
+copies. List items are removed permanently rather than soft-deleted, and items
+are left out once their list is deleted, so compare a full sync against local
+copies to find removed list items.
 
 ## Errors
 

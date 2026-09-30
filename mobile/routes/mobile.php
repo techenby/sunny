@@ -2,13 +2,17 @@
 
 use App\Layouts\TabsLayout;
 use App\NativeComponents\CreateInventoryItem;
+use App\NativeComponents\CreateList;
 use App\NativeComponents\CreateRecipe;
 use App\NativeComponents\Dashboard;
 use App\NativeComponents\EditInventoryItem;
+use App\NativeComponents\EditList;
 use App\NativeComponents\EditRecipe;
 use App\NativeComponents\Home;
 use App\NativeComponents\Inventory;
 use App\NativeComponents\InventoryItemDetail;
+use App\NativeComponents\ListDetail;
+use App\NativeComponents\Lists;
 use App\NativeComponents\Login;
 use App\NativeComponents\RecipeDetail;
 use App\NativeComponents\Recipes;
@@ -30,4 +34,8 @@ Route::nativeGroup(TabsLayout::class, function () {
     Route::native('/inventory/scan', ScanInventory::class);
     Route::native('/inventory/{id}', InventoryItemDetail::class);
     Route::native('/inventory/{id}/edit', EditInventoryItem::class);
+    Route::native('/lists', Lists::class);
+    Route::native('/lists/create', CreateList::class);
+    Route::native('/lists/{id}', ListDetail::class);
+    Route::native('/lists/{id}/edit', EditList::class);
 });

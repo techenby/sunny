@@ -189,6 +189,7 @@ erDiagram
 		integer user_id FK ""
 		varchar type  ""
 		varchar name  ""
+		varchar client_uuid UK "unique per team"
 		datetime deleted_at  ""
 		datetime created_at  ""
 		datetime updated_at  ""
@@ -201,6 +202,7 @@ erDiagram
 		integer position  ""
 		datetime completed_at  ""
 		integer completed_by FK ""
+		varchar client_uuid UK "unique per list"
 		datetime created_at  ""
 		datetime updated_at  ""
 	}

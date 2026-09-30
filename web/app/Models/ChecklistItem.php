@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['checklist_id', 'name', 'position'])]
+#[Fillable(['checklist_id', 'name', 'position', 'client_uuid'])]
 class ChecklistItem extends Model
 {
     /** @use HasFactory<ChecklistItemFactory> */

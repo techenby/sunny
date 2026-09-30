@@ -282,5 +282,73 @@
             "created_at": "2026-06-30 08:50:00",
             "updated_at": "2026-06-30 08:50:00"
         }
+    ],
+    "checklists": [
+        {
+            "id": 1,
+            "user_id": null,
+            "type": "shopping",
+            "name": "Groceries",
+            "created_at": "2026-08-01 09:00:00",
+            "updated_at": "2026-09-22 18:00:00"
+        },
+        {
+            "id": 2,
+            "user_id": null,
+            "type": "todo",
+            "name": "Chores",
+            "created_at": "2026-08-02 09:00:00",
+            "updated_at": "2026-08-02 09:00:00"
+        },
+        {
+            "id": 3,
+            "user_id": 1,
+            "type": "wishlist",
+            "name": "Birthday ideas",
+            "created_at": "2026-08-03 09:00:00",
+            "updated_at": "2026-08-03 09:00:00"
+        }
+    ],
+    "checklist_items": [
+        {
+            "id": 1,
+            "checklist_id": 1,
+            "name": "Milk",
+            "position": 1,
+            "completed_at": null,
+            "completed_by": null,
+            "created_at": "2026-09-20 09:00:00",
+            "updated_at": "2026-09-20 09:00:00"
+        },
+        {
+            "id": 2,
+            "checklist_id": 1,
+            "name": "Eggs",
+            "position": 2,
+            "completed_at": "2026-09-22 18:00:00",
+            "completed_by": 1,
+            "created_at": "2026-09-20 09:01:00",
+            "updated_at": "2026-09-22 18:00:00"
+        },
+        {
+            "id": 3,
+            "checklist_id": 1,
+            "name": "Bread",
+            "position": 3,
+            "completed_at": null,
+            "completed_by": null,
+            "created_at": "2026-09-20 09:02:00",
+            "updated_at": "2026-09-20 09:02:00"
+        },
+        {
+            "id": 4,
+            "checklist_id": 2,
+            "name": "Vacuum the stairs",
+            "position": 1,
+            "completed_at": null,
+            "completed_by": null,
+            "created_at": "2026-08-02 09:05:00",
+            "updated_at": "2026-08-02 09:05:00"
+        }
     ]
 }

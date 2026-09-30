@@ -33,7 +33,11 @@ trait ShowsQueuedChange
             return;
         }
 
-        $noun = $this->queuedResource() === 'items' ? 'item' : 'recipe';
+        $noun = match ($this->queuedResource()) {
+            'items' => 'item',
+            'checklists' => 'list',
+            default => 'recipe',
+        };
 
         Dialog::alert('Discard change?', $id < 0
             ? "This {$noun} never reached Sunny, so it will be deleted from this phone."
@@ -44,7 +48,7 @@ trait ShowsQueuedChange
     }
 
     #[On(ButtonPressed::class)]
-    public function onDiscardQueuedChangePressed(string $label, ?string $id = null): void
+    public function onAlertButtonPressed(string $label, ?string $id = null): void
     {
         if ($id === 'discard-queued-change' && $label === 'Discard') {
             $this->discardQueuedChange();

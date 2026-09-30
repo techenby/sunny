@@ -2,6 +2,7 @@
 
 namespace App\Http\Integrations\Sunny;
 
+use App\Enums\ChecklistType;
 use App\Enums\ItemType;
 use App\Http\Integrations\Sunny\Requests\SyncRequest;
 use Illuminate\Support\Facades\Validator;
@@ -22,18 +23,24 @@ class SunnySync
 
         $rules = ['synced_at' => ['required', 'date']];
 
-        foreach (['teams', 'recipes', 'items'] as $type) {
+        foreach (['teams', 'recipes', 'items', 'checklists', 'checklist_items'] as $type) {
             $rules[$type] = ['present', 'array', 'list'];
             $rules[$type.'.*.id'] = ['required', 'integer', 'min:1', 'distinct'];
             $rules[$type.'.*.name'] = ['required', 'string'];
             $rules[$type.'.*.deleted_at'] = ['nullable', 'date'];
         }
 
-        foreach (['recipes', 'items'] as $type) {
-            $rules[$type.'.*.team_id'] = ['required', 'integer', 'min:1'];
-            $rules[$type.'.*.parent_id'] = ['nullable', 'integer'];
+        foreach (['recipes', 'items', 'checklists', 'checklist_items'] as $type) {
             $rules[$type.'.*.created_at'] = ['required', 'date'];
             $rules[$type.'.*.updated_at'] = ['required', 'date'];
+        }
+
+        foreach (['recipes', 'items', 'checklists'] as $type) {
+            $rules[$type.'.*.team_id'] = ['required', 'integer', 'min:1'];
+        }
+
+        foreach (['recipes', 'items'] as $type) {
+            $rules[$type.'.*.parent_id'] = ['nullable', 'integer'];
         }
 
         $rules['teams.*.slug'] = ['nullable', 'string'];
@@ -42,6 +49,12 @@ class SunnySync
 
         $rules['items.*.type'] = ['required', Rule::enum(ItemType::class)];
         $rules['items.*.metadata'] = ['nullable', 'array'];
+        $rules['checklists.*.type'] = ['required', Rule::enum(ChecklistType::class)];
+        $rules['checklists.*.user_id'] = ['nullable', 'integer'];
+        $rules['checklist_items.*.checklist_id'] = ['required', 'integer', 'min:1'];
+        $rules['checklist_items.*.position'] = ['nullable', 'integer'];
+        $rules['checklist_items.*.completed_at'] = ['nullable', 'date'];
+        $rules['checklist_items.*.completed_by'] = ['nullable', 'integer'];
         $rules['recipes.*.tags'] = ['nullable', 'array'];
         $rules['recipes.*.tags.*'] = ['string'];
 
