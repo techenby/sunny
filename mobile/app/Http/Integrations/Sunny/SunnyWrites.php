@@ -4,7 +4,9 @@ namespace App\Http\Integrations\Sunny;
 
 use App\Http\Integrations\Sunny\Requests\DeleteRecordRequest;
 use App\Http\Integrations\Sunny\Requests\SaveRecordRequest;
+use App\Http\Integrations\Sunny\Requests\UpdateRoutineStepRequest;
 use App\Models\PendingWrite;
+use App\Models\RoutineOccurrenceStep;
 use App\Models\Team;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
@@ -50,6 +52,12 @@ class SunnyWrites
         $team = Team::query()->where('server', SunnyStore::server())->find($write->team_id);
         if (! $team?->slug) {
             $write->update(['error' => 'Sync with Sunny before saving to this team.']);
+
+            return;
+        }
+
+        if ($write->resource === 'routine_occurrence_steps') {
+            $this->sendRoutineStep($write, $team, $connector);
 
             return;
         }
@@ -115,6 +123,28 @@ class SunnyWrites
         }
 
         $write->delete();
+    }
+
+    private function sendRoutineStep(PendingWrite $write, Team $team, SunnyConnector $connector): void
+    {
+        try {
+            $step = $connector->send(new UpdateRoutineStepRequest($team->slug, $write->payload['routine_occurrence_id'], $write->record_id, $write->payload['completed']))->json('data');
+        } catch (RequestException $exception) {
+            throw_if($this->rejectionMessage($exception) === null, $exception);
+            PendingWrite::query()->whereKey($write->id)->where('version', $write->version)->delete();
+
+            return;
+        }
+
+        DB::transaction(function () use ($write, $step): void {
+            if (! PendingWrite::query()->whereKey($write->id)->where('version', $write->version)->delete()) {
+                return;
+            }
+
+            if (is_array($step) && ($step['id'] ?? null) === $write->record_id) {
+                RoutineOccurrenceStep::query()->find($write->record_id)?->update(['completed_at' => $step['completed_at'] ?? null]);
+            }
+        });
     }
 
     /**

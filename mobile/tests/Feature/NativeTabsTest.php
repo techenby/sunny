@@ -8,16 +8,18 @@ beforeEach(function () {
 
 beforeEach(fn () => seedSunnyData());
 
-it('shows the summary, inventory, recipes and lists tabs', function (string $uri, string $activeTab) {
+it('shows the summary, routines, inventory, recipes and lists tabs', function (string $uri, string $activeTab) {
     Native::visit($uri)
         ->assertHasTabBar()
         ->assertHasTab('Summary')
+        ->assertHasTab('Routines')
         ->assertHasTab('Inventory')
         ->assertHasTab('Recipes')
         ->assertHasTab('Lists')
         ->assertTabActive($activeTab);
 })->with([
     'summary' => ['/dashboard', 'Summary'],
+    'routines' => ['/routines', 'Routines'],
     'inventory' => ['/inventory', 'Inventory'],
     'recipes' => ['/recipes', 'Recipes'],
     'item detail' => ['/inventory/3', 'Inventory'],

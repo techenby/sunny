@@ -104,7 +104,7 @@
                 </column>
             @else
                 <column ref="list-empty" class="w-full items-center gap-2 rounded-xl bg-theme-surface px-4 py-6">
-                    <icon :ios="Ios::Checklist" :android="Android::Checklist" :size="26" class="text-theme-primary" />
+                    <icon :ios="Ios::ListBullet" :android="Android::FormatListBulleted" :size="26" class="text-theme-primary" />
                     <text font="semibold" class="text-base text-theme-on-surface">This list is empty.</text>
                     <text class="text-sm text-theme-on-surface-variant">Add an item below.</text>
                 </column>

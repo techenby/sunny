@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -98,6 +99,12 @@ class Team extends Model
     public function routines(): HasMany
     {
         return $this->hasMany(Routine::class);
+    }
+
+    /** @return HasManyThrough<RoutineOccurrence, Routine, $this> */
+    public function routineOccurrences(): HasManyThrough
+    {
+        return $this->hasManyThrough(RoutineOccurrence::class, Routine::class);
     }
 
     /**

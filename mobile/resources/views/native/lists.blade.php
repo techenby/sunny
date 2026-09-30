@@ -34,8 +34,8 @@
                 ref="lists-empty"
                 headline="No lists yet"
                 supporting="Tap + to start a to-do, shopping, or wish list."
-                :leadingIconIos="Ios::Checklist"
-                :leadingIconAndroid="Android::Checklist"
+                :leadingIconIos="Ios::ListBullet"
+                :leadingIconAndroid="Android::FormatListBulleted"
                 :leadingIconColor="theme('on-surface-variant')"
             />
         </list-section>

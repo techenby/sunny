@@ -7,10 +7,13 @@ use App\Models\ChecklistItem;
 use App\Models\Item;
 use App\Models\PendingWrite;
 use App\Models\Recipe;
+use App\Models\RoutineOccurrence;
+use App\Models\RoutineOccurrenceStep;
 use App\Models\Team;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class SunnyStore
@@ -27,7 +30,7 @@ class SunnyStore
         return $fetchedAt === null || CarbonImmutable::parse($fetchedAt)->lessThan(now()->subMinutes(5));
     }
 
-    /** @param array{teams: array, recipes: array, items: array, checklists: array, checklist_items: array, synced_at: string} $snapshot */
+    /** @param array{teams: array, recipes: array, items: array, checklists: array, checklist_items: array, routine_occurrences: array, synced_at: string} $snapshot */
     public function applySnapshot(array $snapshot): void
     {
         DB::transaction(function () use ($snapshot): void {
@@ -39,7 +42,7 @@ class SunnyStore
             $pending = PendingWrite::query()->forCurrentServer()->get();
 
             foreach ($teams as $team) {
-                Team::query()->updateOrCreate(['id' => $team['id']], ['server' => self::server(), 'name' => $team['name'], 'slug' => $team['slug'] ?? null]);
+                Team::query()->updateOrCreate(['id' => $team['id']], ['server' => self::server(), 'name' => $team['name'], 'slug' => $team['slug'] ?? null, 'timezone' => $team['timezone'] ?? null]);
             }
 
             if (! Team::query()->where('server', self::server())->where('is_active', true)->exists()) {
@@ -62,6 +65,11 @@ class SunnyStore
             $orphans = ChecklistItem::query()->whereNotIn('checklist_id', Checklist::query()->select('id'))->pluck('id');
             PendingWrite::query()->where('resource', 'checklist_items')->whereIn('record_id', $orphans)->delete();
             ChecklistItem::query()->whereKey($orphans)->delete();
+
+            $this->saveRoutineOccurrences(
+                collect($snapshot['routine_occurrences'])->filter(fn (array $occurrence): bool => $teamIds->contains($occurrence['routine']['team_id'])),
+                $pending->where('resource', 'routine_occurrence_steps')->pluck('record_id'),
+            );
 
             DB::table('sunny_sync_states')->updateOrInsert(['server' => self::server()], [
                 'synced_at' => $snapshot['synced_at'],
@@ -106,6 +114,8 @@ class SunnyStore
     {
         DB::transaction(function (): void {
             $pending = PendingWrite::query()->get();
+            RoutineOccurrenceStep::query()->delete();
+            RoutineOccurrence::query()->delete();
             Item::query()->whereNotIn('id', $pending->where('resource', 'items')->pluck('record_id'))->delete();
             Recipe::query()->whereNotIn('id', $pending->where('resource', 'recipes')->pluck('record_id'))->delete();
             ChecklistItem::query()->whereNotIn('id', $pending->where('resource', 'checklist_items')->pluck('record_id'))->delete();
@@ -165,5 +175,40 @@ class SunnyStore
     public static function server(): string
     {
         return hash('sha256', rtrim((string) config('services.sunny.api_url'), '/'));
+    }
+
+    /**
+     * @param  Collection<int, array>  $occurrences
+     * @param  Collection<int, int>  $pendingStepIds
+     */
+    private function saveRoutineOccurrences(Collection $occurrences, Collection $pendingStepIds): void
+    {
+        $pendingTicks = RoutineOccurrenceStep::query()->whereIn('id', $pendingStepIds)->pluck('completed_at', 'id');
+        RoutineOccurrenceStep::query()->delete();
+        RoutineOccurrence::query()->delete();
+
+        foreach ($occurrences as $occurrence) {
+            RoutineOccurrence::query()->create([
+                'id' => $occurrence['id'],
+                'server' => self::server(),
+                'team_id' => $occurrence['routine']['team_id'],
+                'routine_id' => $occurrence['routine_id'],
+                'due_on' => $occurrence['due_on'],
+                'name' => $occurrence['routine']['name'],
+                'time_of_day' => $occurrence['routine']['time_of_day'],
+                'assignee' => $occurrence['routine']['user']['name'] ?? null,
+            ]);
+
+            foreach ($occurrence['steps'] as $step) {
+                RoutineOccurrenceStep::query()->create([
+                    'id' => $step['id'],
+                    'server' => self::server(),
+                    'routine_occurrence_id' => $occurrence['id'],
+                    'name' => $step['name'],
+                    'position' => $step['position'] ?? null,
+                    'completed_at' => $pendingTicks->has($step['id']) ? $pendingTicks[$step['id']] : $step['completed_at'],
+                ]);
+            }
+        }
     }
 }

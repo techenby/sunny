@@ -4,6 +4,9 @@ use App\Http\Controllers\Api\ChecklistController;
 use App\Http\Controllers\Api\ChecklistItemController;
 use App\Http\Controllers\Api\ItemController;
 use App\Http\Controllers\Api\RecipeController;
+use App\Http\Controllers\Api\RoutineController;
+use App\Http\Controllers\Api\RoutineOccurrenceController;
+use App\Http\Controllers\Api\RoutineOccurrenceStepController;
 use App\Http\Controllers\Api\SyncController;
 use App\Http\Controllers\Api\TokenController;
 use App\Http\Middleware\EnsureTeamMembership;
@@ -53,5 +56,11 @@ Route::middleware('auth:sanctum')
                 Route::get('checklists/{checklist}/items/{item}', [ChecklistItemController::class, 'show'])->name('checklists.items.show');
                 Route::patch('checklists/{checklist}/items/{item}', [ChecklistItemController::class, 'update'])->name('checklists.items.update');
                 Route::delete('checklists/{checklist}/items/{item}', [ChecklistItemController::class, 'destroy'])->name('checklists.items.destroy');
+
+                Route::get('routines', [RoutineController::class, 'index'])->name('routines.index');
+                Route::get('routines/{routine}', [RoutineController::class, 'show'])->name('routines.show');
+
+                Route::get('routine-occurrences', [RoutineOccurrenceController::class, 'index'])->name('routine-occurrences.index');
+                Route::patch('routine-occurrences/{routineOccurrence}/steps/{step}', [RoutineOccurrenceStepController::class, 'update'])->name('routine-occurrences.steps.update');
             });
     });

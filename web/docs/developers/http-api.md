@@ -1,13 +1,13 @@
 ---
 title: HTTP API
-description: Authenticate with Sanctum and work with Sunny's recipe, inventory, list, and sync endpoints.
+description: Authenticate with Sanctum and work with Sunny's recipe, inventory, list, routine, and sync endpoints.
 order: 3
 ---
 
 # HTTP API
 
 Sunny exposes a Sanctum-protected JSON API under `/api`. It currently supports
-inventory items, recipes, lists, user details, and multi-team synchronization.
+inventory items, recipes, lists, routines, user details, and multi-team synchronization.
 
 ## Create a token
 
@@ -113,7 +113,7 @@ Accept: application/json
 
 ## Team behavior
 
-Item, recipe, and list endpoints are scoped to a team in the URL:
+Item, recipe, list, and routine endpoints are scoped to a team in the URL:
 `/api/teams/{team}/...`, where `{team}` is the team's `slug` (returned by
 `GET /api/sync`). The user must belong to that team.
 
@@ -121,8 +121,8 @@ The API never changes the user's current team in Sunny, so a client can work
 with several teams at once and switching teams is purely a client-side choice.
 A record requested under a team it doesn't belong to returns `404`.
 
-`GET /api/sync` is different: it returns teams, recipes, items, lists, and list
-items across every team the user belongs to.
+`GET /api/sync` is different: it returns teams, recipes, items, lists, list
+items, and upcoming routines across every team the user belongs to.
 
 ## Endpoints
 
@@ -154,6 +154,10 @@ items across every team the user belongs to.
 | `GET` | `/api/teams/{team}/checklists/{checklist}/items/{item}` | Read a list item. |
 | `PATCH` | `/api/teams/{team}/checklists/{checklist}/items/{item}` | Rename, check, or uncheck a list item. |
 | `DELETE` | `/api/teams/{team}/checklists/{checklist}/items/{item}` | Remove a list item. |
+| `GET` | `/api/teams/{team}/routines` | List the team's routines and their steps. |
+| `GET` | `/api/teams/{team}/routines/{routine}` | Read a routine and its steps. |
+| `GET` | `/api/teams/{team}/routine-occurrences` | List the routines due on a day, with each step's progress. |
+| `PATCH` | `/api/teams/{team}/routine-occurrences/{occurrence}/steps/{step}` | Complete or uncomplete a step. |
 
 Successful creates return `201`; successful deletes return `204`.
 Collections and single resources use Laravel's standard `data` wrapper.
@@ -241,6 +245,31 @@ a request with the same `client_uuid` has already created a record, Sunny
 returns that record with `200` instead of creating another, so an offline
 client can retry a create without making duplicates.
 
+## Routine payloads
+
+Routines are managed on the web. Each day a routine is due gets an
+*occurrence* with a row for each of the routine's steps, and those rows are
+what get completed.
+
+`GET /api/teams/{team}/routine-occurrences` returns the routines due today in
+the team's timezone, ordered by time of day and name. Pass `date` as
+`YYYY-MM-DD` for another day. Each occurrence includes its `routine` (with
+`user` set to the assignee's `id` and `name`, or `null` for a household
+routine) and its `steps`, each with `name`, `position`, `completed_at`, and
+`completed_by`.
+
+Complete a step with:
+
+```json
+{
+  "completed": true
+}
+```
+
+Send `false` to uncomplete it. The request sets the step's state rather than
+toggling it, so retrying it is safe: completing a step that's already complete
+keeps the original `completed_at` and `completed_by`.
+
 ## Incremental synchronization
 
 Pass an ISO-8601 timestamp to return records updated since a previous sync:
@@ -250,11 +279,15 @@ GET /api/sync?since=2026-08-16T12:00:00Z
 ```
 
 The response contains `teams`, `recipes`, `items`, `checklists`,
-`checklist_items`, and a new `synced_at` timestamp to use for the next
-request. Deleted records are included so an offline client can remove local
-copies. List items are removed permanently rather than soft-deleted, and items
-are left out once their list is deleted, so compare a full sync against local
-copies to find removed list items.
+`checklist_items`, `routine_occurrences`, and a new `synced_at` timestamp to
+use for the next request. Deleted records are included so an offline client can
+remove local copies. List items are removed permanently rather than
+soft-deleted, and items are left out once their list is deleted, so compare a
+full sync against local copies to find removed list items.
+
+`routine_occurrences` ignores `since`: it always contains every routine due
+today and tomorrow in each team's timezone, shaped like the
+`routine-occurrences` endpoint's response.
 
 ## Errors
 
