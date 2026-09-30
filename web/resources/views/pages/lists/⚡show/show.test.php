@@ -3,7 +3,6 @@
 use App\Models\Checklist;
 use App\Models\ChecklistItem;
 use App\Models\User;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Livewire\Livewire;
 
 use function Pest\Laravel\actingAs;
@@ -36,10 +35,10 @@ describe('authorization', function () {
         $list = Checklist::factory()->for($user->currentTeam)->create();
         $other = ChecklistItem::factory()->create();
 
-        expect(fn () => Livewire::actingAs($user)
+        Livewire::actingAs($user)
             ->test('pages::lists.show', ['checklist' => $list])
-            ->call('toggle', $other->id))
-            ->toThrow(ModelNotFoundException::class);
+            ->call('toggle', $other->id)
+            ->assertNotFound();
 
         expect($other->fresh())->isCompleted()->toBeFalse();
     });

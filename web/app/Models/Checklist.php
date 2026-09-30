@@ -65,14 +65,14 @@ class Checklist extends Model
         ]);
     }
 
-    /** @param  Builder<Checklist>  $query */
+    /** @param Builder<static> $query */
     #[Scope]
     protected function household(Builder $query): void
     {
         $query->whereNull('user_id');
     }
 
-    /** @param Builder<Checklist> $query */
+    /** @param Builder<static> $query */
     #[Scope]
     protected function ofType(Builder $query, ChecklistType $type): void
     {

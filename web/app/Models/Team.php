@@ -10,6 +10,7 @@ use App\Enums\TeamRole;
 use Carbon\CarbonImmutable;
 use Database\Factories\TeamFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\RouteKey;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -18,6 +19,7 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable(['name', 'slug', 'is_personal', 'address', 'timezone', 'week_start', 'appearance', 'rotation'])]
+#[RouteKey('slug')]
 class Team extends Model
 {
     /** @use HasFactory<TeamFactory> */
@@ -129,11 +131,6 @@ class Team extends Model
         $this->recipes()->delete();
 
         $this->delete();
-    }
-
-    public function getRouteKeyName(): string
-    {
-        return 'slug';
     }
 
     /** @return array<string, string> */

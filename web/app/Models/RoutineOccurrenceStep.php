@@ -67,14 +67,14 @@ class RoutineOccurrenceStep extends Model
         $this->isCompleted() ? $this->uncomplete() : $this->complete($user);
     }
 
-    /** @param Builder<RoutineOccurrenceStep> $query */
+    /** @param Builder<static> $query */
     #[Scope]
     protected function completed(Builder $query): void
     {
         $query->whereNotNull('completed_at');
     }
 
-    /** @param Builder<RoutineOccurrenceStep> $query */
+    /** @param Builder<static> $query */
     #[Scope]
     protected function incomplete(Builder $query): void
     {
