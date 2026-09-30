@@ -3,7 +3,6 @@
 use App\Models\Recipe;
 use App\Models\Team;
 use App\Models\User;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Livewire\Livewire;
 
 test('guests are redirected to the login page', function () {
@@ -71,8 +70,9 @@ test('cannot delete a recipe from another team', function () {
 
     Livewire::actingAs($user)
         ->test('pages::recipes.index')
-        ->call('delete', $recipe->id);
-})->throws(ModelNotFoundException::class);
+        ->call('delete', $recipe->id)
+        ->assertNotFound();
+});
 
 test('shows source url as shortened link', function () {
     $user = User::factory()->create();

@@ -4,7 +4,6 @@ use App\Enums\ItemType;
 use App\Models\Item;
 use App\Models\Team;
 use App\Models\User;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
@@ -275,8 +274,9 @@ describe('can create and edit', function () {
 
         Livewire::actingAs($user)
             ->test('pages::inventory.index')
-            ->call('edit', $otherItem->id);
-    })->throws(ModelNotFoundException::class);
+            ->call('edit', $otherItem->id)
+            ->assertNotFound();
+    });
 });
 
 describe('can delete', function () {
@@ -297,8 +297,9 @@ describe('can delete', function () {
 
         Livewire::actingAs($user)
             ->test('pages::inventory.index')
-            ->call('delete', $item->id);
-    })->throws(ModelNotFoundException::class);
+            ->call('delete', $item->id)
+            ->assertNotFound();
+    });
 
     test('deleting a parent nullifies children parent_id', function () {
         $user = User::factory()->create();
@@ -363,8 +364,9 @@ describe('can view and restore deleted items', function () {
         Livewire::actingAs($user)
             ->test('pages::inventory.index')
             ->set('filters.showTrashed', true)
-            ->call('restore', $item->id);
-    })->throws(ModelNotFoundException::class);
+            ->call('restore', $item->id)
+            ->assertNotFound();
+    });
 });
 
 describe('can permanently delete items', function () {
@@ -389,8 +391,9 @@ describe('can permanently delete items', function () {
         Livewire::actingAs($user)
             ->test('pages::inventory.index')
             ->set('filters.showTrashed', true)
-            ->call('forceDelete', $item->id);
-    })->throws(ModelNotFoundException::class);
+            ->call('forceDelete', $item->id)
+            ->assertNotFound();
+    });
 });
 
 describe('can add item metadata', function () {
@@ -845,8 +848,9 @@ describe('can generate qr codes', function () {
 
         Livewire::actingAs($user)
             ->test('pages::inventory.index')
-            ->call('showQrCode', $otherItem->id);
-    })->throws(ModelNotFoundException::class);
+            ->call('showQrCode', $otherItem->id)
+            ->assertNotFound();
+    });
 });
 
 describe('move to team feature', function () {
@@ -930,8 +934,9 @@ describe('can duplicate items', function () {
         Livewire::actingAs($user)
             ->test('pages::inventory.index')
             ->call('openDuplicateModal', $item->id)
-            ->call('duplicate');
-    })->throws(ModelNotFoundException::class);
+            ->call('duplicate')
+            ->assertNotFound();
+    });
 });
 
 describe('can filter', function () {

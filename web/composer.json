@@ -16,7 +16,7 @@
         "laravel/chisel": "^0.1.0",
         "laravel/fortify": "^1.37.2",
         "laravel/framework": "^13.7",
-        "laravel/mcp": "~0.7.0",
+        "laravel/mcp": "^1.0",
         "laravel/nightwatch": "^1.24",
         "laravel/pennant": "^1.23",
         "laravel/sanctum": "^4.0",
@@ -27,8 +27,8 @@
         "livewire/livewire": "^4.1",
         "nunomaduro/essentials": "^1.2",
         "petebishwhip/laradocs": "^1.0",
-        "sabre/vobject": "^4.5",
-        "saloonphp/laravel-plugin": "^4.3",
+        "sabre/vobject": "^5.0",
+        "saloonphp/laravel-plugin": "^5.0",
         "saloonphp/saloon": "^4.0",
         "spatie/simple-excel": "^3.9"
     },
@@ -42,9 +42,9 @@
         "laravel/sail": "^1.41",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.6",
-        "pestphp/pest": "^4.3",
-        "pestphp/pest-plugin-browser": "^4.3",
-        "pestphp/pest-plugin-laravel": "^4.0",
+        "pestphp/pest": "^5.2",
+        "pestphp/pest-plugin-browser": "^5.0",
+        "pestphp/pest-plugin-laravel": "^5.0",
         "tightenco/duster": "^3.3"
     },
     "autoload": {

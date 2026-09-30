@@ -50,7 +50,7 @@ class RoutineOccurrence extends Model
         return (int) round($this->steps()->whereNotNull('completed_at')->count() / $total * 100);
     }
 
-    /** @param Builder<RoutineOccurrence> $query */
+    /** @param Builder<static> $query */
     #[Scope]
     protected function due(Builder $query, mixed $date): void
     {
