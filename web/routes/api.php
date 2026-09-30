@@ -2,6 +2,9 @@
 
 use App\Http\Controllers\Api\ItemController;
 use App\Http\Controllers\Api\RecipeController;
+use App\Http\Controllers\Api\RoutineController;
+use App\Http\Controllers\Api\RoutineOccurrenceController;
+use App\Http\Controllers\Api\RoutineOccurrenceStepController;
 use App\Http\Controllers\Api\SyncController;
 use App\Http\Controllers\Api\TokenController;
 use App\Http\Middleware\EnsureTeamMembership;
@@ -39,5 +42,11 @@ Route::middleware('auth:sanctum')
                 Route::get('recipes/{recipe}', [RecipeController::class, 'show'])->name('recipes.show');
                 Route::patch('recipes/{recipe}', [RecipeController::class, 'update'])->name('recipes.update');
                 Route::delete('recipes/{recipe}', [RecipeController::class, 'destroy'])->name('recipes.destroy');
+
+                Route::get('routines', [RoutineController::class, 'index'])->name('routines.index');
+                Route::get('routines/{routine}', [RoutineController::class, 'show'])->name('routines.show');
+
+                Route::get('routine-occurrences', [RoutineOccurrenceController::class, 'index'])->name('routine-occurrences.index');
+                Route::patch('routine-occurrences/{routineOccurrence}/steps/{step}', [RoutineOccurrenceStepController::class, 'update'])->name('routine-occurrences.steps.update');
             });
     });

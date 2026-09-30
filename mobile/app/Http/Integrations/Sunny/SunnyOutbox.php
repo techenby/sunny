@@ -4,6 +4,7 @@ namespace App\Http\Integrations\Sunny;
 
 use App\Models\Item;
 use App\Models\PendingWrite;
+use App\Models\RoutineOccurrenceStep;
 use App\Models\Team;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
@@ -70,6 +71,27 @@ class SunnyOutbox
             ])->save();
 
             return $record->id;
+        });
+    }
+
+    public function queueRoutineStep(int $id, bool $completed): void
+    {
+        DB::transaction(function () use ($id, $completed): void {
+            $step = RoutineOccurrenceStep::forCurrentServer()->with('occurrence')->find($id);
+            if ($step === null) {
+                throw ValidationException::withMessages(['step' => 'This step is no longer available. Sync with Sunny.']);
+            }
+            $step->update(['completed_at' => $completed ? now() : null]);
+
+            $write = PendingWrite::query()->for('routine_occurrence_steps', $id)->first() ?? new PendingWrite([
+                'server' => SunnyStore::server(), 'resource' => 'routine_occurrence_steps', 'record_id' => $id,
+                'team_id' => $step->occurrence->team_id, 'payload' => [], 'version' => 0,
+            ]);
+            $write->fill([
+                'payload' => ['routine_occurrence_id' => $step->routine_occurrence_id, 'completed' => $completed],
+                'version' => $write->version + 1,
+                'error' => null,
+            ])->save();
         });
     }
 

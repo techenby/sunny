@@ -13,6 +13,7 @@ use App\NativeComponents\Login;
 use App\NativeComponents\RecipeDetail;
 use App\NativeComponents\Recipes;
 use App\NativeComponents\Register;
+use App\NativeComponents\Routines;
 use App\NativeComponents\ScanInventory;
 use Illuminate\Support\Facades\Route;
 
@@ -21,6 +22,7 @@ Route::native('/login', Login::class);
 Route::native('/register', Register::class);
 Route::nativeGroup(TabsLayout::class, function () {
     Route::native('/dashboard', Dashboard::class);
+    Route::native('/routines', Routines::class);
     Route::native('/recipes', Recipes::class);
     Route::native('/recipes/create', CreateRecipe::class);
     Route::native('/recipes/{id}', RecipeDetail::class);
