@@ -161,7 +161,7 @@ class Dashboard extends NativeComponent
 
     public function confirmLogOut(): void
     {
-        Dialog::alert('Log out?', 'Recipes and inventory downloaded to this device will be removed.', [
+        Dialog::alert('Log out?', 'Recipes, inventory, and routines downloaded to this device will be removed.', [
             ['label' => 'Cancel', 'style' => 'cancel'],
             ['label' => 'Log out', 'style' => 'destructive'],
         ])->id('log-out')->show();

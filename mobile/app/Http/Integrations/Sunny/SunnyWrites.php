@@ -3,7 +3,9 @@
 namespace App\Http\Integrations\Sunny;
 
 use App\Http\Integrations\Sunny\Requests\SaveRecordRequest;
+use App\Http\Integrations\Sunny\Requests\UpdateRoutineStepRequest;
 use App\Models\PendingWrite;
+use App\Models\RoutineOccurrenceStep;
 use App\Models\Team;
 use Illuminate\Support\Facades\DB;
 use Saloon\Exceptions\Request\RequestException;
@@ -52,6 +54,12 @@ class SunnyWrites
             return;
         }
 
+        if ($write->resource === 'routine_occurrence_steps') {
+            $this->sendRoutineStep($write, $team, $connector);
+
+            return;
+        }
+
         $photoPath = $write->photo_path !== null && is_file($write->photo_path) ? $write->photo_path : null;
         $payload = $write->isCreate() ? [...$write->payload, 'client_uuid' => $write->client_uuid] : $write->payload;
 
@@ -91,6 +99,28 @@ class SunnyWrites
                 'client_uuid' => null,
                 'photo_path' => $current->photo_path === $photoPath ? null : $current->photo_path,
             ]);
+        });
+    }
+
+    private function sendRoutineStep(PendingWrite $write, Team $team, SunnyConnector $connector): void
+    {
+        try {
+            $step = $connector->send(new UpdateRoutineStepRequest($team->slug, $write->payload['routine_occurrence_id'], $write->record_id, $write->payload['completed']))->json('data');
+        } catch (RequestException $exception) {
+            throw_if($this->rejectionMessage($exception) === null, $exception);
+            PendingWrite::query()->whereKey($write->id)->where('version', $write->version)->delete();
+
+            return;
+        }
+
+        DB::transaction(function () use ($write, $step): void {
+            if (! PendingWrite::query()->whereKey($write->id)->where('version', $write->version)->delete()) {
+                return;
+            }
+
+            if (is_array($step) && ($step['id'] ?? null) === $write->record_id) {
+                RoutineOccurrenceStep::query()->find($write->record_id)?->update(['completed_at' => $step['completed_at'] ?? null]);
+            }
         });
     }
 

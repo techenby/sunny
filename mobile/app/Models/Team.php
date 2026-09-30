@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -21,5 +22,10 @@ class Team extends Model
     public function items(): HasMany
     {
         return $this->hasMany(Item::class);
+    }
+
+    public function today(): CarbonImmutable
+    {
+        return CarbonImmutable::now($this->timezone ?? config('app.timezone'))->startOfDay();
     }
 }

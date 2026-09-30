@@ -3,6 +3,7 @@
 namespace App\Http\Integrations\Sunny;
 
 use App\Enums\ItemType;
+use App\Enums\TimeOfDay;
 use App\Http\Integrations\Sunny\Requests\SyncRequest;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -37,6 +38,7 @@ class SunnySync
         }
 
         $rules['teams.*.slug'] = ['nullable', 'string'];
+        $rules['teams.*.timezone'] = ['nullable', 'timezone'];
         $rules['recipes.*.photo_url'] = ['nullable', 'url'];
         $rules['items.*.photo_url'] = ['nullable', 'url'];
 
@@ -48,6 +50,22 @@ class SunnySync
         foreach (['source', 'servings', 'prep_time', 'cook_time', 'total_time', 'description', 'ingredients', 'instructions', 'notes', 'nutrition'] as $field) {
             $rules['recipes.*.'.$field] = ['nullable', 'string'];
         }
+
+        $rules['routine_occurrences'] = ['present', 'array', 'list'];
+        $rules['routine_occurrences.*.id'] = ['required', 'integer', 'min:1', 'distinct'];
+        $rules['routine_occurrences.*.routine_id'] = ['required', 'integer', 'min:1'];
+        $rules['routine_occurrences.*.due_on'] = ['required', 'date_format:Y-m-d'];
+        $rules['routine_occurrences.*.routine'] = ['required', 'array'];
+        $rules['routine_occurrences.*.routine.team_id'] = ['required', 'integer', 'min:1'];
+        $rules['routine_occurrences.*.routine.name'] = ['required', 'string'];
+        $rules['routine_occurrences.*.routine.time_of_day'] = ['required', Rule::enum(TimeOfDay::class)];
+        $rules['routine_occurrences.*.routine.user'] = ['nullable', 'array'];
+        $rules['routine_occurrences.*.routine.user.name'] = ['required_with:routine_occurrences.*.routine.user', 'string'];
+        $rules['routine_occurrences.*.steps'] = ['present', 'array', 'list'];
+        $rules['routine_occurrences.*.steps.*.id'] = ['required', 'integer', 'min:1', 'distinct'];
+        $rules['routine_occurrences.*.steps.*.name'] = ['required', 'string'];
+        $rules['routine_occurrences.*.steps.*.position'] = ['nullable', 'integer'];
+        $rules['routine_occurrences.*.steps.*.completed_at'] = ['nullable', 'date'];
 
         Validator::make($snapshot, $rules)->validate();
 
