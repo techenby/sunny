@@ -52,7 +52,7 @@ it('creates records in the active team without a form picker', function (string 
 
 it('preserves selection through sync and falls back when membership disappears', function (): void {
     app(SunnyTeam::class)->select(2);
-    $snapshot = ['teams' => Team::all()->map->only(['id', 'name', 'slug'])->all(), 'recipes' => [], 'items' => [], 'routine_occurrences' => [], 'synced_at' => now()->toIso8601String()];
+    $snapshot = ['teams' => Team::all()->map->only(['id', 'name', 'slug'])->all(), 'recipes' => [], 'items' => [], 'checklists' => [], 'checklist_items' => [], 'routine_occurrences' => [], 'synced_at' => now()->toIso8601String()];
     app(SunnyStore::class)->applySnapshot($snapshot);
     expect(app(SunnyTeam::class)->current()->id)->toBe(2);
     $snapshot['teams'] = [$snapshot['teams'][0]];
@@ -76,7 +76,7 @@ it('falls back to the lowest team id without writing when no team is selected', 
 });
 
 it('keeps the synced fallback team when a team with a lower id is added', function (): void {
-    $snapshot = ['teams' => [Team::find(2)->only(['id', 'name', 'slug'])], 'recipes' => [], 'items' => [], 'routine_occurrences' => [], 'synced_at' => now()->toIso8601String()];
+    $snapshot = ['teams' => [Team::find(2)->only(['id', 'name', 'slug'])], 'recipes' => [], 'items' => [], 'checklists' => [], 'checklist_items' => [], 'routine_occurrences' => [], 'synced_at' => now()->toIso8601String()];
     app(SunnyStore::class)->applySnapshot($snapshot);
     $snapshot['teams'][] = ['id' => 1, 'name' => 'Family', 'slug' => 'family'];
     app(SunnyStore::class)->applySnapshot($snapshot);

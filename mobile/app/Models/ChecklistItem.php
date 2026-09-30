@@ -5,10 +5,11 @@ namespace App\Models;
 use App\Http\Integrations\Sunny\SunnyStore;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class PendingWrite extends Model
+class ChecklistItem extends Model
 {
-    protected $table = 'sunny_pending_writes';
+    public $incrementing = false;
 
     public $timestamps = false;
 
@@ -17,7 +18,7 @@ class PendingWrite extends Model
     /** @return array<string, string> */
     protected function casts(): array
     {
-        return ['payload' => 'array', 'deletes' => 'boolean'];
+        return ['completed_at' => 'immutable_datetime', 'created_at' => 'immutable_datetime', 'updated_at' => 'immutable_datetime'];
     }
 
     public function scopeForCurrentServer(Builder $query): void
@@ -25,13 +26,8 @@ class PendingWrite extends Model
         $query->where('server', SunnyStore::server());
     }
 
-    public function scopeFor(Builder $query, string $resource, int $recordId): void
+    public function checklist(): BelongsTo
     {
-        $query->forCurrentServer()->where('resource', $resource)->where('record_id', $recordId);
-    }
-
-    public function isCreate(): bool
-    {
-        return $this->record_id < 0;
+        return $this->belongsTo(Checklist::class);
     }
 }

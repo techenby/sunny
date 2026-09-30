@@ -2,6 +2,8 @@
 
 namespace App\Http\Integrations\Sunny;
 
+use App\Models\Checklist;
+use App\Models\ChecklistItem;
 use App\Models\Item;
 use App\Models\PendingWrite;
 use App\Models\Recipe;
@@ -9,6 +11,7 @@ use App\Models\RoutineOccurrence;
 use App\Models\RoutineOccurrenceStep;
 use App\Models\Team;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -27,7 +30,7 @@ class SunnyStore
         return $fetchedAt === null || CarbonImmutable::parse($fetchedAt)->lessThan(now()->subMinutes(5));
     }
 
-    /** @param array{teams: array, recipes: array, items: array, routine_occurrences: array, synced_at: string} $snapshot */
+    /** @param array{teams: array, recipes: array, items: array, checklists: array, checklist_items: array, routine_occurrences: array, synced_at: string} $snapshot */
     public function applySnapshot(array $snapshot): void
     {
         DB::transaction(function () use ($snapshot): void {
@@ -46,16 +49,22 @@ class SunnyStore
                 Team::query()->where('server', self::server())->orderBy('id')->first()?->update(['is_active' => true]);
             }
 
-            foreach (['recipes' => Recipe::class, 'items' => Item::class] as $type => $model) {
+            foreach (['recipes', 'items', 'checklists', 'checklist_items'] as $type) {
+                $model = self::model($type);
                 $pendingIds = $pending->where('resource', $type)->pluck('record_id');
                 $pendingUuids = $pending->where('resource', $type)->pluck('client_uuid')->filter();
-                $records = collect($snapshot[$type])->filter(fn (array $record): bool => empty($record['deleted_at']) && $teamIds->contains($record['team_id']));
+                [$ownerKey, $ownerIds] = $type === 'checklist_items' ? ['checklist_id', Checklist::query()->pluck('id')] : ['team_id', $teamIds];
+                $records = collect($snapshot[$type])->filter(fn (array $record): bool => empty($record['deleted_at']) && $ownerIds->contains($record[$ownerKey]));
                 $model::query()->whereNotIn('id', $records->pluck('id')->merge($pendingIds))->delete();
                 $records = $records->reject(fn (array $record): bool => $pendingIds->contains($record['id']) || $pendingUuids->contains($record['client_uuid'] ?? null));
                 foreach ($records as $record) {
                     $this->saveRecord($type, $record);
                 }
             }
+
+            $orphans = ChecklistItem::query()->whereNotIn('checklist_id', Checklist::query()->select('id'))->pluck('id');
+            PendingWrite::query()->where('resource', 'checklist_items')->whereIn('record_id', $orphans)->delete();
+            ChecklistItem::query()->whereKey($orphans)->delete();
 
             $this->saveRoutineOccurrences(
                 collect($snapshot['routine_occurrences'])->filter(fn (array $occurrence): bool => $teamIds->contains($occurrence['routine']['team_id'])),
@@ -71,7 +80,7 @@ class SunnyStore
 
     public function saveRecord(string $type, array $record): void
     {
-        $fields = ['team_id', ...self::editableFields($type), 'photo_url', 'created_at', 'updated_at'];
+        $fields = self::storedFields($type);
         self::model($type)::query()->updateOrCreate(['id' => $record['id']], ['server' => self::server(), ...array_fill_keys($fields, null), ...Arr::only($record, $fields)]);
     }
 
@@ -109,6 +118,9 @@ class SunnyStore
             RoutineOccurrence::query()->delete();
             Item::query()->whereNotIn('id', $pending->where('resource', 'items')->pluck('record_id'))->delete();
             Recipe::query()->whereNotIn('id', $pending->where('resource', 'recipes')->pluck('record_id'))->delete();
+            ChecklistItem::query()->whereNotIn('id', $pending->where('resource', 'checklist_items')->pluck('record_id'))->delete();
+            Checklist::query()->whereNotIn('id', $pending->where('resource', 'checklists')->pluck('record_id')
+                ->merge($pending->where('resource', 'checklist_items')->pluck('payload.checklist_id')))->delete();
             Team::query()->whereNotIn('id', $pending->pluck('team_id'))->delete();
             DB::table('sunny_sync_states')->delete();
         });
@@ -122,15 +134,42 @@ class SunnyStore
      */
     public static function editableFields(string $type): array
     {
-        return $type === 'recipes'
-            ? ['parent_id', 'name', 'source', 'servings', 'prep_time', 'cook_time', 'total_time', 'description', 'ingredients', 'instructions', 'notes', 'nutrition', 'tags']
-            : ['parent_id', 'type', 'name', 'metadata'];
+        return match ($type) {
+            'recipes' => ['parent_id', 'name', 'source', 'servings', 'prep_time', 'cook_time', 'total_time', 'description', 'ingredients', 'instructions', 'notes', 'nutrition', 'tags'],
+            'items' => ['parent_id', 'type', 'name', 'metadata'],
+            'checklists' => ['type', 'name'],
+            'checklist_items' => ['checklist_id', 'name'],
+        };
     }
 
-    /** @return class-string<Recipe|Item> */
+    /** @return list<string> */
+    public static function storedFields(string $type): array
+    {
+        return match ($type) {
+            'recipes', 'items' => ['team_id', ...self::editableFields($type), 'photo_url', 'created_at', 'updated_at'],
+            'checklists' => ['team_id', 'user_id', ...self::editableFields($type), 'created_at', 'updated_at'],
+            'checklist_items' => [...self::editableFields($type), 'position', 'completed_at', 'completed_by', 'created_at', 'updated_at'],
+        };
+    }
+
+    /** @return class-string<Recipe|Item|Checklist|ChecklistItem> */
     public static function model(string $type): string
     {
-        return $type === 'recipes' ? Recipe::class : Item::class;
+        return match ($type) {
+            'recipes' => Recipe::class,
+            'items' => Item::class,
+            'checklists' => Checklist::class,
+            'checklist_items' => ChecklistItem::class,
+        };
+    }
+
+    public static function inTeam(string $type, int $teamId): Builder
+    {
+        $query = self::model($type)::query()->where('server', self::server());
+
+        return $type === 'checklist_items'
+            ? $query->whereIn('checklist_id', self::inTeam('checklists', $teamId)->select('id'))
+            : $query->where('team_id', $teamId);
     }
 
     public static function server(): string

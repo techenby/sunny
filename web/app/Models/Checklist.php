@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['team_id', 'user_id', 'type', 'name'])]
+#[Fillable(['team_id', 'user_id', 'type', 'name', 'client_uuid'])]
 class Checklist extends Model
 {
     /** @use HasFactory<ChecklistFactory> */

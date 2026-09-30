@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Api\ChecklistController;
+use App\Http\Controllers\Api\ChecklistItemController;
 use App\Http\Controllers\Api\ItemController;
 use App\Http\Controllers\Api\RecipeController;
 use App\Http\Controllers\Api\RoutineController;
@@ -42,6 +44,18 @@ Route::middleware('auth:sanctum')
                 Route::get('recipes/{recipe}', [RecipeController::class, 'show'])->name('recipes.show');
                 Route::patch('recipes/{recipe}', [RecipeController::class, 'update'])->name('recipes.update');
                 Route::delete('recipes/{recipe}', [RecipeController::class, 'destroy'])->name('recipes.destroy');
+
+                Route::get('checklists', [ChecklistController::class, 'index'])->name('checklists.index');
+                Route::post('checklists', [ChecklistController::class, 'store'])->name('checklists.store');
+                Route::get('checklists/{checklist}', [ChecklistController::class, 'show'])->name('checklists.show');
+                Route::patch('checklists/{checklist}', [ChecklistController::class, 'update'])->name('checklists.update');
+                Route::delete('checklists/{checklist}', [ChecklistController::class, 'destroy'])->name('checklists.destroy');
+
+                Route::get('checklists/{checklist}/items', [ChecklistItemController::class, 'index'])->name('checklists.items.index');
+                Route::post('checklists/{checklist}/items', [ChecklistItemController::class, 'store'])->name('checklists.items.store');
+                Route::get('checklists/{checklist}/items/{item}', [ChecklistItemController::class, 'show'])->name('checklists.items.show');
+                Route::patch('checklists/{checklist}/items/{item}', [ChecklistItemController::class, 'update'])->name('checklists.items.update');
+                Route::delete('checklists/{checklist}/items/{item}', [ChecklistItemController::class, 'destroy'])->name('checklists.items.destroy');
 
                 Route::get('routines', [RoutineController::class, 'index'])->name('routines.index');
                 Route::get('routines/{routine}', [RoutineController::class, 'show'])->name('routines.show');

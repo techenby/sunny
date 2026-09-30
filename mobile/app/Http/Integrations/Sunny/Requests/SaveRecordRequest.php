@@ -16,7 +16,7 @@ class SaveRecordRequest extends Request implements HasBody
 
     public function __construct(
         private readonly string $teamSlug,
-        private readonly string $resource,
+        private readonly string $collection,
         private readonly array $payload,
         private readonly ?int $id = null,
         private readonly ?string $photoPath = null,
@@ -26,7 +26,7 @@ class SaveRecordRequest extends Request implements HasBody
 
     public function resolveEndpoint(): string
     {
-        return '/teams/'.rawurlencode($this->teamSlug).'/'.$this->resource.($this->id !== null ? '/'.$this->id : '');
+        return '/teams/'.rawurlencode($this->teamSlug).'/'.$this->collection.($this->id !== null ? '/'.$this->id : '');
     }
 
     public function body(): JsonBodyRepository|MultipartBodyRepository

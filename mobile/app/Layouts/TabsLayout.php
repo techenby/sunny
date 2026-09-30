@@ -18,7 +18,8 @@ class TabsLayout extends NativeLayout
             ->add(Tab::link('Summary', '/dashboard', ios: Ios::House, android: Android::Home))
             ->add(Tab::link('Routines', '/routines', ios: Ios::ChecklistChecked, android: Android::Checklist))
             ->add(Tab::link('Inventory', '/inventory', ios: Ios::Archivebox, android: Android::Inventory2))
-            ->add(Tab::link('Recipes', '/recipes', ios: Ios::ForkKnife, android: Android::Restaurant));
+            ->add(Tab::link('Recipes', '/recipes', ios: Ios::ForkKnife, android: Android::Restaurant))
+            ->add(Tab::link('Lists', '/lists', ios: Ios::ListBullet, android: Android::FormatListBulleted));
     }
 
     public function usesNativeChrome(): bool

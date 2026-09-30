@@ -2,11 +2,13 @@
 
 namespace App\Http\Integrations\Sunny;
 
+use App\Http\Integrations\Sunny\Requests\DeleteRecordRequest;
 use App\Http\Integrations\Sunny\Requests\SaveRecordRequest;
 use App\Http\Integrations\Sunny\Requests\UpdateRoutineStepRequest;
 use App\Models\PendingWrite;
 use App\Models\RoutineOccurrenceStep;
 use App\Models\Team;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Saloon\Exceptions\Request\RequestException;
 use UnexpectedValueException;
@@ -20,7 +22,7 @@ class SunnyWrites
     ) {}
 
     /**
-     * Send every queued change Sunny hasn't refused. A new item waits until the item it's inside has been created.
+     * Send every queued change Sunny hasn't refused. A new item waits until the item or list it's inside has been created.
      * Pass the token when pushing off the UI thread, where secure storage is not available.
      */
     public function push(#[\SensitiveParameter] ?string $token = null): void
@@ -32,7 +34,7 @@ class SunnyWrites
                 $sent = false;
 
                 foreach (PendingWrite::query()->forCurrentServer()->whereNull('error')->orderBy('id')->get() as $write) {
-                    if (($write->payload['parent_id'] ?? 0) < 0) {
+                    if (($write->payload['parent_id'] ?? 0) < 0 || ($write->payload['checklist_id'] ?? 0) < 0) {
                         continue;
                     }
 
@@ -60,11 +62,21 @@ class SunnyWrites
             return;
         }
 
+        $collection = $write->resource === 'checklist_items' ? 'checklists/'.$write->payload['checklist_id'].'/items' : $write->resource;
+
+        if ($write->deletes) {
+            $this->sendDelete($write, $connector, new DeleteRecordRequest($team->slug, $collection, $write->record_id));
+
+            return;
+        }
+
         $photoPath = $write->photo_path !== null && is_file($write->photo_path) ? $write->photo_path : null;
-        $payload = $write->isCreate() ? [...$write->payload, 'client_uuid' => $write->client_uuid] : $write->payload;
+        $payload = Arr::except($write->payload, 'checklist_id');
+        $payload = $write->isCreate() ? [...$payload, 'client_uuid' => $write->client_uuid] : $payload;
+        [$ownerKey, $ownerId] = $write->resource === 'checklist_items' ? ['checklist_id', $write->payload['checklist_id']] : ['team_id', $write->team_id];
 
         try {
-            $record = $connector->send(new SaveRecordRequest($team->slug, $write->resource, $payload, $write->isCreate() ? null : $write->record_id, $photoPath))->json('data');
+            $record = $connector->send(new SaveRecordRequest($team->slug, $collection, $payload, $write->isCreate() ? null : $write->record_id, $photoPath))->json('data');
         } catch (RequestException $exception) {
             $message = $this->rejectionMessage($exception);
             throw_if($message === null, $exception);
@@ -74,7 +86,7 @@ class SunnyWrites
         }
 
         if (! is_array($record) || ! is_int($record['id'] ?? null) || $record['id'] <= 0
-            || ($record['team_id'] ?? null) !== $write->team_id || (! $write->isCreate() && $record['id'] !== $write->record_id)) {
+            || ($record[$ownerKey] ?? null) !== $ownerId || (! $write->isCreate() && $record['id'] !== $write->record_id)) {
             report(new UnexpectedValueException('Sunny returned an invalid saved record.'));
             $write->update(['error' => 'Sunny didn’t confirm this change. Edit it to try again.']);
 
@@ -100,6 +112,17 @@ class SunnyWrites
                 'photo_path' => $current->photo_path === $photoPath ? null : $current->photo_path,
             ]);
         });
+    }
+
+    private function sendDelete(PendingWrite $write, SunnyConnector $connector, DeleteRecordRequest $request): void
+    {
+        try {
+            $connector->send($request);
+        } catch (RequestException $exception) {
+            throw_if($this->rejectionMessage($exception) === null, $exception);
+        }
+
+        $write->delete();
     }
 
     private function sendRoutineStep(PendingWrite $write, Team $team, SunnyConnector $connector): void
