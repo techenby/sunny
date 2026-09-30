@@ -1,7 +1,7 @@
 @use('App\Icons\Android')
 @use('App\Icons\Ios')
 
-<native:top-bar title="Recipes" display-mode="large" back />
+<native:top-bar title="Recipes" display-mode="large" :back="false" />
 
 @include('native.search-bottom-bar', [
     'refPrefix' => 'recipes',

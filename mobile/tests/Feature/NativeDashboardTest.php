@@ -96,10 +96,10 @@ it('opens a recent entry from its section', function (string $ref, string $uri, 
     'item' => ['dashboard-inventory-3', '/inventory/3', InventoryItemDetail::class],
 ]);
 
-it('opens the full list from each section', function (string $ref, string $uri, string $screen) {
+it('switches to the tab for each section', function (string $ref, string $uri, string $screen) {
     Native::visit('/dashboard')
         ->tap($ref)
-        ->assertNavigatedTo($uri)
+        ->assertReplacedWith($uri)
         ->follow()
         ->assertScreen($screen);
 })->with([

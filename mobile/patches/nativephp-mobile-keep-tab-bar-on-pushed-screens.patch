@@ -1,0 +1,11 @@
+--- a/resources/xcode/NativePHP/NativeRender/NativeRootTabsRenderer.swift
++++ b/resources/xcode/NativePHP/NativeRender/NativeRootTabsRenderer.swift
+@@ -765,7 +765,7 @@
+     let forceHide: Bool
+ 
+     func body(content: Content) -> some View {
+-        if isRoot && !forceHide {
++        if !forceHide {
+             content
+         } else {
+             content

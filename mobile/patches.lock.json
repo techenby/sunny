@@ -1,6 +1,18 @@
 {
-    "_hash": "052be12ab00a0de419c12855e6ff0a86fd253487c12795c7978672e8392b10b4",
+    "_hash": "04dd34e9300b5274e307b487cf44e52ff8288d09e0417be412d0f1debef7243a",
     "patches": {
+        "nativephp/mobile": [
+            {
+                "package": "nativephp/mobile",
+                "description": "iOS: keep the tab bar on pushed screens so it doesn't pop back in after a swipe back",
+                "url": "patches/nativephp-mobile-keep-tab-bar-on-pushed-screens.patch",
+                "sha256": "83438991ca874496f6ff29810e1def3f20a782c97c599cad35bfa3dad58a4921",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
+            }
+        ],
         "nativephp/mobile-ui": [
             {
                 "package": "nativephp/mobile-ui",

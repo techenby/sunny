@@ -176,10 +176,10 @@ it('syncs in the background when returning to a stale dashboard', function (): v
     $async = AsyncTask::fake();
     seedSunnyData();
     Saloon::fake([SyncRequest::class => MockResponse::make($this->snapshot)]);
-    $recipes = Native::visit('/dashboard')->assertDontSee('Soup')->tap('dashboard-recipes-all')->follow();
+    $recipe = Native::visit('/dashboard')->assertDontSee('Soup')->tap('dashboard-recipes-1')->follow();
     $async->assertNotDispatched();
     $this->travel(6)->minutes();
-    $recipes->goBack()->assertSee('Soup');
+    $recipe->goBack()->assertSee('Soup');
     $async->assertDispatchedTimes(1);
     $async->assertShared('sunny-sync-complete');
 });

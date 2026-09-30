@@ -101,6 +101,12 @@
             "dont-discover": []
         },
         "patches": {
+            "nativephp/mobile": [
+                {
+                    "description": "iOS: keep the tab bar on pushed screens so it doesn't pop back in after a swipe back",
+                    "url": "patches/nativephp-mobile-keep-tab-bar-on-pushed-screens.patch"
+                }
+            ],
             "nativephp/mobile-ui": [
                 {
                     "description": "iOS: focus outlined/filled text inputs when their padded box is tapped (upstream issue #19 in our scratchpad)",
