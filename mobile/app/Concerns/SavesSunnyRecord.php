@@ -50,6 +50,7 @@ trait SavesSunnyRecord
             $path = match ($resource) {
                 'items' => 'inventory',
                 'checklists' => 'lists',
+                'routines' => 'routines',
                 default => 'recipes',
             };
             $this->replace('/'.$path.'/'.$this->savedId);

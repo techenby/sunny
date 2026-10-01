@@ -1,13 +1,16 @@
 <?php
 
 use App\Layouts\TabsLayout;
+use App\NativeComponents\AllRoutines;
 use App\NativeComponents\CreateInventoryItem;
 use App\NativeComponents\CreateList;
 use App\NativeComponents\CreateRecipe;
+use App\NativeComponents\CreateRoutine;
 use App\NativeComponents\Dashboard;
 use App\NativeComponents\EditInventoryItem;
 use App\NativeComponents\EditList;
 use App\NativeComponents\EditRecipe;
+use App\NativeComponents\EditRoutine;
 use App\NativeComponents\Home;
 use App\NativeComponents\Inventory;
 use App\NativeComponents\InventoryItemDetail;
@@ -17,6 +20,7 @@ use App\NativeComponents\Login;
 use App\NativeComponents\RecipeDetail;
 use App\NativeComponents\Recipes;
 use App\NativeComponents\Register;
+use App\NativeComponents\RoutineDetail;
 use App\NativeComponents\Routines;
 use App\NativeComponents\ScanInventory;
 use Illuminate\Support\Facades\Route;
@@ -27,6 +31,10 @@ Route::native('/register', Register::class);
 Route::nativeGroup(TabsLayout::class, function () {
     Route::native('/dashboard', Dashboard::class);
     Route::native('/routines', Routines::class);
+    Route::native('/routines/all', AllRoutines::class);
+    Route::native('/routines/create', CreateRoutine::class);
+    Route::native('/routines/{id}', RoutineDetail::class);
+    Route::native('/routines/{id}/edit', EditRoutine::class);
     Route::native('/recipes', Recipes::class);
     Route::native('/recipes/create', CreateRecipe::class);
     Route::native('/recipes/{id}', RecipeDetail::class);

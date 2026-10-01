@@ -28,7 +28,7 @@ function listSnapshot(array $checklists, array $items): array
     return [
         'teams' => [['id' => 1, 'name' => 'Family', 'slug' => 'family']],
         'recipes' => [], 'items' => [],
-        'checklists' => $checklists, 'checklist_items' => $items, 'routine_occurrences' => [],
+        'checklists' => $checklists, 'checklist_items' => $items, 'routines' => [], 'routine_steps' => [], 'routine_occurrences' => [],
         'synced_at' => now()->toIso8601String(),
     ];
 }

@@ -30,7 +30,55 @@ test('returns all teams, recipes, and items for the user', function () {
         ->assertJsonCount(1, 'teams')
         ->assertJsonCount(2, 'recipes')
         ->assertJsonCount(3, 'items')
-        ->assertJsonStructure(['teams', 'recipes', 'items', 'checklists', 'checklist_items', 'routine_occurrences', 'synced_at']);
+        ->assertJsonStructure(['teams', 'recipes', 'items', 'checklists', 'checklist_items', 'routines', 'routine_steps', 'routine_occurrences', 'synced_at']);
+});
+
+test('returns routines and their steps for the user', function () {
+    $user = User::factory()->create();
+    $routine = Routine::factory()->for($user->currentTeam)->weekly([1, 3])->create();
+    RoutineStep::factory()->for($routine)->count(2)->create();
+
+    RoutineStep::factory()->count(2)->create();
+
+    $this->actingAs($user)
+        ->getJson(route('api.sync'))
+        ->assertOk()
+        ->assertJsonCount(1, 'routines')
+        ->assertJsonCount(2, 'routine_steps')
+        ->assertJsonPath('routines.0.id', $routine->id)
+        ->assertJsonPath('routines.0.weekdays', [1, 3])
+        ->assertJsonPath('routine_steps.0.routine_id', $routine->id);
+});
+
+test('includes soft-deleted routines and steps', function () {
+    $user = User::factory()->create();
+    $routine = Routine::factory()->for($user->currentTeam)->create();
+    RoutineStep::factory()->for($routine)->create()->delete();
+    $deleted = Routine::factory()->for($user->currentTeam)->create();
+    RoutineStep::factory()->for($deleted)->create();
+    $deleted->delete();
+
+    $this->actingAs($user)
+        ->getJson(route('api.sync'))
+        ->assertOk()
+        ->assertJsonCount(2, 'routines')
+        ->assertJsonPath('routines.1.deleted_at', fn ($value) => $value !== null)
+        ->assertJsonCount(1, 'routine_steps')
+        ->assertJsonPath('routine_steps.0.deleted_at', fn ($value) => $value !== null);
+});
+
+test('returns only routines and steps updated since the given timestamp', function () {
+    $user = User::factory()->create();
+    $routine = Routine::factory()->for($user->currentTeam)->create(['updated_at' => now()->subDays(2)]);
+    RoutineStep::factory()->for($routine)->create(['updated_at' => now()->subDays(2)]);
+    $new = RoutineStep::factory()->for($routine)->create(['updated_at' => now()->subHour()]);
+
+    $this->actingAs($user)
+        ->getJson(route('api.sync', ['since' => now()->subDay()->toIso8601String()]))
+        ->assertOk()
+        ->assertJsonCount(0, 'routines')
+        ->assertJsonCount(1, 'routine_steps')
+        ->assertJsonPath('routine_steps.0.id', $new->id);
 });
 
 test('returns checklists and their items for the user', function () {

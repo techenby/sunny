@@ -34,7 +34,7 @@ class SunnyWrites
                 $sent = false;
 
                 foreach (PendingWrite::query()->forCurrentServer()->whereNull('error')->orderBy('id')->get() as $write) {
-                    if (($write->payload['parent_id'] ?? 0) < 0 || ($write->payload['checklist_id'] ?? 0) < 0) {
+                    if (($write->payload['parent_id'] ?? 0) < 0 || ($write->payload['checklist_id'] ?? 0) < 0 || ($write->payload['routine_id'] ?? 0) < 0) {
                         continue;
                     }
 
@@ -62,7 +62,8 @@ class SunnyWrites
             return;
         }
 
-        $collection = $write->resource === 'checklist_items' ? 'checklists/'.$write->payload['checklist_id'].'/items' : $write->resource;
+        $owner = SunnyStore::owner($write->resource);
+        $collection = $owner !== null ? $owner[0].'/'.$write->payload[$owner[1]].'/'.$owner[2] : $write->resource;
 
         if ($write->deletes) {
             $this->sendDelete($write, $connector, new DeleteRecordRequest($team->slug, $collection, $write->record_id));
@@ -71,9 +72,9 @@ class SunnyWrites
         }
 
         $photoPath = $write->photo_path !== null && is_file($write->photo_path) ? $write->photo_path : null;
-        $payload = Arr::except($write->payload, 'checklist_id');
+        $payload = $owner !== null ? Arr::except($write->payload, $owner[1]) : $write->payload;
         $payload = $write->isCreate() ? [...$payload, 'client_uuid' => $write->client_uuid] : $payload;
-        [$ownerKey, $ownerId] = $write->resource === 'checklist_items' ? ['checklist_id', $write->payload['checklist_id']] : ['team_id', $write->team_id];
+        [$ownerKey, $ownerId] = $owner !== null ? [$owner[1], $write->payload[$owner[1]]] : ['team_id', $write->team_id];
 
         try {
             $record = $connector->send(new SaveRecordRequest($team->slug, $collection, $payload, $write->isCreate() ? null : $write->record_id, $photoPath))->json('data');

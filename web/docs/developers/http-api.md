@@ -122,14 +122,15 @@ with several teams at once and switching teams is purely a client-side choice.
 A record requested under a team it doesn't belong to returns `404`.
 
 `GET /api/sync` is different: it returns teams, recipes, items, lists, list
-items, and upcoming routines across every team the user belongs to.
+items, routines, routine steps, and upcoming routines across every team the
+user belongs to.
 
 ## Endpoints
 
 | Method | Endpoint | Purpose |
 | --- | --- | --- |
 | `GET` | `/api/user` | Return the authenticated user, wrapped in `data`, with the same fields as the token response. |
-| `GET` | `/api/sync` | Synchronize all accessible teams, recipes, items, and lists. |
+| `GET` | `/api/sync` | Synchronize all accessible teams, recipes, items, lists, and routines. |
 | `POST` | `/api/sanctum/token/two-factor` | Complete a two-factor challenge. |
 | `POST` | `/api/sanctum/token/refresh` | Exchange the current token for a new one. |
 | `POST` | `/api/logout` | Revoke the current token. |
@@ -155,7 +156,13 @@ items, and upcoming routines across every team the user belongs to.
 | `PATCH` | `/api/teams/{team}/checklists/{checklist}/items/{item}` | Rename, check, or uncheck a list item. |
 | `DELETE` | `/api/teams/{team}/checklists/{checklist}/items/{item}` | Remove a list item. |
 | `GET` | `/api/teams/{team}/routines` | List the team's routines and their steps. |
+| `POST` | `/api/teams/{team}/routines` | Create a routine. |
 | `GET` | `/api/teams/{team}/routines/{routine}` | Read a routine and its steps. |
+| `PATCH` | `/api/teams/{team}/routines/{routine}` | Update a routine. |
+| `DELETE` | `/api/teams/{team}/routines/{routine}` | Delete a routine. |
+| `POST` | `/api/teams/{team}/routines/{routine}/steps` | Add a step to the end of a routine. |
+| `PATCH` | `/api/teams/{team}/routines/{routine}/steps/{step}` | Rename a routine step. |
+| `DELETE` | `/api/teams/{team}/routines/{routine}/steps/{step}` | Remove a routine step. |
 | `GET` | `/api/teams/{team}/routine-occurrences` | List the routines due on a day, with each step's progress. |
 | `PATCH` | `/api/teams/{team}/routine-occurrences/{occurrence}/steps/{step}` | Complete or uncomplete a step. |
 
@@ -240,14 +247,40 @@ again.
 
 ## Retrying creates
 
-Item, recipe, list, and list item creates accept an optional `client_uuid`. If
+Item, recipe, list, list item, routine, and routine step creates accept an
+optional `client_uuid`. If
 a request with the same `client_uuid` has already created a record, Sunny
 returns that record with `200` instead of creating another, so an offline
 client can retry a create without making duplicates.
 
 ## Routine payloads
 
-Routines are managed on the web. Each day a routine is due gets an
+Create a routine with:
+
+```json
+{
+  "name": "Bedtime",
+  "time_of_day": "evening",
+  "frequency": "weekly",
+  "weekdays": [1, 3, 5],
+  "user_id": 7
+}
+```
+
+`time_of_day` must be `morning`, `afternoon`, `evening`, or `anytime`, and
+`frequency` must be `daily`, `weekly`, or `monthly`. A weekly routine needs
+`weekdays`, from `0` (Sunday) to `6` (Saturday); a monthly routine needs a
+`day_of_month` from `1` to `31`, and runs on the last day of shorter months.
+Sunny clears whichever of the two the frequency doesn't use. `starts_on`
+(`YYYY-MM-DD`) defaults to today in the team's timezone, and `is_active`
+defaults to `true`; pausing a routine stops it appearing from today onward.
+`user_id` is optional and must be a member of the team; leave it `null` for a
+household routine.
+
+Add a step with a `name`; it goes to the end of the routine. Removing a step
+stops it from appearing on future days but keeps it on days already generated.
+
+Each day a routine is due gets an
 *occurrence* with a row for each of the routine's steps, and those rows are
 what get completed.
 
@@ -279,11 +312,12 @@ GET /api/sync?since=2026-08-16T12:00:00Z
 ```
 
 The response contains `teams`, `recipes`, `items`, `checklists`,
-`checklist_items`, `routine_occurrences`, and a new `synced_at` timestamp to
-use for the next request. Deleted records are included so an offline client can
-remove local copies. List items are removed permanently rather than
-soft-deleted, and items are left out once their list is deleted, so compare a
-full sync against local copies to find removed list items.
+`checklist_items`, `routines`, `routine_steps`, `routine_occurrences`, and a
+new `synced_at` timestamp to use for the next request. Deleted records are
+included so an offline client can remove local copies. List items are removed
+permanently rather than soft-deleted, and list items and routine steps are left
+out once their list or routine is deleted, so compare a full sync against local
+copies to find removed ones.
 
 `routine_occurrences` ignores `since`: it always contains every routine due
 today and tomorrow in each team's timezone, shaped like the

@@ -1,7 +1,16 @@
 @use('App\Icons\Android')
 @use('App\Icons\Ios')
 
-<native:top-bar title="Routines" display-mode="large" :back="false" />
+<native:top-bar title="Routines" display-mode="large" :back="false">
+    <native:top-bar-action
+        ref="all-routines"
+        id="all-routines"
+        label="All routines"
+        :ios-icon="Ios::ListBullet"
+        :android-icon="Android::FormatListBulleted"
+        @navigate('/routines/all')
+    />
+</native:top-bar>
 
 <scroll-view ref="routines" fill class="bg-theme-background">
     <column class="w-full gap-6 px-4 pt-2 pb-8">

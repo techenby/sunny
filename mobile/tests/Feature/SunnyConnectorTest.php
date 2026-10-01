@@ -84,7 +84,7 @@ it('sends authenticated user, refresh and logout requests', function (string $re
 ]);
 
 it('requests full or incremental sync', function (?string $since): void {
-    Saloon::fake([SyncRequest::class => MockResponse::make(['teams' => [], 'items' => [], 'recipes' => [], 'checklists' => [], 'checklist_items' => [], 'synced_at' => '2026-09-23T12:00:00+00:00'])]);
+    Saloon::fake([SyncRequest::class => MockResponse::make(['teams' => [], 'items' => [], 'recipes' => [], 'checklists' => [], 'checklist_items' => [], 'routines' => [], 'routine_steps' => [], 'synced_at' => '2026-09-23T12:00:00+00:00'])]);
 
     $connector = app(SunnyConnector::class)->authenticate(new TokenAuthenticator('test-token'));
     $connector->send(new SyncRequest($since === null ? null : new DateTimeImmutable($since)));
