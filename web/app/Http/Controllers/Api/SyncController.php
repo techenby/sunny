@@ -9,9 +9,11 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\ItemResource;
 use App\Http\Resources\RecipeResource;
 use App\Http\Resources\RoutineOccurrenceResource;
+use App\Http\Resources\RoutineResource;
 use App\Http\Resources\TeamResource;
 use App\Models\Item;
 use App\Models\Recipe;
+use App\Models\Routine;
 use App\Models\Team;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -31,17 +33,20 @@ class SyncController extends Controller
         $teamsQuery = $user->teams()->withTrashed();
         $recipesQuery = Recipe::query()->withTrashed()->whereIn('team_id', $teamIds);
         $itemsQuery = Item::query()->withTrashed()->whereIn('team_id', $teamIds);
+        $routinesQuery = Routine::query()->withTrashed()->with(['user', 'steps'])->whereIn('team_id', $teamIds);
 
         if ($since = $request->date('since')) {
             $teamsQuery->where('teams.updated_at', '>=', $since);
             $recipesQuery->where('updated_at', '>=', $since);
             $itemsQuery->where('updated_at', '>=', $since);
+            $routinesQuery->where('updated_at', '>=', $since);
         }
 
         return response()->json([
             'teams' => TeamResource::collection($teamsQuery->get()),
             'recipes' => RecipeResource::collection($recipesQuery->get()),
             'items' => ItemResource::collection($itemsQuery->get()),
+            'routines' => RoutineResource::collection($routinesQuery->get()),
             'routine_occurrences' => RoutineOccurrenceResource::collection($user->teams()->get()->flatMap(
                 fn (Team $team) => [
                     ...$routines->forDate($team, $team->today()),

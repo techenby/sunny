@@ -2,10 +2,13 @@
 
 namespace App\Http\Integrations\Sunny;
 
+use App\Http\Integrations\Sunny\Requests\DeleteRoutineRequest;
 use App\Http\Integrations\Sunny\Requests\SaveRecordRequest;
 use App\Http\Integrations\Sunny\Requests\UpdateRoutineStepRequest;
 use App\Models\PendingWrite;
+use App\Models\Routine;
 use App\Models\RoutineOccurrenceStep;
+use App\Models\RoutineStep;
 use App\Models\Team;
 use Illuminate\Support\Facades\DB;
 use Saloon\Exceptions\Request\RequestException;
@@ -60,6 +63,12 @@ class SunnyWrites
             return;
         }
 
+        if ($write->resource === 'routines') {
+            ($write->payload['deleted'] ?? false) ? $this->sendRoutineDelete($write, $team, $connector) : $this->sendRoutine($write, $team, $connector);
+
+            return;
+        }
+
         $photoPath = $write->photo_path !== null && is_file($write->photo_path) ? $write->photo_path : null;
         $payload = $write->isCreate() ? [...$write->payload, 'client_uuid' => $write->client_uuid] : $write->payload;
 
@@ -99,6 +108,83 @@ class SunnyWrites
                 'client_uuid' => null,
                 'photo_path' => $current->photo_path === $photoPath ? null : $current->photo_path,
             ]);
+        });
+    }
+
+    private function sendRoutine(PendingWrite $write, Team $team, SunnyConnector $connector): void
+    {
+        $sentSteps = $write->payload['steps'] ?? [];
+        $payload = [
+            ...$write->payload,
+            'steps' => array_map(fn (array $step): array => $step['id'] > 0 ? $step : ['name' => $step['name']], $sentSteps),
+            ...($write->isCreate() ? ['client_uuid' => $write->client_uuid] : []),
+        ];
+
+        try {
+            $record = $connector->send(new SaveRecordRequest($team->slug, 'routines', $payload, $write->isCreate() ? null : $write->record_id))->json('data');
+        } catch (RequestException $exception) {
+            $message = $this->rejectionMessage($exception);
+            throw_if($message === null, $exception);
+            $write->update(['error' => $message]);
+
+            return;
+        }
+
+        if (! is_array($record) || ! is_int($record['id'] ?? null) || $record['id'] <= 0 || ! is_array($record['steps'] ?? null)
+            || ($record['team_id'] ?? null) !== $write->team_id || (! $write->isCreate() && $record['id'] !== $write->record_id)) {
+            report(new UnexpectedValueException('Sunny returned an invalid saved routine.'));
+            $write->update(['error' => 'Sunny didn’t confirm this change. Edit it to try again.']);
+
+            return;
+        }
+
+        $serverStepIds = [];
+        if (count($record['steps']) === count($sentSteps)) {
+            foreach ($sentSteps as $index => $step) {
+                if ($step['id'] < 0 && is_int($record['steps'][$index]['id'] ?? null)) {
+                    $serverStepIds[$step['id']] = $record['steps'][$index]['id'];
+                }
+            }
+        }
+
+        DB::transaction(function () use ($write, $record, $serverStepIds): void {
+            if ($write->isCreate()) {
+                $this->outbox->adoptServerId('routines', $write->record_id, $record['id']);
+            }
+
+            $this->outbox->adoptRoutineStepIds($record['id'], $serverStepIds);
+            $current = PendingWrite::query()->for('routines', $record['id'])->first();
+
+            if ($current === null || $current->version === $write->version) {
+                $current?->delete();
+                $this->store->saveRoutine($record);
+
+                return;
+            }
+
+            $current->update(['client_uuid' => null]);
+        });
+    }
+
+    private function sendRoutineDelete(PendingWrite $write, Team $team, SunnyConnector $connector): void
+    {
+        try {
+            $connector->send(new DeleteRoutineRequest($team->slug, $write->record_id));
+        } catch (RequestException $exception) {
+            if ($exception->getResponse()->status() !== 404) {
+                $message = $this->rejectionMessage($exception);
+                throw_if($message === null, $exception);
+                $write->update(['error' => $message]);
+
+                return;
+            }
+        }
+
+        DB::transaction(function () use ($write): void {
+            if (PendingWrite::query()->whereKey($write->id)->where('version', $write->version)->delete()) {
+                Routine::query()->whereKey($write->record_id)->delete();
+                RoutineStep::query()->where('routine_id', $write->record_id)->delete();
+            }
         });
     }
 

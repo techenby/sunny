@@ -121,15 +121,15 @@ The API never changes the user's current team in Sunny, so a client can work
 with several teams at once and switching teams is purely a client-side choice.
 A record requested under a team it doesn't belong to returns `404`.
 
-`GET /api/sync` is different: it returns teams, recipes, items, and upcoming
-routines across every team the user belongs to.
+`GET /api/sync` is different: it returns teams, recipes, items, routines, and
+upcoming routine occurrences across every team the user belongs to.
 
 ## Endpoints
 
 | Method | Endpoint | Purpose |
 | --- | --- | --- |
 | `GET` | `/api/user` | Return the authenticated user, wrapped in `data`, with the same fields as the token response. |
-| `GET` | `/api/sync` | Synchronize all accessible teams, recipes, and items. |
+| `GET` | `/api/sync` | Synchronize all accessible teams, recipes, items, routines, and upcoming occurrences. |
 | `POST` | `/api/sanctum/token/two-factor` | Complete a two-factor challenge. |
 | `POST` | `/api/sanctum/token/refresh` | Exchange the current token for a new one. |
 | `POST` | `/api/logout` | Revoke the current token. |
@@ -145,11 +145,16 @@ routines across every team the user belongs to.
 | `PATCH` | `/api/teams/{team}/recipes/{recipe}` | Update a recipe. |
 | `DELETE` | `/api/teams/{team}/recipes/{recipe}` | Delete a recipe. |
 | `GET` | `/api/teams/{team}/routines` | List the team's routines and their steps. |
+| `POST` | `/api/teams/{team}/routines` | Create a routine and its steps. |
 | `GET` | `/api/teams/{team}/routines/{routine}` | Read a routine and its steps. |
+| `PATCH` | `/api/teams/{team}/routines/{routine}` | Update a routine and optionally its steps. |
+| `DELETE` | `/api/teams/{team}/routines/{routine}` | Delete a routine. |
 | `GET` | `/api/teams/{team}/routine-occurrences` | List the routines due on a day, with each step's progress. |
 | `PATCH` | `/api/teams/{team}/routine-occurrences/{occurrence}/steps/{step}` | Complete or uncomplete a step. |
 
-Successful creates return `201`; successful deletes return `204`.
+Successful creates return `201`; successful deletes return `204`. Creates that
+send a `client_uuid` return `200` with the existing record when that
+`client_uuid` was already used in the team.
 Collections and single resources use Laravel's standard `data` wrapper.
 
 ## Item payloads
@@ -200,9 +205,71 @@ team).
 
 ## Routine payloads
 
-Routines are managed on the web. Each day a routine is due gets an
-*occurrence* with a row for each of the routine's steps, and those rows are
-what get completed.
+Create a routine with `POST /api/teams/{team}/routines`:
+
+```json
+{
+  "name": "Bedtime",
+  "time_of_day": "evening",
+  "frequency": "weekly",
+  "weekdays": [0, 1, 2, 3, 4],
+  "user_id": null,
+  "starts_on": "2026-10-01",
+  "is_active": true,
+  "client_uuid": "9b2f6c1e-3d4a-4f5b-8c7d-1e2f3a4b5c6d",
+  "steps": [
+    { "name": "Pajamas" },
+    { "name": "Brush teeth" }
+  ]
+}
+```
+
+- `name` is required, up to 255 characters.
+- `time_of_day` and `frequency` are required. `frequency` is `daily`, `weekly`,
+  or `monthly`.
+- `weekdays` (integers `0`-`6`, Sunday is `0`) is required for `weekly`, and
+  `day_of_month` (`1`-`31`) is required for `monthly`. Fields the chosen
+  frequency doesn't use are stored as `null`.
+- `user_id` assigns the routine to a member of the team; `null` (the default)
+  makes it a household routine.
+- `starts_on` defaults to today in the team's timezone and `is_active` defaults
+  to `true`.
+- `client_uuid` is optional. Retrying a create with the same `client_uuid`
+  returns the existing routine with `200` instead of creating a duplicate.
+
+`PATCH /api/teams/{team}/routines/{routine}` accepts the same fields except
+`client_uuid`, and every field is optional. Fields that are left out keep their
+current value, including `frequency` when validating and normalising
+`weekdays` and `day_of_month`: sending only `{"weekdays": [1, 3]}` for a weekly
+routine works, while switching a routine to `weekly` or `monthly` requires the
+matching `weekdays` or `day_of_month`.
+
+`steps` is the routine's complete ordered list of steps, on create and update.
+Each entry is an object with a required `name` and, on update, an optional
+`id`:
+
+- An entry with an `id` renames that existing step of the routine and moves it
+  to its position in the list. An `id` that isn't an existing step of the same
+  routine returns `422`, and `id` isn't accepted on create.
+- An entry without an `id` creates a new step.
+- Existing steps that aren't listed are deleted. Occurrences that already
+  include a deleted step keep it, so past days still show what was asked.
+
+Leave `steps` out of an update to leave the steps alone. Each step has `id`,
+`name`, and `position` (starting at `1`).
+
+`DELETE /api/teams/{team}/routines/{routine}` deletes a routine and returns
+`204`. Deleted routines no longer generate occurrences.
+
+Routine responses include `id`, `team_id`, `user_id`, `name`, `time_of_day`,
+`frequency`, `weekdays`, `day_of_month`, `starts_on`, `is_active`,
+`client_uuid`, `schedule_summary`, `user` (`id` and `name`, or `null`),
+`steps`, and the `created_at`, `updated_at`, and `deleted_at` timestamps.
+Changing a step also updates its routine's `updated_at`, so incremental
+synchronization picks the routine up.
+
+Each day a routine is due gets an *occurrence* with a row for each of the
+routine's steps, and those rows are what get completed.
 
 `GET /api/teams/{team}/routine-occurrences` returns the routines due today in
 the team's timezone, ordered by time of day and name. Pass `date` as
@@ -231,9 +298,10 @@ Pass an ISO-8601 timestamp to return records updated since a previous sync:
 GET /api/sync?since=2026-08-16T12:00:00Z
 ```
 
-The response contains `teams`, `recipes`, `items`, `routine_occurrences`, and
-a new `synced_at` timestamp to use for the next request. Deleted records are
-included so an offline client can remove local copies.
+The response contains `teams`, `recipes`, `items`, `routines` (with their
+steps and assignee), `routine_occurrences`, and a new `synced_at` timestamp to
+use for the next request. Deleted records are included so an offline client can
+remove local copies.
 
 `routine_occurrences` ignores `since`: it always contains every routine due
 today and tomorrow in each team's timezone, shaped like the

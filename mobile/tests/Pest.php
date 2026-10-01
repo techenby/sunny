@@ -85,10 +85,40 @@ function seedSunnyData(): void
     }
     app(SunnyStore::class)->applySnapshot([
         ...$data,
+        'routines' => sunnyRoutines(),
         'routine_occurrences' => sunnyRoutineOccurrences(),
         'teams' => [['id' => 1, 'name' => 'Family', 'slug' => 'family']],
         'synced_at' => now()->toIso8601String(),
     ]);
+}
+
+/**
+ * @return list<array<string, mixed>>
+ */
+function sunnyRoutines(int $teamId = 1): array
+{
+    $routine = fn (int $id, string $name, string $timeOfDay, string $frequency, ?array $weekdays, ?int $dayOfMonth, array $steps, bool $active = true): array => [
+        'id' => $id,
+        'team_id' => $teamId,
+        'name' => $name,
+        'time_of_day' => $timeOfDay,
+        'frequency' => $frequency,
+        'weekdays' => $weekdays,
+        'day_of_month' => $dayOfMonth,
+        'is_active' => $active,
+        'client_uuid' => null,
+        'deleted_at' => null,
+        'user' => null,
+        'steps' => collect($steps)->map(fn (string $step, int $index): array => [
+            'id' => $id * 10 + $index + 1, 'routine_id' => $id, 'name' => $step, 'position' => $index + 1,
+        ])->all(),
+    ];
+
+    return [
+        $routine(1, 'Get ready', 'morning', 'daily', null, null, ['Make bed', 'Feed the cat', 'Water plants']),
+        $routine(2, 'Bedtime', 'evening', 'weekly', [1, 3, 5], null, ['Pajamas', 'Brush teeth']),
+        $routine(3, 'Take out trash', 'anytime', 'monthly', null, 15, ['Kitchen bin']),
+    ];
 }
 
 /**

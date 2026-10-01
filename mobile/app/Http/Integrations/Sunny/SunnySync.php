@@ -3,6 +3,7 @@
 namespace App\Http\Integrations\Sunny;
 
 use App\Enums\ItemType;
+use App\Enums\RoutineFrequency;
 use App\Enums\TimeOfDay;
 use App\Http\Integrations\Sunny\Requests\SyncRequest;
 use Illuminate\Support\Facades\Validator;
@@ -50,6 +51,25 @@ class SunnySync
         foreach (['source', 'servings', 'prep_time', 'cook_time', 'total_time', 'description', 'ingredients', 'instructions', 'notes', 'nutrition'] as $field) {
             $rules['recipes.*.'.$field] = ['nullable', 'string'];
         }
+
+        $rules['routines'] = ['present', 'array', 'list'];
+        $rules['routines.*.id'] = ['required', 'integer', 'min:1', 'distinct'];
+        $rules['routines.*.team_id'] = ['required', 'integer', 'min:1'];
+        $rules['routines.*.name'] = ['required', 'string'];
+        $rules['routines.*.deleted_at'] = ['nullable', 'date'];
+        $rules['routines.*.time_of_day'] = ['required', Rule::enum(TimeOfDay::class)];
+        $rules['routines.*.frequency'] = ['required', Rule::enum(RoutineFrequency::class)];
+        $rules['routines.*.weekdays'] = ['nullable', 'array'];
+        $rules['routines.*.weekdays.*'] = ['integer', 'between:0,6'];
+        $rules['routines.*.day_of_month'] = ['nullable', 'integer', 'between:1,31'];
+        $rules['routines.*.is_active'] = ['required', 'boolean'];
+        $rules['routines.*.user'] = ['nullable', 'array'];
+        $rules['routines.*.user.id'] = ['required_with:routines.*.user', 'integer'];
+        $rules['routines.*.user.name'] = ['required_with:routines.*.user', 'string'];
+        $rules['routines.*.steps'] = ['present', 'array', 'list'];
+        $rules['routines.*.steps.*.id'] = ['required', 'integer', 'min:1', 'distinct'];
+        $rules['routines.*.steps.*.name'] = ['required', 'string'];
+        $rules['routines.*.steps.*.position'] = ['required', 'integer'];
 
         $rules['routine_occurrences'] = ['present', 'array', 'list'];
         $rules['routine_occurrences.*.id'] = ['required', 'integer', 'min:1', 'distinct'];

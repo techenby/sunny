@@ -5,8 +5,10 @@ namespace App\Http\Integrations\Sunny;
 use App\Models\Item;
 use App\Models\PendingWrite;
 use App\Models\Recipe;
+use App\Models\Routine;
 use App\Models\RoutineOccurrence;
 use App\Models\RoutineOccurrenceStep;
+use App\Models\RoutineStep;
 use App\Models\Team;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Arr;
@@ -27,7 +29,7 @@ class SunnyStore
         return $fetchedAt === null || CarbonImmutable::parse($fetchedAt)->lessThan(now()->subMinutes(5));
     }
 
-    /** @param array{teams: array, recipes: array, items: array, routine_occurrences: array, synced_at: string} $snapshot */
+    /** @param array{teams: array, recipes: array, items: array, routines: array, routine_occurrences: array, synced_at: string} $snapshot */
     public function applySnapshot(array $snapshot): void
     {
         DB::transaction(function () use ($snapshot): void {
@@ -57,8 +59,19 @@ class SunnyStore
                 }
             }
 
+            $pendingRoutines = $pending->where('resource', 'routines');
+            $routines = collect($snapshot['routines'])->filter(fn (array $record): bool => empty($record['deleted_at']) && $teamIds->contains($record['team_id']));
+            Routine::query()->whereNotIn('id', $routines->pluck('id')->merge($pendingRoutines->pluck('record_id')))->delete();
+            RoutineStep::query()->whereNotIn('routine_id', Routine::query()->select('id'))->delete();
+            $pendingRoutineUuids = $pendingRoutines->pluck('client_uuid')->filter();
+            foreach ($routines as $routine) {
+                if (! $pendingRoutines->contains('record_id', $routine['id']) && ! $pendingRoutineUuids->contains($routine['client_uuid'] ?? null)) {
+                    $this->saveRoutine($routine);
+                }
+            }
+
             $this->saveRoutineOccurrences(
-                collect($snapshot['routine_occurrences'])->filter(fn (array $occurrence): bool => $teamIds->contains($occurrence['routine']['team_id'])),
+                collect($snapshot['routine_occurrences'])->filter(fn (array $occurrence): bool => $teamIds->contains($occurrence['routine']['team_id']) && ! $pendingRoutines->contains(fn (PendingWrite $write): bool => $write->record_id === $occurrence['routine_id'] && ($write->payload['deleted'] ?? false))),
                 $pending->where('resource', 'routine_occurrence_steps')->pluck('record_id'),
             );
 
@@ -73,6 +86,34 @@ class SunnyStore
     {
         $fields = ['team_id', ...self::editableFields($type), 'photo_url', 'created_at', 'updated_at'];
         self::model($type)::query()->updateOrCreate(['id' => $record['id']], ['server' => self::server(), ...array_fill_keys($fields, null), ...Arr::only($record, $fields)]);
+    }
+
+    public function saveRoutine(array $record): void
+    {
+        Routine::query()->updateOrCreate(['id' => $record['id']], [
+            'server' => self::server(),
+            'team_id' => $record['team_id'],
+            'name' => $record['name'],
+            'time_of_day' => $record['time_of_day'],
+            'frequency' => $record['frequency'],
+            'weekdays' => $record['weekdays'] ?? null,
+            'day_of_month' => $record['day_of_month'] ?? null,
+            'is_active' => $record['is_active'],
+            'user_id' => $record['user']['id'] ?? null,
+            'assignee' => $record['user']['name'] ?? null,
+        ]);
+
+        RoutineStep::query()->where('routine_id', $record['id'])->delete();
+
+        foreach ($record['steps'] as $step) {
+            RoutineStep::query()->create([
+                'id' => $step['id'],
+                'server' => self::server(),
+                'routine_id' => $record['id'],
+                'name' => $step['name'],
+                'position' => $step['position'],
+            ]);
+        }
     }
 
     /**
@@ -109,7 +150,9 @@ class SunnyStore
             RoutineOccurrence::query()->delete();
             Item::query()->whereNotIn('id', $pending->where('resource', 'items')->pluck('record_id'))->delete();
             Recipe::query()->whereNotIn('id', $pending->where('resource', 'recipes')->pluck('record_id'))->delete();
+            Routine::query()->whereNotIn('id', $pending->where('resource', 'routines')->pluck('record_id'))->delete();
             Team::query()->whereNotIn('id', $pending->pluck('team_id'))->delete();
+            RoutineStep::query()->whereNotIn('routine_id', Routine::query()->select('id'))->delete();
             DB::table('sunny_sync_states')->delete();
         });
         app(SunnyOutbox::class)->prunePhotos();

@@ -4,11 +4,15 @@ namespace App\Http\Integrations\Sunny;
 
 use App\Models\Item;
 use App\Models\PendingWrite;
+use App\Models\Routine;
+use App\Models\RoutineOccurrence;
 use App\Models\RoutineOccurrenceStep;
+use App\Models\RoutineStep;
 use App\Models\Team;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Validator;
@@ -74,6 +78,121 @@ class SunnyOutbox
         });
     }
 
+    /**
+     * Apply a routine save to the local routine and its steps straight away and queue it for Sunny, replacing any change still waiting for that routine.
+     * The payload's steps are the routine's whole ordered list; steps without a known id are new.
+     *
+     * @param  array{name: string, time_of_day: string, frequency: string, weekdays: list<int>|null, day_of_month: int|null, is_active: bool, steps: list<array{id?: int|null, name: string}>}  $payload
+     * @return int The local routine's id, negative until Sunny confirms a new routine.
+     */
+    public function queueRoutine(int $teamId, array $payload, ?int $id = null): int
+    {
+        if (! Team::query()->where('server', SunnyStore::server())->whereKey($teamId)->exists()) {
+            throw ValidationException::withMessages(['team' => 'Sync with Sunny before saving to this team.']);
+        }
+        if ($id !== null && ! Routine::forCurrentServer()->where('team_id', $teamId)->whereKey($id)->exists()) {
+            throw ValidationException::withMessages(['record' => 'This routine is no longer available. Sync with Sunny.']);
+        }
+
+        return DB::transaction(function () use ($teamId, $payload, $id): int {
+            $routine = $id === null
+                ? new Routine(['id' => $this->nextLocalId(Routine::class), 'server' => SunnyStore::server(), 'team_id' => $teamId])
+                : Routine::query()->findOrFail($id);
+            $routine->fill(Arr::only($payload, ['name', 'time_of_day', 'frequency', 'weekdays', 'day_of_month', 'is_active']))->save();
+
+            $known = RoutineStep::query()->where('routine_id', $routine->id)->pluck('id');
+            $nextStepId = min(0, (int) RoutineStep::query()->min('id')) - 1;
+            $steps = collect($payload['steps'])->values()->map(function (array $step) use ($known, &$nextStepId): array {
+                return [
+                    'id' => $known->contains($step['id'] ?? null) ? $step['id'] : $nextStepId--,
+                    'name' => $step['name'],
+                ];
+            });
+
+            RoutineStep::query()->where('routine_id', $routine->id)->delete();
+            foreach ($steps as $index => $step) {
+                RoutineStep::query()->create([...$step, 'server' => SunnyStore::server(), 'routine_id' => $routine->id, 'position' => $index + 1]);
+            }
+
+            $write = PendingWrite::query()->for('routines', $routine->id)->first() ?? new PendingWrite([
+                'server' => SunnyStore::server(), 'resource' => 'routines', 'record_id' => $routine->id, 'team_id' => $teamId,
+                'client_uuid' => $id === null ? (string) Str::uuid() : null, 'payload' => [], 'version' => 0,
+            ]);
+            $write->fill([
+                'payload' => [...Arr::except($payload, 'steps'), 'steps' => $steps->all()],
+                'version' => $write->version + 1,
+                'error' => null,
+            ])->save();
+
+            return $routine->id;
+        });
+    }
+
+    /**
+     * Queue a routine's deletion. The routine stays on this phone, without today's occurrences, until Sunny confirms. One Sunny has never seen is simply dropped.
+     */
+    public function queueRoutineDelete(int $id): void
+    {
+        $routine = Routine::forCurrentServer()->find($id);
+        if ($routine === null) {
+            throw ValidationException::withMessages(['record' => 'This routine is no longer available. Sync with Sunny.']);
+        }
+
+        if ($id < 0) {
+            $this->discard('routines', $id);
+
+            return;
+        }
+
+        DB::transaction(function () use ($routine): void {
+            $occurrenceIds = RoutineOccurrence::query()->where('routine_id', $routine->id)->pluck('id');
+            $stepIds = RoutineOccurrenceStep::query()->whereIn('routine_occurrence_id', $occurrenceIds)->pluck('id');
+            PendingWrite::query()->forCurrentServer()->where('resource', 'routine_occurrence_steps')->whereIn('record_id', $stepIds)->delete();
+            RoutineOccurrenceStep::query()->whereIn('id', $stepIds)->delete();
+            RoutineOccurrence::query()->whereIn('id', $occurrenceIds)->delete();
+
+            $write = PendingWrite::query()->for('routines', $routine->id)->first() ?? new PendingWrite([
+                'server' => SunnyStore::server(), 'resource' => 'routines', 'record_id' => $routine->id, 'team_id' => $routine->team_id,
+                'payload' => [], 'version' => 0,
+            ]);
+            $write->fill(['payload' => ['deleted' => true], 'version' => $write->version + 1, 'error' => null])->save();
+        });
+    }
+
+    /**
+     * The ids of routines whose deletion is waiting to reach Sunny.
+     *
+     * @return Collection<int, int>
+     */
+    public function pendingRoutineDeletes(): Collection
+    {
+        return PendingWrite::query()->forCurrentServer()->where('resource', 'routines')->get()
+            ->filter(fn (PendingWrite $write): bool => $write->payload['deleted'] ?? false)
+            ->pluck('record_id');
+    }
+
+    /**
+     * Give steps Sunny has just created the ids it assigned, on the routine and in any change queued after the one that was sent.
+     *
+     * @param  array<int, int>  $serverIds  Local step id => server step id.
+     */
+    public function adoptRoutineStepIds(int $routineId, array $serverIds): void
+    {
+        foreach ($serverIds as $localId => $serverId) {
+            RoutineStep::query()->where('routine_id', $routineId)->whereKey($localId)->update(['id' => $serverId]);
+        }
+
+        $write = PendingWrite::query()->for('routines', $routineId)->first();
+        if ($write === null || ! isset($write->payload['steps'])) {
+            return;
+        }
+
+        $write->update(['payload' => [...$write->payload, 'steps' => array_map(
+            fn (array $step): array => [...$step, 'id' => $serverIds[$step['id']] ?? $step['id']],
+            $write->payload['steps'],
+        )]]);
+    }
+
     public function queueRoutineStep(int $id, bool $completed): void
     {
         DB::transaction(function () use ($id, $completed): void {
@@ -103,6 +222,15 @@ class SunnyOutbox
         DB::transaction(function () use ($resource, $id): void {
             PendingWrite::query()->for($resource, $id)->delete();
 
+            if ($resource === 'routines') {
+                if ($id < 0) {
+                    Routine::query()->whereKey($id)->delete();
+                    RoutineStep::query()->where('routine_id', $id)->delete();
+                }
+
+                return;
+            }
+
             if ($id >= 0) {
                 return;
             }
@@ -118,6 +246,16 @@ class SunnyOutbox
      */
     public function adoptServerId(string $resource, int $localId, int $serverId): void
     {
+        if ($resource === 'routines') {
+            Routine::query()->whereKey($serverId)->delete();
+            RoutineStep::query()->where('routine_id', $serverId)->delete();
+            Routine::query()->whereKey($localId)->update(['id' => $serverId, 'local_id' => $localId]);
+            RoutineStep::query()->where('routine_id', $localId)->update(['routine_id' => $serverId]);
+            PendingWrite::query()->for($resource, $localId)->update(['record_id' => $serverId]);
+
+            return;
+        }
+
         $model = SunnyStore::model($resource);
         $model::query()->whereKey($serverId)->delete();
         $model::query()->whereKey($localId)->update(['id' => $serverId, 'local_id' => $localId]);

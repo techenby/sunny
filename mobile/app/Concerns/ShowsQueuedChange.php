@@ -33,7 +33,11 @@ trait ShowsQueuedChange
             return;
         }
 
-        $noun = $this->queuedResource() === 'items' ? 'item' : 'recipe';
+        $noun = match ($this->queuedResource()) {
+            'items' => 'item',
+            'routines' => 'routine',
+            default => 'recipe',
+        };
 
         Dialog::alert('Discard change?', $id < 0
             ? "This {$noun} never reached Sunny, so it will be deleted from this phone."

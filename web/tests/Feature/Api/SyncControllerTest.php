@@ -9,6 +9,7 @@ use App\Models\Team;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\DB;
 
 test('guests cannot access sync', function () {
     $this->getJson(route('api.sync'))->assertUnauthorized();
@@ -118,4 +119,89 @@ test('includes todays routines even when syncing incrementally', function () {
         ->getJson(route('api.sync', ['since' => now()->subDay()->toIso8601String()]))
         ->assertOk()
         ->assertJsonCount(2, 'routine_occurrences');
+});
+
+test('returns routines with their steps and assignee for the users teams', function () {
+    $user = User::factory()->create();
+    $routine = Routine::factory()->for($user->currentTeam)->assignedTo($user)->daily()->create();
+    RoutineStep::factory()->for($routine)->create(['name' => 'Feed the cat']);
+    Routine::factory()->daily()->create();
+
+    $this->actingAs($user)
+        ->getJson(route('api.sync'))
+        ->assertOk()
+        ->assertJsonStructure(['teams', 'recipes', 'items', 'routines', 'routine_occurrences', 'synced_at'])
+        ->assertJsonCount(1, 'routines')
+        ->assertJsonPath('routines.0.id', $routine->id)
+        ->assertJsonPath('routines.0.team_id', $user->current_team_id)
+        ->assertJsonPath('routines.0.user.id', $user->id)
+        ->assertJsonPath('routines.0.steps.0.name', 'Feed the cat');
+});
+
+test('returns only routines updated since the given timestamp', function () {
+    $user = User::factory()->create();
+
+    [, $new] = Routine::factory()
+        ->for($user->currentTeam)
+        ->count(2)
+        ->sequence(
+            ['updated_at' => now()->subDays(2)],
+            ['updated_at' => now()->subHour()]
+        )
+        ->create();
+
+    $this->actingAs($user)
+        ->getJson(route('api.sync', ['since' => now()->subDay()->toIso8601String()]))
+        ->assertOk()
+        ->assertJsonCount(1, 'routines')
+        ->assertJsonPath('routines.0.id', $new->id);
+});
+
+test('a step change brings its routine back into an incremental sync', function () {
+    $user = User::factory()->create();
+    $routine = Routine::factory()->for($user->currentTeam)->create(['updated_at' => now()->subWeek()]);
+    $step = RoutineStep::factory()->for($routine)->create();
+    DB::table('routines')->where('id', $routine->id)->update(['updated_at' => now()->subWeek()]);
+
+    $this->actingAs($user)
+        ->getJson(route('api.sync', ['since' => now()->subDay()->toIso8601String()]))
+        ->assertJsonCount(0, 'routines');
+
+    $step->delete();
+
+    $this->actingAs($user)
+        ->getJson(route('api.sync', ['since' => now()->subDay()->toIso8601String()]))
+        ->assertJsonCount(1, 'routines')
+        ->assertJsonCount(0, 'routines.0.steps');
+});
+
+test('includes soft-deleted routines but not their occurrences', function () {
+    Date::setTestNow('2026-09-30 12:00:00');
+    $user = User::factory()->create();
+    $routine = Routine::factory()->for($user->currentTeam)->daily()->create();
+
+    $this->actingAs($user)->getJson(route('api.sync'))->assertJsonCount(2, 'routine_occurrences');
+
+    $routine->delete();
+
+    $this->actingAs($user)
+        ->getJson(route('api.sync'))
+        ->assertOk()
+        ->assertJsonCount(1, 'routines')
+        ->assertJsonPath('routines.0.id', $routine->id)
+        ->assertJsonPath('routines.0.deleted_at', fn ($value) => $value !== null)
+        ->assertJsonCount(0, 'routine_occurrences');
+});
+
+test('inactive routines stay in routines but leave the upcoming occurrences', function () {
+    Date::setTestNow('2026-09-30 12:00:00');
+    $user = User::factory()->create();
+    Routine::factory()->for($user->currentTeam)->daily()->inactive()->create();
+
+    $this->actingAs($user)
+        ->getJson(route('api.sync'))
+        ->assertOk()
+        ->assertJsonCount(1, 'routines')
+        ->assertJsonPath('routines.0.is_active', false)
+        ->assertJsonCount(0, 'routine_occurrences');
 });

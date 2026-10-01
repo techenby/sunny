@@ -115,7 +115,7 @@ it('keeps a waiting tick when a download lands before it is sent', function (): 
     app(SunnyOutbox::class)->queueRoutineStep(12, true);
     Saloon::fake([SyncRequest::class => MockResponse::make([
         'teams' => [['id' => 1, 'name' => 'Family', 'slug' => 'family']],
-        'recipes' => [], 'items' => [], 'routine_occurrences' => sunnyRoutineOccurrences(), 'synced_at' => now()->toIso8601String(),
+        'recipes' => [], 'items' => [], 'routines' => [], 'routine_occurrences' => sunnyRoutineOccurrences(), 'synced_at' => now()->toIso8601String(),
     ])]);
 
     app(SunnySync::class)->sync();
@@ -128,7 +128,7 @@ it('keeps a waiting tick when a download lands before it is sent', function (): 
 it('removes routines that are missing from a later download', function (): void {
     Saloon::fake([SyncRequest::class => MockResponse::make([
         'teams' => [['id' => 1, 'name' => 'Family', 'slug' => 'family']],
-        'recipes' => [], 'items' => [], 'routine_occurrences' => array_slice(sunnyRoutineOccurrences(), 0, 1), 'synced_at' => now()->toIso8601String(),
+        'recipes' => [], 'items' => [], 'routines' => [], 'routine_occurrences' => array_slice(sunnyRoutineOccurrences(), 0, 1), 'synced_at' => now()->toIso8601String(),
     ])]);
 
     app(SunnySync::class)->sync();

@@ -24,6 +24,8 @@ class RoutineStep extends Model
      */
     use SoftDeletes;
 
+    protected $touches = ['routine'];
+
     protected static function booted(): void
     {
         static::creating(function (RoutineStep $step): void {
