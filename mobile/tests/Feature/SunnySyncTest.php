@@ -47,6 +47,7 @@ beforeEach(function (): void {
         'checklist_items' => [
             ['id' => 30, 'checklist_id' => 20, 'name' => 'Milk', 'position' => 1, 'completed_at' => null, 'completed_by' => null, 'created_at' => '2026-09-01T12:00:00+00:00', 'updated_at' => '2026-09-23T12:00:00+00:00'],
         ],
+        'routines' => sunnyRoutines(7),
         'routine_occurrences' => sunnyRoutineOccurrences(7),
         'synced_at' => '2026-09-23T13:00:00+00:00',
     ];
@@ -366,7 +367,7 @@ it('sends changes kept through signing out once the same account signs back in',
     $saved = [...Recipe::find(1)->toArray(), 'name' => 'Soup', 'photo_url' => 'https://sunny.example/soup.jpg'];
     Saloon::fake([
         SaveRecordRequest::class => MockResponse::make(['data' => $saved]),
-        SyncRequest::class => MockResponse::make(['teams' => [['id' => 1, 'name' => 'Family', 'slug' => 'family']], 'recipes' => [$saved], 'items' => [], 'checklists' => [], 'checklist_items' => [], 'routine_occurrences' => [], 'synced_at' => now()->toIso8601String()]),
+        SyncRequest::class => MockResponse::make(['teams' => [['id' => 1, 'name' => 'Family', 'slug' => 'family']], 'recipes' => [$saved], 'items' => [], 'checklists' => [], 'checklist_items' => [], 'routines' => [], 'routine_occurrences' => [], 'synced_at' => now()->toIso8601String()]),
     ]);
     app(SunnySyncCoordinator::class)->sync();
 

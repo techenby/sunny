@@ -47,12 +47,12 @@ trait SavesSunnyRecord
         try {
             $this->savedId = app(SunnyOutbox::class)->queue($resource, $this->teamId, $payload, $id, $this->photoPath ?? null);
             app(SunnySyncCoordinator::class)->dispatch();
-            $path = match ($resource) {
-                'items' => 'inventory',
-                'checklists' => 'lists',
-                default => 'recipes',
+            match ($resource) {
+                'items' => $this->replace('/inventory/'.$this->savedId),
+                'checklists' => $this->replace('/lists/'.$this->savedId),
+                'routines' => $this->back(),
+                default => $this->replace('/recipes/'.$this->savedId),
             };
-            $this->replace('/'.$path.'/'.$this->savedId);
         } catch (Throwable $exception) {
             $this->error = $this->saveFailureMessage($exception);
         } finally {

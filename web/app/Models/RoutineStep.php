@@ -24,6 +24,13 @@ class RoutineStep extends Model
      */
     use SoftDeletes;
 
+    /**
+     * Bump the routine when a step changes, so incremental syncs pick it up.
+     *
+     * @var list<string>
+     */
+    protected $touches = ['routine'];
+
     protected static function booted(): void
     {
         static::creating(function (RoutineStep $step): void {

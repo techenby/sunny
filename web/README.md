@@ -218,6 +218,7 @@ erDiagram
 		integer day_of_month  ""
 		date starts_on  ""
 		boolean is_active  ""
+		varchar client_uuid UK "unique per team"
 		datetime deleted_at  ""
 		datetime created_at  ""
 		datetime updated_at  ""

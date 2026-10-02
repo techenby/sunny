@@ -3,10 +3,13 @@
 namespace App\NativeComponents;
 
 use App\Concerns\ChecksSunnySync;
+use App\Enums\RoutineFrequency;
 use App\Enums\TimeOfDay;
+use App\Http\Integrations\Sunny\SunnyStore;
 use App\Http\Integrations\Sunny\SunnyOutbox;
 use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Http\Integrations\Sunny\SunnyTeam;
+use App\Models\Routine;
 use App\Models\RoutineOccurrence;
 use App\Models\RoutineOccurrenceStep;
 use Illuminate\Validation\ValidationException;
@@ -19,6 +22,16 @@ use Native\Mobile\Facades\Dialog;
 class Routines extends NativeComponent
 {
     use ChecksSunnySync;
+
+    /**
+     * @return array{id: int, team_id: int, user_id: int|null, assignee: string|null, name: string, time_of_day: TimeOfDay, frequency: RoutineFrequency, weekdays: list<int>|null, day_of_month: int|null, is_active: bool, steps: list<array{id?: int, name: string}>|null}|null
+     */
+    public static function find(int $id): ?array
+    {
+        $routine = Routine::forActiveTeam()->where(fn ($query) => $query->whereKey($id)->orWhere('local_id', $id))->first();
+
+        return $routine === null ? null : [...$routine->toArray(), 'time_of_day' => $routine->time_of_day, 'frequency' => $routine->frequency];
+    }
 
     /**
      * @return list<array{id: int, name: string, assignee: string, timeOfDay: TimeOfDay, completed: int, total: int, steps: list<array{id: int, name: string, completed: bool}>}>
@@ -49,6 +62,37 @@ class Routines extends NativeComponent
                     'name' => $step->name,
                     'completed' => $step->isCompleted(),
                 ])->all(),
+            ])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Every routine in the team, for managing them rather than ticking them off.
+     *
+     * @return list<array{id: int, name: string, timeOfDay: TimeOfDay, summary: string}>
+     */
+    #[Computed]
+    public function allRoutines(): array
+    {
+        $me = app(SunnyStore::class)->accountId();
+
+        return Routine::forActiveTeam()
+            ->get()
+            ->sortBy(fn (Routine $routine): array => [$routine->time_of_day->sortOrder(), $routine->name])
+            ->map(fn (Routine $routine): array => [
+                'id' => $routine->id,
+                'name' => $routine->name,
+                'timeOfDay' => $routine->time_of_day,
+                'summary' => collect([
+                    $routine->scheduleSummary(),
+                    match ($routine->user_id) {
+                        null => 'Household',
+                        $me => 'Me',
+                        default => $routine->assignee,
+                    },
+                    $routine->is_active ? null : 'Paused',
+                ])->filter()->join(' · '),
             ])
             ->values()
             ->all();
@@ -88,7 +132,7 @@ class Routines extends NativeComponent
 
     protected function refreshLocalSyncedData(): void
     {
-        unset($this->routines, $this->heading);
+        unset($this->routines, $this->allRoutines, $this->heading);
     }
 
     public function render(): View

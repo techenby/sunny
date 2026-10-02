@@ -5,6 +5,7 @@ namespace App\Http\Integrations\Sunny;
 use App\Models\ChecklistItem;
 use App\Models\Item;
 use App\Models\PendingWrite;
+use App\Models\RoutineOccurrence;
 use App\Models\RoutineOccurrenceStep;
 use App\Models\Team;
 use Illuminate\Database\Eloquent\Model;
@@ -104,6 +105,8 @@ class SunnyOutbox
 
             if ($resource === 'checklists') {
                 $this->forgetChecklistItems($id);
+            } elseif ($resource === 'routines') {
+                $this->forgetRoutineOccurrences($id);
             }
         });
     }
@@ -145,7 +148,7 @@ class SunnyOutbox
 
             if ($resource === 'checklists') {
                 $this->forgetChecklistItems($id);
-            } elseif ($resource !== 'checklist_items') {
+            } elseif (in_array($resource, ['recipes', 'items'], true)) {
                 SunnyStore::model($resource)::query()->where('parent_id', $id)->update(['parent_id' => null]);
                 $this->rewritePendingReference($resource, 'parent_id', $id, null);
             }
@@ -165,7 +168,7 @@ class SunnyOutbox
         if ($resource === 'checklists') {
             ChecklistItem::query()->where('checklist_id', $localId)->update(['checklist_id' => $serverId]);
             $this->rewritePendingReference('checklist_items', 'checklist_id', $localId, $serverId);
-        } elseif ($resource !== 'checklist_items') {
+        } elseif (in_array($resource, ['recipes', 'items'], true)) {
             $model::query()->where('parent_id', $localId)->update(['parent_id' => $serverId]);
             $this->rewritePendingReference($resource, 'parent_id', $localId, $serverId);
         }
@@ -230,7 +233,7 @@ class SunnyOutbox
 
     private function ensureRecordInTeam(string $resource, int $teamId, ?int $id): void
     {
-        throw_unless(in_array($resource, ['recipes', 'items', 'checklists', 'checklist_items'], true), UnexpectedValueException::class);
+        throw_unless(in_array($resource, ['recipes', 'items', 'checklists', 'checklist_items', 'routines'], true), UnexpectedValueException::class);
         if (! Team::query()->where('server', SunnyStore::server())->whereKey($teamId)->exists()) {
             throw ValidationException::withMessages(['team' => 'Sync with Sunny before saving to this team.']);
         }
@@ -261,6 +264,19 @@ class SunnyOutbox
             ->filter(fn (PendingWrite $write): bool => $ids->contains($write->record_id) || ($write->payload['checklist_id'] ?? null) === $checklistId)
             ->each->delete();
         ChecklistItem::query()->whereKey($ids)->delete();
+    }
+
+    /**
+     * Drop a deleted routine from today's board, along with any ticks still waiting to be sent for it.
+     */
+    private function forgetRoutineOccurrences(int $routineId): void
+    {
+        $occurrences = RoutineOccurrence::query()->forCurrentServer()->where('routine_id', $routineId)->pluck('id');
+        $steps = RoutineOccurrenceStep::query()->whereIn('routine_occurrence_id', $occurrences)->pluck('id');
+
+        PendingWrite::query()->forCurrentServer()->where('resource', 'routine_occurrence_steps')->whereIn('record_id', $steps)->delete();
+        RoutineOccurrenceStep::query()->whereKey($steps)->delete();
+        RoutineOccurrence::query()->whereKey($occurrences)->delete();
     }
 
     private function rewritePendingReference(string $resource, string $key, int $from, ?int $to): void

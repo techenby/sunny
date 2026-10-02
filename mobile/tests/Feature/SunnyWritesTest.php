@@ -257,7 +257,7 @@ it('keeps queued changes when a download lands before they are sent', function (
     $snapshot = [
         'teams' => [['id' => 1, 'name' => 'Family', 'slug' => 'family']],
         'recipes' => [[...Recipe::find(2)->toArray(), 'name' => 'Remote edit'], [...Recipe::find(1)->toArray(), 'id' => 90, 'name' => 'Soup', 'client_uuid' => $uuid]],
-        'items' => [], 'checklists' => [], 'checklist_items' => [], 'routine_occurrences' => [], 'synced_at' => now()->toIso8601String(),
+        'items' => [], 'checklists' => [], 'checklist_items' => [], 'routines' => [], 'routine_occurrences' => [], 'synced_at' => now()->toIso8601String(),
     ];
     Saloon::fake([SyncRequest::class => MockResponse::make($snapshot)]);
 
@@ -302,7 +302,7 @@ it('flags responses for another team without writing them locally', function ():
 it('syncs team route keys and remote photo URLs for subsequent edits', function (): void {
     $snapshot = [
         'teams' => [['id' => 1, 'name' => 'Family', 'slug' => 'family-home']],
-        'recipes' => [Recipe::find(1)->toArray()], 'items' => [], 'checklists' => [], 'checklist_items' => [], 'routine_occurrences' => [], 'synced_at' => now()->toIso8601String(),
+        'recipes' => [Recipe::find(1)->toArray()], 'items' => [], 'checklists' => [], 'checklist_items' => [], 'routines' => [], 'routine_occurrences' => [], 'synced_at' => now()->toIso8601String(),
     ];
     $snapshot['recipes'][0]['photo_url'] = 'https://sunny.example/photo.jpg';
     Saloon::fake([SyncRequest::class => MockResponse::make($snapshot)]);

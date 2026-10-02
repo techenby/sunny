@@ -129,7 +129,7 @@ items, and upcoming routines across every team the user belongs to.
 | Method | Endpoint | Purpose |
 | --- | --- | --- |
 | `GET` | `/api/user` | Return the authenticated user, wrapped in `data`, with the same fields as the token response. |
-| `GET` | `/api/sync` | Synchronize all accessible teams, recipes, items, and lists. |
+| `GET` | `/api/sync` | Synchronize all accessible teams, recipes, items, lists, and routines. |
 | `POST` | `/api/sanctum/token/two-factor` | Complete a two-factor challenge. |
 | `POST` | `/api/sanctum/token/refresh` | Exchange the current token for a new one. |
 | `POST` | `/api/logout` | Revoke the current token. |
@@ -155,7 +155,10 @@ items, and upcoming routines across every team the user belongs to.
 | `PATCH` | `/api/teams/{team}/checklists/{checklist}/items/{item}` | Rename, check, or uncheck a list item. |
 | `DELETE` | `/api/teams/{team}/checklists/{checklist}/items/{item}` | Remove a list item. |
 | `GET` | `/api/teams/{team}/routines` | List the team's routines and their steps. |
+| `POST` | `/api/teams/{team}/routines` | Create a routine with its steps. |
 | `GET` | `/api/teams/{team}/routines/{routine}` | Read a routine and its steps. |
+| `PATCH` | `/api/teams/{team}/routines/{routine}` | Update a routine or replace its steps. |
+| `DELETE` | `/api/teams/{team}/routines/{routine}` | Delete a routine. |
 | `GET` | `/api/teams/{team}/routine-occurrences` | List the routines due on a day, with each step's progress. |
 | `PATCH` | `/api/teams/{team}/routine-occurrences/{occurrence}/steps/{step}` | Complete or uncomplete a step. |
 
@@ -240,14 +243,43 @@ again.
 
 ## Retrying creates
 
-Item, recipe, list, and list item creates accept an optional `client_uuid`. If
+Item, recipe, list, list item, and routine creates accept an optional `client_uuid`. If
 a request with the same `client_uuid` has already created a record, Sunny
 returns that record with `200` instead of creating another, so an offline
 client can retry a create without making duplicates.
 
 ## Routine payloads
 
-Routines are managed on the web. Each day a routine is due gets an
+Create a routine with:
+
+```json
+{
+  "name": "Bedtime",
+  "user_id": 7,
+  "time_of_day": "evening",
+  "frequency": "weekly",
+  "weekdays": [1, 2, 3, 4, 5],
+  "steps": [
+    { "name": "Pajamas" },
+    { "name": "Brush teeth" }
+  ]
+}
+```
+
+`time_of_day` must be `morning`, `afternoon`, `evening`, or `anytime`, and
+`frequency` must be `daily`, `weekly`, or `monthly`. Weekly routines need
+`weekdays` (`0` for Sunday through `6` for Saturday) and monthly routines need
+a `day_of_month` from `1` to `31`; Sunny clears whichever of the two the
+frequency doesn't use. `user_id` is optional and must be a member of the team;
+leave it `null` for a household routine. `starts_on` defaults to today in the
+team's timezone, and `is_active` defaults to `true`.
+
+When updating, send only the fields that change. Sending `steps` replaces the
+routine's steps with the list, in order: include a step's `id` to keep or
+rename it, leave `id` out to add a step, and leave a step out to remove it.
+Removed steps stay on occurrences that were already generated.
+
+Each day a routine is due gets an
 *occurrence* with a row for each of the routine's steps, and those rows are
 what get completed.
 
@@ -279,7 +311,8 @@ GET /api/sync?since=2026-08-16T12:00:00Z
 ```
 
 The response contains `teams`, `recipes`, `items`, `checklists`,
-`checklist_items`, `routine_occurrences`, and a new `synced_at` timestamp to
+`checklist_items`, `routines` (with their `user` and `steps`),
+`routine_occurrences`, and a new `synced_at` timestamp to
 use for the next request. Deleted records are included so an offline client can
 remove local copies. List items are removed permanently rather than
 soft-deleted, and items are left out once their list is deleted, so compare a

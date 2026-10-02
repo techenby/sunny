@@ -36,6 +36,7 @@ trait ShowsQueuedChange
         $noun = match ($this->queuedResource()) {
             'items' => 'item',
             'checklists' => 'list',
+            'routines' => 'routine',
             default => 'recipe',
         };
 

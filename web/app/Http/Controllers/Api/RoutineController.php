@@ -4,11 +4,16 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
+use App\Actions\Routines\SaveRoutine;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\StoreRoutineRequest;
+use App\Http\Requests\Api\UpdateRoutineRequest;
 use App\Http\Resources\RoutineResource;
 use App\Models\Routine;
 use App\Models\Team;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Gate;
 
 class RoutineController extends Controller
@@ -22,10 +27,35 @@ class RoutineController extends Controller
         return RoutineResource::collection($routines);
     }
 
+    public function store(StoreRoutineRequest $request, Team $team, SaveRoutine $action): JsonResponse
+    {
+        $existing = $request->filled('client_uuid')
+            ? $team->routines()->withTrashed()->firstWhere('client_uuid', $request->validated('client_uuid'))
+            : null;
+
+        return RoutineResource::make($existing?->load(['user', 'steps']) ?? $action->handle($team, $request->validated()))
+            ->response()
+            ->setStatusCode($existing ? 200 : 201);
+    }
+
     public function show(Team $team, Routine $routine): RoutineResource
     {
         Gate::authorize('view', $routine);
 
         return RoutineResource::make($routine->load(['user', 'steps']));
+    }
+
+    public function update(UpdateRoutineRequest $request, Team $team, Routine $routine, SaveRoutine $action): RoutineResource
+    {
+        return RoutineResource::make($action->handle($team, $request->validated(), $routine));
+    }
+
+    public function destroy(Team $team, Routine $routine): Response
+    {
+        Gate::authorize('delete', $routine);
+
+        $routine->delete();
+
+        return response()->noContent();
     }
 }

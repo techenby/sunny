@@ -1,7 +1,16 @@
 @use('App\Icons\Android')
 @use('App\Icons\Ios')
 
-<native:top-bar title="Routines" display-mode="large" :back="false" />
+<native:top-bar title="Routines" display-mode="large" :back="false">
+    <native:top-bar-action
+        ref="create-routine"
+        id="create-routine"
+        label="New routine"
+        :ios-icon="Ios::Plus"
+        :android-icon="Android::Add"
+        @navigate('/routines/create')
+    />
+</native:top-bar>
 
 <scroll-view ref="routines" fill class="bg-theme-background">
     <column class="w-full gap-6 px-4 pt-2 pb-8">
@@ -57,5 +66,34 @@
                 <text class="text-center text-sm text-theme-on-surface-variant">Routines due today will show up here. Pull down on the summary to refresh.</text>
             </column>
         @endforelse
+
+        @if ($this->allRoutines)
+            <column ref="all-routines" class="w-full gap-3">
+                <text font="semibold" class="text-xl text-theme-on-background">All routines</text>
+
+                <column class="w-full rounded-xl bg-theme-surface">
+                    @foreach ($this->allRoutines as $routine)
+                        <pressable
+                            ref="edit-routine-{{ $routine['id'] }}"
+                            :a11y-label="'Edit '.$routine['name']"
+                            class="w-full px-4 py-3"
+                            @navigate('/routines/'.$routine['id'].'/edit')
+                        >
+                            <row class="w-full items-center gap-3">
+                                <icon :ios="$routine['timeOfDay']->iosIcon()" :android="$routine['timeOfDay']->androidIcon()" :size="20" class="text-theme-primary" />
+                                <column class="flex-1 gap-0.5">
+                                    <text class="text-base text-theme-on-surface">{{ $routine['name'] }}</text>
+                                    <text class="text-sm text-theme-on-surface-variant">{{ $routine['summary'] }}</text>
+                                </column>
+                                <icon :ios="Ios::ChevronRight" :android="Android::ChevronRight" :size="16" class="text-theme-outline" />
+                            </row>
+                        </pressable>
+                        @unless ($loop->last)
+                            <divider class="ml-12" />
+                        @endunless
+                    @endforeach
+                </column>
+            </column>
+        @endif
     </column>
 </scroll-view>

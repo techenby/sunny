@@ -4,6 +4,7 @@ namespace App\Http\Integrations\Sunny;
 
 use App\Enums\ChecklistType;
 use App\Enums\ItemType;
+use App\Enums\RoutineFrequency;
 use App\Enums\TimeOfDay;
 use App\Http\Integrations\Sunny\Requests\SyncRequest;
 use Illuminate\Support\Facades\Validator;
@@ -24,19 +25,19 @@ class SunnySync
 
         $rules = ['synced_at' => ['required', 'date']];
 
-        foreach (['teams', 'recipes', 'items', 'checklists', 'checklist_items'] as $type) {
+        foreach (['teams', 'recipes', 'items', 'checklists', 'checklist_items', 'routines'] as $type) {
             $rules[$type] = ['present', 'array', 'list'];
             $rules[$type.'.*.id'] = ['required', 'integer', 'min:1', 'distinct'];
             $rules[$type.'.*.name'] = ['required', 'string'];
             $rules[$type.'.*.deleted_at'] = ['nullable', 'date'];
         }
 
-        foreach (['recipes', 'items', 'checklists', 'checklist_items'] as $type) {
+        foreach (['recipes', 'items', 'checklists', 'checklist_items', 'routines'] as $type) {
             $rules[$type.'.*.created_at'] = ['required', 'date'];
             $rules[$type.'.*.updated_at'] = ['required', 'date'];
         }
 
-        foreach (['recipes', 'items', 'checklists'] as $type) {
+        foreach (['recipes', 'items', 'checklists', 'routines'] as $type) {
             $rules[$type.'.*.team_id'] = ['required', 'integer', 'min:1'];
         }
 
@@ -63,6 +64,20 @@ class SunnySync
         foreach (['source', 'servings', 'prep_time', 'cook_time', 'total_time', 'description', 'ingredients', 'instructions', 'notes', 'nutrition'] as $field) {
             $rules['recipes.*.'.$field] = ['nullable', 'string'];
         }
+
+        $rules['routines.*.user_id'] = ['nullable', 'integer'];
+        $rules['routines.*.user'] = ['nullable', 'array'];
+        $rules['routines.*.user.name'] = ['required_with:routines.*.user', 'string'];
+        $rules['routines.*.time_of_day'] = ['required', Rule::enum(TimeOfDay::class)];
+        $rules['routines.*.frequency'] = ['required', Rule::enum(RoutineFrequency::class)];
+        $rules['routines.*.weekdays'] = ['nullable', 'array', 'list'];
+        $rules['routines.*.weekdays.*'] = ['integer', 'between:0,6'];
+        $rules['routines.*.day_of_month'] = ['nullable', 'integer', 'between:1,31'];
+        $rules['routines.*.starts_on'] = ['nullable', 'date'];
+        $rules['routines.*.is_active'] = ['required', 'boolean'];
+        $rules['routines.*.steps'] = ['present', 'array', 'list'];
+        $rules['routines.*.steps.*.id'] = ['required', 'integer', 'min:1'];
+        $rules['routines.*.steps.*.name'] = ['required', 'string'];
 
         $rules['routine_occurrences'] = ['present', 'array', 'list'];
         $rules['routine_occurrences.*.id'] = ['required', 'integer', 'min:1', 'distinct'];

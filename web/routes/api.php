@@ -58,7 +58,10 @@ Route::middleware('auth:sanctum')
                 Route::delete('checklists/{checklist}/items/{item}', [ChecklistItemController::class, 'destroy'])->name('checklists.items.destroy');
 
                 Route::get('routines', [RoutineController::class, 'index'])->name('routines.index');
+                Route::post('routines', [RoutineController::class, 'store'])->name('routines.store');
                 Route::get('routines/{routine}', [RoutineController::class, 'show'])->name('routines.show');
+                Route::patch('routines/{routine}', [RoutineController::class, 'update'])->name('routines.update');
+                Route::delete('routines/{routine}', [RoutineController::class, 'destroy'])->name('routines.destroy');
 
                 Route::get('routine-occurrences', [RoutineOccurrenceController::class, 'index'])->name('routine-occurrences.index');
                 Route::patch('routine-occurrences/{routineOccurrence}/steps/{step}', [RoutineOccurrenceStepController::class, 'update'])->name('routine-occurrences.steps.update');

@@ -38,8 +38,8 @@ pause or resume it, or delete it. Paused routines stop appearing for today and
 future dates on the kiosk. Previously generated dates remain available when
 browsing kiosk history.
 
-The main app is where you manage the routine and its steps. Due steps are
-completed from a kiosk.
+Routines can also be created, edited, and deleted from the **Routines** tab
+in the mobile app. Due steps are completed from a kiosk or the mobile app.
 
 ## Complete a routine on a kiosk
 
