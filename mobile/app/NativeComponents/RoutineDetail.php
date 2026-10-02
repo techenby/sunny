@@ -9,6 +9,7 @@ use App\Enums\TimeOfDay;
 use App\Http\Integrations\Sunny\SunnyOutbox;
 use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Models\PendingWrite;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
@@ -64,13 +65,15 @@ class RoutineDetail extends NativeComponent
             return;
         }
 
-        if (mb_strlen($name) > 255) {
-            $this->error = 'The step is too long (255 characters max).';
+        $added = $this->change(function (SunnyOutbox $outbox) use ($name) {
+            Validator::make(['step' => $name], ['step' => ['string', 'max:255']], [
+                'step.max' => 'The step is too long (255 characters max).',
+            ])->validate();
 
-            return;
-        }
+            $outbox->queue('routine_steps', $this->routine['team_id'], ['routine_id' => $this->routine['id'], 'name' => $name]);
+        });
 
-        if ($this->change(fn (SunnyOutbox $outbox) => $outbox->queue('routine_steps', $this->routine['team_id'], ['routine_id' => $this->routine['id'], 'name' => $name]))) {
+        if ($added) {
             $this->newStep = '';
         }
     }
