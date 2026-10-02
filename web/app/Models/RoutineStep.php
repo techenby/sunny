@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Touches;
 use Database\Factories\RoutineStepFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -13,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable(['routine_id', 'name', 'position'])]
+#[Touches(['routine'])]
 class RoutineStep extends Model
 {
     /** @use HasFactory<RoutineStepFactory> */
@@ -23,13 +25,6 @@ class RoutineStep extends Model
      * a truthful record of what the routine asked for on past days.
      */
     use SoftDeletes;
-
-    /**
-     * Bump the routine when a step changes, so incremental syncs pick it up.
-     *
-     * @var list<string>
-     */
-    protected $touches = ['routine'];
 
     protected static function booted(): void
     {
