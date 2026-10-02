@@ -126,7 +126,7 @@ it('downloads routines and their steps, leaving out deleted ones', function (): 
     expect(Routine::pluck('id')->all())->toBe([40])
         ->and(Routine::find(40)->frequency)->toBe(RoutineFrequency::Monthly)
         ->and(RoutineStep::pluck('name')->all())->toBe(['Wash']);
-    Native::visit('/routines/all')->assertSee('Laundry')->assertDontSee('Get ready');
+    Native::visit('/routines')->assertSee('Laundry')->assertDontSee('Get ready');
 });
 
 it('keeps routines and steps that have not reached Sunny through a download', function (): void {

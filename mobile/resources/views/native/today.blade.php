@@ -8,7 +8,7 @@
         label="All routines"
         :ios-icon="Ios::ListBullet"
         :android-icon="Android::FormatListBulleted"
-        @navigate('/routines/all')
+        @navigate('/routines')
     />
 </native:top-bar>
 

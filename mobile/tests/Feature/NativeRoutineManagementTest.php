@@ -18,14 +18,14 @@ beforeEach(fn () => seedSunnyData());
 it('opens every routine from today’s routines', function () {
     Native::visit('/today')
         ->tap('all-routines')
-        ->assertNavigatedTo('/routines/all')
+        ->assertNavigatedTo('/routines')
         ->follow()
         ->assertScreen(Routines::class)
         ->assertNavTitle('All routines');
 });
 
 it('lists every routine by time of day with its schedule', function () {
-    $screen = Native::visit('/routines/all')
+    $screen = Native::visit('/routines')
         ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === 'Get ready'
             && ($node['props']['supporting'] ?? null) === 'Morning · Every day · 3 steps')
         ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === 'Bedtime'
@@ -38,7 +38,7 @@ it('lists every routine by time of day with its schedule', function () {
 });
 
 it('filters routines by name as you search', function () {
-    Native::visit('/routines/all')
+    Native::visit('/routines')
         ->input('updateSearch', ' BED ')
         ->assertSee('Bedtime')
         ->assertDontSee('Get ready')
@@ -49,7 +49,7 @@ it('filters routines by name as you search', function () {
 it('explains how to start when the team has no routines', function () {
     Routine::query()->delete();
 
-    Native::visit('/routines/all')->assertSee('No routines yet');
+    Native::visit('/routines')->assertSee('No routines yet');
 });
 
 it('shows a routine’s schedule and steps in order', function () {
@@ -130,7 +130,7 @@ it('deletes a routine with its steps and today’s progress once confirmed', fun
 });
 
 it('opens the create screen from every routine', function () {
-    Native::visit('/routines/all')
+    Native::visit('/routines')
         ->tap('New routine')
         ->assertNavigatedTo('/routines/create')
         ->follow()
