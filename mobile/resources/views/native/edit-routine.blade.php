@@ -9,9 +9,6 @@
         'timeOfDayOptions' => $this->timeOfDayOptions,
         'frequencyOptions' => $this->frequencyOptions,
         'weekdayRows' => $this->weekdayRows,
-    'timeOfDayOptions' => $this->timeOfDayOptions,
-    'frequencyOptions' => $this->frequencyOptions,
-    'weekdayRows' => $this->weekdayRows,
     ])
 @else
     <column ref="edit-routine-missing" fill center class="bg-theme-background ios:bg-theme-grouped-background px-6">

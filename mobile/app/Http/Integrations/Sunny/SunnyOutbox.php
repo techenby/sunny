@@ -64,7 +64,7 @@ class SunnyOutbox
             $record->save();
 
             if ($resource === 'routines' && $id !== null) {
-                RoutineOccurrence::query()->where('routine_id', $id)->update(Arr::only($record->getAttributes(), ['name', 'time_of_day']));
+                RoutineOccurrence::query()->where('routine_id', $id)->whereDate('due_on', '>=', today())->update(Arr::only($record->getAttributes(), ['name', 'time_of_day']));
             }
 
             $write = PendingWrite::query()->for($resource, $record->id)->first() ?? new PendingWrite([
