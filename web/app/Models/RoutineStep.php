@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['routine_id', 'name', 'position'])]
+#[Fillable(['routine_id', 'name', 'position', 'client_uuid'])]
 class RoutineStep extends Model
 {
     /** @use HasFactory<RoutineStepFactory> */

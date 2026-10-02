@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\RecipeController;
 use App\Http\Controllers\Api\RoutineController;
 use App\Http\Controllers\Api\RoutineOccurrenceController;
 use App\Http\Controllers\Api\RoutineOccurrenceStepController;
+use App\Http\Controllers\Api\RoutineStepController;
 use App\Http\Controllers\Api\SyncController;
 use App\Http\Controllers\Api\TokenController;
 use App\Http\Middleware\EnsureTeamMembership;
@@ -58,7 +59,14 @@ Route::middleware('auth:sanctum')
                 Route::delete('checklists/{checklist}/items/{item}', [ChecklistItemController::class, 'destroy'])->name('checklists.items.destroy');
 
                 Route::get('routines', [RoutineController::class, 'index'])->name('routines.index');
+                Route::post('routines', [RoutineController::class, 'store'])->name('routines.store');
                 Route::get('routines/{routine}', [RoutineController::class, 'show'])->name('routines.show');
+                Route::patch('routines/{routine}', [RoutineController::class, 'update'])->name('routines.update');
+                Route::delete('routines/{routine}', [RoutineController::class, 'destroy'])->name('routines.destroy');
+
+                Route::post('routines/{routine}/steps', [RoutineStepController::class, 'store'])->name('routines.steps.store');
+                Route::patch('routines/{routine}/steps/{step}', [RoutineStepController::class, 'update'])->name('routines.steps.update');
+                Route::delete('routines/{routine}/steps/{step}', [RoutineStepController::class, 'destroy'])->name('routines.steps.destroy');
 
                 Route::get('routine-occurrences', [RoutineOccurrenceController::class, 'index'])->name('routine-occurrences.index');
                 Route::patch('routine-occurrences/{routineOccurrence}/steps/{step}', [RoutineOccurrenceStepController::class, 'update'])->name('routine-occurrences.steps.update');

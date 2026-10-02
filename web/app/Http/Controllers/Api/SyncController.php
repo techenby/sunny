@@ -11,11 +11,15 @@ use App\Http\Resources\ChecklistResource;
 use App\Http\Resources\ItemResource;
 use App\Http\Resources\RecipeResource;
 use App\Http\Resources\RoutineOccurrenceResource;
+use App\Http\Resources\RoutineResource;
+use App\Http\Resources\RoutineStepResource;
 use App\Http\Resources\TeamResource;
 use App\Models\Checklist;
 use App\Models\ChecklistItem;
 use App\Models\Item;
 use App\Models\Recipe;
+use App\Models\Routine;
+use App\Models\RoutineStep;
 use App\Models\Team;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Http\JsonResponse;
@@ -38,6 +42,8 @@ class SyncController extends Controller
         $itemsQuery = Item::query()->withTrashed()->whereIn('team_id', $teamIds);
         $checklistsQuery = Checklist::query()->withTrashed()->whereIn('team_id', $teamIds);
         $checklistItemsQuery = ChecklistItem::query()->whereHas('checklist', fn (Builder $query) => $query->whereIn('team_id', $teamIds));
+        $routinesQuery = Routine::query()->withTrashed()->whereIn('team_id', $teamIds);
+        $routineStepsQuery = RoutineStep::query()->withTrashed()->whereHas('routine', fn (Builder $query) => $query->whereIn('team_id', $teamIds));
 
         if ($since = $request->date('since')) {
             $teamsQuery->where('teams.updated_at', '>=', $since);
@@ -45,6 +51,8 @@ class SyncController extends Controller
             $itemsQuery->where('updated_at', '>=', $since);
             $checklistsQuery->where('updated_at', '>=', $since);
             $checklistItemsQuery->where('updated_at', '>=', $since);
+            $routinesQuery->where('updated_at', '>=', $since);
+            $routineStepsQuery->where('updated_at', '>=', $since);
         }
 
         return response()->json([
@@ -53,6 +61,8 @@ class SyncController extends Controller
             'items' => ItemResource::collection($itemsQuery->get()),
             'checklists' => ChecklistResource::collection($checklistsQuery->get()),
             'checklist_items' => ChecklistItemResource::collection($checklistItemsQuery->get()),
+            'routines' => RoutineResource::collection($routinesQuery->get()),
+            'routine_steps' => RoutineStepResource::collection($routineStepsQuery->get()),
             'routine_occurrences' => RoutineOccurrenceResource::collection($user->teams()->get()->flatMap(
                 fn (Team $team) => [
                     ...$routines->forDate($team, $team->today()),

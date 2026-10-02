@@ -23,7 +23,7 @@ function routineStepResponse(int $id, ?string $completedAt): MockResponse
 }
 
 it('lists today’s routines by time of day with their progress', function (): void {
-    $screen = Native::visit('/routines')
+    $screen = Native::visit('/today')
         ->assertNavTitle('Routines')
         ->assertSee(now()->format('l, F j'))
         ->assertSee('Get ready')
@@ -46,7 +46,7 @@ it('shows the routines due today where the team lives', function (): void {
     $this->travelTo(now()->setTime(23, 30));
     Team::find(1)->update(['timezone' => 'Pacific/Auckland']);
 
-    Native::visit('/routines')
+    Native::visit('/today')
         ->assertSee('Take out trash')
         ->assertDontSee('Get ready');
 });
@@ -54,13 +54,13 @@ it('shows the routines due today where the team lives', function (): void {
 it('shows an empty state when nothing is due today', function (): void {
     $this->travelTo(now()->addDays(2));
 
-    Native::visit('/routines')->assertSee('No routines today');
+    Native::visit('/today')->assertSee('No routines today');
 });
 
 it('ticks a step off on the phone, then sends it to Sunny', function (): void {
     Saloon::fake([UpdateRoutineStepRequest::class => routineStepResponse(12, '2026-09-30T14:00:00.000000Z')]);
 
-    Native::visit('/routines')
+    Native::visit('/today')
         ->tap('routine-step-12')
         ->assertElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-1-progress'
             && ($node['props']['text'] ?? null) === '2 of 3');
@@ -75,7 +75,7 @@ it('ticks a step off on the phone, then sends it to Sunny', function (): void {
 it('unticks a completed step', function (): void {
     Saloon::fake([UpdateRoutineStepRequest::class => routineStepResponse(11, null)]);
 
-    Native::visit('/routines')
+    Native::visit('/today')
         ->tap('routine-step-11')
         ->assertElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-1-progress'
             && ($node['props']['text'] ?? null) === '0 of 3');
@@ -87,7 +87,7 @@ it('unticks a completed step', function (): void {
 it('keeps a tick on the phone until Sunny can be reached', function (): void {
     Saloon::fake([UpdateRoutineStepRequest::class => MockResponse::make([], 500)]);
 
-    Native::visit('/routines')->tap('routine-step-12');
+    Native::visit('/today')->tap('routine-step-12');
 
     expect(RoutineOccurrenceStep::find(12)->isCompleted())->toBeTrue()
         ->and(PendingWrite::sole())->resource->toBe('routine_occurrence_steps')->error->toBeNull()
@@ -97,7 +97,7 @@ it('keeps a tick on the phone until Sunny can be reached', function (): void {
 it('drops a tick Sunny refuses so the next download restores the step', function (int $status): void {
     Saloon::fake([UpdateRoutineStepRequest::class => MockResponse::make([], $status)]);
 
-    Native::visit('/routines')->tap('routine-step-12');
+    Native::visit('/today')->tap('routine-step-12');
 
     expect(PendingWrite::count())->toBe(0);
 })->with([403, 404, 422]);
@@ -115,7 +115,7 @@ it('keeps a waiting tick when a download lands before it is sent', function (): 
     app(SunnyOutbox::class)->queueRoutineStep(12, true);
     Saloon::fake([SyncRequest::class => MockResponse::make([
         'teams' => [['id' => 1, 'name' => 'Family', 'slug' => 'family']],
-        'recipes' => [], 'items' => [], 'checklists' => [], 'checklist_items' => [], 'routine_occurrences' => sunnyRoutineOccurrences(), 'synced_at' => now()->toIso8601String(),
+        'recipes' => [], 'items' => [], 'checklists' => [], 'checklist_items' => [], 'routines' => [], 'routine_steps' => [], 'routine_occurrences' => sunnyRoutineOccurrences(), 'synced_at' => now()->toIso8601String(),
     ])]);
 
     app(SunnySync::class)->sync();
@@ -128,11 +128,11 @@ it('keeps a waiting tick when a download lands before it is sent', function (): 
 it('removes routines that are missing from a later download', function (): void {
     Saloon::fake([SyncRequest::class => MockResponse::make([
         'teams' => [['id' => 1, 'name' => 'Family', 'slug' => 'family']],
-        'recipes' => [], 'items' => [], 'checklists' => [], 'checklist_items' => [], 'routine_occurrences' => array_slice(sunnyRoutineOccurrences(), 0, 1), 'synced_at' => now()->toIso8601String(),
+        'recipes' => [], 'items' => [], 'checklists' => [], 'checklist_items' => [], 'routines' => [], 'routine_steps' => [], 'routine_occurrences' => array_slice(sunnyRoutineOccurrences(), 0, 1), 'synced_at' => now()->toIso8601String(),
     ])]);
 
     app(SunnySync::class)->sync();
 
-    Native::visit('/routines')->assertSee('Bedtime')->assertDontSee('Get ready');
+    Native::visit('/today')->assertSee('Bedtime')->assertDontSee('Get ready');
     expect(RoutineOccurrenceStep::count())->toBe(2);
 });

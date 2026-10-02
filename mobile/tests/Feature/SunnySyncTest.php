@@ -47,6 +47,13 @@ beforeEach(function (): void {
         'checklist_items' => [
             ['id' => 30, 'checklist_id' => 20, 'name' => 'Milk', 'position' => 1, 'completed_at' => null, 'completed_by' => null, 'created_at' => '2026-09-01T12:00:00+00:00', 'updated_at' => '2026-09-23T12:00:00+00:00'],
         ],
+        'routines' => [
+            ['id' => 40, 'team_id' => 7, 'user_id' => null, 'name' => 'Get ready', 'time_of_day' => 'morning', 'frequency' => 'weekly', 'weekdays' => [1, 3], 'day_of_month' => null, 'starts_on' => '2026-09-01T00:00:00.000000Z', 'is_active' => true, 'schedule_summary' => 'Mon, Wed', 'created_at' => '2026-09-01T12:00:00+00:00', 'updated_at' => '2026-09-23T12:00:00+00:00'],
+        ],
+        'routine_steps' => [
+            ['id' => 50, 'routine_id' => 40, 'name' => 'Make bed', 'position' => 1, 'deleted_at' => null, 'created_at' => '2026-09-01T12:00:00+00:00', 'updated_at' => '2026-09-23T12:00:00+00:00'],
+            ['id' => 51, 'routine_id' => 40, 'name' => 'Old step', 'position' => 2, 'deleted_at' => '2026-09-20T12:00:00+00:00', 'created_at' => '2026-09-01T12:00:00+00:00', 'updated_at' => '2026-09-23T12:00:00+00:00'],
+        ],
         'routine_occurrences' => sunnyRoutineOccurrences(7),
         'synced_at' => '2026-09-23T13:00:00+00:00',
     ];
@@ -366,7 +373,7 @@ it('sends changes kept through signing out once the same account signs back in',
     $saved = [...Recipe::find(1)->toArray(), 'name' => 'Soup', 'photo_url' => 'https://sunny.example/soup.jpg'];
     Saloon::fake([
         SaveRecordRequest::class => MockResponse::make(['data' => $saved]),
-        SyncRequest::class => MockResponse::make(['teams' => [['id' => 1, 'name' => 'Family', 'slug' => 'family']], 'recipes' => [$saved], 'items' => [], 'checklists' => [], 'checklist_items' => [], 'routine_occurrences' => [], 'synced_at' => now()->toIso8601String()]),
+        SyncRequest::class => MockResponse::make(['teams' => [['id' => 1, 'name' => 'Family', 'slug' => 'family']], 'recipes' => [$saved], 'items' => [], 'checklists' => [], 'checklist_items' => [], 'routines' => [], 'routine_steps' => [], 'routine_occurrences' => [], 'synced_at' => now()->toIso8601String()]),
     ]);
     app(SunnySyncCoordinator::class)->sync();
 

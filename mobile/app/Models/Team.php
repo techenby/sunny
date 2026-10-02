@@ -29,6 +29,11 @@ class Team extends Model
         return $this->hasMany(Checklist::class);
     }
 
+    public function routines(): HasMany
+    {
+        return $this->hasMany(Routine::class);
+    }
+
     public function today(): CarbonImmutable
     {
         return CarbonImmutable::now($this->timezone ?? config('app.timezone'))->startOfDay();

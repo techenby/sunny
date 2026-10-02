@@ -80,7 +80,7 @@ function fakeSecureStorage(): FakeBridge
 function seedSunnyData(): void
 {
     $data = json_decode(file_get_contents(__DIR__.'/Fixtures/sunny.json'), true, flags: JSON_THROW_ON_ERROR);
-    foreach (['recipes', 'items', 'checklists'] as $type) {
+    foreach (['recipes', 'items', 'checklists', 'routines'] as $type) {
         $data[$type] = array_map(fn (array $record): array => $record + ['team_id' => 1], $data[$type]);
     }
     app(SunnyStore::class)->applySnapshot([

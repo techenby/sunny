@@ -30,6 +30,7 @@ use Illuminate\Support\Str;
     'day_of_month',
     'starts_on',
     'is_active',
+    'client_uuid',
 ])]
 class Routine extends Model
 {

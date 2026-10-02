@@ -2,9 +2,9 @@
 
 namespace App\Http\Integrations\Sunny;
 
-use App\Models\ChecklistItem;
 use App\Models\Item;
 use App\Models\PendingWrite;
+use App\Models\RoutineOccurrence;
 use App\Models\RoutineOccurrenceStep;
 use App\Models\Team;
 use Illuminate\Database\Eloquent\Model;
@@ -28,10 +28,12 @@ class SunnyOutbox
     {
         $this->ensureRecordInTeam($resource, $teamId, $id);
         $model = SunnyStore::model($resource);
-        if ($resource === 'checklist_items') {
-            $payload['checklist_id'] = $id === null ? ($payload['checklist_id'] ?? null) : $model::query()->whereKey($id)->value('checklist_id');
-            if (! SunnyStore::inTeam('checklists', $teamId)->whereKey($payload['checklist_id'])->exists()) {
-                throw ValidationException::withMessages(['checklist_id' => 'This list is no longer available. Sync with Sunny.']);
+        if ($owner = SunnyStore::owner($resource)) {
+            [$ownerType, $ownerKey] = $owner;
+            $payload[$ownerKey] = $id === null ? ($payload[$ownerKey] ?? null) : $model::query()->whereKey($id)->value($ownerKey);
+            if (! SunnyStore::inTeam($ownerType, $teamId)->whereKey($payload[$ownerKey])->exists()) {
+                $noun = $ownerType === 'checklists' ? 'list' : 'routine';
+                throw ValidationException::withMessages([$ownerKey => "This {$noun} is no longer available. Sync with Sunny."]);
             }
         }
         if ($resource === 'items' && ($payload['parent_id'] ?? null) !== null) {
@@ -61,6 +63,10 @@ class SunnyOutbox
             }
             $record->save();
 
+            if ($resource === 'routines' && $id !== null) {
+                RoutineOccurrence::query()->where('routine_id', $id)->whereDate('due_on', '>=', today())->update(Arr::only($record->getAttributes(), ['name', 'time_of_day']));
+            }
+
             $write = PendingWrite::query()->for($resource, $record->id)->first() ?? new PendingWrite([
                 'server' => SunnyStore::server(), 'resource' => $resource, 'record_id' => $record->id, 'team_id' => $teamId,
                 'client_uuid' => $id === null ? (string) Str::uuid() : null, 'payload' => [], 'version' => 0,
@@ -89,11 +95,12 @@ class SunnyOutbox
             }
 
             $record = SunnyStore::model($resource)::query()->findOrFail($id);
+            $ownerKey = SunnyStore::owner($resource)[1] ?? null;
             $write = PendingWrite::query()->for($resource, $id)->first() ?? new PendingWrite([
                 'server' => SunnyStore::server(), 'resource' => $resource, 'record_id' => $id, 'team_id' => $teamId, 'version' => 0,
             ]);
             $write->fill([
-                'payload' => $resource === 'checklist_items' ? ['checklist_id' => $record->checklist_id] : [],
+                'payload' => $ownerKey !== null ? [$ownerKey => $record->{$ownerKey}] : [],
                 'client_uuid' => null,
                 'photo_path' => null,
                 'deletes' => true,
@@ -102,8 +109,12 @@ class SunnyOutbox
             ])->save();
             $record->delete();
 
-            if ($resource === 'checklists') {
-                $this->forgetChecklistItems($id);
+            if (SunnyStore::children($resource) !== null) {
+                $this->forgetChildren($resource, $id);
+            }
+
+            if ($resource === 'routines') {
+                $this->forgetRoutineOccurrences($id);
             }
         });
     }
@@ -143,9 +154,9 @@ class SunnyOutbox
 
             SunnyStore::model($resource)::query()->whereKey($id)->delete();
 
-            if ($resource === 'checklists') {
-                $this->forgetChecklistItems($id);
-            } elseif ($resource !== 'checklist_items') {
+            if (SunnyStore::children($resource) !== null) {
+                $this->forgetChildren($resource, $id);
+            } elseif (SunnyStore::owner($resource) === null) {
                 SunnyStore::model($resource)::query()->where('parent_id', $id)->update(['parent_id' => null]);
                 $this->rewritePendingReference($resource, 'parent_id', $id, null);
             }
@@ -162,10 +173,11 @@ class SunnyOutbox
         $model::query()->whereKey($localId)->update(['id' => $serverId, 'local_id' => $localId]);
         PendingWrite::query()->for($resource, $localId)->update(['record_id' => $serverId]);
 
-        if ($resource === 'checklists') {
-            ChecklistItem::query()->where('checklist_id', $localId)->update(['checklist_id' => $serverId]);
-            $this->rewritePendingReference('checklist_items', 'checklist_id', $localId, $serverId);
-        } elseif ($resource !== 'checklist_items') {
+        if ($children = SunnyStore::children($resource)) {
+            [$childType, $childKey] = $children;
+            SunnyStore::model($childType)::query()->where($childKey, $localId)->update([$childKey => $serverId]);
+            $this->rewritePendingReference($childType, $childKey, $localId, $serverId);
+        } elseif (SunnyStore::owner($resource) === null) {
             $model::query()->where('parent_id', $localId)->update(['parent_id' => $serverId]);
             $this->rewritePendingReference($resource, 'parent_id', $localId, $serverId);
         }
@@ -230,7 +242,7 @@ class SunnyOutbox
 
     private function ensureRecordInTeam(string $resource, int $teamId, ?int $id): void
     {
-        throw_unless(in_array($resource, ['recipes', 'items', 'checklists', 'checklist_items'], true), UnexpectedValueException::class);
+        throw_unless(in_array($resource, ['recipes', 'items', 'checklists', 'checklist_items', 'routines', 'routine_steps'], true), UnexpectedValueException::class);
         if (! Team::query()->where('server', SunnyStore::server())->whereKey($teamId)->exists()) {
             throw ValidationException::withMessages(['team' => 'Sync with Sunny before saving to this team.']);
         }
@@ -244,8 +256,8 @@ class SunnyOutbox
         $model = SunnyStore::model($resource);
         $record = new $model(['id' => $this->nextLocalId($model), 'server' => SunnyStore::server(), 'created_at' => now()]);
 
-        if ($resource === 'checklist_items') {
-            $record->position = (int) $model::query()->where('checklist_id', $payload['checklist_id'])->max('position') + 1;
+        if ($owner = SunnyStore::owner($resource)) {
+            $record->position = (int) $model::query()->where($owner[1], $payload[$owner[1]])->max('position') + 1;
         } else {
             $record->team_id = $teamId;
         }
@@ -253,14 +265,26 @@ class SunnyOutbox
         return $record;
     }
 
-    private function forgetChecklistItems(int $checklistId): void
+    private function forgetChildren(string $resource, int $id): void
     {
-        $ids = ChecklistItem::query()->where('checklist_id', $checklistId)->pluck('id');
+        [$childType, $childKey] = SunnyStore::children($resource);
+        $model = SunnyStore::model($childType);
+        $ids = $model::query()->where($childKey, $id)->pluck('id');
 
-        PendingWrite::query()->forCurrentServer()->where('resource', 'checklist_items')->get()
-            ->filter(fn (PendingWrite $write): bool => $ids->contains($write->record_id) || ($write->payload['checklist_id'] ?? null) === $checklistId)
+        PendingWrite::query()->forCurrentServer()->where('resource', $childType)->get()
+            ->filter(fn (PendingWrite $write): bool => $ids->contains($write->record_id) || ($write->payload[$childKey] ?? null) === $id)
             ->each->delete();
-        ChecklistItem::query()->whereKey($ids)->delete();
+        $model::query()->whereKey($ids)->delete();
+    }
+
+    private function forgetRoutineOccurrences(int $routineId): void
+    {
+        $occurrenceIds = RoutineOccurrence::query()->where('routine_id', $routineId)->pluck('id');
+        $stepIds = RoutineOccurrenceStep::query()->whereIn('routine_occurrence_id', $occurrenceIds)->pluck('id');
+
+        PendingWrite::query()->forCurrentServer()->where('resource', 'routine_occurrence_steps')->whereIn('record_id', $stepIds)->delete();
+        RoutineOccurrenceStep::query()->whereKey($stepIds)->delete();
+        RoutineOccurrence::query()->whereKey($occurrenceIds)->delete();
     }
 
     private function rewritePendingReference(string $resource, string $key, int $from, ?int $to): void
