@@ -7,9 +7,9 @@ use App\Models\Routine;
 use App\Models\RoutineOccurrence;
 use App\Models\RoutineOccurrenceStep;
 use App\Models\RoutineStep;
-use App\NativeComponents\AllRoutines;
 use App\NativeComponents\CreateRoutine;
 use App\NativeComponents\EditRoutine;
+use App\NativeComponents\Routines;
 use Native\Mobile\Events\Alert\ButtonPressed;
 use Native\Mobile\Testing\Native;
 
@@ -20,7 +20,7 @@ it('opens every routine from today’s routines', function () {
         ->tap('all-routines')
         ->assertNavigatedTo('/routines/all')
         ->follow()
-        ->assertScreen(AllRoutines::class)
+        ->assertScreen(Routines::class)
         ->assertNavTitle('All routines');
 });
 

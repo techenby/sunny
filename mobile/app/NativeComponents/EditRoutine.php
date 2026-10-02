@@ -28,7 +28,7 @@ class EditRoutine extends NativeComponent
     #[Computed]
     public function routine(): ?array
     {
-        return AllRoutines::find((int) $this->param('id'));
+        return Routines::find((int) $this->param('id'));
     }
 
     public function save(): void

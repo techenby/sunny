@@ -1,7 +1,6 @@
 <?php
 
 use App\Layouts\TabsLayout;
-use App\NativeComponents\AllRoutines;
 use App\NativeComponents\CreateInventoryItem;
 use App\NativeComponents\CreateList;
 use App\NativeComponents\CreateRecipe;
@@ -23,6 +22,7 @@ use App\NativeComponents\Register;
 use App\NativeComponents\RoutineDetail;
 use App\NativeComponents\Routines;
 use App\NativeComponents\ScanInventory;
+use App\NativeComponents\Today;
 use Illuminate\Support\Facades\Route;
 
 Route::native('/', Home::class);
@@ -30,8 +30,8 @@ Route::native('/login', Login::class);
 Route::native('/register', Register::class);
 Route::nativeGroup(TabsLayout::class, function () {
     Route::native('/dashboard', Dashboard::class);
-    Route::native('/routines', Routines::class);
-    Route::native('/routines/all', AllRoutines::class);
+    Route::native('/routines', Today::class);
+    Route::native('/routines/all', Routines::class);
     Route::native('/routines/create', CreateRoutine::class);
     Route::native('/routines/{id}', RoutineDetail::class);
     Route::native('/routines/{id}/edit', EditRoutine::class);

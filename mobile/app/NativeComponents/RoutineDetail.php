@@ -32,7 +32,7 @@ class RoutineDetail extends NativeComponent
     #[Computed]
     public function routine(): ?array
     {
-        return AllRoutines::find((int) $this->param('id'));
+        return Routines::find((int) $this->param('id'));
     }
 
     /**
@@ -45,7 +45,7 @@ class RoutineDetail extends NativeComponent
             return [];
         }
 
-        $steps = collect(AllRoutines::stepsOf($this->routine['id']));
+        $steps = collect(Routines::stepsOf($this->routine['id']));
         $errors = PendingWrite::query()->forCurrentServer()->where('resource', 'routine_steps')
             ->whereIn('record_id', $steps->pluck('id'))->whereNotNull('error')->pluck('error', 'record_id');
 
