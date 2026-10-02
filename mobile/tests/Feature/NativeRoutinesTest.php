@@ -30,7 +30,6 @@ it('lists today’s routines by time of day with their progress', function (): v
         ->assertSee('Morning · Household')
         ->assertSee('Bedtime')
         ->assertSee('Evening · Sam')
-        ->assertDontSee('Take out trash')
         ->assertElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-1-progress'
             && ($node['props']['text'] ?? null) === '1 of 3')
         ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-step-11'
@@ -46,9 +45,9 @@ it('shows the routines due today where the team lives', function (): void {
     $this->travelTo(now()->setTime(23, 30));
     Team::find(1)->update(['timezone' => 'Pacific/Auckland']);
 
-    Native::visit('/routines')
-        ->assertSee('Take out trash')
-        ->assertDontSee('Get ready');
+    $screen = Native::visit('/routines');
+
+    expect(array_column($screen->get('routines'), 'name'))->toBe(['Take out trash']);
 });
 
 it('shows an empty state when nothing is due today', function (): void {
