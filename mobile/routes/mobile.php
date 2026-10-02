@@ -30,7 +30,7 @@ Route::native('/login', Login::class);
 Route::native('/register', Register::class);
 Route::nativeGroup(TabsLayout::class, function () {
     Route::native('/dashboard', Dashboard::class);
-    Route::native('/routines', Today::class);
+    Route::native('/today', Today::class);
     Route::native('/routines/all', Routines::class);
     Route::native('/routines/create', CreateRoutine::class);
     Route::native('/routines/{id}', RoutineDetail::class);

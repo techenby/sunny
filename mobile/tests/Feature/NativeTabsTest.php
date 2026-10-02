@@ -19,7 +19,7 @@ it('shows the summary, routines, inventory, recipes and lists tabs', function (s
         ->assertTabActive($activeTab);
 })->with([
     'summary' => ['/dashboard', 'Summary'],
-    'routines' => ['/routines', 'Routines'],
+    'routines' => ['/today', 'Routines'],
     'inventory' => ['/inventory', 'Inventory'],
     'recipes' => ['/recipes', 'Recipes'],
     'item detail' => ['/inventory/3', 'Inventory'],

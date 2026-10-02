@@ -16,7 +16,7 @@ use Native\Mobile\Testing\Native;
 beforeEach(fn () => seedSunnyData());
 
 it('opens every routine from today’s routines', function () {
-    Native::visit('/routines')
+    Native::visit('/today')
         ->tap('all-routines')
         ->assertNavigatedTo('/routines/all')
         ->follow()
@@ -114,7 +114,7 @@ it('asks before deleting a routine', function () {
 });
 
 it('deletes a routine with its steps and today’s progress once confirmed', function () {
-    Native::visit('/routines')->tap('routine-step-12');
+    Native::visit('/today')->tap('routine-step-12');
 
     Native::visit('/routines/1')
         ->tap('delete-routine')
@@ -126,7 +126,7 @@ it('deletes a routine with its steps and today’s progress once confirmed', fun
         ->and(RoutineOccurrence::where('routine_id', 1)->count())->toBe(0)
         ->and(RoutineOccurrenceStep::find(12))->toBeNull()
         ->and(PendingWrite::sole()->only('resource', 'record_id', 'deletes'))->toBe(['resource' => 'routines', 'record_id' => 1, 'deletes' => true]);
-    Native::visit('/routines')->assertDontSee('Get ready');
+    Native::visit('/today')->assertDontSee('Get ready');
 });
 
 it('opens the create screen from every routine', function () {
@@ -217,7 +217,7 @@ it('edits a routine and shows the change on today’s routines', function () {
         ->and(PendingWrite::sole()->payload)->toBe([
             'name' => 'Lights out', 'time_of_day' => 'evening', 'frequency' => 'daily', 'weekdays' => null, 'day_of_month' => null, 'is_active' => true,
         ]);
-    Native::visit('/routines')->assertSee('Lights out')->assertDontSee('Bedtime');
+    Native::visit('/today')->assertSee('Lights out')->assertDontSee('Bedtime');
 });
 
 it('fills in a monthly routine’s day when editing', function () {
