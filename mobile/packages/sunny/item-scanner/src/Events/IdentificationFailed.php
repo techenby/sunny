@@ -15,5 +15,6 @@ class IdentificationFailed
     public function __construct(
         public string $id,
         public string $message,
+        public ?string $detail = null,
     ) {}
 }

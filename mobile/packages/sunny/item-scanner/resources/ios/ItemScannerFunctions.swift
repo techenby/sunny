@@ -130,8 +130,8 @@ enum ItemScannerEvents {
         send("Sunny\\ItemScanner\\Events\\ItemIdentified", ["id": id, "item": item])
     }
 
-    static func failed(id: String, message: String) {
-        send("Sunny\\ItemScanner\\Events\\IdentificationFailed", ["id": id, "message": message])
+    static func failed(id: String, message: String, detail: String? = nil) {
+        send("Sunny\\ItemScanner\\Events\\IdentificationFailed", ["id": id, "message": message, "detail": detail ?? NSNull()])
     }
 
     static func captured(id: String, path: String) {
@@ -197,27 +197,25 @@ enum ItemScannerModel {
             return
         }
 
-        let session = LanguageModelSession(tools: tools(), instructions: instructions)
+        let request = prompt(place: place, batch: batch, batchNames: batchNames)
 
         do {
-            let response = try await session.respond(generating: ScannedItem.self) {
-                prompt(place: place, batch: batch, batchNames: batchNames)
-                Attachment(image)
-            }
+            let session = LanguageModelSession(instructions: instructions)
 
-            let item = response.content
+            let item = try await session.respond(generating: ScannedItem.self) {
+                request
+                Attachment(image)
+            }.content
 
             ItemScannerEvents.identified(id: id, item: [
                 "name": item.name.trimmingCharacters(in: .whitespacesAndNewlines),
                 "category": item.category,
-                "brand": item.brand ?? NSNull(),
-                "model": item.model ?? NSNull(),
                 "quantity": max(1, item.quantity),
             ])
         } catch let error as LanguageModelSession.GenerationError {
-            ItemScannerEvents.failed(id: id, message: message(for: error))
+            ItemScannerEvents.failed(id: id, message: message(for: error), detail: String(describing: error))
         } catch {
-            ItemScannerEvents.failed(id: id, message: "Couldn't identify that item. Type a name instead.")
+            ItemScannerEvents.failed(id: id, message: "Couldn't identify that item. Type a name instead.", detail: String(describing: error))
         }
     }
 
@@ -226,20 +224,8 @@ enum ItemScannerModel {
         Each photo shows one thing someone wants to keep track of. Identify the main subject of the photo. \
         Ignore the background, furniture, walls, floors, shelving and other fixtures unless they are clearly the subject. \
         Use a short, plain name a person would search for, like "Cordless drill" or "Cast iron skillet". \
-        Only give a brand or model when it is printed on the item or unmistakable; read printed labels with the OCR tool when you have one. \
         When several identical items are the subject, set the quantity instead of describing them separately.
         """
-
-    /// The OCR tool helps read brand and model names off labels. It lives in
-    /// the Vision × FoundationModels overlay, which the simulator SDK lacks.
-    @available(iOS 27.0, *)
-    static func tools() -> [any Tool] {
-        #if canImport(_Vision_FoundationModels)
-        return [OCRTool()]
-        #else
-        return []
-        #endif
-    }
 
     static func prompt(place: String?, batch: String?, batchNames: [String]) -> String {
         var lines = ["Identify the item in this photo."]
@@ -317,12 +303,6 @@ struct ScannedItem {
 
     @Guide(description: "A broad category, like Tools, Kitchen, Electronics, Decor, or Clothing")
     var category: String
-
-    @Guide(description: "The brand, only when printed on the item or unmistakable")
-    var brand: String?
-
-    @Guide(description: "The model name or number, only when printed on the item")
-    var model: String?
 
     @Guide(description: "How many of this item are visible", .range(1...99))
     var quantity: Int

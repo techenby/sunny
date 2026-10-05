@@ -12,7 +12,7 @@ class ItemIdentified
     use Dispatchable;
 
     /**
-     * @param  array{name: string, category: string, brand: string|null, model: string|null, quantity: int}  $item
+     * @param  array{name: string, category: string, quantity: int}  $item
      */
     public function __construct(
         public string $id,

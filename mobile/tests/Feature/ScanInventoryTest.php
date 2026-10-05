@@ -9,6 +9,7 @@ use App\NativeComponents\ScanInventory;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use Native\Mobile\Events\Alert\ButtonPressed;
 use Native\Mobile\Events\Gallery\MediaSelected;
 use Native\Mobile\Testing\Native;
@@ -124,7 +125,7 @@ it('lists each new photo right away, newest first, and sends it to the model wit
     expect($keptPhoto)->toStartWith(ScanDraft::photoDirectory().'/')
         ->and(file_get_contents($keptPhoto))->toBe(file_get_contents($photoPath))
         ->and($screen->get('candidates'))->toBe([
-            ['id' => 1, 'name' => '', 'nameEdited' => false, 'photoPath' => $keptPhoto, 'category' => '', 'brand' => null, 'model' => null, 'quantity' => 1, 'scanId' => $firstScan, 'scanError' => null, 'error' => null],
+            ['id' => 1, 'name' => '', 'suggestedName' => '', 'photoPath' => $keptPhoto, 'category' => '', 'quantity' => 1, 'scanId' => $firstScan, 'scanError' => null, 'error' => null],
         ]);
     $screen->assertNativeCalled('ItemScanner.Identify', fn (array $params): bool => $params === [
         'path' => $keptPhoto, 'id' => $firstScan, 'place' => 'Garage › Tool chest', 'batch' => null, 'batchNames' => [],
@@ -176,24 +177,35 @@ it('fills in the name and details the model found', function () {
     [$screen, $scan] = scanPhoto();
 
     $screen->emitNative(ItemIdentified::class, ['id' => $scan, 'item' => [
-        'name' => 'Hammer', 'category' => 'Tools', 'brand' => 'Estwing', 'model' => 'E3-16C', 'quantity' => 2,
+        'name' => 'Hammer', 'category' => 'Tools', 'quantity' => 2,
     ]]);
 
     expect($screen->get('candidates')[0])->toMatchArray([
-        'name' => 'Hammer', 'nameEdited' => false, 'category' => 'Tools', 'brand' => 'Estwing', 'model' => 'E3-16C', 'quantity' => 2, 'scanId' => null, 'scanError' => null,
+        'name' => '', 'suggestedName' => 'Hammer', 'category' => 'Tools', 'quantity' => 2, 'scanId' => null, 'scanError' => null,
     ]);
-    $screen->assertSee('Estwing · E3-16C · ×2')
+    $screen->assertSee('Tools · ×2')
         ->assertSee('1 item')
         ->assertDontSee('identifying…');
 });
 
-it('keeps a name the user is typing when the model answers', function () {
+it('offers the model’s name as a suggestion without touching what the user typed', function () {
     [$screen, $scan] = scanPhoto();
 
-    $screen->call('renameCandidate', 1, 'F')
+    $screen->call('renameCandidate', 1, 'Framing hammer')
         ->emitNative(ItemIdentified::class, ['id' => $scan, 'item' => ['name' => 'Hammer', 'category' => 'Tools']]);
 
-    expect($screen->get('candidates')[0])->toMatchArray(['name' => 'F', 'category' => 'Tools', 'scanId' => null]);
+    expect($screen->get('candidates')[0])->toMatchArray(['name' => 'Framing hammer', 'suggestedName' => 'Hammer', 'category' => 'Tools', 'scanId' => null]);
+});
+
+it('copies the suggestion into the name so it can be edited', function () {
+    [$screen, $scan] = scanPhoto();
+
+    $screen->emitNative(ItemIdentified::class, ['id' => $scan, 'item' => ['name' => 'Glass snowman']])
+        ->assertSee('Use “Glass snowman”')
+        ->tap('scan-candidate-1-use-suggestion')
+        ->assertDontSee('Use “Glass snowman”');
+
+    expect($screen->get('candidates')[0])->toMatchArray(['name' => 'Glass snowman', 'suggestedName' => 'Glass snowman']);
 });
 
 it('ignores results for scans this screen did not start', function () {
@@ -210,11 +222,20 @@ it('keeps the photo in the list when the model could not name it', function (str
     $screen->emitNative($event, ['id' => $scan, ...$payload])
         ->assertSee($message);
 
-    expect($screen->get('candidates')[0])->toMatchArray(['name' => '', 'scanId' => null, 'scanError' => $message]);
+    expect($screen->get('candidates')[0])->toMatchArray(['name' => '', 'suggestedName' => '', 'scanId' => null, 'scanError' => $message]);
 })->with([
     'failure' => [IdentificationFailed::class, ['message' => 'Turn on Apple Intelligence in Settings to scan items.'], 'Turn on Apple Intelligence in Settings to scan items.'],
     'no name' => [ItemIdentified::class, ['item' => ['name' => '  ']], 'Couldn’t tell what that is. Type a name instead.'],
 ]);
+
+it('logs why the model could not identify a photo', function () {
+    Log::spy();
+    [$screen, $scan] = scanPhoto();
+
+    $screen->emitNative(IdentificationFailed::class, ['id' => $scan, 'message' => 'Couldn’t identify that item. Type a name instead.', 'detail' => 'decodingFailure']);
+
+    Log::shouldHaveReceived('warning')->once()->with('Item identification failed', ['message' => 'Couldn’t identify that item. Type a name instead.', 'detail' => 'decodingFailure']);
+});
 
 it('retakes a photo and identifies it again without losing a typed name', function () {
     [$screen, $firstScan] = scanPhoto();
@@ -242,7 +263,7 @@ it('removes an item and its photo from the list', function () {
     $screen->tap('scan-candidate-1-remove')
         ->assertSee('Add 1 item');
 
-    expect(collect($screen->get('candidates'))->pluck('name')->all())->toBe(['Level'])
+    expect(collect($screen->get('candidates'))->pluck('suggestedName')->all())->toBe(['Level'])
         ->and($hammerPhoto)->not->toBeFile();
 });
 
@@ -262,6 +283,19 @@ it('picks up where it left off after the screen is closed', function () {
     expect(collect($reopened->get('candidates'))->pluck('name', 'id')->all())->toBe([2 => '', 1 => 'Glass snowman'])
         ->and($reopened->get('candidates')[0]['scanId'])->not->toBeNull()->not->toBe($screen->get('candidates')[0]['scanId']);
     $reopened->assertNativeCalled('ItemScanner.Identify', fn (array $params): bool => $params['path'] === '/tmp/reindeer.jpg' && $params['id'] === $reopened->get('candidates')[0]['scanId']);
+});
+
+it('restores drafts saved by earlier versions of the screen', function () {
+    fakeScanner();
+    ScanDraft::create(['server' => SunnyStore::server(), 'team_id' => 1, 'next_candidate_id' => 2, 'candidates' => [
+        ['id' => 1, 'name' => 'Angel ornament', 'nameEdited' => true, 'photoPath' => '/tmp/angel.jpg', 'category' => '', 'brand' => 'Snowman Red Plastic', 'model' => null, 'quantity' => 1, 'scanId' => null, 'scanError' => null, 'error' => null],
+    ]]);
+
+    $screen = Native::visit('/inventory/scan');
+
+    expect($screen->get('candidates'))->toBe([
+        ['suggestedName' => '', 'id' => 1, 'name' => 'Angel ornament', 'photoPath' => '/tmp/angel.jpg', 'category' => '', 'quantity' => 1, 'scanId' => null, 'scanError' => null, 'error' => null],
+    ]);
 });
 
 it('starts over after confirming', function () {
@@ -300,12 +334,13 @@ it('adds every item to Sunny under the chosen place with its details and photo',
     }]);
     [$screen, $scan, $photoPath] = scanPhoto(['parent' => 7]);
 
-    $screen->emitNative(ItemIdentified::class, ['id' => $scan, 'item' => ['name' => 'Hammer', 'category' => 'Tools', 'brand' => 'Estwing', 'model' => null, 'quantity' => 2]])
+    $screen->emitNative(ItemIdentified::class, ['id' => $scan, 'item' => ['name' => 'Hammer', 'category' => 'Tools', 'quantity' => 2]])
         ->emitNative(PhotoCaptured::class, ['id' => 'scan', 'path' => $photoPath])
-        ->emitNative(ItemIdentified::class, ['id' => $screen->get('candidates')[0]['scanId'], 'item' => ['name' => 'Level', 'category' => '', 'brand' => null, 'model' => null, 'quantity' => 1]])
+        ->emitNative(ItemIdentified::class, ['id' => $screen->get('candidates')[0]['scanId'], 'item' => ['name' => 'Level', 'category' => '', 'quantity' => 1]])
         ->call('renameCandidate', 2, 'Torpedo level')
         ->call('updateCategory', '')
         ->tap('scan-submit')
+        ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Add', 'id' => 'add-items'])
         ->assertSet('error', '')
         ->assertReplacedWith('/inventory/7');
 
@@ -316,7 +351,7 @@ it('adds every item to Sunny under the chosen place with its details and photo',
     Saloon::assertSentCount(2);
     Saloon::assertSent(fn (SaveRecordRequest $request): bool => $fields($request) === [
         'name' => 'Hammer', 'type' => 'item', 'parent_id' => '7',
-        'metadata' => json_encode(['brand' => 'Estwing', 'category' => 'Tools', 'quantity' => '2']),
+        'metadata' => json_encode(['category' => 'Tools', 'quantity' => '2']),
         'photo' => file_get_contents($photoPath),
     ]);
     Saloon::assertSent(fn (SaveRecordRequest $request): bool => $fields($request) === [
@@ -328,6 +363,22 @@ it('adds every item to Sunny under the chosen place with its details and photo',
         ->and(File::files(ScanDraft::photoDirectory()))->toBe([]);
 });
 
+it('asks before adding the items', function () {
+    Saloon::fake([]);
+    [$screen, $scan] = scanPhoto(['parent' => 7]);
+
+    $screen->emitNative(ItemIdentified::class, ['id' => $scan, 'item' => ['name' => 'Glass snowman']])
+        ->tap('scan-submit')
+        ->assertNativeCalled('Dialog.Alert', fn (array $params): bool => $params['id'] === 'add-items'
+            && $params['title'] === 'Add 1 item?'
+            && $params['message'] === 'They’ll be added to Garage › Tool chest.')
+        ->emitNative(ButtonPressed::class, ['index' => 0, 'label' => 'Cancel', 'id' => 'add-items'])
+        ->assertNoNavigation();
+
+    Saloon::assertNothingSent();
+    expect($screen->get('candidates'))->toHaveCount(1);
+});
+
 it('uses the batch category for every item', function () {
     Saloon::fake([SaveRecordRequest::class => MockResponse::make(['data' => [
         'id' => 100, 'team_id' => 1, 'parent_id' => null, 'type' => 'item', 'name' => 'Glass snowman', 'metadata' => null,
@@ -337,6 +388,7 @@ it('uses the batch category for every item', function () {
     $screen->call('updateCategory', 'Holiday')
         ->emitNative(ItemIdentified::class, ['id' => $scan, 'item' => ['name' => 'Glass snowman', 'category' => 'Decor']])
         ->tap('scan-submit')
+        ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Add', 'id' => 'add-items'])
         ->assertSet('error', '');
 
     Saloon::assertSent(fn (SaveRecordRequest $request): bool => $request->body()->get('metadata')->value === json_encode(['category' => 'Holiday']));
@@ -351,6 +403,7 @@ it('still adds an item whose photo has since been cleared from the phone', funct
     File::delete($screen->get('candidates')[0]['photoPath']);
 
     $screen->tap('scan-submit')
+        ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Add', 'id' => 'add-items'])
         ->assertSet('error', '')
         ->assertReplacedWith('/inventory');
 
@@ -370,6 +423,7 @@ it('adds every item and flags the one Sunny refuses', function () {
     }]);
     scanNamedPhotos(['Hammer', 'Level', 'Saw'])
         ->tap('scan-submit')
+        ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Add', 'id' => 'add-items'])
         ->assertSet('error', '')
         ->assertReplacedWith('/inventory');
 
@@ -388,13 +442,14 @@ it('refuses to add nothing, an unnamed item, or one still being identified', fun
     }
 
     $screen->call(...$changes)
-        ->call('save')
+        ->tap('scan-submit')
+        ->assertNativeNotCalled('Dialog.Alert')
         ->assertNoNavigation()
         ->assertSet('error', $message);
 
     Saloon::assertNothingSent();
 })->with([
     'nothing left' => ['Hammer', ['removeCandidate', 1], 'Take a photo of at least one item.'],
-    'blank name' => ['Hammer', ['renameCandidate', 1, '   '], 'Give every item a name.'],
+    'blank name' => ['  ', ['renameCandidate', 1, '   '], 'Give every item a name.'],
     'still identifying' => [null, ['renameCandidate', 1, ''], 'Some items are still being identified. Wait a moment or name them yourself.'],
 ]);

@@ -45,7 +45,7 @@
                 class="h-12 flex-1"
                 :disabled="$saving || $candidates === []"
                 :loading="$saving"
-                @tap="save"
+                @tap="confirmSave"
             >
                 {{ $candidates === [] ? 'Add items' : trans_choice('Add :count item|Add :count items', count($candidates)) }}
             </button>
@@ -53,7 +53,7 @@
     </native:bottom-bar>
 
     <scroll-view ref="scan-screen" fill class="bg-theme-background ios:bg-theme-grouped-background">
-        <column class="w-full gap-6 px-6 pt-2 pb-8">
+        <column class="w-full gap-6 px-6 pt-2 pb-32">
             <text ref="scan-subtitle" class="text-base text-theme-on-surface-variant">
                 Tap the camera and photograph each item in turn. Apple Intelligence names them in the background while you keep shooting.
             </text>
@@ -98,8 +98,7 @@
                         @foreach ($candidates as $candidate)
                             @php
                                 $details = collect([
-                                    $candidate['brand'],
-                                    $candidate['model'],
+                                    $category === '' ? $candidate['category'] : null,
                                     $candidate['quantity'] > 1 ? '×'.$candidate['quantity'] : null,
                                 ])->filter()->implode(' · ');
                             @endphp
@@ -114,11 +113,25 @@
                                     <outlined-text-input
                                         ref="scan-candidate-{{ $candidate['id'] }}-name"
                                         a11y-label="Name"
-                                        :placeholder="$candidate['scanId'] ? 'Identifying…' : 'Name'"
+                                        :placeholder="$candidate['suggestedName'] ?: ($candidate['scanId'] ? 'Identifying…' : 'Name')"
                                         autocapitalize="sentences"
                                         :value="$candidate['name']"
+                                        sync-mode="blur"
                                         @change="renameCandidate({{ $candidate['id'] }})"
                                     />
+                                    @if ($candidate['suggestedName'] !== '' && trim($candidate['name']) === '')
+                                        <pressable
+                                            ref="scan-candidate-{{ $candidate['id'] }}-use-suggestion"
+                                            :a11y-label="'Use '.$candidate['suggestedName'].' as the name'"
+                                            class="h-8 justify-center self-start"
+                                            @tap="useSuggestion({{ $candidate['id'] }})"
+                                        >
+                                            <row class="items-center gap-1">
+                                                <icon :ios="Ios::Sparkles" :android="Android::AutoAwesome" :size="14" class="text-theme-primary" />
+                                                <text class="text-sm font-semibold text-theme-primary">Use “{{ $candidate['suggestedName'] }}”</text>
+                                            </row>
+                                        </pressable>
+                                    @endif
                                     @if ($candidate['scanId'])
                                         <row ref="scan-candidate-{{ $candidate['id'] }}-identifying" class="items-center gap-2">
                                             <activity-indicator size="small" />

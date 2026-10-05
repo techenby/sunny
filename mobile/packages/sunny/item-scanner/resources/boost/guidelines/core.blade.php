@@ -32,5 +32,5 @@ public function captureFailed(string $id, string $message): void {}
 </code-snippet>
 @endverbatim
 
-- The item has `name` (may be empty when the model couldn't tell), `category`, `brand` (nullable), `model` (nullable), and `quantity`.
+- The item has `name` (may be empty when the model couldn't tell), `category`, and `quantity`.
 - `reason` codes: `bridgeUnavailable`, `unsupportedOS`, `deviceNotEligible`, `appleIntelligenceNotEnabled`, `modelNotReady`, `visionUnsupported`.

@@ -11,7 +11,9 @@ use App\Http\Integrations\Sunny\SunnyStore;
 use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Http\Integrations\Sunny\SunnyTeam;
 use App\Models\ScanDraft;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
@@ -53,7 +55,7 @@ class ScanInventory extends NativeComponent
     public string $category = '';
 
     /**
-     * @var list<array{id: int, name: string, nameEdited: bool, photoPath: string, category: string, brand: string|null, model: string|null, quantity: int, scanId: string|null, scanError: string|null, error: string|null}>
+     * @var list<array{id: int, name: string, suggestedName: string, photoPath: string, category: string, quantity: int, scanId: string|null, scanError: string|null, error: string|null}>
      */
     public array $candidates = [];
 
@@ -145,7 +147,7 @@ class ScanInventory extends NativeComponent
     }
 
     /**
-     * @param  array{name?: string, category?: string, brand?: string|null, model?: string|null, quantity?: int}  $item
+     * @param  array{name?: string, category?: string, quantity?: int}  $item
      */
     #[On(ItemIdentified::class)]
     public function itemIdentified(string $id, array $item = []): void
@@ -159,21 +161,23 @@ class ScanInventory extends NativeComponent
         $name = Str::limit(trim((string) ($item['name'] ?? '')), 255, '');
 
         $this->updateCandidate($candidate['id'], [
-            'name' => $candidate['nameEdited'] || $name === '' ? $candidate['name'] : $name,
+            'suggestedName' => $name,
             'category' => $this->optionalString($item['category'] ?? null) ?? '',
-            'brand' => $this->optionalString($item['brand'] ?? null),
-            'model' => $this->optionalString($item['model'] ?? null),
             'quantity' => max(1, (int) ($item['quantity'] ?? 1)),
             'scanId' => null,
-            'scanError' => $name === '' && ! $candidate['nameEdited'] ? 'Couldn’t tell what that is. Type a name instead.' : null,
+            'scanError' => $name === '' ? 'Couldn’t tell what that is. Type a name instead.' : null,
         ]);
         $this->persistDraft();
     }
 
     #[On(IdentificationFailed::class)]
-    public function identificationFailed(string $id, string $message): void
+    public function identificationFailed(string $id, string $message, ?string $detail = null): void
     {
         $candidate = $this->candidateForScan($id);
+
+        if ($detail !== null) {
+            Log::warning('Item identification failed', ['message' => $message, 'detail' => $detail]);
+        }
 
         if ($candidate !== null) {
             $this->updateCandidate($candidate['id'], ['scanId' => null, 'scanError' => $message]);
@@ -183,8 +187,17 @@ class ScanInventory extends NativeComponent
 
     public function renameCandidate(int $id, string $name): void
     {
-        $this->updateCandidate($id, ['name' => $name, 'nameEdited' => trim($name) !== '']);
+        $this->updateCandidate($id, ['name' => $name]);
         $this->persistDraft();
+    }
+
+    public function useSuggestion(int $id): void
+    {
+        $candidate = collect($this->candidates)->firstWhere('id', $id);
+
+        if ($candidate !== null && $candidate['suggestedName'] !== '') {
+            $this->renameCandidate($id, $candidate['suggestedName']);
+        }
     }
 
     public function removeCandidate(int $id): void
@@ -237,7 +250,30 @@ class ScanInventory extends NativeComponent
     {
         if ($id === 'start-over' && $label === 'Start over') {
             $this->startOver();
+        } elseif ($id === 'add-items' && $label === 'Add') {
+            $this->save();
         }
+    }
+
+    public function confirmSave(): void
+    {
+        $this->error = $this->validationError();
+
+        if ($this->error !== '') {
+            return;
+        }
+
+        $count = count($this->candidates);
+        $place = $this->placeDescription();
+
+        Dialog::alert(
+            trans_choice('Add :count item?|Add :count items?', $count),
+            $place === null ? 'They’ll be added to the top level of your inventory.' : 'They’ll be added to '.$place.'.',
+            [
+                ['label' => 'Cancel', 'style' => 'cancel'],
+                ['label' => 'Add', 'style' => 'default'],
+            ],
+        )->id('add-items')->show();
     }
 
     /**
@@ -303,11 +339,9 @@ class ScanInventory extends NativeComponent
         array_unshift($this->candidates, [
             'id' => $this->nextCandidateId++,
             'name' => '',
-            'nameEdited' => false,
+            'suggestedName' => '',
             'photoPath' => $photoPath,
             'category' => '',
-            'brand' => null,
-            'model' => null,
             'quantity' => 1,
             'scanId' => $this->identify($photoPath),
             'scanError' => null,
@@ -328,6 +362,7 @@ class ScanInventory extends NativeComponent
 
         $this->updateCandidate($id, [
             'photoPath' => $photoPath,
+            'suggestedName' => '',
             'scanId' => $this->identify($photoPath),
             'scanError' => null,
         ]);
@@ -342,8 +377,7 @@ class ScanInventory extends NativeComponent
         }
 
         $batchNames = collect($this->candidates)
-            ->pluck('name')
-            ->map(fn (string $name): string => trim($name))
+            ->map(fn (array $candidate): string => $this->nameOf($candidate))
             ->filter()
             ->unique()
             ->values()
@@ -385,7 +419,9 @@ class ScanInventory extends NativeComponent
         $this->batch = $draft->batch ?? '';
         $this->category = $draft->category ?? '';
         $this->nextCandidateId = $draft->next_candidate_id;
-        $this->candidates = $draft->candidates;
+        $this->candidates = collect($draft->candidates)
+            ->map(fn (array $candidate): array => ['suggestedName' => '', ...Arr::except($candidate, ['nameEdited', 'brand', 'model'])])
+            ->all();
         $this->parentId = $this->parentChoice((int) $draft->parent_id)['id'] ?? null;
 
         foreach ($this->candidates as $candidate) {
@@ -427,7 +463,7 @@ class ScanInventory extends NativeComponent
     }
 
     /**
-     * @return array{id: int, name: string, nameEdited: bool, scanId: string|null}|null
+     * @return array{id: int, name: string, suggestedName: string, scanId: string|null}|null
      */
     protected function candidateForScan(string $scanId): ?array
     {
@@ -458,20 +494,18 @@ class ScanInventory extends NativeComponent
     }
 
     /**
-     * @param  array{name: string, category: string, brand: string|null, model: string|null, quantity: int}  $candidate
+     * @param  array{name: string, suggestedName: string, category: string, quantity: int}  $candidate
      * @return array{name: string, type: string, parent_id: int|null, metadata: array<string, string>|null}
      */
     protected function candidatePayload(array $candidate): array
     {
         $metadata = array_filter([
-            'brand' => $candidate['brand'],
-            'model' => $candidate['model'],
             'category' => $this->optionalString($this->category) ?? $this->optionalString($candidate['category']),
             'quantity' => $candidate['quantity'] > 1 ? (string) $candidate['quantity'] : null,
         ], fn (?string $value): bool => $value !== null);
 
         return [
-            'name' => trim($candidate['name']),
+            'name' => $this->nameOf($candidate),
             'type' => ItemType::Item->value,
             'parent_id' => $this->parentId,
             'metadata' => $metadata ?: null,
@@ -481,7 +515,7 @@ class ScanInventory extends NativeComponent
     protected function validationError(): string
     {
         $candidates = collect($this->candidates);
-        $unnamed = $candidates->filter(fn (array $candidate): bool => trim($candidate['name']) === '');
+        $unnamed = $candidates->filter(fn (array $candidate): bool => $this->nameOf($candidate) === '');
 
         if ($candidates->isEmpty()) {
             return 'Take a photo of at least one item.';
@@ -495,7 +529,7 @@ class ScanInventory extends NativeComponent
             return 'Give every item a name.';
         }
 
-        if ($candidates->contains(fn (array $candidate): bool => mb_strlen(trim($candidate['name'])) > 255)) {
+        if ($candidates->contains(fn (array $candidate): bool => mb_strlen($this->nameOf($candidate)) > 255)) {
             return 'Item names are too long (255 characters max).';
         }
 
@@ -512,6 +546,14 @@ class ScanInventory extends NativeComponent
         }
 
         return '';
+    }
+
+    /**
+     * @param  array{name: string, suggestedName: string}  $candidate
+     */
+    protected function nameOf(array $candidate): string
+    {
+        return trim($candidate['name']) !== '' ? trim($candidate['name']) : $candidate['suggestedName'];
     }
 
     protected function optionalString(mixed $value): ?string
