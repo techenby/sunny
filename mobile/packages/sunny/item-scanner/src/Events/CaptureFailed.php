@@ -5,16 +5,14 @@ namespace Sunny\ItemScanner\Events;
 use Illuminate\Foundation\Events\Dispatchable;
 
 /**
- * The on-device model couldn't identify the item in a photo. The message
- * is written for the user.
+ * The capture camera couldn't open. The message is written for the user.
  */
-class IdentificationFailed
+class CaptureFailed
 {
     use Dispatchable;
 
     public function __construct(
         public string $id,
         public string $message,
-        public ?string $detail = null,
     ) {}
 }

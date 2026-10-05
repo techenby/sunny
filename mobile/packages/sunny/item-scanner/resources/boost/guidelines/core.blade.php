@@ -1,25 +1,41 @@
 ## sunny/item-scanner
 
-Identifies the items in a photo with Apple's on-device Foundation Models (iOS 27+, Apple Intelligence devices). iOS only.
+Identifies the item in a photo with Apple's on-device Foundation Models (iOS 27+, Apple Intelligence devices). iOS only.
 
 @verbatim
-<code-snippet name="Identifying items in a photo" lang="php">
+<code-snippet name="Identifying the item in a photo" lang="php">
+use Sunny\ItemScanner\Events\CaptureFailed;
 use Sunny\ItemScanner\Events\IdentificationFailed;
-use Sunny\ItemScanner\Events\ItemsIdentified;
+use Sunny\ItemScanner\Events\ItemIdentified;
+use Sunny\ItemScanner\Events\ItemRepeated;
+use Sunny\ItemScanner\Events\PhotoCaptured;
 use Sunny\ItemScanner\Facades\ItemScanner;
 
 // ['available' => bool, 'reason' => ?string]
 $availability = ItemScanner::availability();
 
-$id = ItemScanner::identify($photoPath, knownNames: ['Cordless drill'], place: 'Garage › Tool chest');
+$id = ItemScanner::identify($photoPath, place: 'Garage › Tool chest', batch: 'Christmas ornaments', batchNames: ['Glass snowman']);
 
-#[On(ItemsIdentified::class)]
-public function itemsIdentified(string $id, array $items): void {}
+#[On(ItemIdentified::class)]
+public function itemIdentified(string $id, array $item): void {}
 
 #[On(IdentificationFailed::class)]
 public function identificationFailed(string $id, string $message): void {}
+
+// A camera that stays open between shots; pass single: true to close after one.
+$captureId = ItemScanner::capture();
+
+#[On(PhotoCaptured::class)]
+public function photoCaptured(string $id, string $path): void {}
+
+// "+1" in the camera: another copy of the last photo's item.
+#[On(ItemRepeated::class)]
+public function itemRepeated(string $id): void {}
+
+#[On(CaptureFailed::class)]
+public function captureFailed(string $id, string $message): void {}
 </code-snippet>
 @endverbatim
 
-- Each item has `name`, `category`, `brand` (nullable), `model` (nullable), `quantity`, and `existingMatch` (one of `knownNames`, or null).
+- The item has `name` (may be empty when the model couldn't tell), `category`, and `quantity`.
 - `reason` codes: `bridgeUnavailable`, `unsupportedOS`, `deviceNotEligible`, `appleIntelligenceNotEnabled`, `modelNotReady`, `visionUnsupported`.

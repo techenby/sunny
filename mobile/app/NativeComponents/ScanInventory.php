@@ -7,58 +7,62 @@ use App\Concerns\ChoosesInventoryParent;
 use App\Concerns\SavesSunnyRecord;
 use App\Enums\ItemType;
 use App\Http\Integrations\Sunny\SunnyOutbox;
+use App\Http\Integrations\Sunny\SunnyStore;
 use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Http\Integrations\Sunny\SunnyTeam;
+use App\Models\ScanDraft;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
 use Native\Mobile\Attributes\On;
 use Native\Mobile\Edge\NativeComponent;
-use Native\Mobile\Events\Camera\PhotoTaken;
+use Native\Mobile\Events\Alert\ButtonPressed;
 use Native\Mobile\Events\Gallery\MediaSelected;
 use Native\Mobile\Facades\Camera;
+use Native\Mobile\Facades\Dialog;
+use Sunny\ItemScanner\Events\CaptureFailed;
 use Sunny\ItemScanner\Events\IdentificationFailed;
-use Sunny\ItemScanner\Events\ItemsIdentified;
+use Sunny\ItemScanner\Events\ItemIdentified;
+use Sunny\ItemScanner\Events\ItemRepeated;
+use Sunny\ItemScanner\Events\PhotoCaptured;
 use Sunny\ItemScanner\Facades\ItemScanner;
 use Throwable;
 
 /**
- * Photograph a shelf, drawer, or bin and let Apple's on-device model list
- * what's in it, then add the chosen finds to Sunny in one go.
+ * Photograph items one at a time and let Apple's on-device model name each
+ * one in the background, then add them all to Sunny in one go.
  */
 class ScanInventory extends NativeComponent
 {
     use ChecksSunnySync;
-    use ChoosesInventoryParent;
+    use ChoosesInventoryParent {
+        selectParent as protected chooseParent;
+        selectTopLevel as protected chooseTopLevel;
+    }
     use SavesSunnyRecord;
+
+    protected const CAPTURE_ID = 'scan';
+
+    protected const RETAKE_PREFIX = 'retake-';
 
     /** Why the on-device model can't run here, or null when it can. */
     public ?string $unavailableReason = null;
 
-    /**
-     * Identify requests still waiting on the model, keyed by request id,
-     * with the photo each one is looking at.
-     *
-     * @var array<string, string>
-     */
-    public array $pendingScans = [];
+    public string $batch = '';
+
+    public string $category = '';
 
     /**
-     * Photos the model couldn't read, as messages for the user.
-     *
-     * @var list<string>
-     */
-    public array $scanErrors = [];
-
-    /**
-     * Everything found so far, merged across photos by name. Each find keeps
-     * the photo it was first seen in, which becomes the item's photo.
-     *
-     * @var list<array{id: int, name: string, photoPath: string, category: string, brand: string|null, model: string|null, quantity: int, existingMatch: string|null, selected: bool, error: string|null}>
+     * @var list<array{id: int, name: string, suggestedName: string, photoPath: string, category: string, quantity: int, extraCopies: int, scanId: string|null, scanError: string|null, error: string|null}>
      */
     public array $candidates = [];
 
     public int $nextCandidateId = 1;
+
+    public ?int $lastCapturedCandidateId = null;
 
     public string $error = '';
 
@@ -66,12 +70,14 @@ class ScanInventory extends NativeComponent
     {
         $this->initializeTeam();
 
+        $this->unavailableReason = ItemScanner::availability()['reason'];
+
+        $this->restoreDraft();
+
         $parent = $this->parentChoice((int) $this->data('parent'));
         if ($parent !== null) {
             $this->parentId = $parent['id'];
         }
-
-        $this->unavailableReason = ItemScanner::availability()['reason'];
     }
 
     #[Computed]
@@ -88,14 +94,21 @@ class ScanInventory extends NativeComponent
     }
 
     #[Computed]
-    public function selectedCount(): int
+    public function identifyingCount(): int
     {
-        return collect($this->candidates)->where('selected', true)->count();
+        return collect($this->candidates)->whereNotNull('scanId')->count();
     }
 
-    public function takePhoto(): void
+    public function takePhotos(): void
     {
-        Camera::getPhoto()->start();
+        $this->error = '';
+
+        ItemScanner::capture(self::CAPTURE_ID);
+    }
+
+    public function retakePhoto(int $id): void
+    {
+        ItemScanner::capture(self::RETAKE_PREFIX.$id, single: true);
     }
 
     public function choosePhotos(): void
@@ -103,10 +116,32 @@ class ScanInventory extends NativeComponent
         Camera::pickImages('image', multiple: true, max_items: 5)->start();
     }
 
-    #[On(PhotoTaken::class)]
-    public function photoTaken(string $path): void
+    #[On(PhotoCaptured::class)]
+    public function photoCaptured(string $id, string $path): void
     {
-        $this->identify($path);
+        if (str_starts_with($id, self::RETAKE_PREFIX)) {
+            $this->replacePhoto((int) Str::after($id, self::RETAKE_PREFIX), $path);
+        } elseif ($id === self::CAPTURE_ID) {
+            $this->lastCapturedCandidateId = $this->nextCandidateId;
+            $this->addCandidate($path);
+        }
+    }
+
+    #[On(ItemRepeated::class)]
+    public function itemRepeated(string $id): void
+    {
+        $candidate = collect($this->candidates)->firstWhere('id', $this->lastCapturedCandidateId);
+
+        if ($id === self::CAPTURE_ID && $candidate !== null) {
+            $this->updateCandidate($candidate['id'], ['extraCopies' => $candidate['extraCopies'] + 1]);
+            $this->persistDraft();
+        }
+    }
+
+    #[On(CaptureFailed::class)]
+    public function captureFailed(string $id, string $message): void
+    {
+        $this->error = $message;
     }
 
     /**
@@ -121,57 +156,143 @@ class ScanInventory extends NativeComponent
 
         foreach ($files as $file) {
             if (($file['path'] ?? null) !== null) {
-                $this->identify($file['path']);
+                $this->addCandidate($file['path']);
             }
         }
     }
 
     /**
-     * @param  list<array{name?: string, category?: string, brand?: string|null, model?: string|null, quantity?: int, existingMatch?: string|null}>  $items
+     * @param  array{name?: string, category?: string, quantity?: int}  $item
      */
-    #[On(ItemsIdentified::class)]
-    public function itemsIdentified(string $id, array $items = []): void
+    #[On(ItemIdentified::class)]
+    public function itemIdentified(string $id, array $item = []): void
     {
-        $photoPath = $this->finishScan($id);
+        $candidate = $this->candidateForScan($id);
 
-        if ($photoPath === null) {
+        if ($candidate === null) {
             return;
         }
 
-        foreach ($items as $item) {
-            $this->mergeCandidate($item, $photoPath);
-        }
+        $name = Str::limit(trim((string) ($item['name'] ?? '')), 255, '');
 
-        if ($items === []) {
-            $this->scanErrors[] = 'No items found in that photo. Try getting closer.';
-        }
+        $this->updateCandidate($candidate['id'], [
+            'suggestedName' => $name,
+            'category' => $this->optionalString($item['category'] ?? null) ?? '',
+            'quantity' => max(1, (int) ($item['quantity'] ?? 1)),
+            'scanId' => null,
+            'scanError' => $name === '' ? 'Couldn’t tell what that is. Type a name instead.' : null,
+        ]);
+        $this->persistDraft();
     }
 
     #[On(IdentificationFailed::class)]
-    public function identificationFailed(string $id, string $message): void
+    public function identificationFailed(string $id, string $message, ?string $detail = null): void
     {
-        if ($this->finishScan($id) !== null) {
-            $this->scanErrors[] = $message;
-        }
-    }
+        $candidate = $this->candidateForScan($id);
 
-    public function toggleCandidate(int $id, bool $selected): void
-    {
-        $this->updateCandidate($id, ['selected' => $selected]);
+        if ($detail !== null) {
+            Log::warning('Item identification failed', ['message' => $message, 'detail' => $detail]);
+        }
+
+        if ($candidate !== null) {
+            $this->updateCandidate($candidate['id'], ['scanId' => null, 'scanError' => $message]);
+            $this->persistDraft();
+        }
     }
 
     public function renameCandidate(int $id, string $name): void
     {
         $this->updateCandidate($id, ['name' => $name]);
+        $this->persistDraft();
     }
 
-    public function dismissScanErrors(): void
+    public function useSuggestion(int $id): void
     {
-        $this->scanErrors = [];
+        $candidate = collect($this->candidates)->firstWhere('id', $id);
+
+        if ($candidate !== null && $candidate['suggestedName'] !== '') {
+            $this->renameCandidate($id, $candidate['suggestedName']);
+        }
+    }
+
+    public function removeCandidate(int $id): void
+    {
+        $removed = collect($this->candidates)->firstWhere('id', $id);
+
+        $this->candidates = collect($this->candidates)
+            ->reject(fn (array $candidate): bool => $candidate['id'] === $id)
+            ->values()
+            ->all();
+
+        ScanDraft::forgetPhoto($removed['photoPath'] ?? null);
+        $this->persistDraft();
+    }
+
+    public function updateBatch(string $batch): void
+    {
+        $this->batch = Str::limit(trim($batch), 255, '');
+        $this->persistDraft();
+    }
+
+    public function updateCategory(string $category): void
+    {
+        $this->category = Str::limit(trim($category), 255, '');
+        $this->persistDraft();
+    }
+
+    public function selectParent(int $id): void
+    {
+        $this->chooseParent($id);
+        $this->persistDraft();
+    }
+
+    public function selectTopLevel(): void
+    {
+        $this->chooseTopLevel();
+        $this->persistDraft();
+    }
+
+    public function confirmStartOver(): void
+    {
+        Dialog::alert('Start over?', 'The photos and names in this list will be cleared. Nothing has been added to your inventory yet.', [
+            ['label' => 'Cancel', 'style' => 'cancel'],
+            ['label' => 'Start over', 'style' => 'destructive'],
+        ])->id('start-over')->show();
+    }
+
+    #[On(ButtonPressed::class)]
+    public function onAlertButtonPressed(string $label, ?string $id = null): void
+    {
+        if ($id === 'start-over' && $label === 'Start over') {
+            $this->startOver();
+        } elseif ($id === 'add-items' && $label === 'Add') {
+            $this->save();
+        }
+    }
+
+    public function confirmSave(): void
+    {
+        $this->error = $this->validationError();
+
+        if ($this->error !== '') {
+            return;
+        }
+
+        $count = count($this->candidates);
+        $place = $this->placeDescription();
+
+        Dialog::alert(
+            trans_choice('Add :count item?|Add :count items?', $count),
+            $place === null ? 'They’ll be added to the top level of your inventory.' : 'They’ll be added to '.$place.'.',
+            [
+                ['label' => 'Cancel', 'style' => 'cancel'],
+                ['label' => 'Add', 'style' => 'default'],
+            ],
+        )->id('add-items')->show();
     }
 
     /**
-     * Keep the chosen finds on this phone and queue them for Sunny. The first
+     * Keep the photographed items on this phone and queue them for Sunny. The first
      * failure stops the run and stays in the list with its reason, so a retry
      * only adds what hasn't been kept. A find whose photo the system has since
      * cleared out is still added, just without the photo.
@@ -191,11 +312,7 @@ class ScanInventory extends NativeComponent
         $this->saving = true;
 
         try {
-            foreach ($this->candidates as $index => $candidate) {
-                if (! $candidate['selected']) {
-                    continue;
-                }
-
+            foreach (array_reverse($this->candidates, preserve_keys: true) as $index => $candidate) {
                 try {
                     app(SunnyOutbox::class)->queue(
                         'items',
@@ -210,11 +327,13 @@ class ScanInventory extends NativeComponent
                     break;
                 }
 
+                ScanDraft::forgetPhoto($candidate['photoPath']);
                 unset($this->candidates[$index]);
             }
         } finally {
             $this->candidates = array_values($this->candidates);
             $this->saving = false;
+            $this->persistDraft();
             app(SunnySyncCoordinator::class)->dispatch();
         }
 
@@ -228,45 +347,143 @@ class ScanInventory extends NativeComponent
         return view('native.scan-inventory');
     }
 
-    protected function identify(string $path): void
+    protected function addCandidate(string $photoPath): void
     {
-        if ($this->unavailableReason !== null) {
+        $photoPath = $this->keepPhoto($photoPath);
+
+        array_unshift($this->candidates, [
+            'id' => $this->nextCandidateId++,
+            'name' => '',
+            'suggestedName' => '',
+            'photoPath' => $photoPath,
+            'category' => '',
+            'quantity' => 1,
+            'extraCopies' => 0,
+            'scanId' => $this->identify($photoPath),
+            'scanError' => null,
+            'error' => null,
+        ]);
+        $this->persistDraft();
+    }
+
+    protected function replacePhoto(int $id, string $photoPath): void
+    {
+        $previous = collect($this->candidates)->firstWhere('id', $id);
+
+        if ($previous === null) {
             return;
         }
 
-        $id = ItemScanner::identify($path, $this->knownNames(), $this->placeDescription());
+        $photoPath = $this->keepPhoto($photoPath);
 
-        $this->pendingScans[$id] = $path;
+        $this->updateCandidate($id, [
+            'photoPath' => $photoPath,
+            'suggestedName' => '',
+            'scanId' => $this->identify($photoPath),
+            'scanError' => null,
+        ]);
+        ScanDraft::forgetPhoto($previous['photoPath']);
+        $this->persistDraft();
     }
 
-    /**
-     * Stop waiting on a scan, returning the photo it looked at, or null when
-     * this screen didn't start it.
-     */
-    protected function finishScan(string $id): ?string
+    protected function identify(string $photoPath): ?string
     {
-        $photoPath = $this->pendingScans[$id] ?? null;
-
-        unset($this->pendingScans[$id]);
-
-        return $photoPath;
-    }
-
-    /**
-     * The names already inside the chosen parent, so the model can flag
-     * things that are already in the inventory.
-     *
-     * @return list<string>
-     */
-    protected function knownNames(): array
-    {
-        $items = collect(Inventory::all())->where('team_id', $this->teamId);
-
-        if ($this->parentId !== null) {
-            $items = $items->whereIn('id', Inventory::descendantIdsOf($this->parentId));
+        if ($this->unavailableReason !== null) {
+            return null;
         }
 
-        return $items->where('type', ItemType::Item)->pluck('name')->unique()->values()->all();
+        $batchNames = collect($this->candidates)
+            ->map(fn (array $candidate): string => $this->nameOf($candidate))
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+
+        return ItemScanner::identify($photoPath, $this->placeDescription(), $this->optionalString($this->batch), $batchNames);
+    }
+
+    protected function keepPhoto(string $path): string
+    {
+        if (! is_file($path)) {
+            return $path;
+        }
+
+        File::ensureDirectoryExists(ScanDraft::photoDirectory());
+        $kept = ScanDraft::photoDirectory().'/'.Str::uuid().'.'.(pathinfo($path, PATHINFO_EXTENSION) ?: 'jpg');
+        File::copy($path, $kept);
+
+        return $kept;
+    }
+
+    protected function draft(): ?ScanDraft
+    {
+        if ($this->teamId === null) {
+            return null;
+        }
+
+        return ScanDraft::query()->forCurrentServer()->where('team_id', $this->teamId)->first();
+    }
+
+    protected function restoreDraft(): void
+    {
+        $draft = $this->draft();
+
+        if ($draft === null) {
+            return;
+        }
+
+        $this->batch = $draft->batch ?? '';
+        $this->category = $draft->category ?? '';
+        $this->nextCandidateId = $draft->next_candidate_id;
+        $this->candidates = collect($draft->candidates)
+            ->map(fn (array $candidate): array => ['suggestedName' => '', 'extraCopies' => 0, ...Arr::except($candidate, ['nameEdited', 'brand', 'model'])])
+            ->all();
+        $this->parentId = $this->parentChoice((int) $draft->parent_id)['id'] ?? null;
+
+        foreach ($this->candidates as $candidate) {
+            if ($candidate['scanId'] !== null) {
+                $this->updateCandidate($candidate['id'], ['scanId' => $this->identify($candidate['photoPath'])]);
+            }
+        }
+    }
+
+    protected function persistDraft(): void
+    {
+        if ($this->teamId === null) {
+            return;
+        }
+
+        if ($this->candidates === []) {
+            $this->draft()?->delete();
+
+            return;
+        }
+
+        ScanDraft::query()->updateOrCreate(['server' => SunnyStore::server(), 'team_id' => $this->teamId], [
+            'parent_id' => $this->parentId,
+            'batch' => $this->optionalString($this->batch),
+            'category' => $this->optionalString($this->category),
+            'candidates' => $this->candidates,
+            'next_candidate_id' => $this->nextCandidateId,
+        ]);
+    }
+
+    protected function startOver(): void
+    {
+        $this->draft()?->discard();
+
+        $this->candidates = [];
+        $this->batch = '';
+        $this->category = '';
+        $this->error = '';
+    }
+
+    /**
+     * @return array{id: int, name: string, suggestedName: string, scanId: string|null}|null
+     */
+    protected function candidateForScan(string $scanId): ?array
+    {
+        return collect($this->candidates)->firstWhere('scanId', $scanId);
     }
 
     protected function placeDescription(): ?string
@@ -278,54 +495,6 @@ class ScanInventory extends NativeComponent
         return $this->selectedParent['path'] === null
             ? $this->selectedParent['name']
             : $this->selectedParent['path'].' › '.$this->selectedParent['name'];
-    }
-
-    /**
-     * Add a find to the list, or fold it into one with the same name.
-     *
-     * @param  array{name?: string, category?: string, brand?: string|null, model?: string|null, quantity?: int, existingMatch?: string|null}  $item
-     */
-    protected function mergeCandidate(array $item, string $photoPath): void
-    {
-        $name = Str::limit(trim((string) ($item['name'] ?? '')), 255, '');
-
-        if ($name === '') {
-            return;
-        }
-
-        $found = [
-            'category' => $this->optionalString($item['category'] ?? null) ?? '',
-            'brand' => $this->optionalString($item['brand'] ?? null),
-            'model' => $this->optionalString($item['model'] ?? null),
-            'quantity' => max(1, (int) ($item['quantity'] ?? 1)),
-            'existingMatch' => $this->optionalString($item['existingMatch'] ?? null),
-        ];
-
-        $index = collect($this->candidates)->search(fn (array $candidate): bool => Str::lower(trim($candidate['name'])) === Str::lower($name));
-
-        if ($index === false) {
-            $this->candidates[] = [
-                'id' => $this->nextCandidateId++,
-                'name' => $name,
-                'photoPath' => $photoPath,
-                ...$found,
-                'selected' => $found['existingMatch'] === null,
-                'error' => null,
-            ];
-
-            return;
-        }
-
-        $candidate = $this->candidates[$index];
-
-        $this->candidates[$index] = [
-            ...$candidate,
-            'category' => $candidate['category'] !== '' ? $candidate['category'] : $found['category'],
-            'brand' => $candidate['brand'] ?? $found['brand'],
-            'model' => $candidate['model'] ?? $found['model'],
-            'quantity' => max($candidate['quantity'], $found['quantity']),
-            'existingMatch' => $candidate['existingMatch'] ?? $found['existingMatch'],
-        ];
     }
 
     /**
@@ -341,20 +510,18 @@ class ScanInventory extends NativeComponent
     }
 
     /**
-     * @param  array{name: string, category: string, brand: string|null, model: string|null, quantity: int}  $candidate
+     * @param  array{name: string, suggestedName: string, category: string, quantity: int, extraCopies: int}  $candidate
      * @return array{name: string, type: string, parent_id: int|null, metadata: array<string, string>|null}
      */
     protected function candidatePayload(array $candidate): array
     {
         $metadata = array_filter([
-            'brand' => $candidate['brand'],
-            'model' => $candidate['model'],
-            'category' => $candidate['category'] !== '' ? $candidate['category'] : null,
-            'quantity' => $candidate['quantity'] > 1 ? (string) $candidate['quantity'] : null,
+            'category' => $this->optionalString($this->category) ?? $this->optionalString($candidate['category']),
+            'quantity' => $this->quantityOf($candidate) > 1 ? (string) $this->quantityOf($candidate) : null,
         ], fn (?string $value): bool => $value !== null);
 
         return [
-            'name' => trim($candidate['name']),
+            'name' => $this->nameOf($candidate),
             'type' => ItemType::Item->value,
             'parent_id' => $this->parentId,
             'metadata' => $metadata ?: null,
@@ -363,17 +530,22 @@ class ScanInventory extends NativeComponent
 
     protected function validationError(): string
     {
-        $selected = collect($this->candidates)->where('selected', true);
+        $candidates = collect($this->candidates);
+        $unnamed = $candidates->filter(fn (array $candidate): bool => $this->nameOf($candidate) === '');
 
-        if ($selected->isEmpty()) {
-            return 'Choose at least one item to add.';
+        if ($candidates->isEmpty()) {
+            return 'Take a photo of at least one item.';
         }
 
-        if ($selected->contains(fn (array $candidate): bool => trim($candidate['name']) === '')) {
+        if ($unnamed->contains(fn (array $candidate): bool => $candidate['scanId'] !== null)) {
+            return 'Some items are still being identified. Wait a moment or name them yourself.';
+        }
+
+        if ($unnamed->isNotEmpty()) {
             return 'Give every item a name.';
         }
 
-        if ($selected->contains(fn (array $candidate): bool => mb_strlen(trim($candidate['name'])) > 255)) {
+        if ($candidates->contains(fn (array $candidate): bool => mb_strlen($this->nameOf($candidate)) > 255)) {
             return 'Item names are too long (255 characters max).';
         }
 
@@ -390,6 +562,22 @@ class ScanInventory extends NativeComponent
         }
 
         return '';
+    }
+
+    /**
+     * @param  array{name: string, suggestedName: string}  $candidate
+     */
+    protected function nameOf(array $candidate): string
+    {
+        return trim($candidate['name']) !== '' ? trim($candidate['name']) : $candidate['suggestedName'];
+    }
+
+    /**
+     * @param  array{quantity: int, extraCopies: int}  $candidate
+     */
+    protected function quantityOf(array $candidate): int
+    {
+        return $candidate['quantity'] + $candidate['extraCopies'];
     }
 
     protected function optionalString(mixed $value): ?string
