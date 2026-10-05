@@ -26,6 +26,7 @@ use Native\Mobile\Facades\Dialog;
 use Sunny\ItemScanner\Events\CaptureFailed;
 use Sunny\ItemScanner\Events\IdentificationFailed;
 use Sunny\ItemScanner\Events\ItemIdentified;
+use Sunny\ItemScanner\Events\ItemRepeated;
 use Sunny\ItemScanner\Events\PhotoCaptured;
 use Sunny\ItemScanner\Facades\ItemScanner;
 use Throwable;
@@ -55,11 +56,13 @@ class ScanInventory extends NativeComponent
     public string $category = '';
 
     /**
-     * @var list<array{id: int, name: string, suggestedName: string, photoPath: string, category: string, quantity: int, scanId: string|null, scanError: string|null, error: string|null}>
+     * @var list<array{id: int, name: string, suggestedName: string, photoPath: string, category: string, quantity: int, extraCopies: int, scanId: string|null, scanError: string|null, error: string|null}>
      */
     public array $candidates = [];
 
     public int $nextCandidateId = 1;
+
+    public ?int $lastCapturedCandidateId = null;
 
     public string $error = '';
 
@@ -119,7 +122,19 @@ class ScanInventory extends NativeComponent
         if (str_starts_with($id, self::RETAKE_PREFIX)) {
             $this->replacePhoto((int) Str::after($id, self::RETAKE_PREFIX), $path);
         } elseif ($id === self::CAPTURE_ID) {
+            $this->lastCapturedCandidateId = $this->nextCandidateId;
             $this->addCandidate($path);
+        }
+    }
+
+    #[On(ItemRepeated::class)]
+    public function itemRepeated(string $id): void
+    {
+        $candidate = collect($this->candidates)->firstWhere('id', $this->lastCapturedCandidateId);
+
+        if ($id === self::CAPTURE_ID && $candidate !== null) {
+            $this->updateCandidate($candidate['id'], ['extraCopies' => $candidate['extraCopies'] + 1]);
+            $this->persistDraft();
         }
     }
 
@@ -343,6 +358,7 @@ class ScanInventory extends NativeComponent
             'photoPath' => $photoPath,
             'category' => '',
             'quantity' => 1,
+            'extraCopies' => 0,
             'scanId' => $this->identify($photoPath),
             'scanError' => null,
             'error' => null,
@@ -420,7 +436,7 @@ class ScanInventory extends NativeComponent
         $this->category = $draft->category ?? '';
         $this->nextCandidateId = $draft->next_candidate_id;
         $this->candidates = collect($draft->candidates)
-            ->map(fn (array $candidate): array => ['suggestedName' => '', ...Arr::except($candidate, ['nameEdited', 'brand', 'model'])])
+            ->map(fn (array $candidate): array => ['suggestedName' => '', 'extraCopies' => 0, ...Arr::except($candidate, ['nameEdited', 'brand', 'model'])])
             ->all();
         $this->parentId = $this->parentChoice((int) $draft->parent_id)['id'] ?? null;
 
@@ -494,14 +510,14 @@ class ScanInventory extends NativeComponent
     }
 
     /**
-     * @param  array{name: string, suggestedName: string, category: string, quantity: int}  $candidate
+     * @param  array{name: string, suggestedName: string, category: string, quantity: int, extraCopies: int}  $candidate
      * @return array{name: string, type: string, parent_id: int|null, metadata: array<string, string>|null}
      */
     protected function candidatePayload(array $candidate): array
     {
         $metadata = array_filter([
             'category' => $this->optionalString($this->category) ?? $this->optionalString($candidate['category']),
-            'quantity' => $candidate['quantity'] > 1 ? (string) $candidate['quantity'] : null,
+            'quantity' => $this->quantityOf($candidate) > 1 ? (string) $this->quantityOf($candidate) : null,
         ], fn (?string $value): bool => $value !== null);
 
         return [
@@ -554,6 +570,14 @@ class ScanInventory extends NativeComponent
     protected function nameOf(array $candidate): string
     {
         return trim($candidate['name']) !== '' ? trim($candidate['name']) : $candidate['suggestedName'];
+    }
+
+    /**
+     * @param  array{quantity: int, extraCopies: int}  $candidate
+     */
+    protected function quantityOf(array $candidate): int
+    {
+        return $candidate['quantity'] + $candidate['extraCopies'];
     }
 
     protected function optionalString(mixed $value): ?string

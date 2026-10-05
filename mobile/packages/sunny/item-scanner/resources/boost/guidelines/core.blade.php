@@ -7,6 +7,7 @@ Identifies the item in a photo with Apple's on-device Foundation Models (iOS 27+
 use Sunny\ItemScanner\Events\CaptureFailed;
 use Sunny\ItemScanner\Events\IdentificationFailed;
 use Sunny\ItemScanner\Events\ItemIdentified;
+use Sunny\ItemScanner\Events\ItemRepeated;
 use Sunny\ItemScanner\Events\PhotoCaptured;
 use Sunny\ItemScanner\Facades\ItemScanner;
 
@@ -26,6 +27,10 @@ $captureId = ItemScanner::capture();
 
 #[On(PhotoCaptured::class)]
 public function photoCaptured(string $id, string $path): void {}
+
+// "+1" in the camera: another copy of the last photo's item.
+#[On(ItemRepeated::class)]
+public function itemRepeated(string $id): void {}
 
 #[On(CaptureFailed::class)]
 public function captureFailed(string $id, string $message): void {}

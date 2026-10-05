@@ -3,8 +3,9 @@ import UIKit
 
 /// A full-screen camera that stays open between shots, so a batch of items
 /// can be photographed one after another. Each photo is sent to PHP as a
-/// PhotoCaptured event the moment it's saved. With `single`, it closes after
-/// the first shot instead.
+/// PhotoCaptured event the moment it's saved, and "+1" sends ItemRepeated to
+/// count another copy of the last item without a new photo. With `single`, it
+/// closes after the first shot instead.
 final class ItemCaptureViewController: UIViewController, AVCapturePhotoCaptureDelegate {
     private let captureId: String
     private let single: Bool
@@ -16,12 +17,17 @@ final class ItemCaptureViewController: UIViewController, AVCapturePhotoCaptureDe
 
     private let shutterButton = UIButton(type: .custom)
     private let doneButton = UIButton(type: .system)
+    private let repeatButton = UIButton(type: .system)
+    private let copiesLabel = UILabel()
     private let countLabel = UILabel()
     private let thumbnailView = UIImageView()
     private let flashView = UIView()
     private let haptics = UIImpactFeedbackGenerator(style: .medium)
+    private let repeatHaptics = UIImpactFeedbackGenerator(style: .light)
 
     private var captured = 0
+    private var savingPhotos = 0
+    private var lastItemCopies = 1
 
     init(captureId: String, single: Bool) {
         self.captureId = captureId
@@ -130,11 +136,29 @@ final class ItemCaptureViewController: UIViewController, AVCapturePhotoCaptureDe
         thumbnailView.layer.borderWidth = 2
         thumbnailView.isHidden = true
 
+        var repeatConfig = UIButton.Configuration.filled()
+        repeatConfig.title = "+1"
+        repeatConfig.cornerStyle = .capsule
+        repeatConfig.baseBackgroundColor = UIColor.black.withAlphaComponent(0.5)
+        repeatConfig.baseForegroundColor = .white
+        repeatButton.configuration = repeatConfig
+        repeatButton.accessibilityLabel = "Add another of the last item"
+        repeatButton.addTarget(self, action: #selector(addCopy), for: .touchUpInside)
+        repeatButton.isHidden = true
+
+        copiesLabel.font = .preferredFont(forTextStyle: .caption1).withBoldTrait()
+        copiesLabel.textColor = .white
+        copiesLabel.textAlignment = .center
+        copiesLabel.backgroundColor = UIColor.black.withAlphaComponent(0.7)
+        copiesLabel.layer.cornerRadius = 10
+        copiesLabel.clipsToBounds = true
+        copiesLabel.isHidden = true
+
         flashView.backgroundColor = .white
         flashView.alpha = 0
         flashView.isUserInteractionEnabled = false
 
-        for control in [flashView, shutterButton, doneButton, countLabel, thumbnailView] {
+        for control in [flashView, shutterButton, doneButton, countLabel, thumbnailView, repeatButton, copiesLabel] {
             control.translatesAutoresizingMaskIntoConstraints = false
             view.addSubview(control)
         }
@@ -157,6 +181,14 @@ final class ItemCaptureViewController: UIViewController, AVCapturePhotoCaptureDe
             thumbnailView.widthAnchor.constraint(equalToConstant: 56),
             thumbnailView.heightAnchor.constraint(equalToConstant: 56),
 
+            repeatButton.centerXAnchor.constraint(equalTo: thumbnailView.centerXAnchor),
+            repeatButton.bottomAnchor.constraint(equalTo: thumbnailView.topAnchor, constant: -12),
+
+            copiesLabel.centerXAnchor.constraint(equalTo: thumbnailView.trailingAnchor, constant: -4),
+            copiesLabel.centerYAnchor.constraint(equalTo: thumbnailView.topAnchor, constant: 4),
+            copiesLabel.heightAnchor.constraint(equalToConstant: 20),
+            copiesLabel.widthAnchor.constraint(greaterThanOrEqualToConstant: 28),
+
             doneButton.trailingAnchor.constraint(equalTo: guide.trailingAnchor, constant: -24),
             doneButton.centerYAnchor.constraint(equalTo: shutterButton.centerYAnchor),
 
@@ -175,6 +207,9 @@ final class ItemCaptureViewController: UIViewController, AVCapturePhotoCaptureDe
             shutterButton.isEnabled = false
         }
 
+        savingPhotos += 1
+        updateRepeatButton()
+
         let settings = photoOutput.availablePhotoCodecTypes.contains(.jpeg)
             ? AVCapturePhotoSettings(format: [AVVideoCodecKey: AVVideoCodecType.jpeg])
             : AVCapturePhotoSettings()
@@ -189,8 +224,27 @@ final class ItemCaptureViewController: UIViewController, AVCapturePhotoCaptureDe
         }
     }
 
+    @objc private func addCopy() {
+        repeatHaptics.impactOccurred()
+
+        lastItemCopies += 1
+        updateCopiesLabel()
+
+        ItemScannerEvents.repeated(id: captureId)
+    }
+
     @objc private func finish() {
         dismiss(animated: true)
+    }
+
+    private func updateRepeatButton() {
+        repeatButton.isHidden = single || captured == 0
+        repeatButton.isEnabled = savingPhotos == 0
+    }
+
+    private func updateCopiesLabel() {
+        copiesLabel.text = "×\(lastItemCopies)"
+        copiesLabel.isHidden = lastItemCopies < 2
     }
 
     // MARK: - AVCapturePhotoCaptureDelegate
@@ -200,6 +254,8 @@ final class ItemCaptureViewController: UIViewController, AVCapturePhotoCaptureDe
             DispatchQueue.main.async { [self] in
                 countLabel.text = "That photo didn't save. Try again."
                 shutterButton.isEnabled = true
+                savingPhotos -= 1
+                updateRepeatButton()
             }
             return
         }
@@ -209,6 +265,10 @@ final class ItemCaptureViewController: UIViewController, AVCapturePhotoCaptureDe
             countLabel.text = captured == 1 ? "1 item" : "\(captured) items"
             thumbnailView.image = UIImage(data: data)?.preparingThumbnail(of: CGSize(width: 112, height: 112))
             thumbnailView.isHidden = false
+            savingPhotos -= 1
+            lastItemCopies = 1
+            updateRepeatButton()
+            updateCopiesLabel()
 
             ItemScannerEvents.captured(id: captureId, path: path)
 
@@ -230,5 +290,15 @@ final class ItemCaptureViewController: UIViewController, AVCapturePhotoCaptureDe
         }
 
         return url.path(percentEncoded: false)
+    }
+}
+
+private extension UIFont {
+    func withBoldTrait() -> UIFont {
+        guard let descriptor = fontDescriptor.withSymbolicTraits(.traitBold) else {
+            return self
+        }
+
+        return UIFont(descriptor: descriptor, size: 0)
     }
 }

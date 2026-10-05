@@ -99,7 +99,7 @@
                             @php
                                 $details = collect([
                                     $category === '' ? $candidate['category'] : null,
-                                    $candidate['quantity'] > 1 ? '×'.$candidate['quantity'] : null,
+                                    $this->quantityOf($candidate) > 1 ? '×'.$this->quantityOf($candidate) : null,
                                 ])->filter()->implode(' · ');
                             @endphp
                             <row key="candidate-{{ $candidate['id'] }}" ref="scan-candidate-{{ $candidate['id'] }}" class="w-full items-center gap-3 py-3 pl-4">

@@ -138,6 +138,10 @@ enum ItemScannerEvents {
         send("Sunny\\ItemScanner\\Events\\PhotoCaptured", ["id": id, "path": path])
     }
 
+    static func repeated(id: String) {
+        send("Sunny\\ItemScanner\\Events\\ItemRepeated", ["id": id])
+    }
+
     static func captureFailed(id: String, message: String) {
         send("Sunny\\ItemScanner\\Events\\CaptureFailed", ["id": id, "message": message])
     }

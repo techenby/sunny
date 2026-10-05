@@ -19,6 +19,7 @@ use Saloon\Http\PendingRequest;
 use Sunny\ItemScanner\Events\CaptureFailed;
 use Sunny\ItemScanner\Events\IdentificationFailed;
 use Sunny\ItemScanner\Events\ItemIdentified;
+use Sunny\ItemScanner\Events\ItemRepeated;
 use Sunny\ItemScanner\Events\PhotoCaptured;
 
 beforeEach(function (): void {
@@ -125,7 +126,7 @@ it('lists each new photo right away, newest first, and sends it to the model wit
     expect($keptPhoto)->toStartWith(ScanDraft::photoDirectory().'/')
         ->and(file_get_contents($keptPhoto))->toBe(file_get_contents($photoPath))
         ->and($screen->get('candidates'))->toBe([
-            ['id' => 1, 'name' => '', 'suggestedName' => '', 'photoPath' => $keptPhoto, 'category' => '', 'quantity' => 1, 'scanId' => $firstScan, 'scanError' => null, 'error' => null],
+            ['id' => 1, 'name' => '', 'suggestedName' => '', 'photoPath' => $keptPhoto, 'category' => '', 'quantity' => 1, 'extraCopies' => 0, 'scanId' => $firstScan, 'scanError' => null, 'error' => null],
         ]);
     $screen->assertNativeCalled('ItemScanner.Identify', fn (array $params): bool => $params === [
         'path' => $keptPhoto, 'id' => $firstScan, 'place' => 'Garage › Tool chest', 'batch' => null, 'batchNames' => [],
@@ -142,6 +143,40 @@ it('lists each new photo right away, newest first, and sends it to the model wit
 
     expect(collect($screen->get('candidates'))->pluck('id')->all())->toBe([2, 1]);
     $screen->assertSee('2 items · 1 identifying…');
+});
+
+it('counts another copy of the last photographed item with +1', function () {
+    Saloon::fake([SaveRecordRequest::class => MockResponse::make(['data' => [
+        'id' => 100, 'team_id' => 1, 'parent_id' => null, 'type' => 'item', 'name' => 'Red bauble', 'metadata' => null,
+    ]], 201)]);
+    [$screen, $scan] = scanPhoto();
+
+    $screen->emitNative(ItemRepeated::class, ['id' => 'scan'])
+        ->emitNative(ItemRepeated::class, ['id' => 'scan'])
+        ->emitNative(ItemIdentified::class, ['id' => $scan, 'item' => ['name' => 'Red bauble', 'category' => 'Decor', 'quantity' => 2]])
+        ->assertSee('Decor · ×4');
+
+    expect($screen->get('candidates')[0])->toMatchArray(['quantity' => 2, 'extraCopies' => 2])
+        ->and(ScanDraft::sole()->candidates[0]['extraCopies'])->toBe(2);
+
+    $screen->tap('scan-submit')
+        ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Add', 'id' => 'add-items']);
+
+    Saloon::assertSent(fn (SaveRecordRequest $request): bool => $request->body()->get('metadata')->value === json_encode(['category' => 'Decor', 'quantity' => '4']));
+});
+
+it('ignores +1 when no photo has been taken or it came from another camera', function () {
+    fakeScanner();
+    $screen = Native::visit('/inventory/scan')
+        ->emitNative(MediaSelected::class, ['success' => true, 'files' => [['path' => '/tmp/a.jpg']]])
+        ->emitNative(ItemRepeated::class, ['id' => 'scan']);
+
+    expect($screen->get('candidates')[0]['extraCopies'])->toBe(0);
+
+    $screen->emitNative(PhotoCaptured::class, ['id' => 'scan', 'path' => '/tmp/b.jpg'])
+        ->emitNative(ItemRepeated::class, ['id' => 'retake-2']);
+
+    expect(collect($screen->get('candidates'))->pluck('extraCopies')->all())->toBe([0, 0]);
 });
 
 it('ignores photos from a camera this screen did not open', function () {
@@ -294,7 +329,7 @@ it('restores drafts saved by earlier versions of the screen', function () {
     $screen = Native::visit('/inventory/scan');
 
     expect($screen->get('candidates'))->toBe([
-        ['suggestedName' => '', 'id' => 1, 'name' => 'Angel ornament', 'photoPath' => '/tmp/angel.jpg', 'category' => '', 'quantity' => 1, 'scanId' => null, 'scanError' => null, 'error' => null],
+        ['suggestedName' => '', 'extraCopies' => 0, 'id' => 1, 'name' => 'Angel ornament', 'photoPath' => '/tmp/angel.jpg', 'category' => '', 'quantity' => 1, 'scanId' => null, 'scanError' => null, 'error' => null],
     ]);
 });
 
