@@ -11,6 +11,7 @@ use App\Models\Routine;
 use App\Models\RoutineOccurrence;
 use App\Models\RoutineOccurrenceStep;
 use App\Models\RoutineStep;
+use App\Models\ScanDraft;
 use App\Models\Team;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
@@ -99,6 +100,7 @@ class SunnyStore
 
         if ($userId === null || $previous === null || (int) $previous !== $userId) {
             PendingWrite::query()->forCurrentServer()->delete();
+            ScanDraft::query()->forCurrentServer()->each(fn (ScanDraft $draft) => $draft->discard());
         }
 
         $this->clear();

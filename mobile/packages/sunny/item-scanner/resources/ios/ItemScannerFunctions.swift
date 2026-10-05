@@ -1,16 +1,18 @@
+import AVFoundation
 import Foundation
 import FoundationModels
 import ImageIO
+import UIKit
 import Vision
 
 // MARK: - ItemScanner Function Namespace
 
-/// Bridge functions for identifying the items in a photo with Apple's
+/// Bridge functions for identifying the item in a photo with Apple's
 /// on-device Foundation Models.
 /// Namespace: "ItemScanner.*"
 ///
 /// Identification runs off the calling thread; results come back to PHP as
-/// ItemsIdentified or IdentificationFailed events carrying the request id.
+/// ItemIdentified or IdentificationFailed events carrying the request id.
 enum ItemScannerFunctions {
 
     // MARK: - ItemScanner.Availability
@@ -33,9 +35,10 @@ enum ItemScannerFunctions {
 
     /// Parameters:
     ///   - id: string - chosen by PHP and echoed back on the result event
-    ///   - path: string - the photo to identify items in
-    ///   - knownNames: [string] - (optional) items already in inventory, for duplicate matching
+    ///   - path: string - the photo to identify the item in
     ///   - place: string - (optional) where the photo was taken, e.g. "Garage › Tool chest"
+    ///   - batch: string - (optional) what the batch of photos is of, e.g. "Christmas ornaments"
+    ///   - batchNames: [string] - (optional) names already given to other items in the batch
     ///
     /// Once there is an id, exactly one result event is sent for it.
     class Identify: BridgeFunction {
@@ -49,8 +52,9 @@ enum ItemScannerFunctions {
                 return BridgeResponse.success(data: ["started": false, "id": id])
             }
 
-            let knownNames = parameters["knownNames"] as? [String] ?? []
             let place = (parameters["place"] as? String).flatMap { $0.isEmpty ? nil : $0 }
+            let batch = (parameters["batch"] as? String).flatMap { $0.isEmpty ? nil : $0 }
+            let batchNames = Array((parameters["batchNames"] as? [String] ?? []).prefix(ItemScannerModel.maxBatchNames))
 
             guard #available(iOS 27.0, *) else {
                 ItemScannerEvents.failed(id: id, message: ItemScannerModel.message(forUnavailable: "unsupportedOS"))
@@ -58,10 +62,63 @@ enum ItemScannerFunctions {
             }
 
             Task.detached(priority: .userInitiated) {
-                await ItemScannerModel.identify(id: id, path: path, knownNames: knownNames, place: place)
+                await ItemScannerModel.identify(id: id, path: path, place: place, batch: batch, batchNames: batchNames)
             }
 
             return BridgeResponse.success(data: ["started": true, "id": id])
+        }
+    }
+
+    // MARK: - ItemScanner.Capture
+
+    /// Parameters:
+    ///   - id: string - chosen by PHP and echoed back on every event
+    ///   - single: bool - (optional) close the camera after one photo
+    ///
+    /// Opens a camera that stays up between shots, sending a PhotoCaptured
+    /// event for each photo, or CaptureFailed when it can't open.
+    class Capture: BridgeFunction {
+        func execute(parameters: [String: Any]) throws -> [String: Any] {
+            guard let id = parameters["id"] as? String, !id.isEmpty else {
+                throw BridgeError.invalidParameters("id is required")
+            }
+
+            let single = parameters["single"] as? Bool ?? false
+
+            switch AVCaptureDevice.authorizationStatus(for: .video) {
+            case .authorized:
+                present(id: id, single: single)
+            case .notDetermined:
+                AVCaptureDevice.requestAccess(for: .video) { granted in
+                    if granted {
+                        self.present(id: id, single: single)
+                    } else {
+                        ItemScannerEvents.captureFailed(id: id, message: ItemScannerModel.cameraDeniedMessage)
+                    }
+                }
+            default:
+                ItemScannerEvents.captureFailed(id: id, message: ItemScannerModel.cameraDeniedMessage)
+            }
+
+            return BridgeResponse.success(data: ["id": id])
+        }
+
+        private func present(id: String, single: Bool) {
+            DispatchQueue.main.async {
+                guard let windowScene = UIApplication.shared.connectedScenes
+                    .compactMap({ $0 as? UIWindowScene })
+                    .first(where: { $0.activationState == .foregroundActive }),
+                      var top = windowScene.windows.first(where: { $0.isKeyWindow })?.rootViewController else {
+                    ItemScannerEvents.captureFailed(id: id, message: "Couldn't open the camera. Try again.")
+                    return
+                }
+
+                while let presented = top.presentedViewController {
+                    top = presented
+                }
+
+                top.present(ItemCaptureViewController(captureId: id, single: single), animated: true)
+            }
         }
     }
 }
@@ -69,12 +126,20 @@ enum ItemScannerFunctions {
 // MARK: - Events
 
 enum ItemScannerEvents {
-    static func identified(id: String, items: [[String: Any]]) {
-        send("Sunny\\ItemScanner\\Events\\ItemsIdentified", ["id": id, "items": items])
+    static func identified(id: String, item: [String: Any]) {
+        send("Sunny\\ItemScanner\\Events\\ItemIdentified", ["id": id, "item": item])
     }
 
     static func failed(id: String, message: String) {
         send("Sunny\\ItemScanner\\Events\\IdentificationFailed", ["id": id, "message": message])
+    }
+
+    static func captured(id: String, path: String) {
+        send("Sunny\\ItemScanner\\Events\\PhotoCaptured", ["id": id, "path": path])
+    }
+
+    static func captureFailed(id: String, message: String) {
+        send("Sunny\\ItemScanner\\Events\\CaptureFailed", ["id": id, "message": message])
     }
 
     private static func send(_ event: String, _ payload: [String: Any]) {
@@ -91,11 +156,13 @@ enum ItemScannerModel {
     /// Larger images cost more of the small context window for little gain.
     static let maxPixelSize = 1024
 
-    /// Cap on the existing-item names sent for duplicate matching, so the
-    /// prompt stays well inside the on-device context window.
-    static let maxKnownNames = 150
+    /// Cap on the batch names sent with each photo, so the prompt stays well
+    /// inside the on-device context window.
+    static let maxBatchNames = 40
 
     static let unreadablePhotoMessage = "Couldn't read that photo. Try taking it again."
+
+    static let cameraDeniedMessage = "Allow camera access for Sunny in Settings to scan items."
 
     static func unavailableReason() -> String? {
         guard #available(iOS 27.0, *) else {
@@ -119,7 +186,7 @@ enum ItemScannerModel {
     }
 
     @available(iOS 27.0, *)
-    static func identify(id: String, path: String, knownNames: [String], place: String?) async {
+    static func identify(id: String, path: String, place: String?, batch: String?, batchNames: [String]) async {
         if let reason = unavailableReason() {
             ItemScannerEvents.failed(id: id, message: message(forUnavailable: reason))
             return
@@ -131,46 +198,36 @@ enum ItemScannerModel {
         }
 
         let session = LanguageModelSession(tools: tools(), instructions: instructions)
-        let names = Array(knownNames.prefix(maxKnownNames))
 
         do {
-            let response = try await session.respond(generating: ScannedItems.self) {
-                prompt(knownNames: names, place: place)
+            let response = try await session.respond(generating: ScannedItem.self) {
+                prompt(place: place, batch: batch, batchNames: batchNames)
                 Attachment(image)
             }
 
-            let items = response.content.items.compactMap { item -> [String: Any]? in
-                let name = item.name.trimmingCharacters(in: .whitespacesAndNewlines)
+            let item = response.content
 
-                guard !name.isEmpty else {
-                    return nil
-                }
-
-                return [
-                    "name": name,
-                    "category": item.category,
-                    "brand": item.brand ?? NSNull(),
-                    "model": item.model ?? NSNull(),
-                    "quantity": max(1, item.quantity),
-                    "existingMatch": item.existingMatch.flatMap { names.contains($0) ? $0 : nil } ?? NSNull(),
-                ]
-            }
-
-            ItemScannerEvents.identified(id: id, items: items)
+            ItemScannerEvents.identified(id: id, item: [
+                "name": item.name.trimmingCharacters(in: .whitespacesAndNewlines),
+                "category": item.category,
+                "brand": item.brand ?? NSNull(),
+                "model": item.model ?? NSNull(),
+                "quantity": max(1, item.quantity),
+            ])
         } catch let error as LanguageModelSession.GenerationError {
             ItemScannerEvents.failed(id: id, message: message(for: error))
         } catch {
-            ItemScannerEvents.failed(id: id, message: "Couldn't identify the items in that photo. Try again.")
+            ItemScannerEvents.failed(id: id, message: "Couldn't identify that item. Type a name instead.")
         }
     }
 
     static let instructions = """
         You catalog the contents of a home for a household inventory app. \
-        Look at the photo and list each distinct physical object someone would want to keep track of. \
-        Ignore furniture, walls, floors, shelving and other fixtures unless they are clearly the subject. \
-        Use short, plain names a person would search for, like "Cordless drill" or "Cast iron skillet". \
+        Each photo shows one thing someone wants to keep track of. Identify the main subject of the photo. \
+        Ignore the background, furniture, walls, floors, shelving and other fixtures unless they are clearly the subject. \
+        Use a short, plain name a person would search for, like "Cordless drill" or "Cast iron skillet". \
         Only give a brand or model when it is printed on the item or unmistakable; read printed labels with the OCR tool when you have one. \
-        List identical items once and set the quantity instead.
+        When several identical items are the subject, set the quantity instead of describing them separately.
         """
 
     /// The OCR tool helps read brand and model names off labels. It lives in
@@ -184,16 +241,19 @@ enum ItemScannerModel {
         #endif
     }
 
-    static func prompt(knownNames: [String], place: String?) -> String {
-        var lines = ["List the items in this photo."]
+    static func prompt(place: String?, batch: String?, batchNames: [String]) -> String {
+        var lines = ["Identify the item in this photo."]
 
         if let place {
             lines.append("The photo was taken in: \(place).")
         }
 
-        if !knownNames.isEmpty {
-            lines.append("These items are already in the inventory there. When an item in the photo is one of them, set existingMatch to its exact name:")
-            lines.append(contentsOf: knownNames.map { "- \($0)" })
+        if let batch {
+            lines.append("It is one of a batch of \(batch). Name what sets this one apart from the rest, like its color, material, shape, or design.")
+        }
+
+        if !batchNames.isEmpty {
+            lines.append("Other items in the batch are already named: \(batchNames.joined(separator: "; ")). Give this one a different name unless it is clearly the same kind of thing.")
         }
 
         return lines.joined(separator: "\n")
@@ -234,27 +294,20 @@ enum ItemScannerModel {
     static func message(for error: LanguageModelSession.GenerationError) -> String {
         switch error {
         case .exceededContextWindowSize:
-            return "That photo has too much going on. Try a closer shot of fewer items."
+            return "That photo has too much going on. Try a closer shot of the item."
         case .guardrailViolation, .refusal:
-            return "Apple Intelligence couldn't describe that photo. Try a different shot."
+            return "Apple Intelligence couldn't describe that photo. Type a name or retake it."
         case .assetsUnavailable:
             return "Apple Intelligence is still getting ready. Try again in a few minutes."
         case .rateLimited, .concurrentRequests:
             return "Apple Intelligence is busy. Wait a moment and try again."
         default:
-            return "Couldn't identify the items in that photo. Try again."
+            return "Couldn't identify that item. Type a name instead."
         }
     }
 }
 
 // MARK: - Structured output
-
-@available(iOS 27.0, *)
-@Generable
-struct ScannedItems {
-    @Guide(description: "Every distinct item worth tracking in the photo", .maximumCount(25))
-    var items: [ScannedItem]
-}
 
 @available(iOS 27.0, *)
 @Generable
@@ -273,7 +326,4 @@ struct ScannedItem {
 
     @Guide(description: "How many of this item are visible", .range(1...99))
     var quantity: Int
-
-    @Guide(description: "The exact name from the existing inventory list when this is the same item")
-    var existingMatch: String?
 }

@@ -1,47 +1,72 @@
 <?php
 
 use App\Http\Integrations\Sunny\Requests\SaveRecordRequest;
+use App\Http\Integrations\Sunny\SunnyStore;
 use App\Models\Item;
 use App\Models\PendingWrite;
+use App\Models\ScanDraft;
 use App\NativeComponents\ScanInventory;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\File;
-use Native\Mobile\Events\Camera\PhotoTaken;
+use Native\Mobile\Events\Alert\ButtonPressed;
 use Native\Mobile\Events\Gallery\MediaSelected;
 use Native\Mobile\Testing\Native;
 use Native\Mobile\Testing\TestableComponent;
 use Saloon\Http\Faking\MockResponse;
 use Saloon\Http\PendingRequest;
+use Sunny\ItemScanner\Events\CaptureFailed;
 use Sunny\ItemScanner\Events\IdentificationFailed;
-use Sunny\ItemScanner\Events\ItemsIdentified;
+use Sunny\ItemScanner\Events\ItemIdentified;
+use Sunny\ItemScanner\Events\PhotoCaptured;
 
 beforeEach(function (): void {
     seedSunnyData();
 });
 
-afterEach(fn () => File::delete(storage_path('framework/testing/shelf.jpg')));
+afterEach(function (): void {
+    File::delete(storage_path('framework/testing/shelf.jpg'));
+    File::deleteDirectory(ScanDraft::photoDirectory());
+});
 
-/**
- * Open the scan screen with the on-device model ready and run one photo
- * through it, so the test can deliver the model's answer.
- *
- * @return array{0: TestableComponent, 1: string, 2: string}
- */
-function scanPhoto(array $data = []): array
+function fakeScanner(): void
 {
     Native::fakeBridge()
         ->respondTo('ItemScanner.Availability', ['available' => true, 'reason' => null])
         ->respondTo('SecureStorage.Get', ['value' => 'saved-token']);
+}
+
+/**
+ * @return array{0: TestableComponent, 1: string, 2: string}
+ */
+function scanPhoto(array $data = []): array
+{
+    fakeScanner();
     $photo = UploadedFile::fake()->image('shelf.jpg');
     $photoPath = storage_path('framework/testing/shelf.jpg');
     File::ensureDirectoryExists(dirname($photoPath));
     File::copy($photo->getPathname(), $photoPath);
 
     $screen = Native::visit('/inventory/scan', $data)
-        ->emitNative(PhotoTaken::class, ['path' => $photoPath]);
+        ->emitNative(PhotoCaptured::class, ['id' => 'scan', 'path' => $photoPath]);
 
-    return [$screen, array_key_first($screen->get('pendingScans')), $photoPath];
+    return [$screen, $screen->get('candidates')[0]['scanId'], $photoPath];
+}
+
+/**
+ * @param  list<string>  $names
+ */
+function scanNamedPhotos(array $names): TestableComponent
+{
+    [$screen, $scan] = scanPhoto();
+    $screen->emitNative(ItemIdentified::class, ['id' => $scan, 'item' => ['name' => array_shift($names)]]);
+
+    foreach ($names as $name) {
+        $screen->emitNative(PhotoCaptured::class, ['id' => 'scan', 'path' => '/tmp/'.$name.'.jpg']);
+        $screen->emitNative(ItemIdentified::class, ['id' => $screen->get('candidates')[0]['scanId'], 'item' => ['name' => $name]]);
+    }
+
+    return $screen;
 }
 
 it('explains why scanning is unavailable instead of offering the camera', function (?array $availability, string $message) {
@@ -55,7 +80,7 @@ it('explains why scanning is unavailable instead of offering the camera', functi
 
     Native::visit('/inventory/scan')
         ->assertSee($message)
-        ->assertDontSee('Take photo');
+        ->assertDontSee('What are you scanning?');
 })->with([
     'android' => [null, 'Scanning uses Apple Intelligence, so it only works on iPhone for now.'],
     'older iOS' => [['available' => false, 'reason' => 'unsupportedOS'], 'Scanning needs iOS 27 or later. Update your iPhone to use it.'],
@@ -84,72 +109,188 @@ it('scans into the container it was opened from', function () {
         ->assertSee('Tool chest');
 });
 
-it('sends a new photo to the model with the place and what is already there', function () {
-    [$screen, , $photoPath] = scanPhoto(['parent' => 7]);
-
-    $screen->assertNativeCalled('ItemScanner.Identify', fn (array $params): bool => $params['path'] === $photoPath
-        && $params['place'] === 'Garage › Tool chest'
-        && $params['knownNames'] === ['Cordless drill', 'Tape measure'])
-        ->assertSee('Identifying items in 1 photo…');
-});
-
-it('asks the gallery for several images and scans each one', function () {
-    Native::fakeBridge()->respondTo('ItemScanner.Availability', ['available' => true, 'reason' => null]);
+it('opens a camera that stays open between shots', function () {
+    fakeScanner();
 
     Native::visit('/inventory/scan')
+        ->tap('scan-take-photos')
+        ->assertNativeCalled('ItemScanner.Capture', fn (array $params): bool => $params === ['id' => 'scan', 'single' => false]);
+});
+
+it('lists each new photo right away, newest first, and sends it to the model with the batch', function () {
+    [$screen, $firstScan, $photoPath] = scanPhoto(['parent' => 7]);
+    $keptPhoto = $screen->get('candidates')[0]['photoPath'];
+
+    expect($keptPhoto)->toStartWith(ScanDraft::photoDirectory().'/')
+        ->and(file_get_contents($keptPhoto))->toBe(file_get_contents($photoPath))
+        ->and($screen->get('candidates'))->toBe([
+            ['id' => 1, 'name' => '', 'nameEdited' => false, 'photoPath' => $keptPhoto, 'category' => '', 'brand' => null, 'model' => null, 'quantity' => 1, 'scanId' => $firstScan, 'scanError' => null, 'error' => null],
+        ]);
+    $screen->assertNativeCalled('ItemScanner.Identify', fn (array $params): bool => $params === [
+        'path' => $keptPhoto, 'id' => $firstScan, 'place' => 'Garage › Tool chest', 'batch' => null, 'batchNames' => [],
+    ])
+        ->assertSee('1 item · 1 identifying…')
+        ->assertSee('Add 1 item');
+
+    $screen->call('updateBatch', ' Christmas ornaments ')
+        ->emitNative(ItemIdentified::class, ['id' => $firstScan, 'item' => ['name' => 'Glass snowman']])
+        ->emitNative(PhotoCaptured::class, ['id' => 'scan', 'path' => '/tmp/second.jpg'])
+        ->assertNativeCalled('ItemScanner.Identify', fn (array $params): bool => $params['path'] === '/tmp/second.jpg'
+            && $params['batch'] === 'Christmas ornaments'
+            && $params['batchNames'] === ['Glass snowman']);
+
+    expect(collect($screen->get('candidates'))->pluck('id')->all())->toBe([2, 1]);
+    $screen->assertSee('2 items · 1 identifying…');
+});
+
+it('ignores photos from a camera this screen did not open', function () {
+    [$screen] = scanPhoto();
+
+    $screen->emitNative(PhotoCaptured::class, ['id' => 'someone-else', 'path' => '/tmp/other.jpg']);
+
+    expect($screen->get('candidates'))->toHaveCount(1);
+});
+
+it('explains when the camera could not open', function () {
+    fakeScanner();
+
+    Native::visit('/inventory/scan')
+        ->emitNative(CaptureFailed::class, ['id' => 'scan', 'message' => 'Allow camera access for Sunny in Settings to scan items.'])
+        ->assertSee('Allow camera access for Sunny in Settings to scan items.');
+});
+
+it('lists each image chosen from the gallery and scans it', function () {
+    fakeScanner();
+
+    $screen = Native::visit('/inventory/scan')
         ->tap('scan-choose-photos')
         ->assertNativeCalled('Camera.PickMedia', fn (array $params): bool => $params['mediaType'] === 'image' && $params['multiple'] === true)
         ->emitNative(MediaSelected::class, ['success' => true, 'files' => [['path' => '/tmp/a.jpg'], ['path' => '/tmp/b.jpg']]])
         ->assertNativeCalled('ItemScanner.Identify', fn (array $params): bool => $params['path'] === '/tmp/a.jpg')
-        ->assertNativeCalled('ItemScanner.Identify', fn (array $params): bool => $params['path'] === '/tmp/b.jpg')
-        ->assertSee('Identifying items in 2 photos…');
+        ->assertNativeCalled('ItemScanner.Identify', fn (array $params): bool => $params['path'] === '/tmp/b.jpg');
+
+    expect(collect($screen->get('candidates'))->pluck('photoPath')->all())->toBe(['/tmp/b.jpg', '/tmp/a.jpg']);
 });
 
-it('folds repeat sightings into one find and leaves likely duplicates unchecked', function () {
-    [$screen, $firstScan, $firstPhoto] = scanPhoto(['parent' => 7]);
-    $secondScan = array_key_last($screen->emitNative(PhotoTaken::class, ['path' => '/tmp/closer.jpg'])->get('pendingScans'));
+it('fills in the name and details the model found', function () {
+    [$screen, $scan] = scanPhoto();
 
-    $screen
-        ->emitNative(ItemsIdentified::class, ['id' => $firstScan, 'items' => [
-            ['name' => 'Hammer', 'category' => 'Tools', 'brand' => null, 'model' => null, 'quantity' => 1, 'existingMatch' => null],
-            ['name' => 'Tape measure', 'category' => 'Tools', 'brand' => 'Stanley', 'model' => null, 'quantity' => 1, 'existingMatch' => 'Tape measure'],
-        ]])
-        ->emitNative(ItemsIdentified::class, ['id' => $secondScan, 'items' => [
-            ['name' => 'hammer', 'category' => 'Tools', 'brand' => 'Estwing', 'model' => 'E3-16C', 'quantity' => 2, 'existingMatch' => null],
-        ]]);
+    $screen->emitNative(ItemIdentified::class, ['id' => $scan, 'item' => [
+        'name' => 'Hammer', 'category' => 'Tools', 'brand' => 'Estwing', 'model' => 'E3-16C', 'quantity' => 2,
+    ]]);
 
-    expect($screen->get('candidates'))->toBe([
-        ['id' => 1, 'name' => 'Hammer', 'photoPath' => $firstPhoto, 'category' => 'Tools', 'brand' => 'Estwing', 'model' => 'E3-16C', 'quantity' => 2, 'existingMatch' => null, 'selected' => true, 'error' => null],
-        ['id' => 2, 'name' => 'Tape measure', 'photoPath' => $firstPhoto, 'category' => 'Tools', 'brand' => 'Stanley', 'model' => null, 'quantity' => 1, 'existingMatch' => 'Tape measure', 'selected' => false, 'error' => null],
+    expect($screen->get('candidates')[0])->toMatchArray([
+        'name' => 'Hammer', 'nameEdited' => false, 'category' => 'Tools', 'brand' => 'Estwing', 'model' => 'E3-16C', 'quantity' => 2, 'scanId' => null, 'scanError' => null,
     ]);
-    $screen->assertSet('pendingScans', [])
-        ->assertSee('Estwing · E3-16C · ×2')
-        ->assertSee('Might already be here as “Tape measure”')
-        ->assertSee('Add 1 item');
+    $screen->assertSee('Estwing · E3-16C · ×2')
+        ->assertSee('1 item')
+        ->assertDontSee('identifying…');
+});
+
+it('keeps a name the user is typing when the model answers', function () {
+    [$screen, $scan] = scanPhoto();
+
+    $screen->call('renameCandidate', 1, 'F')
+        ->emitNative(ItemIdentified::class, ['id' => $scan, 'item' => ['name' => 'Hammer', 'category' => 'Tools']]);
+
+    expect($screen->get('candidates')[0])->toMatchArray(['name' => 'F', 'category' => 'Tools', 'scanId' => null]);
 });
 
 it('ignores results for scans this screen did not start', function () {
-    [$screen] = scanPhoto();
+    [$screen, $scan] = scanPhoto();
 
-    $screen->emitNative(ItemsIdentified::class, ['id' => 'someone-else', 'items' => [['name' => 'Hammer']]])
-        ->assertSet('candidates', [])
-        ->assertSee('Identifying items in 1 photo…');
+    $screen->emitNative(ItemIdentified::class, ['id' => 'someone-else', 'item' => ['name' => 'Hammer']]);
+
+    expect($screen->get('candidates')[0])->toMatchArray(['name' => '', 'scanId' => $scan]);
 });
 
-it('tells the user when a photo could not be read or had nothing in it', function (string $event, array $payload, string $message) {
+it('keeps the photo in the list when the model could not name it', function (string $event, array $payload, string $message) {
     [$screen, $scan] = scanPhoto();
 
     $screen->emitNative($event, ['id' => $scan, ...$payload])
-        ->assertSet('pendingScans', [])
-        ->assertSee($message)
-        ->tap('scan-errors-dismiss')
-        ->assertDontSee($message);
+        ->assertSee($message);
+
+    expect($screen->get('candidates')[0])->toMatchArray(['name' => '', 'scanId' => null, 'scanError' => $message]);
 })->with([
     'failure' => [IdentificationFailed::class, ['message' => 'Turn on Apple Intelligence in Settings to scan items.'], 'Turn on Apple Intelligence in Settings to scan items.'],
-    'empty' => [ItemsIdentified::class, ['items' => []], 'No items found in that photo. Try getting closer.'],
+    'no name' => [ItemIdentified::class, ['item' => ['name' => '  ']], 'Couldn’t tell what that is. Type a name instead.'],
 ]);
 
-it('adds the checked finds to Sunny under the chosen place with their details and photo', function () {
+it('retakes a photo and identifies it again without losing a typed name', function () {
+    [$screen, $firstScan] = scanPhoto();
+    $firstPhoto = $screen->get('candidates')[0]['photoPath'];
+
+    $screen->call('renameCandidate', 1, 'Framing hammer')
+        ->tap('scan-candidate-1-retake')
+        ->assertNativeCalled('ItemScanner.Capture', fn (array $params): bool => $params === ['id' => 'retake-1', 'single' => true])
+        ->emitNative(PhotoCaptured::class, ['id' => 'retake-1', 'path' => '/tmp/closer.jpg'])
+        ->assertNativeCalled('ItemScanner.Identify', fn (array $params): bool => $params['path'] === '/tmp/closer.jpg');
+
+    $secondScan = $screen->get('candidates')[0]['scanId'];
+    $screen->emitNative(ItemIdentified::class, ['id' => $firstScan, 'item' => ['name' => 'Rock', 'category' => 'Outdoors']])
+        ->emitNative(ItemIdentified::class, ['id' => $secondScan, 'item' => ['name' => 'Hammer', 'category' => 'Tools']]);
+
+    expect($screen->get('candidates'))->toHaveCount(1)
+        ->and($screen->get('candidates')[0])->toMatchArray(['name' => 'Framing hammer', 'photoPath' => '/tmp/closer.jpg', 'category' => 'Tools', 'scanId' => null])
+        ->and($firstPhoto)->not->toBeFile();
+});
+
+it('removes an item and its photo from the list', function () {
+    $screen = scanNamedPhotos(['Hammer', 'Level']);
+    $hammerPhoto = $screen->get('candidates')[1]['photoPath'];
+
+    $screen->tap('scan-candidate-1-remove')
+        ->assertSee('Add 1 item');
+
+    expect(collect($screen->get('candidates'))->pluck('name')->all())->toBe(['Level'])
+        ->and($hammerPhoto)->not->toBeFile();
+});
+
+it('picks up where it left off after the screen is closed', function () {
+    [$screen, $scan] = scanPhoto(['parent' => 7]);
+    $screen->call('updateBatch', 'Christmas ornaments')
+        ->call('updateCategory', 'Holiday')
+        ->call('renameCandidate', 1, 'Glass snowman')
+        ->emitNative(PhotoCaptured::class, ['id' => 'scan', 'path' => '/tmp/reindeer.jpg']);
+
+    $reopened = Native::visit('/inventory/scan')
+        ->assertSet('parentId', 7)
+        ->assertSet('batch', 'Christmas ornaments')
+        ->assertSet('category', 'Holiday')
+        ->assertSet('nextCandidateId', 3);
+
+    expect(collect($reopened->get('candidates'))->pluck('name', 'id')->all())->toBe([2 => '', 1 => 'Glass snowman'])
+        ->and($reopened->get('candidates')[0]['scanId'])->not->toBeNull()->not->toBe($screen->get('candidates')[0]['scanId']);
+    $reopened->assertNativeCalled('ItemScanner.Identify', fn (array $params): bool => $params['path'] === '/tmp/reindeer.jpg' && $params['id'] === $reopened->get('candidates')[0]['scanId']);
+});
+
+it('starts over after confirming', function () {
+    $screen = scanNamedPhotos(['Hammer']);
+    $photo = $screen->get('candidates')[0]['photoPath'];
+
+    $screen->tap('scan-start-over')
+        ->assertNativeCalled('Dialog.Alert', fn (array $params): bool => $params['id'] === 'start-over')
+        ->emitNative(ButtonPressed::class, ['index' => 0, 'label' => 'Cancel', 'id' => 'start-over']);
+    expect($screen->get('candidates'))->toHaveCount(1);
+
+    $screen->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Start over', 'id' => 'start-over'])
+        ->assertSet('candidates', []);
+
+    expect(ScanDraft::count())->toBe(0)
+        ->and($photo)->not->toBeFile();
+});
+
+it('forgets drafts when a different account signs in', function () {
+    $screen = scanNamedPhotos(['Hammer']);
+    $photo = $screen->get('candidates')[0]['photoPath'];
+
+    app(SunnyStore::class)->startSession(999);
+
+    expect(ScanDraft::count())->toBe(0)
+        ->and($photo)->not->toBeFile();
+});
+
+it('adds every item to Sunny under the chosen place with its details and photo', function () {
     $nextId = 100;
     Saloon::fake([SaveRecordRequest::class => function (PendingRequest $request) use (&$nextId): MockResponse {
         return MockResponse::make(['data' => [
@@ -159,12 +300,11 @@ it('adds the checked finds to Sunny under the chosen place with their details an
     }]);
     [$screen, $scan, $photoPath] = scanPhoto(['parent' => 7]);
 
-    $screen->emitNative(ItemsIdentified::class, ['id' => $scan, 'items' => [
-        ['name' => 'Hammer', 'category' => 'Tools', 'brand' => 'Estwing', 'model' => null, 'quantity' => 2, 'existingMatch' => null],
-        ['name' => 'Level', 'category' => '', 'brand' => null, 'model' => null, 'quantity' => 1, 'existingMatch' => null],
-        ['name' => 'Tape measure', 'category' => 'Tools', 'brand' => null, 'model' => null, 'quantity' => 1, 'existingMatch' => 'Tape measure'],
-    ]])
+    $screen->emitNative(ItemIdentified::class, ['id' => $scan, 'item' => ['name' => 'Hammer', 'category' => 'Tools', 'brand' => 'Estwing', 'model' => null, 'quantity' => 2]])
+        ->emitNative(PhotoCaptured::class, ['id' => 'scan', 'path' => $photoPath])
+        ->emitNative(ItemIdentified::class, ['id' => $screen->get('candidates')[0]['scanId'], 'item' => ['name' => 'Level', 'category' => '', 'brand' => null, 'model' => null, 'quantity' => 1]])
         ->call('renameCandidate', 2, 'Torpedo level')
+        ->call('updateCategory', '')
         ->tap('scan-submit')
         ->assertSet('error', '')
         ->assertReplacedWith('/inventory/7');
@@ -183,16 +323,32 @@ it('adds the checked finds to Sunny under the chosen place with their details an
         'name' => 'Torpedo level', 'type' => 'item', 'parent_id' => '7', 'metadata' => 'null',
         'photo' => file_get_contents($photoPath),
     ]);
-    expect(Item::whereIn('id', [100, 101])->where('parent_id', 7)->pluck('name')->all())->toBe(['Hammer', 'Torpedo level']);
+    expect(Item::whereIn('id', [100, 101])->where('parent_id', 7)->pluck('name')->all())->toBe(['Hammer', 'Torpedo level'])
+        ->and(ScanDraft::count())->toBe(0)
+        ->and(File::files(ScanDraft::photoDirectory()))->toBe([]);
 });
 
-it('still adds a find whose photo has since been cleared from the phone', function () {
+it('uses the batch category for every item', function () {
+    Saloon::fake([SaveRecordRequest::class => MockResponse::make(['data' => [
+        'id' => 100, 'team_id' => 1, 'parent_id' => null, 'type' => 'item', 'name' => 'Glass snowman', 'metadata' => null,
+    ]], 201)]);
+    [$screen, $scan] = scanPhoto();
+
+    $screen->call('updateCategory', 'Holiday')
+        ->emitNative(ItemIdentified::class, ['id' => $scan, 'item' => ['name' => 'Glass snowman', 'category' => 'Decor']])
+        ->tap('scan-submit')
+        ->assertSet('error', '');
+
+    Saloon::assertSent(fn (SaveRecordRequest $request): bool => $request->body()->get('metadata')->value === json_encode(['category' => 'Holiday']));
+});
+
+it('still adds an item whose photo has since been cleared from the phone', function () {
     Saloon::fake([SaveRecordRequest::class => MockResponse::make(['data' => [
         'id' => 100, 'team_id' => 1, 'parent_id' => null, 'type' => 'item', 'name' => 'Hammer', 'metadata' => null,
     ]], 201)]);
-    [$screen, $scan, $photoPath] = scanPhoto();
-    $screen->emitNative(ItemsIdentified::class, ['id' => $scan, 'items' => [['name' => 'Hammer']]]);
-    File::delete($photoPath);
+    [$screen, $scan] = scanPhoto();
+    $screen->emitNative(ItemIdentified::class, ['id' => $scan, 'item' => ['name' => 'Hammer']]);
+    File::delete($screen->get('candidates')[0]['photoPath']);
 
     $screen->tap('scan-submit')
         ->assertSet('error', '')
@@ -203,7 +359,7 @@ it('still adds a find whose photo has since been cleared from the phone', functi
     ]);
 });
 
-it('adds every checked find and flags the one Sunny refuses', function () {
+it('adds every item and flags the one Sunny refuses', function () {
     $responses = [
         MockResponse::make(['data' => ['id' => 100, 'team_id' => 1, 'parent_id' => null, 'type' => 'item', 'name' => 'Hammer', 'metadata' => null]], 201),
         MockResponse::make([], 403),
@@ -212,9 +368,7 @@ it('adds every checked find and flags the one Sunny refuses', function () {
     Saloon::fake([SaveRecordRequest::class => function () use (&$responses): MockResponse {
         return array_shift($responses);
     }]);
-    [$screen, $scan] = scanPhoto();
-
-    $screen->emitNative(ItemsIdentified::class, ['id' => $scan, 'items' => [['name' => 'Hammer'], ['name' => 'Level'], ['name' => 'Saw']]])
+    scanNamedPhotos(['Hammer', 'Level', 'Saw'])
         ->tap('scan-submit')
         ->assertSet('error', '')
         ->assertReplacedWith('/inventory');
@@ -225,18 +379,22 @@ it('adds every checked find and flags the one Sunny refuses', function () {
     Native::visit('/inventory/'.PendingWrite::sole()->record_id)->assertSee('Level')->assertSee('Not saved to Sunny');
 });
 
-it('refuses to add nothing or an unnamed item', function (array $changes, string $message) {
+it('refuses to add nothing, an unnamed item, or one still being identified', function (?string $name, array $changes, string $message) {
     Saloon::fake([]);
     [$screen, $scan] = scanPhoto();
 
-    $screen->emitNative(ItemsIdentified::class, ['id' => $scan, 'items' => [['name' => 'Hammer']]])
-        ->call(...$changes)
+    if ($name !== null) {
+        $screen->emitNative(ItemIdentified::class, ['id' => $scan, 'item' => ['name' => $name]]);
+    }
+
+    $screen->call(...$changes)
         ->call('save')
         ->assertNoNavigation()
         ->assertSet('error', $message);
 
     Saloon::assertNothingSent();
 })->with([
-    'nothing checked' => [['toggleCandidate', 1, false], 'Choose at least one item to add.'],
-    'blank name' => [['renameCandidate', 1, '   '], 'Give every item a name.'],
+    'nothing left' => ['Hammer', ['removeCandidate', 1], 'Take a photo of at least one item.'],
+    'blank name' => ['Hammer', ['renameCandidate', 1, '   '], 'Give every item a name.'],
+    'still identifying' => [null, ['renameCandidate', 1, ''], 'Some items are still being identified. Wait a moment or name them yourself.'],
 ]);

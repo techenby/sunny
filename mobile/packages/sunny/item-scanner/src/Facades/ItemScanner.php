@@ -6,7 +6,8 @@ use Illuminate\Support\Facades\Facade;
 
 /**
  * @method static array{available: bool, reason: string|null} availability()
- * @method static string identify(string $path, array $knownNames = [], ?string $place = null, ?string $id = null)
+ * @method static string identify(string $path, ?string $place = null, ?string $batch = null, array $batchNames = [], ?string $id = null)
+ * @method static string capture(?string $id = null, bool $single = false)
  *
  * @see \Sunny\ItemScanner\ItemScanner
  */
