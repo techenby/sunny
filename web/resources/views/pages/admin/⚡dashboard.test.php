@@ -99,13 +99,14 @@ test('it gives each team a stable identifier across cards', function () {
 test('it orders teams by their most recently active member', function () {
     $stale = User::factory()->create(['last_active_at' => now()->subDays(3)]);
     $fresh = User::factory()->create(['last_active_at' => now()->subMinutes(5)]);
-    User::factory()->create(['last_active_at' => null]);
+    $neverActive = User::factory()->create(['last_active_at' => null]);
 
     $fresh->currentTeam->members()->attach($stale, ['role' => TeamRole::Member->value]);
+    $fresh->currentTeam->members()->attach($neverActive, ['role' => TeamRole::Member->value]);
 
     Livewire::test('pages::admin.dashboard')
         ->assertViewHas('recentlyActiveTeams', fn ($teams) => $teams->count() === 2
-            && $teams[0]['members'] === 2
+            && $teams[0]['members'] === 3
             && $teams[0]['last_active_at']->isSameMinute(now()->subMinutes(5))
             && $teams[1]['members'] === 1);
 });
@@ -124,4 +125,14 @@ test('it reports the share of teams using each feature', function () {
             && $features['Recipes'] === ['teams' => 1, 'percent' => 25]
             && $features['Kiosks'] === ['teams' => 1, 'percent' => 25]
             && $features['Routines'] === ['teams' => 0, 'percent' => 0]);
+});
+
+test('the signups chart uses whole number ticks', function () {
+    Livewire::test('pages::admin.dashboard')
+        ->assertViewHas('signupTicks', [0, 1]);
+
+    User::factory()->count(9)->create();
+
+    Livewire::test('pages::admin.dashboard')
+        ->assertViewHas('signupTicks', [0, 3, 6, 9]);
 });

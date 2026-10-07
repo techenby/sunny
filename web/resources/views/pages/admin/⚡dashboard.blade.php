@@ -20,7 +20,8 @@ new class extends Component {
             'newUserCount' => User::where('created_at', '>=', $since)->count(),
             'weeklyActiveCount' => User::where('last_active_at', '>=', now()->subDays(7))->count(),
             'monthlyActiveCount' => User::where('last_active_at', '>=', $since)->count(),
-            'signups' => $this->signups($since),
+            'signups' => $signups = $this->signups($since),
+            'signupTicks' => $this->wholeNumberTicks(collect($signups)->max('signups')),
             'mostActiveTeams' => $this->mostActiveTeams($since),
             'recentlyActiveTeams' => $this->recentlyActiveTeams(),
             'featureAdoption' => $this->featureAdoption(),
@@ -41,6 +42,14 @@ new class extends Component {
                 return ['date' => $date, 'signups' => $counts->get($date, 0)];
             })
             ->all();
+    }
+
+    /** @return array<int, int> */
+    protected function wholeNumberTicks(int $max): array
+    {
+        $step = max(1, (int) ceil($max / 4));
+
+        return range(0, max($step, (int) ceil($max / $step) * $step), $step);
     }
 
     protected function mostActiveTeams(CarbonImmutable $since): Collection
@@ -87,9 +96,9 @@ new class extends Component {
             ->join('users', 'users.id', '=', 'team_members.user_id')
             ->join('teams', 'teams.id', '=', 'team_members.team_id')
             ->whereNull('teams.deleted_at')
-            ->whereNotNull('users.last_active_at')
             ->selectRaw('team_members.team_id, max(users.last_active_at) as last_active_at, count(*) as members')
             ->groupBy('team_members.team_id')
+            ->havingRaw('max(users.last_active_at) is not null')
             ->orderByDesc('last_active_at')
             ->limit(10)
             ->get()
@@ -174,7 +183,7 @@ new class extends Component {
                         <flux:chart.axis.line />
                     </flux:chart.axis>
 
-                    <flux:chart.axis axis="y" tick-start="0" :format="['maximumFractionDigits' => 0]">
+                    <flux:chart.axis axis="y" :tick-values="$signupTicks">
                         <flux:chart.axis.grid />
                         <flux:chart.axis.tick />
                     </flux:chart.axis>
