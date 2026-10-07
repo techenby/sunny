@@ -90,6 +90,7 @@ erDiagram
 		datetime two_factor_confirmed_at  ""
 		integer current_team_id FK ""
 		varchar remember_token  ""
+		datetime last_active_at  ""
 		datetime created_at  ""
 		datetime updated_at  ""
 	}

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Middleware\RestrictKioskSession;
 use App\Http\Middleware\SetTeamUrlDefaults;
+use App\Http\Middleware\TrackLastActivity;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -19,6 +20,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             SetTeamUrlDefaults::class,
             RestrictKioskSession::class,
+            TrackLastActivity::class,
+        ]);
+
+        $middleware->api(append: [
+            TrackLastActivity::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
