@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Mcp\Servers;
 
+use App\Mcp\Prompts\FindItem;
+use App\Mcp\Prompts\MorningCheckIn;
+use App\Mcp\Prompts\PlanMeals;
 use App\Mcp\Tools\Calendar\CreateCalendarFeed;
 use App\Mcp\Tools\Calendar\DeleteCalendarFeed;
 use App\Mcp\Tools\Calendar\GetCalendarEvents;
@@ -163,5 +166,14 @@ class SunnyServer extends Server
     protected array $resources = [];
 
     /** @var array<int, class-string<Prompt>> */
-    protected array $prompts = [];
+    protected array $prompts = [
+        PlanMeals::class,
+        MorningCheckIn::class,
+        FindItem::class,
+    ];
+
+    protected function boot(): void
+    {
+        $this->addCapability(self::CAPABILITY_COMPLETIONS);
+    }
 }

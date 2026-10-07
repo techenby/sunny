@@ -156,3 +156,9 @@ test('the test server registers every tool directly', function () {
 
     expect($tools)->toHaveCount(50)->each->toBeString();
 });
+
+test('the server lists its prompts', function () {
+    $prompts = collect(mcp(User::factory()->create(), 'prompts/list')->assertOk()->json('result.prompts'))->pluck('name');
+
+    expect($prompts->all())->toBe(['plan-meals', 'morning-check-in', 'find-item']);
+});
