@@ -13,7 +13,7 @@ API, and MCP server can share the same behavior.
 flowchart LR
     Web[Livewire web UI] --> Access[Policies and validation]
     API[Sanctum HTTP API] --> Access
-    MCP[Laravel MCP tools] --> Access
+    MCP[Laravel MCP tools via OAuth or Sanctum] --> Access
     Access --> Actions[Application actions]
     Actions --> Models[Eloquent models]
     Models --> Database[(Database)]
@@ -67,6 +67,9 @@ php artisan routines:generate --days=7
 Production must run Laravel's scheduler for this warm-up to occur. The command
 uses `withoutOverlapping()` and can safely be run manually after a deployment.
 
+The scheduler also clears old tokens daily: `sanctum:prune-expired --hours=24`
+for API tokens and `passport:purge --hours=24` for OAuth tokens.
+
 ## Queues, files, and integrations
 
 - Team invitation mail implements `ShouldQueue`; production needs a queue
@@ -75,6 +78,9 @@ uses `withoutOverlapping()` and can safely be run manually after a deployment.
   returns temporary photo URLs rather than storage paths.
 - Calendar feeds are fetched from external ICS URLs and parsed with
   `sabre/vobject`.
+- MCP clients authenticate with Passport OAuth or Sanctum API tokens. OAuth
+  needs `PASSPORT_PRIVATE_KEY` and `PASSPORT_PUBLIC_KEY` in production; see
+  [MCP Setup](/docs/developers/mcp/setup).
 - Mapbox powers address autocomplete and OpenWeather powers the kiosk weather
   tile when their keys are configured.
 
