@@ -8,7 +8,6 @@ use App\Enums\Appearance;
 use App\Models\Team;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Str;
 
 /**
  * @extends Factory<Team>
@@ -18,11 +17,8 @@ class TeamFactory extends Factory
     /** @return array<string, mixed> */
     public function definition(): array
     {
-        $name = fake()->unique()->company();
-
         return [
-            'name' => $name,
-            'slug' => Str::slug($name),
+            'name' => fake()->unique()->company(),
             'is_personal' => false,
             'timezone' => 'America/Chicago',
             'week_start' => Carbon::SUNDAY,
