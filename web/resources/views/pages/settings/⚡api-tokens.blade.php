@@ -107,9 +107,9 @@ new #[Title('API tokens settings')] class extends Component {
 
     <flux:heading class="sr-only">{{ __('API tokens settings') }}</flux:heading>
 
-    <x-pages::settings.layout :heading="__('API tokens')" :subheading="__('Connect external apps, like Claude, Raycast, or Claude Code, to your account')">
+    <x-pages::settings.layout :heading="__('API tokens')" :subheading="__('Connect AI assistants to Sunny, and create tokens for the HTTP API')">
         <form wire:submit="createToken" class="my-6 flex w-full items-end gap-2">
-            <flux:input wire:model="name" :label="__('Token name')" type="text" :placeholder="__('e.g. Raycast, Claude')" class="flex-1" data-test="token-name-input" />
+            <flux:input wire:model="name" :label="__('Token name')" type="text" :placeholder="__('e.g. Home automation')" class="flex-1" data-test="token-name-input" />
 
             <flux:select wire:model="expiration" :label="__('Expires')" variant="listbox" class="max-w-40" data-test="token-expiration-select">
                 @foreach (TokenLifetime::cases() as $lifetime)
@@ -276,30 +276,9 @@ new #[Title('API tokens settings')] class extends Component {
                     <flux:input :value="url('/mcp')" readonly copyable />
                 </div>
 
-                <flux:heading size="sm" class="mt-6">{{ __('Claude, ChatGPT, and other apps that support OAuth') }}</flux:heading>
+                <flux:text class="mt-3">{{ __("Add it as a custom connector or MCP server in Claude, ChatGPT, Raycast, Claude Code, or any app that supports OAuth. You'll be asked to log in to Sunny and allow access, and the app will then appear under Connected apps.") }}</flux:text>
 
-                <flux:text class="mt-2">{{ __("Add a custom connector with the URL above. You'll be asked to log in to Sunny and allow access, and no token is needed. The app will then appear under Connected apps.") }}</flux:text>
-
-                <flux:heading size="sm" class="mt-6">{{ __('Apps that use a token') }}</flux:heading>
-
-                <flux:text class="mt-2">{{ __('Create a token above and send it as a bearer token.') }}</flux:text>
-
-                <flux:heading size="sm" class="mt-6">{{ __('Raycast') }}</flux:heading>
-
-                <flux:text class="mt-2">{{ __('In Raycast, open "Manage MCP Servers", add a new server, and use this configuration (replace <token> with your token):') }}</flux:text>
-
-                <pre class="mt-2 overflow-x-auto rounded-lg bg-zinc-100 p-4 text-sm dark:bg-zinc-800"><code>{
-    "url": "{{ url('/mcp') }}",
-    "headers": {
-        "Authorization": "Bearer &lt;token&gt;"
-    }
-}</code></pre>
-
-                <flux:heading size="sm" class="mt-6">{{ __('Claude Code') }}</flux:heading>
-
-                <flux:text class="mt-2">{{ __('Run this command in your terminal (replace <token> with your token):') }}</flux:text>
-
-                <pre class="mt-2 overflow-x-auto rounded-lg bg-zinc-100 p-4 text-sm dark:bg-zinc-800"><code>claude mcp add --transport http sunny {{ url('/mcp') }} --header "Authorization: Bearer &lt;token&gt;"</code></pre>
+                <flux:text class="mt-3">{{ __('API tokens only work with the HTTP API, not the MCP server.') }}</flux:text>
             </div>
         </div>
     </x-pages::settings.layout>

@@ -15,27 +15,22 @@ An assistant acts as you. It can see and change your recipes, inventory,
 calendars, lists, routines, and team settings, but only on teams you belong
 to. It can't change your password, two-factor authentication, or account.
 
-## Connect with Claude, ChatGPT, or another app that supports OAuth
+## Connect an assistant
+
+Sunny works with Claude, ChatGPT, Raycast, Claude Code, and other apps that
+can sign in to an MCP server with OAuth.
 
 1. In Sunny, open **Settings → API tokens** and copy the MCP server address
    under **Connecting to the MCP server**.
-2. In your assistant, add a custom connector and paste that address.
+2. In your assistant, add a custom connector or MCP server and paste that
+   address.
 3. When the assistant asks you to sign in, log in to Sunny.
 4. Review what the app will be able to do, then select **Allow access**.
 
 The app then appears under **Connected apps** on the API tokens page.
 
-## Connect with an app that uses a token
-
-Some apps, such as Raycast, ask for a token instead of signing you in:
-
-1. Open **Settings → API tokens**.
-2. Enter a name for the token, such as `Raycast`, and choose when it expires.
-3. Select **Create**, then copy the token. Sunny only shows it once.
-4. Paste the token into the app's settings. The API tokens page has setup
-   steps for Raycast and Claude Code.
-
-Treat a token like a password. Anyone who has it can use Sunny as you.
+API tokens on the same page are for developers using Sunny's HTTP API. They
+can't be used to connect an AI assistant.
 
 ## Choose which team it works on
 
@@ -59,9 +54,6 @@ Some assistants show these as commands you can pick:
 
 ## Disconnect an assistant
 
-- To disconnect an app you signed in to, open **Settings → API tokens** and
-  select **Disconnect** next to it under **Connected apps**.
-- To stop an app that uses a token, select **Revoke** next to its token under
-  **Active tokens**.
-
-Either way, the app loses access right away. You can connect it again later.
+Open **Settings → API tokens** and select **Disconnect** next to the app under
+**Connected apps**. The app loses access right away. You can connect it again
+later.

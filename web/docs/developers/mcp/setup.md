@@ -1,6 +1,6 @@
 ---
 title: MCP Setup
-description: Connect MCP clients to Sunny with OAuth or an API token, and work on the MCP server locally.
+description: Connect MCP clients to Sunny with OAuth, and work on the MCP server locally.
 order: 5
 ---
 
@@ -13,23 +13,19 @@ Sunny exposes a Laravel MCP server at `/mcp`. The server is registered in
 Route::middleware('throttle:30,1')->group(fn () => Mcp::oauthRoutes());
 
 Mcp::web('/mcp', SunnyServer::class)
-    ->middleware(['auth:sanctum,api', 'throttle:60,1']);
+    ->middleware(['auth:api', 'throttle:60,1']);
 ```
 
 ## Authentication
 
-The server accepts two kinds of bearer token:
+The server only accepts OAuth 2.1 access tokens issued by Passport, through
+the `api` guard. Clients such as Claude, ChatGPT, Raycast, and Claude Code
+connect by having the user log in to Sunny and approve access.
 
-| Client | How it authenticates | Guard |
-| --- | --- | --- |
-| Claude, ChatGPT, and other clients that support OAuth | OAuth 2.1 with PKCE. The user logs in to Sunny and approves access. | `api` (Passport) |
-| Raycast, Claude Code with a header, scripts | A personal API token from **Settings → API tokens**. | `sanctum` |
+Sanctum API tokens from **Settings → API tokens** are for the
+[HTTP API](/docs/developers/http-api) and the mobile app. `/mcp` rejects them.
 
-The guard order matters. Passport clears the `Authorization` header when a
-token isn't a JWT it issued, so `sanctum` must be tried first, or personal API
-tokens stop working.
-
-### OAuth
+### OAuth endpoints
 
 `Mcp::oauthRoutes()` registers the discovery and client registration
 endpoints, and Passport provides the authorize and token endpoints:
@@ -60,22 +56,6 @@ upgrade that changes this fails the tests.
 Users can see and disconnect OAuth apps under **Connected apps** on the API
 tokens settings page. Disconnecting revokes that app's access and refresh
 tokens.
-
-### API tokens
-
-1. Sign in to Sunny.
-2. Open **Settings → API tokens**.
-3. Enter a token name, such as `Raycast` or `MCP Inspector`, and choose when it
-   expires.
-4. Select **Create**, then copy the token. It is only shown once.
-
-Send it as a bearer token:
-
-```http
-Authorization: Bearer YOUR_API_TOKEN
-```
-
-Treat the token like a password. Anyone with it can use Sunny as you.
 
 ## Tools and prompts
 
@@ -132,12 +112,6 @@ Then run `/mcp` in Claude Code, choose **sunny**, and select **Authenticate**.
 Your browser opens Sunny's consent screen. After you allow access, the app
 appears under **Connected apps**.
 
-To use an API token instead:
-
-```bash
-claude mcp add --transport http sunny https://sunny.test/mcp --header "Authorization: Bearer YOUR_API_TOKEN"
-```
-
 If your Herd site uses a different host, keep the `/mcp` path and change the
 domain.
 
@@ -176,8 +150,9 @@ token that was already issued.
 php artisan test --compact tests/Feature/Mcp
 ```
 
-- `tests/Feature/Mcp/SunnyServerTest.php` checks authentication, the listed
-  tools, the catalog, and the prompts.
+- `tests/Feature/Mcp/SunnyServerTest.php` checks authentication, including
+  that API tokens are rejected, the listed tools, the catalog, and the
+  prompts.
 - `tests/Feature/Mcp/OAuthTest.php` checks discovery, registration, consent,
   the code exchange, and an MCP call made with the OAuth token.
 - Tests for catalog tools use `Tests\Feature\Mcp\SunnyTestServer`, which
@@ -185,10 +160,10 @@ php artisan test --compact tests/Feature/Mcp
 
 ## Troubleshooting
 
-- **`401 Unauthorized`**: for an API token, confirm it hasn't expired and is
-  sent as `Authorization: Bearer ...`. For OAuth, reconnect the app. If OAuth
-  fails for everyone, check that the Passport keys are present and haven't
-  changed.
+- **`401 Unauthorized`**: reconnect the app so it gets a new OAuth token. An
+  API token from settings always gets a `401` here, because `/mcp` only
+  accepts OAuth. If OAuth fails for everyone, check that the Passport keys are
+  present and haven't changed.
 - **Empty or unexpected data**: check the user's current team. Tools act on
   that team, and every account also has a personal team that is often empty.
 - **A redirect to the login page instead of a `401`**: the request didn't ask

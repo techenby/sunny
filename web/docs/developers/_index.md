@@ -15,6 +15,6 @@ Use these pages when developing or integrating with Sunny.
 - [HTTP API](/docs/developers/http-api): Authenticate with Sanctum and work with
   recipe, inventory, list, routine, and synchronization endpoints.
 - [MCP Setup](/docs/developers/mcp/setup): Connect an MCP client to Sunny with
-  OAuth or an API token, and work on the MCP server locally.
+  OAuth, and work on the MCP server locally.
 - [Database ERD](/docs/developers/database): Review Sunny's tables and
   relationships.

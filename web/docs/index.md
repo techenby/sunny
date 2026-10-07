@@ -35,4 +35,4 @@ everyday information.
   application layers, team scoping, queues, scheduling, and integrations.
 - [HTTP API](/docs/developers/http-api): Integrate with Sunny through Sanctum.
 - [MCP Setup](/docs/developers/mcp/setup): Connect an MCP client to Sunny with
-  OAuth or an API token.
+  OAuth.

@@ -9,4 +9,4 @@ use Laravel\Mcp\Facades\Mcp;
 Route::middleware('throttle:30,1')->group(fn () => Mcp::oauthRoutes());
 
 Mcp::web('/mcp', SunnyServer::class)
-    ->middleware(['auth:sanctum,api', 'throttle:60,1']);
+    ->middleware(['auth:api', 'throttle:60,1']);
