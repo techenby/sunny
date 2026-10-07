@@ -5,6 +5,8 @@ use Flux\Flux;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
+use Laravel\Passport\Passport;
+use Laravel\Passport\Token;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -45,6 +47,24 @@ new #[Title('API tokens settings')] class extends Component {
         Flux::toast(variant: 'success', text: __('Token revoked.'));
     }
 
+    public function disconnectApp(string $clientId): void
+    {
+        Passport::token()->newQuery()
+            ->where('user_id', Auth::id())
+            ->where('client_id', $clientId)
+            ->where('revoked', false)
+            ->each(function (Token $token): void {
+                $token->revoke();
+                $token->refreshToken?->revoke();
+            });
+
+        unset($this->connectedApps);
+
+        Flux::modals()->close();
+
+        Flux::toast(variant: 'success', text: __('App disconnected.'));
+    }
+
     public function dismissPlainTextToken(): void
     {
         $this->plainTextToken = null;
@@ -58,6 +78,28 @@ new #[Title('API tokens settings')] class extends Component {
     {
         return Auth::user()->tokens()->latest()->get();
     }
+
+    /**
+     * @return Collection<int, array{client_id: string, name: string, connected_at: \Carbon\CarbonInterface}>
+     */
+    #[Computed]
+    public function connectedApps(): Collection
+    {
+        return Passport::token()->newQuery()
+            ->where('user_id', Auth::id())
+            ->where('revoked', false)
+            ->with('client')
+            ->get()
+            ->filter(fn (Token $token): bool => $token->client !== null && ! $token->client->revoked)
+            ->groupBy('client_id')
+            ->map(fn (Collection $tokens): array => [
+                'client_id' => (string) $tokens->first()->client_id,
+                'name' => $tokens->first()->client->name,
+                'connected_at' => $tokens->min('created_at'),
+            ])
+            ->sortBy('name')
+            ->values();
+    }
 }; ?>
 
 <section class="w-full">
@@ -65,7 +107,7 @@ new #[Title('API tokens settings')] class extends Component {
 
     <flux:heading class="sr-only">{{ __('API tokens settings') }}</flux:heading>
 
-    <x-pages::settings.layout :heading="__('API tokens')" :subheading="__('Create tokens to connect external apps, like Raycast or Claude Code, to your account')">
+    <x-pages::settings.layout :heading="__('API tokens')" :subheading="__('Connect external apps, like Claude, Raycast, or Claude Code, to your account')">
         <form wire:submit="createToken" class="my-6 flex w-full items-end gap-2">
             <flux:input wire:model="name" :label="__('Token name')" type="text" :placeholder="__('e.g. Raycast, Claude')" class="flex-1" data-test="token-name-input" />
 
@@ -168,13 +210,79 @@ new #[Title('API tokens settings')] class extends Component {
             <flux:separator variant="subtle" />
 
             <div>
+                <flux:heading>{{ __('Connected apps') }}</flux:heading>
+
+                @if ($this->connectedApps->isEmpty())
+                    <flux:text class="mt-3">{{ __("You haven't connected any apps yet.") }}</flux:text>
+                @else
+                    <flux:table class="mt-3">
+                        <flux:table.columns>
+                            <flux:table.column>{{ __('App') }}</flux:table.column>
+                            <flux:table.column>{{ __('Connected') }}</flux:table.column>
+                            <flux:table.column></flux:table.column>
+                        </flux:table.columns>
+
+                        <flux:table.rows>
+                            @foreach ($this->connectedApps as $app)
+                                <flux:table.row wire:key="app-{{ $app['client_id'] }}">
+                                    <flux:table.cell variant="strong">{{ $app['name'] }}</flux:table.cell>
+                                    <flux:table.cell>{{ $app['connected_at']->diffForHumans() }}</flux:table.cell>
+                                    <flux:table.cell align="end">
+                                        <flux:modal.trigger name="disconnect-app-{{ $app['client_id'] }}">
+                                            <flux:button variant="danger" size="sm" data-test="disconnect-app-button">
+                                                {{ __('Disconnect') }}
+                                            </flux:button>
+                                        </flux:modal.trigger>
+                                    </flux:table.cell>
+                                </flux:table.row>
+                            @endforeach
+                        </flux:table.rows>
+                    </flux:table>
+
+                    @foreach ($this->connectedApps as $app)
+                        <flux:modal name="disconnect-app-{{ $app['client_id'] }}" class="max-w-lg" wire:key="disconnect-app-modal-{{ $app['client_id'] }}">
+                            <div class="space-y-6">
+                                <div>
+                                    <flux:heading size="lg">{{ __('Disconnect ":name"?', ['name' => $app['name']]) }}</flux:heading>
+
+                                    <flux:subheading>
+                                        {{ __('It will immediately lose access to your account. You can connect it again later.') }}
+                                    </flux:subheading>
+                                </div>
+
+                                <div class="flex justify-end space-x-2 rtl:space-x-reverse">
+                                    <flux:modal.close>
+                                        <flux:button variant="filled">{{ __('Cancel') }}</flux:button>
+                                    </flux:modal.close>
+
+                                    <flux:button variant="danger" wire:click="disconnectApp('{{ $app['client_id'] }}')" data-test="confirm-disconnect-app-button">
+                                        {{ __('Disconnect') }}
+                                    </flux:button>
+                                </div>
+                            </div>
+                        </flux:modal>
+                    @endforeach
+                @endif
+            </div>
+
+            <flux:separator variant="subtle" />
+
+            <div>
                 <flux:heading>{{ __('Connecting to the MCP server') }}</flux:heading>
 
-                <flux:text class="mt-3">{{ __('Use your token as a bearer token to connect to the MCP server at:') }}</flux:text>
+                <flux:text class="mt-3">{{ __('The MCP server is at:') }}</flux:text>
 
                 <div class="mt-2">
                     <flux:input :value="url('/mcp')" readonly copyable />
                 </div>
+
+                <flux:heading size="sm" class="mt-6">{{ __('Claude, ChatGPT, and other apps that support OAuth') }}</flux:heading>
+
+                <flux:text class="mt-2">{{ __("Add a custom connector with the URL above. You'll be asked to log in to Sunny and allow access, and no token is needed. The app will then appear under Connected apps.") }}</flux:text>
+
+                <flux:heading size="sm" class="mt-6">{{ __('Apps that use a token') }}</flux:heading>
+
+                <flux:text class="mt-2">{{ __('Create a token above and send it as a bearer token.') }}</flux:text>
 
                 <flux:heading size="sm" class="mt-6">{{ __('Raycast') }}</flux:heading>
 

@@ -1,6 +1,10 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Support\Str;
+use Laravel\Passport\Client;
+use Laravel\Passport\ClientRepository;
+use Laravel\Passport\Passport;
 use Livewire\Livewire;
 
 test('api tokens page is displayed', function () {
@@ -121,4 +125,71 @@ test('the expiration options come from the token lifetimes', function () {
     Livewire::actingAs(User::factory()->create())
         ->test('pages::settings.api-tokens')
         ->assertSeeInOrder(['30 days', '90 days', '1 year', 'Never']);
+});
+
+function connectApp(User $user, string $name): Client
+{
+    $client = resolve(ClientRepository::class)->createAuthorizationCodeGrantClient(
+        name: $name,
+        redirectUris: ['https://example.com/callback'],
+        confidential: false,
+    );
+
+    $token = Passport::token()->forceFill([
+        'id' => Str::random(40),
+        'user_id' => $user->id,
+        'client_id' => $client->getKey(),
+        'scopes' => ['mcp:use'],
+        'revoked' => false,
+        'expires_at' => now()->addDay(),
+    ]);
+    $token->save();
+
+    Passport::refreshToken()->forceFill([
+        'id' => Str::random(40),
+        'access_token_id' => $token->id,
+        'revoked' => false,
+        'expires_at' => now()->addDays(90),
+    ])->save();
+
+    return $client;
+}
+
+test('connected oauth apps are listed', function () {
+    $user = User::factory()->create();
+    connectApp($user, 'Acme Assistant');
+    connectApp(User::factory()->create(), 'Initech Bot');
+
+    Livewire::actingAs($user)
+        ->test('pages::settings.api-tokens')
+        ->assertSee('Acme Assistant')
+        ->assertDontSee('Initech Bot');
+});
+
+test('user can disconnect an oauth app', function () {
+    $user = User::factory()->create();
+    $acme = connectApp($user, 'Acme Assistant');
+    $globex = connectApp($user, 'Globex Helper');
+
+    Livewire::actingAs($user)
+        ->test('pages::settings.api-tokens')
+        ->call('disconnectApp', (string) $acme->getKey())
+        ->assertDontSee('Acme Assistant')
+        ->assertSee('Globex Helper');
+
+    expect(Passport::token()->where('client_id', $acme->getKey())->where('revoked', false)->exists())->toBeFalse()
+        ->and(Passport::refreshToken()->whereIn('access_token_id', Passport::token()->where('client_id', $acme->getKey())->pluck('id'))->where('revoked', false)->exists())->toBeFalse()
+        ->and(Passport::token()->where('client_id', $globex->getKey())->where('revoked', false)->exists())->toBeTrue();
+});
+
+test('users cannot disconnect another user\'s app', function () {
+    $user = User::factory()->create();
+    $other = User::factory()->create();
+    $client = connectApp($other, 'Acme Assistant');
+
+    Livewire::actingAs($user)
+        ->test('pages::settings.api-tokens')
+        ->call('disconnectApp', (string) $client->getKey());
+
+    expect(Passport::token()->where('user_id', $other->id)->where('revoked', false)->exists())->toBeTrue();
 });
