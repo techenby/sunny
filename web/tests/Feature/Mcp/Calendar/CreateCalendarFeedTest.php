@@ -1,14 +1,14 @@
 <?php
 
 use App\Enums\CalendarColor;
-use App\Mcp\Servers\SunnyServer;
 use App\Mcp\Tools\Calendar\CreateCalendarFeed;
 use App\Models\User;
+use Tests\Feature\Mcp\SunnyTestServer;
 
 test('it creates a calendar feed for the current team', function () {
     $user = User::factory()->create();
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(CreateCalendarFeed::class, [
             'name' => 'Crew Calendar',
             'url' => 'https://example.com/crew.ics',
@@ -28,7 +28,7 @@ test('it creates a calendar feed for the current team', function () {
 test('it requires a name, url, and color', function () {
     $user = User::factory()->create();
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(CreateCalendarFeed::class, [])
         ->assertHasErrors();
 
@@ -38,7 +38,7 @@ test('it requires a name, url, and color', function () {
 test('it rejects a color that is not one of the calendar colors', function () {
     $user = User::factory()->create();
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(CreateCalendarFeed::class, [
             'name' => 'Crew Calendar',
             'url' => 'https://example.com/crew.ics',
@@ -50,7 +50,7 @@ test('it rejects a color that is not one of the calendar colors', function () {
 test('it rejects an invalid url', function () {
     $user = User::factory()->create();
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(CreateCalendarFeed::class, [
             'name' => 'Crew Calendar',
             'url' => 'not-a-url',

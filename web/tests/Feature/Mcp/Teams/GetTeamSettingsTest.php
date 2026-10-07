@@ -1,12 +1,12 @@
 <?php
 
 use App\Enums\Appearance;
-use App\Mcp\Servers\SunnyServer;
 use App\Mcp\Tools\Teams\GetTeamSettings;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Testing\Fluent\AssertableJson;
+use Tests\Feature\Mcp\SunnyTestServer;
 
 test('it returns the current team settings', function () {
     $team = Team::factory()->create([
@@ -26,7 +26,7 @@ test('it returns the current team settings', function () {
     ]);
     $user = User::factory()->memberOf($team)->create();
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(GetTeamSettings::class)
         ->assertOk()
         ->assertStructuredContent(fn (AssertableJson $json) => $json
@@ -50,7 +50,7 @@ test('it returns the current team settings', function () {
 test('it returns a null address when none is set', function () {
     $user = User::factory()->create();
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(GetTeamSettings::class)
         ->assertOk()
         ->assertStructuredContent(fn (AssertableJson $json) => $json
@@ -64,7 +64,7 @@ test('it does not return settings for other teams', function () {
     $user = User::factory()->create();
     Team::factory()->create(['timezone' => 'Europe/Paris']);
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(GetTeamSettings::class)
         ->assertOk()
         ->assertDontSee('Europe/Paris');

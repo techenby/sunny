@@ -1,10 +1,10 @@
 <?php
 
-use App\Mcp\Servers\SunnyServer;
 use App\Mcp\Tools\Teams\ListKioskDevices;
 use App\Models\KioskDevice;
 use App\Models\User;
 use Illuminate\Testing\Fluent\AssertableJson;
+use Tests\Feature\Mcp\SunnyTestServer;
 
 test('it lists paired devices for the current team, most recently seen first', function () {
     $user = User::factory()->create();
@@ -22,7 +22,7 @@ test('it lists paired devices for the current team, most recently seen first', f
     KioskDevice::factory()->pending()->create();
     KioskDevice::factory()->paired()->create(['name' => 'Marine HQ']);
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(ListKioskDevices::class)
         ->assertOk()
         ->assertDontSee(['Marine HQ', $older->uuid, $older->last_ip])
@@ -41,7 +41,7 @@ test('it lists paired devices for the current team, most recently seen first', f
 test('it returns an empty list when no devices are paired', function () {
     $user = User::factory()->create();
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(ListKioskDevices::class)
         ->assertOk()
         ->assertStructuredContent(['count' => 0, 'devices' => []]);

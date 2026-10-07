@@ -1,18 +1,18 @@
 <?php
 
-use App\Mcp\Servers\SunnyServer;
 use App\Mcp\Tools\Routines\CreateRoutine;
 use App\Models\Routine;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Testing\Fluent\AssertableJson;
+use Tests\Feature\Mcp\SunnyTestServer;
 
 test('it creates a routine with steps starting today in the team timezone', function () {
     $this->travelTo(CarbonImmutable::parse('2026-09-30 23:30', 'America/Chicago'));
 
     $user = User::factory()->create(['name' => 'Ada']);
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(CreateRoutine::class, [
             'name' => 'Morning routine',
             'user_id' => $user->id,
@@ -50,7 +50,7 @@ test('it creates a routine with steps starting today in the team timezone', func
 test('it creates a paused household routine with a start date', function () {
     $user = User::factory()->create();
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(CreateRoutine::class, [
             'name' => 'Change filters',
             'time_of_day' => 'anytime',
@@ -74,7 +74,7 @@ test('it creates a paused household routine with a start date', function () {
 test('it requires weekdays for weekly routines', function () {
     $user = User::factory()->create();
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(CreateRoutine::class, [
             'name' => 'Trash day',
             'time_of_day' => 'evening',
@@ -88,7 +88,7 @@ test('it requires weekdays for weekly routines', function () {
 test('it rejects invalid weekdays', function () {
     $user = User::factory()->create();
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(CreateRoutine::class, [
             'name' => 'Trash day',
             'time_of_day' => 'evening',
@@ -101,7 +101,7 @@ test('it rejects invalid weekdays', function () {
 test('it requires a day of month for monthly routines', function () {
     $user = User::factory()->create();
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(CreateRoutine::class, [
             'name' => 'Pay rent',
             'time_of_day' => 'anytime',
@@ -113,7 +113,7 @@ test('it requires a day of month for monthly routines', function () {
 test('it requires a name, time of day and frequency', function () {
     $user = User::factory()->create();
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(CreateRoutine::class)
         ->assertHasErrors();
 });
@@ -122,7 +122,7 @@ test('it cannot assign a routine to someone outside the team', function () {
     $user = User::factory()->create();
     $outsider = User::factory()->create();
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(CreateRoutine::class, [
             'name' => 'Morning routine',
             'user_id' => $outsider->id,

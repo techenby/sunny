@@ -1,18 +1,18 @@
 <?php
 
 use App\Enums\TeamRole;
-use App\Mcp\Servers\SunnyServer;
 use App\Mcp\Tools\Teams\ListTeams;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Testing\Fluent\AssertableJson;
+use Tests\Feature\Mcp\SunnyTestServer;
 
 test('it lists the teams the user belongs to with their role', function () {
     $user = User::factory()->create(['name' => 'Luffy']);
     $crew = Team::factory()->create(['name' => 'Straw Hats']);
     $crew->members()->attach($user, ['role' => TeamRole::Admin->value]);
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(ListTeams::class)
         ->assertOk()
         ->assertStructuredContent(fn (AssertableJson $json) => $json
@@ -38,7 +38,7 @@ test('it does not list teams the user is not on', function () {
     $user = User::factory()->create();
     Team::factory()->create(['name' => 'Marines']);
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(ListTeams::class)
         ->assertOk()
         ->assertDontSee('Marines');

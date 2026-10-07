@@ -2,12 +2,12 @@
 
 use App\Enums\Appearance;
 use App\Enums\TeamRole;
-use App\Mcp\Servers\SunnyServer;
 use App\Mcp\Tools\Teams\UpdateTeamSettings;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Testing\Fluent\AssertableJson;
+use Tests\Feature\Mcp\SunnyTestServer;
 
 $fullAddress = [
     'address' => '1 Sunny Deck',
@@ -22,7 +22,7 @@ test('it updates only the provided settings', function () {
     $user = User::factory()->create();
     $team = $user->currentTeam;
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(UpdateTeamSettings::class, [
             'timezone' => 'Asia/Tokyo',
             'week_start' => Carbon::MONDAY,
@@ -48,7 +48,7 @@ test('it updates only the provided settings', function () {
 test('it updates appearance and rotation', function () {
     $user = User::factory()->create();
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(UpdateTeamSettings::class, ['appearance' => 'light', 'rotation' => 270])
         ->assertOk();
 
@@ -60,7 +60,7 @@ test('it updates appearance and rotation', function () {
 test('it sets a full address', function () use ($fullAddress) {
     $user = User::factory()->create();
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(UpdateTeamSettings::class, ['address' => [...$fullAddress, 'lat' => 35.6762, 'long' => 139.6503]])
         ->assertOk()
         ->assertStructuredContent(fn (AssertableJson $json) => $json
@@ -74,7 +74,7 @@ test('it merges a partial address into the existing address', function () use ($
     $user = User::factory()->create();
     $user->currentTeam->update(['address' => $fullAddress]);
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(UpdateTeamSettings::class, ['address' => ['city' => 'Enies Lobby']])
         ->assertOk();
 
@@ -84,7 +84,7 @@ test('it merges a partial address into the existing address', function () use ($
 test('it rejects a partial address when the team has no address yet', function () {
     $user = User::factory()->create();
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(UpdateTeamSettings::class, ['address' => ['city' => 'Water 7']])
         ->assertHasErrors(['The address is incomplete. Also provide: address, state, zip, lat, long.']);
 
@@ -94,7 +94,7 @@ test('it rejects a partial address when the team has no address yet', function (
 test('it validates the settings', function (array $arguments, string $message) {
     $user = User::factory()->create();
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(UpdateTeamSettings::class, $arguments)
         ->assertHasErrors([$message]);
 })->with([
@@ -108,7 +108,7 @@ test('it validates the settings', function (array $arguments, string $message) {
 test('it requires at least one field', function () {
     $user = User::factory()->create();
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(UpdateTeamSettings::class)
         ->assertHasErrors(['Provide at least one field to update']);
 });
@@ -119,7 +119,7 @@ test('members without the update permission cannot change settings', function ()
     $team->members()->attach($user, ['role' => TeamRole::Member->value]);
     $user->switchTeam($team);
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(UpdateTeamSettings::class, ['timezone' => 'Asia/Tokyo'])
         ->assertHasErrors(['This action is unauthorized.']);
 
@@ -130,7 +130,7 @@ test('it does not change other teams', function () {
     $user = User::factory()->create();
     $otherTeam = Team::factory()->create(['timezone' => 'America/Chicago']);
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(UpdateTeamSettings::class, ['timezone' => 'Asia/Tokyo'])
         ->assertOk();
 

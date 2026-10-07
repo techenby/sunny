@@ -1,17 +1,17 @@
 <?php
 
-use App\Mcp\Servers\SunnyServer;
 use App\Mcp\Tools\Inventory\DuplicateItem;
 use App\Models\Item;
 use App\Models\User;
 use Illuminate\Testing\Fluent\AssertableJson;
+use Tests\Feature\Mcp\SunnyTestServer;
 
 test('it duplicates an item once by default', function () {
     $user = User::factory()->create();
     $garage = Item::factory()->location()->for($user->currentTeam)->create(['name' => 'Garage']);
     $item = Item::factory()->item()->childOf($garage)->create(['name' => 'Hammer', 'photo_path' => null]);
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(DuplicateItem::class, ['id' => $item->id])
         ->assertOk()
         ->assertStructuredContent(fn (AssertableJson $json) => $json
@@ -29,7 +29,7 @@ test('it creates the requested number of copies', function () {
     $user = User::factory()->create();
     $item = Item::factory()->for($user->currentTeam)->create(['name' => 'Hammer', 'photo_path' => null]);
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(DuplicateItem::class, ['id' => $item->id, 'count' => 3])
         ->assertOk()
         ->assertStructuredContent(fn (AssertableJson $json) => $json
@@ -43,7 +43,7 @@ test('it rejects a count outside 1 to 25', function (int $count) {
     $user = User::factory()->create();
     $item = Item::factory()->for($user->currentTeam)->create();
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(DuplicateItem::class, ['id' => $item->id, 'count' => $count])
         ->assertHasErrors(['The count must be between 1 and 25.']);
 })->with([0, 26]);
@@ -52,7 +52,7 @@ test('it cannot duplicate items from other teams', function () {
     $user = User::factory()->create();
     $item = Item::factory()->create();
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(DuplicateItem::class, ['id' => $item->id])
         ->assertHasErrors(['Item not found.']);
 

@@ -1,16 +1,16 @@
 <?php
 
-use App\Mcp\Servers\SunnyServer;
 use App\Mcp\Tools\Recipes\UpdateRecipeSharing;
 use App\Models\Recipe;
 use App\Models\User;
 use Illuminate\Testing\Fluent\AssertableJson;
+use Tests\Feature\Mcp\SunnyTestServer;
 
 test('it enables sharing and returns the public url', function () {
     $user = User::factory()->create();
     $recipe = Recipe::factory()->for($user->currentTeam)->create(['name' => 'Chocolate Cake', 'share_token' => null]);
 
-    $response = SunnyServer::actingAs($user)
+    $response = SunnyTestServer::actingAs($user)
         ->tool(UpdateRecipeSharing::class, ['id' => $recipe->id, 'shared' => true]);
 
     $recipe->refresh();
@@ -30,7 +30,7 @@ test('it keeps the existing link when sharing is already enabled', function () {
     $user = User::factory()->create();
     $recipe = Recipe::factory()->for($user->currentTeam)->create(['share_token' => 'existing-token']);
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(UpdateRecipeSharing::class, ['id' => $recipe->id, 'shared' => true])
         ->assertOk()
         ->assertStructuredContent(fn (AssertableJson $json) => $json
@@ -45,7 +45,7 @@ test('it disables sharing', function () {
     $user = User::factory()->create();
     $recipe = Recipe::factory()->for($user->currentTeam)->create(['share_token' => 'existing-token']);
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(UpdateRecipeSharing::class, ['id' => $recipe->id, 'shared' => false])
         ->assertOk()
         ->assertStructuredContent(fn (AssertableJson $json) => $json
@@ -60,7 +60,7 @@ test('it requires shared', function () {
     $user = User::factory()->create();
     $recipe = Recipe::factory()->for($user->currentTeam)->create();
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(UpdateRecipeSharing::class, ['id' => $recipe->id])
         ->assertHasErrors(['Set shared to true']);
 });
@@ -69,7 +69,7 @@ test('it cannot share recipes from other teams', function () {
     $user = User::factory()->create();
     $recipe = Recipe::factory()->create(['share_token' => null]);
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(UpdateRecipeSharing::class, ['id' => $recipe->id, 'shared' => true])
         ->assertHasErrors(['Recipe not found.']);
 

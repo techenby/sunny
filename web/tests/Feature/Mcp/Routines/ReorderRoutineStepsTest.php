@@ -1,10 +1,10 @@
 <?php
 
-use App\Mcp\Servers\SunnyServer;
 use App\Mcp\Tools\Routines\ReorderRoutineSteps;
 use App\Models\Routine;
 use App\Models\RoutineStep;
 use App\Models\User;
+use Tests\Feature\Mcp\SunnyTestServer;
 
 test('it reorders the steps', function () {
     $user = User::factory()->create();
@@ -13,7 +13,7 @@ test('it reorders the steps', function () {
     $second = RoutineStep::factory()->for($routine)->create(['name' => 'Second', 'position' => 2]);
     $third = RoutineStep::factory()->for($routine)->create(['name' => 'Third', 'position' => 3]);
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(ReorderRoutineSteps::class, [
             'routine_id' => $routine->id,
             'step_ids' => [$third->id, $first->id, $second->id],
@@ -45,7 +45,7 @@ test('it requires every current step exactly once', function (array $stepIndexes
         ->map(fn ($index) => $index === 'foreign' ? $foreign->id : $steps[$index]->id)
         ->all();
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(ReorderRoutineSteps::class, ['routine_id' => $routine->id, 'step_ids' => $stepIds])
         ->assertHasErrors();
 
@@ -62,7 +62,7 @@ test('it names the expected step ids', function () {
     $routine = Routine::factory()->for($user->currentTeam)->create();
     $step = RoutineStep::factory()->for($routine)->create();
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(ReorderRoutineSteps::class, ['routine_id' => $routine->id, 'step_ids' => [$step->id + 1]])
         ->assertHasErrors(["exactly the routine's current step ids, each once: [{$step->id}]"]);
 });
@@ -71,7 +71,7 @@ test('it cannot reorder steps on routines from other teams', function () {
     $user = User::factory()->create();
     $step = RoutineStep::factory()->create(['position' => 4]);
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(ReorderRoutineSteps::class, ['routine_id' => $step->routine_id, 'step_ids' => [$step->id]])
         ->assertHasErrors(['Routine not found.']);
 

@@ -1,19 +1,19 @@
 <?php
 
 use App\Enums\ChecklistType;
-use App\Mcp\Servers\SunnyServer;
 use App\Mcp\Tools\Lists\UpdateChecklist;
 use App\Models\Checklist;
 use App\Models\ChecklistItem;
 use App\Models\User;
 use Illuminate\Testing\Fluent\AssertableJson;
+use Tests\Feature\Mcp\SunnyTestServer;
 
 test('it updates the provided fields', function () {
     $user = User::factory()->create(['name' => 'Andy']);
     $checklist = Checklist::factory()->todo()->for($user->currentTeam)->create(['name' => 'Chores']);
     ChecklistItem::factory()->for($checklist)->create(['name' => 'Vacuum']);
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(UpdateChecklist::class, [
             'id' => $checklist->id,
             'name' => 'Weekend Chores',
@@ -40,7 +40,7 @@ test('it makes a checklist a household list when user_id is null', function () {
     $user = User::factory()->create();
     $checklist = Checklist::factory()->for($user->currentTeam)->ownedBy($user)->create();
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(UpdateChecklist::class, ['id' => $checklist->id, 'user_id' => null, 'type' => 'wishlist'])
         ->assertOk()
         ->assertStructuredContent(fn (AssertableJson $json) => $json
@@ -58,7 +58,7 @@ test('it requires at least one field to update', function () {
     $user = User::factory()->create();
     $checklist = Checklist::factory()->for($user->currentTeam)->create();
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(UpdateChecklist::class, ['id' => $checklist->id])
         ->assertHasErrors(['Provide at least one of name, type, or user_id to update.']);
 });
@@ -68,7 +68,7 @@ test('it validates the fields', function () {
     $stranger = User::factory()->create();
     $checklist = Checklist::factory()->for($user->currentTeam)->create(['name' => 'Chores']);
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(UpdateChecklist::class, ['id' => $checklist->id, 'type' => 'groceries', 'user_id' => $stranger->id])
         ->assertHasErrors([
             'The type must be one of: todo, shopping, wishlist.',
@@ -82,7 +82,7 @@ test('it does not update checklists from other teams', function () {
     $user = User::factory()->create();
     $checklist = Checklist::factory()->create(['name' => 'Secret List']);
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(UpdateChecklist::class, ['id' => $checklist->id, 'name' => 'Hijacked'])
         ->assertHasErrors(['Checklist not found.']);
 

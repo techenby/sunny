@@ -1,11 +1,11 @@
 <?php
 
-use App\Mcp\Servers\SunnyServer;
 use App\Mcp\Tools\Routines\GetRoutine;
 use App\Models\Routine;
 use App\Models\RoutineStep;
 use App\Models\User;
 use Illuminate\Testing\Fluent\AssertableJson;
+use Tests\Feature\Mcp\SunnyTestServer;
 
 test('it returns a routine with its steps in order', function () {
     $user = User::factory()->create();
@@ -14,7 +14,7 @@ test('it returns a routine with its steps in order', function () {
     $first = RoutineStep::factory()->for($routine)->create(['name' => 'Brush teeth', 'position' => 1]);
     RoutineStep::factory()->for($routine)->create(['name' => 'Removed'])->delete();
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(GetRoutine::class, ['id' => $routine->id])
         ->assertOk()
         ->assertStructuredContent(fn (AssertableJson $json) => $json
@@ -32,7 +32,7 @@ test('it returns a routine with its steps in order', function () {
 test('it requires an id', function () {
     $user = User::factory()->create();
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(GetRoutine::class)
         ->assertHasErrors();
 });
@@ -41,7 +41,7 @@ test('it does not return routines from other teams', function () {
     $user = User::factory()->create();
     $routine = Routine::factory()->create();
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(GetRoutine::class, ['id' => $routine->id])
         ->assertHasErrors(['Routine not found.']);
 });

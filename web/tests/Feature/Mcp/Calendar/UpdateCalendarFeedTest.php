@@ -1,10 +1,10 @@
 <?php
 
 use App\Enums\CalendarColor;
-use App\Mcp\Servers\SunnyServer;
 use App\Mcp\Tools\Calendar\UpdateCalendarFeed;
 use App\Models\CalendarFeed;
 use App\Models\User;
+use Tests\Feature\Mcp\SunnyTestServer;
 
 test('it updates the provided fields on a calendar feed', function () {
     $user = User::factory()->create();
@@ -13,7 +13,7 @@ test('it updates the provided fields on a calendar feed', function () {
         'color' => CalendarColor::Blue,
     ]);
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(UpdateCalendarFeed::class, [
             'id' => $feed->id,
             'name' => 'Ship Calendar',
@@ -33,7 +33,7 @@ test('it cannot update a feed belonging to another team', function () {
     $user = User::factory()->create();
     $otherTeamFeed = CalendarFeed::factory()->create(['name' => 'Marine Calendar']);
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(UpdateCalendarFeed::class, [
             'id' => $otherTeamFeed->id,
             'name' => 'Hijacked',
@@ -47,7 +47,7 @@ test('it rejects a color that is not one of the calendar colors', function () {
     $user = User::factory()->create();
     $feed = CalendarFeed::factory()->for($user->currentTeam)->create();
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(UpdateCalendarFeed::class, [
             'id' => $feed->id,
             'color' => 'chartreuse',
@@ -59,7 +59,7 @@ test('it requires at least one field to update', function () {
     $user = User::factory()->create();
     $feed = CalendarFeed::factory()->for($user->currentTeam)->create();
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(UpdateCalendarFeed::class, ['id' => $feed->id])
         ->assertHasErrors(['Provide at least one field to update: name, url, or color.']);
 });

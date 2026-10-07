@@ -60,12 +60,18 @@ use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Attributes\Version;
 use Laravel\Mcp\Server\Prompt;
 use Laravel\Mcp\Server\Tool;
+use Laravel\Mcp\Server\Tools\ToolSearch;
 
 #[Name('Sunny')]
 #[Version('1.0.0')]
 #[Instructions(<<<'MARKDOWN'
     Sunny is a family dashboard for managing recipes, home inventory, calendars,
     lists, and routines.
+
+    Finding tools: the everyday tools are listed directly. Everything else (editing
+    and deleting records, recipe sharing, calendar feeds, routine setup, teams, and
+    settings) is in a catalog: use `search_tools` to find a tool and its input schema,
+    then `execute_tools` to call it by its exact name.
 
     Teams: every tool acts on the authenticated user's current team. Use `list-teams`
     to see the user's teams and `switch-team` to change the current team; switching
@@ -97,58 +103,60 @@ class SunnyServer extends Server
 
     public int $maxPaginationLength = 100;
 
-    /** @var array<int, class-string<Tool>> */
+    /** @var array<int|class-string<ToolSearch>, class-string<Tool>|array<int, class-string<Tool>>> */
     protected array $tools = [
         SearchRecipes::class,
         GetRecipe::class,
         CreateRecipe::class,
-        UpdateRecipe::class,
-        DeleteRecipe::class,
         ImportRecipeFromUrl::class,
-        RemixRecipe::class,
-        CopyRecipeToTeam::class,
-        UpdateRecipeSharing::class,
         SearchItems::class,
         GetItem::class,
         CreateItem::class,
         UpdateItem::class,
-        DeleteItem::class,
-        RestoreItem::class,
-        DuplicateItem::class,
-        MoveItemToTeam::class,
         GetCalendarEvents::class,
-        ListCalendarFeeds::class,
-        CreateCalendarFeed::class,
-        UpdateCalendarFeed::class,
-        DeleteCalendarFeed::class,
         ListChecklists::class,
         GetChecklist::class,
         CreateChecklist::class,
-        UpdateChecklist::class,
-        DeleteChecklist::class,
         AddChecklistItems::class,
         UpdateChecklistItem::class,
-        RemoveChecklistItem::class,
-        ClearCompletedChecklistItems::class,
-        ResetChecklist::class,
         ListRoutines::class,
-        GetRoutine::class,
-        CreateRoutine::class,
-        UpdateRoutine::class,
-        DeleteRoutine::class,
-        AddRoutineSteps::class,
-        UpdateRoutineStep::class,
-        ReorderRoutineSteps::class,
-        RemoveRoutineStep::class,
         GetRoutineBoard::class,
         CompleteRoutineStep::class,
-        ListTeams::class,
-        SwitchTeam::class,
-        UpdateTeam::class,
-        GetTeamSettings::class,
-        UpdateTeamSettings::class,
-        ListKioskDevices::class,
-        ForgetKioskDevice::class,
+        ToolSearch::class => [
+            UpdateRecipe::class,
+            DeleteRecipe::class,
+            RemixRecipe::class,
+            CopyRecipeToTeam::class,
+            UpdateRecipeSharing::class,
+            DeleteItem::class,
+            RestoreItem::class,
+            DuplicateItem::class,
+            MoveItemToTeam::class,
+            ListCalendarFeeds::class,
+            CreateCalendarFeed::class,
+            UpdateCalendarFeed::class,
+            DeleteCalendarFeed::class,
+            UpdateChecklist::class,
+            DeleteChecklist::class,
+            RemoveChecklistItem::class,
+            ClearCompletedChecklistItems::class,
+            ResetChecklist::class,
+            GetRoutine::class,
+            CreateRoutine::class,
+            UpdateRoutine::class,
+            DeleteRoutine::class,
+            AddRoutineSteps::class,
+            UpdateRoutineStep::class,
+            ReorderRoutineSteps::class,
+            RemoveRoutineStep::class,
+            ListTeams::class,
+            SwitchTeam::class,
+            UpdateTeam::class,
+            GetTeamSettings::class,
+            UpdateTeamSettings::class,
+            ListKioskDevices::class,
+            ForgetKioskDevice::class,
+        ],
     ];
 
     /** @var array<int, class-string<Server\Resource>> */

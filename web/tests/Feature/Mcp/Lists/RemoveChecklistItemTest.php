@@ -1,17 +1,17 @@
 <?php
 
-use App\Mcp\Servers\SunnyServer;
 use App\Mcp\Tools\Lists\RemoveChecklistItem;
 use App\Models\Checklist;
 use App\Models\ChecklistItem;
 use App\Models\User;
+use Tests\Feature\Mcp\SunnyTestServer;
 
 test('it removes an item from a checklist', function () {
     $user = User::factory()->create();
     $checklist = Checklist::factory()->for($user->currentTeam)->create(['name' => 'Groceries']);
     $item = ChecklistItem::factory()->for($checklist)->create(['name' => 'Milk']);
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(RemoveChecklistItem::class, ['checklist_id' => $checklist->id, 'item_id' => $item->id])
         ->assertOk()
         ->assertSee('Removed "Milk" from the list "Groceries".');
@@ -22,7 +22,7 @@ test('it removes an item from a checklist', function () {
 test('it requires a checklist id and an item id', function () {
     $user = User::factory()->create();
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(RemoveChecklistItem::class)
         ->assertHasErrors();
 });
@@ -32,7 +32,7 @@ test('it does not remove items on another checklist', function () {
     $checklist = Checklist::factory()->for($user->currentTeam)->create();
     $item = ChecklistItem::factory()->for(Checklist::factory()->for($user->currentTeam))->create();
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(RemoveChecklistItem::class, ['checklist_id' => $checklist->id, 'item_id' => $item->id])
         ->assertHasErrors(['Checklist item not found.']);
 
@@ -43,7 +43,7 @@ test('it does not remove items from other teams', function () {
     $user = User::factory()->create();
     $item = ChecklistItem::factory()->create();
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(RemoveChecklistItem::class, ['checklist_id' => $item->checklist_id, 'item_id' => $item->id])
         ->assertHasErrors(['Checklist not found.']);
 

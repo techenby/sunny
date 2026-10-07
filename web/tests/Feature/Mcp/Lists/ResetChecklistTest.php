@@ -1,11 +1,11 @@
 <?php
 
-use App\Mcp\Servers\SunnyServer;
 use App\Mcp\Tools\Lists\ResetChecklist;
 use App\Models\Checklist;
 use App\Models\ChecklistItem;
 use App\Models\User;
 use Illuminate\Testing\Fluent\AssertableJson;
+use Tests\Feature\Mcp\SunnyTestServer;
 
 test('it marks every item incomplete', function () {
     $user = User::factory()->create();
@@ -13,7 +13,7 @@ test('it marks every item incomplete', function () {
     ChecklistItem::factory()->for($checklist)->completed($user)->count(2)->create();
     ChecklistItem::factory()->for($checklist)->create();
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(ResetChecklist::class, ['id' => $checklist->id])
         ->assertOk()
         ->assertStructuredContent(fn (AssertableJson $json) => $json
@@ -33,7 +33,7 @@ test('it marks every item incomplete', function () {
 test('it requires an id', function () {
     $user = User::factory()->create();
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(ResetChecklist::class)
         ->assertHasErrors();
 });
@@ -42,7 +42,7 @@ test('it does not reset checklists from other teams', function () {
     $user = User::factory()->create();
     $item = ChecklistItem::factory()->completed()->create();
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(ResetChecklist::class, ['id' => $item->checklist_id])
         ->assertHasErrors(['Checklist not found.']);
 

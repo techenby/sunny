@@ -1,11 +1,11 @@
 <?php
 
 use App\Enums\CalendarColor;
-use App\Mcp\Servers\SunnyServer;
 use App\Mcp\Tools\Calendar\ListCalendarFeeds;
 use App\Models\CalendarFeed;
 use App\Models\User;
 use Illuminate\Testing\Fluent\AssertableJson;
+use Tests\Feature\Mcp\SunnyTestServer;
 
 test('it lists the feeds for the current team', function () {
     $user = User::factory()->create();
@@ -16,7 +16,7 @@ test('it lists the feeds for the current team', function () {
         'last_fetched_at' => now(),
     ]);
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(ListCalendarFeeds::class)
         ->assertOk()
         ->assertStructuredContent([
@@ -41,7 +41,7 @@ test('it shows the failing status and last error for a broken feed', function ()
         'name' => 'Broken Calendar',
     ]);
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(ListCalendarFeeds::class)
         ->assertOk()
         ->assertStructuredContent(fn (AssertableJson $json) => $json
@@ -55,7 +55,7 @@ test('it does not list feeds belonging to other teams', function () {
     CalendarFeed::factory()->for($user->currentTeam)->create(['name' => 'Crew Calendar']);
     CalendarFeed::factory()->create(['name' => 'Marine Calendar']);
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(ListCalendarFeeds::class)
         ->assertOk()
         ->assertSee('Crew Calendar')
@@ -65,7 +65,7 @@ test('it does not list feeds belonging to other teams', function () {
 test('it explains when the team has no feeds', function () {
     $user = User::factory()->create();
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(ListCalendarFeeds::class)
         ->assertOk()
         ->assertStructuredContent([

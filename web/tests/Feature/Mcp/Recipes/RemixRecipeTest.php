@@ -1,16 +1,16 @@
 <?php
 
-use App\Mcp\Servers\SunnyServer;
 use App\Mcp\Tools\Recipes\RemixRecipe;
 use App\Models\Recipe;
 use App\Models\User;
 use Illuminate\Testing\Fluent\AssertableJson;
+use Tests\Feature\Mcp\SunnyTestServer;
 
 test('it remixes a recipe on the current team', function () {
     $user = User::factory()->create();
     $recipe = Recipe::factory()->for($user->currentTeam)->create(['name' => 'Chocolate Cake']);
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(RemixRecipe::class, ['id' => $recipe->id])
         ->assertOk()
         ->assertStructuredContent(fn (AssertableJson $json) => $json
@@ -25,7 +25,7 @@ test('it remixes a recipe on the current team', function () {
 test('it requires an id', function () {
     $user = User::factory()->create();
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(RemixRecipe::class)
         ->assertHasErrors();
 });
@@ -34,7 +34,7 @@ test('it cannot remix recipes from other teams', function () {
     $user = User::factory()->create();
     $recipe = Recipe::factory()->create();
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(RemixRecipe::class, ['id' => $recipe->id])
         ->assertHasErrors(['Recipe not found.']);
 

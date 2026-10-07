@@ -1,10 +1,10 @@
 <?php
 
-use App\Mcp\Servers\SunnyServer;
 use App\Mcp\Tools\Lists\ClearCompletedChecklistItems;
 use App\Models\Checklist;
 use App\Models\ChecklistItem;
 use App\Models\User;
+use Tests\Feature\Mcp\SunnyTestServer;
 
 test('it removes only the completed items', function () {
     $user = User::factory()->create();
@@ -12,7 +12,7 @@ test('it removes only the completed items', function () {
     ChecklistItem::factory()->for($checklist)->completed($user)->count(2)->create();
     $remaining = ChecklistItem::factory()->for($checklist)->create(['name' => 'Eggs']);
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(ClearCompletedChecklistItems::class, ['id' => $checklist->id])
         ->assertOk()
         ->assertSee('Removed 2 completed items from the list "Groceries".');
@@ -23,7 +23,7 @@ test('it removes only the completed items', function () {
 test('it requires an id', function () {
     $user = User::factory()->create();
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(ClearCompletedChecklistItems::class)
         ->assertHasErrors();
 });
@@ -32,7 +32,7 @@ test('it does not clear checklists from other teams', function () {
     $user = User::factory()->create();
     $item = ChecklistItem::factory()->completed()->create();
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(ClearCompletedChecklistItems::class, ['id' => $item->checklist_id])
         ->assertHasErrors(['Checklist not found.']);
 

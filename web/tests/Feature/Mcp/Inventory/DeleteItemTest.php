@@ -1,16 +1,16 @@
 <?php
 
-use App\Mcp\Servers\SunnyServer;
 use App\Mcp\Tools\Inventory\DeleteItem;
 use App\Models\Item;
 use App\Models\User;
+use Tests\Feature\Mcp\SunnyTestServer;
 
 test('it soft deletes an item and detaches its children', function () {
     $user = User::factory()->create();
     $garage = Item::factory()->location()->for($user->currentTeam)->create(['name' => 'Garage']);
     $bin = Item::factory()->bin()->childOf($garage)->create(['name' => 'Blue Bin']);
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(DeleteItem::class, ['id' => $garage->id])
         ->assertOk()
         ->assertSee('Garage')
@@ -24,7 +24,7 @@ test('it soft deletes an item and detaches its children', function () {
 test('it requires an id', function () {
     $user = User::factory()->create();
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(DeleteItem::class)
         ->assertHasErrors();
 });
@@ -33,7 +33,7 @@ test('it cannot delete items from other teams', function () {
     $user = User::factory()->create();
     $item = Item::factory()->create();
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(DeleteItem::class, ['id' => $item->id])
         ->assertHasErrors(['Item not found.']);
 

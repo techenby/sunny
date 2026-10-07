@@ -1,12 +1,12 @@
 <?php
 
 use App\Enums\TeamRole;
-use App\Mcp\Servers\SunnyServer;
 use App\Mcp\Tools\Recipes\CopyRecipeToTeam;
 use App\Models\Recipe;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Testing\Fluent\AssertableJson;
+use Tests\Feature\Mcp\SunnyTestServer;
 
 test('it copies a recipe to another team of the user', function () {
     $user = User::factory()->create();
@@ -14,7 +14,7 @@ test('it copies a recipe to another team of the user', function () {
     $user->teams()->attach($otherTeam, ['role' => TeamRole::Member]);
     $recipe = Recipe::factory()->for($user->currentTeam)->create(['name' => 'Chocolate Cake', 'share_token' => 'abc']);
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(CopyRecipeToTeam::class, ['id' => $recipe->id, 'team_id' => $otherTeam->id])
         ->assertOk()
         ->assertStructuredContent(fn (AssertableJson $json) => $json
@@ -34,7 +34,7 @@ test('it copies a recipe to another team of the user', function () {
 test('it requires an id and team_id', function () {
     $user = User::factory()->create();
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(CopyRecipeToTeam::class)
         ->assertHasErrors(['id', 'team id']);
 });
@@ -44,7 +44,7 @@ test('it cannot copy a recipe to a team the user does not belong to', function (
     $strangerTeam = Team::factory()->create();
     $recipe = Recipe::factory()->for($user->currentTeam)->create();
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(CopyRecipeToTeam::class, ['id' => $recipe->id, 'team_id' => $strangerTeam->id])
         ->assertHasErrors(['Team not found.']);
 
@@ -55,7 +55,7 @@ test('it cannot copy a recipe to the current team', function () {
     $user = User::factory()->create();
     $recipe = Recipe::factory()->for($user->currentTeam)->create();
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(CopyRecipeToTeam::class, ['id' => $recipe->id, 'team_id' => $user->current_team_id])
         ->assertHasErrors(['Team not found.']);
 
@@ -68,7 +68,7 @@ test('it cannot copy recipes from other teams', function () {
     $user->teams()->attach($otherTeam, ['role' => TeamRole::Member]);
     $recipe = Recipe::factory()->create();
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(CopyRecipeToTeam::class, ['id' => $recipe->id, 'team_id' => $otherTeam->id])
         ->assertHasErrors(['Recipe not found.']);
 

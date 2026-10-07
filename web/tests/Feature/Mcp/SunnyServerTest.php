@@ -1,6 +1,13 @@
 <?php
 
+use App\Mcp\Servers\SunnyServer;
+use App\Models\CalendarFeed;
 use App\Models\User;
+use Illuminate\Testing\TestResponse;
+use Laravel\Mcp\Server\Tools\ExecuteTools;
+use Laravel\Mcp\Server\Tools\ToolSearch;
+use Laravel\Mcp\Server\Transport\FakeTransporter;
+use Tests\Feature\Mcp\SunnyTestServer;
 
 test('guests cannot access the mcp server', function () {
     $this->postJson('/mcp', [
@@ -25,70 +32,127 @@ test('a bearer token authenticates against the mcp server', function () {
         ->assertOk();
 });
 
-test('the server exposes the expected tools', function () {
-    $user = User::factory()->create();
-    $token = $user->createToken('Test')->plainTextToken;
-
-    $response = $this->withToken($token)
+function mcp(User $user, string $method, array $params = []): TestResponse
+{
+    return test()->withToken($user->createToken('Test')->plainTextToken)
         ->postJson('/mcp', [
             'jsonrpc' => '2.0',
             'id' => 1,
-            'method' => 'tools/list',
-        ])
-        ->assertOk();
+            'method' => $method,
+            'params' => (object) $params,
+        ]);
+}
 
-    $tools = collect($response->json('result.tools'))->pluck('name');
+test('the server lists the everyday tools and the tool catalog', function () {
+    $tools = collect(mcp(User::factory()->create(), 'tools/list')->assertOk()->json('result.tools'))->pluck('name');
 
-    expect($tools)->toContain(
+    expect($tools->all())->toBe([
         'search-recipes',
         'get-recipe',
         'create-recipe',
-        'update-recipe',
-        'delete-recipe',
         'import-recipe-from-url',
-        'remix-recipe',
-        'copy-recipe-to-team',
-        'update-recipe-sharing',
         'search-items',
         'get-item',
         'create-item',
         'update-item',
-        'delete-item',
-        'restore-item',
-        'duplicate-item',
-        'move-item-to-team',
         'get-calendar-events',
-        'list-calendar-feeds',
-        'create-calendar-feed',
-        'update-calendar-feed',
-        'delete-calendar-feed',
         'list-checklists',
         'get-checklist',
         'create-checklist',
-        'update-checklist',
-        'delete-checklist',
         'add-checklist-items',
         'update-checklist-item',
-        'remove-checklist-item',
-        'clear-completed-checklist-items',
-        'reset-checklist',
         'list-routines',
-        'get-routine',
-        'create-routine',
-        'update-routine',
-        'delete-routine',
-        'add-routine-steps',
-        'update-routine-step',
-        'reorder-routine-steps',
-        'remove-routine-step',
         'get-routine-board',
         'complete-routine-step',
-        'list-teams',
-        'switch-team',
-        'update-team',
-        'get-team-settings',
-        'update-team-settings',
-        'list-kiosk-devices',
-        'forget-kiosk-device',
-    )->toHaveCount(50);
+        'search_tools',
+        'execute_tools',
+    ]);
+});
+
+test('the tool catalog holds every other tool', function () {
+    $response = mcp(User::factory()->create(), 'tools/call', [
+        'name' => 'search_tools',
+        'arguments' => ['limit' => 50],
+    ])->assertOk();
+
+    $catalog = json_decode($response->json('result.content.0.text'), true);
+
+    expect($catalog['hasMore'])->toBeFalse()
+        ->and(collect($catalog['tools'])->pluck('name')->all())->toBe([
+            'update-recipe',
+            'delete-recipe',
+            'remix-recipe',
+            'copy-recipe-to-team',
+            'update-recipe-sharing',
+            'delete-item',
+            'restore-item',
+            'duplicate-item',
+            'move-item-to-team',
+            'list-calendar-feeds',
+            'create-calendar-feed',
+            'update-calendar-feed',
+            'delete-calendar-feed',
+            'update-checklist',
+            'delete-checklist',
+            'remove-checklist-item',
+            'clear-completed-checklist-items',
+            'reset-checklist',
+            'get-routine',
+            'create-routine',
+            'update-routine',
+            'delete-routine',
+            'add-routine-steps',
+            'update-routine-step',
+            'reorder-routine-steps',
+            'remove-routine-step',
+            'list-teams',
+            'switch-team',
+            'update-team',
+            'get-team-settings',
+            'update-team-settings',
+            'list-kiosk-devices',
+            'forget-kiosk-device',
+        ]);
+});
+
+test('search_tools finds catalog tools by keyword', function () {
+    $response = mcp(User::factory()->create(), 'tools/call', [
+        'name' => 'search_tools',
+        'arguments' => ['query' => 'kiosk'],
+    ])->assertOk();
+
+    $names = collect(json_decode($response->json('result.content.0.text'), true)['tools'])->pluck('name');
+
+    expect($names)->toContain('list-kiosk-devices', 'forget-kiosk-device');
+});
+
+test('execute_tools runs a catalog tool as the authenticated user', function () {
+    $user = User::factory()->create();
+    CalendarFeed::factory()->for($user->currentTeam)->create(['name' => 'Crew Calendar']);
+    CalendarFeed::factory()->create(['name' => 'Marine Calendar']);
+
+    SunnyServer::actingAs($user)
+        ->tool(new ExecuteTools(new ToolSearch([]), 1), [
+            'calls' => [['name' => 'list-calendar-feeds', 'arguments' => []]],
+        ])
+        ->assertHasNoErrors()
+        ->assertSee(['"ok":true', 'Crew Calendar'])
+        ->assertDontSee('Marine Calendar');
+});
+
+test('catalog tools cannot be called directly', function () {
+    $response = mcp(User::factory()->create(), 'tools/call', [
+        'name' => 'list-calendar-feeds',
+        'arguments' => (object) [],
+    ]);
+
+    $response->assertStatus(400);
+    expect($response->json('error.message'))->toContain('list-calendar-feeds');
+});
+
+test('the test server registers every tool directly', function () {
+    $server = new SunnyTestServer(new FakeTransporter);
+    $tools = (fn () => $this->tools)->call($server);
+
+    expect($tools)->toHaveCount(50)->each->toBeString();
 });
