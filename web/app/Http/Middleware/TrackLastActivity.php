@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
-use Illuminate\Support\Facades\Date;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Date;
 use Symfony\Component\HttpFoundation\Response;
 
 class TrackLastActivity
