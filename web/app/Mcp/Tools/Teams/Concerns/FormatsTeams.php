@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools\Teams\Concerns;
 
-use Illuminate\Support\Facades\Date;
 use App\Enums\Appearance;
 use App\Enums\TeamRole;
 use App\Models\Team;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
+use Illuminate\Support\Facades\Date;
 
 trait FormatsTeams
 {
