@@ -122,3 +122,31 @@ test('does not return items from other teams', function () {
             'note' => 'No items found matching the given filters.',
         ]);
 });
+
+test('can search only deleted items', function () {
+    $user = User::factory()->create();
+    Item::factory()->for($user->currentTeam)->create(['name' => 'Active Hammer']);
+    Item::factory()->for($user->currentTeam)->create(['name' => 'Deleted Hammer'])->delete();
+    Item::factory()->create(['name' => 'Foreign Hammer'])->delete();
+
+    SunnyServer::actingAs($user)
+        ->tool(SearchItems::class, ['query' => 'Hammer', 'trashed' => true])
+        ->assertOk()
+        ->assertStructuredContent(fn (AssertableJson $json) => $json
+            ->where('count', 1)
+            ->where('items.0.name', 'Deleted Hammer')
+            ->where('note', fn (string $note) => str_contains($note, 'restore-item'))
+            ->etc());
+});
+
+test('excludes deleted items by default', function () {
+    $user = User::factory()->create();
+    Item::factory()->for($user->currentTeam)->create(['name' => 'Deleted Hammer'])->delete();
+
+    SunnyServer::actingAs($user)
+        ->tool(SearchItems::class, ['query' => 'Hammer'])
+        ->assertOk()
+        ->assertStructuredContent(fn (AssertableJson $json) => $json
+            ->where('count', 0)
+            ->etc());
+});

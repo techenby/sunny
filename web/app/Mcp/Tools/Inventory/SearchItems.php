@@ -20,7 +20,7 @@ use Laravel\Mcp\Server\Tool;
 use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 
 #[IsReadOnly]
-#[Description('Search the home inventory of the current team. Items form a hierarchy: locations contain bins, bins contain items. Filter by name, type, or parent to browse the tree. Returns a compact list; use the get-item tool for full details.')]
+#[Description('Search the home inventory of the current team. Items form a hierarchy: locations contain bins, bins contain items. Filter by name, type, or parent to browse the tree. Returns a compact list; use the get-item tool for full details. Set trashed to true to search only deleted items instead, e.g. to find an id for the restore-item tool.')]
 class SearchItems extends Tool
 {
     public function handle(Request $request): ResponseFactory
@@ -32,12 +32,16 @@ class SearchItems extends Tool
             'type' => ['nullable', new Enum(ItemType::class)],
             'parent_id' => ['nullable', 'integer'],
             'limit' => ['nullable', 'integer', 'min:1', 'max:100'],
+            'trashed' => ['nullable', 'boolean'],
         ]);
+
+        $trashed = (bool) ($validated['trashed'] ?? false);
 
         $limit = $validated['limit'] ?? 20;
 
         $itemsQuery = Item::query()
             ->whereBelongsTo($request->user()->currentTeam)
+            ->when($trashed, fn ($query) => $query->onlyTrashed())
             ->when(isset($validated['type']), fn ($query) => $query->where('type', $validated['type']))
             ->when(isset($validated['parent_id']), fn ($query) => $query->where('parent_id', $validated['parent_id']))
             ->orderBy('name');
@@ -52,9 +56,11 @@ class SearchItems extends Tool
                 'type' => $item->type->value,
                 'parent_id' => $item->parent_id,
             ])->all(),
-            'note' => $items->isEmpty()
-                ? 'No items found matching the given filters.'
-                : "Use the get-item tool with an item's id for full details, its children, and its location path.",
+            'note' => match (true) {
+                $items->isEmpty() => $trashed ? 'No deleted items found matching the given filters.' : 'No items found matching the given filters.',
+                $trashed => "These items are deleted. Use the restore-item tool with an item's id to bring it back.",
+                default => "Use the get-item tool with an item's id for full details, its children, and its location path.",
+            },
         ]);
     }
 
@@ -76,6 +82,10 @@ class SearchItems extends Tool
                 ->max(100)
                 ->default(20)
                 ->description('Maximum number of items to return (default 20, max 100).')
+                ->nullable(),
+            'trashed' => $schema->boolean()
+                ->default(false)
+                ->description('When true, search only deleted items instead of active ones. Use this to find ids for the restore-item tool.')
                 ->nullable(),
         ];
     }
