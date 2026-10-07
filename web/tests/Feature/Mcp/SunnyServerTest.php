@@ -174,3 +174,16 @@ test('the server lists its prompts', function () {
 
     expect($prompts->all())->toBe(['plan-meals', 'morning-check-in', 'find-item']);
 });
+
+test('the server advertises its icon', function () {
+    $response = mcp(User::factory()->create(), 'initialize', [
+        'protocolVersion' => '2025-06-18',
+        'capabilities' => (object) [],
+        'clientInfo' => ['name' => 'Test', 'version' => '1.0.0'],
+    ])->assertOk();
+
+    expect($response->json('result.serverInfo.icons'))->toBe([
+        ['src' => asset('icon.svg'), 'mimeType' => 'image/svg+xml', 'sizes' => ['any']],
+        ['src' => asset('icon.png'), 'mimeType' => 'image/png', 'sizes' => ['256x256']],
+    ]);
+});

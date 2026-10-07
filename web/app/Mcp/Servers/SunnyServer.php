@@ -58,6 +58,7 @@ use App\Mcp\Tools\Teams\SwitchTeam;
 use App\Mcp\Tools\Teams\UpdateTeam;
 use App\Mcp\Tools\Teams\UpdateTeamSettings;
 use Laravel\Mcp\Server;
+use Laravel\Mcp\Server\Attributes\Icon;
 use Laravel\Mcp\Server\Attributes\Instructions;
 use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Attributes\Version;
@@ -66,6 +67,8 @@ use Laravel\Mcp\Server\Tool;
 use Laravel\Mcp\Server\Tools\ToolSearch;
 
 #[Name('Sunny')]
+#[Icon('icon.svg', mimeType: 'image/svg+xml', sizes: ['any'])]
+#[Icon('icon.png', mimeType: 'image/png', sizes: ['256x256'])]
 #[Version('1.0.0')]
 #[Instructions(<<<'MARKDOWN'
     Sunny is a family dashboard for managing recipes, home inventory, calendars,
