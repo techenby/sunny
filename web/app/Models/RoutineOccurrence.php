@@ -30,7 +30,11 @@ class RoutineOccurrence extends Model
     /** @return HasMany<RoutineOccurrenceStep, $this> */
     public function steps(): HasMany
     {
-        return $this->hasMany(RoutineOccurrenceStep::class);
+        return $this->hasMany(RoutineOccurrenceStep::class)
+            ->orderBy(RoutineStep::withTrashed()
+                ->select('position')
+                ->whereColumn('routine_steps.id', 'routine_occurrence_steps.routine_step_id'))
+            ->orderBy('id');
     }
 
     public function isComplete(): bool
