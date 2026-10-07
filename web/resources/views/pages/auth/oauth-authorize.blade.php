@@ -13,26 +13,26 @@
 
         <flux:text class="text-center">{{ __('Signed in as :email', ['email' => $user->email]) }}</flux:text>
 
-        <div class="flex flex-col gap-3">
-            <form method="POST" action="{{ route('passport.authorizations.approve') }}">
+        <div class="flex flex-col gap-3" x-data="{ submitting: false }">
+            <form method="POST" action="{{ route('passport.authorizations.approve') }}" x-on:submit="submitting = true">
                 @csrf
                 <input type="hidden" name="state" value="">
                 <input type="hidden" name="client_id" value="{{ $client->getKey() }}">
                 <input type="hidden" name="auth_token" value="{{ $authToken }}">
 
-                <flux:button variant="primary" type="submit" class="w-full" data-test="approve-button">
+                <flux:button variant="primary" type="submit" class="w-full" x-bind:disabled="submitting" data-test="approve-button">
                     {{ __('Allow access') }}
                 </flux:button>
             </form>
 
-            <form method="POST" action="{{ route('passport.authorizations.deny') }}">
+            <form method="POST" action="{{ route('passport.authorizations.deny') }}" x-on:submit="submitting = true">
                 @csrf
                 @method('DELETE')
                 <input type="hidden" name="state" value="">
                 <input type="hidden" name="client_id" value="{{ $client->getKey() }}">
                 <input type="hidden" name="auth_token" value="{{ $authToken }}">
 
-                <flux:button type="submit" class="w-full" data-test="deny-button">
+                <flux:button type="submit" class="w-full" x-bind:disabled="submitting" data-test="deny-button">
                     {{ __('Cancel') }}
                 </flux:button>
             </form>
