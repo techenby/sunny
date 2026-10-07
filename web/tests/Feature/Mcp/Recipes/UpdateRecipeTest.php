@@ -1,15 +1,15 @@
 <?php
 
-use App\Mcp\Servers\SunnyServer;
 use App\Mcp\Tools\Recipes\UpdateRecipe;
 use App\Models\Recipe;
 use App\Models\User;
+use Tests\Feature\Mcp\SunnyTestServer;
 
 test('it updates a recipe on the current team', function () {
     $user = User::factory()->create();
     $recipe = Recipe::factory()->for($user->currentTeam)->create(['name' => 'Chocolate Cake']);
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(UpdateRecipe::class, [
             'id' => $recipe->id,
             'name' => 'Double Chocolate Cake',
@@ -29,7 +29,7 @@ test('it wraps plain text ingredients and instructions in html lists', function 
     $user = User::factory()->create();
     $recipe = Recipe::factory()->for($user->currentTeam)->create();
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(UpdateRecipe::class, [
             'id' => $recipe->id,
             'ingredients' => "2 cups flour\n1 cup water",
@@ -45,7 +45,7 @@ test('it wraps plain text ingredients and instructions in html lists', function 
 test('it requires an id', function () {
     $user = User::factory()->create();
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(UpdateRecipe::class, ['name' => 'New Name'])
         ->assertHasErrors();
 });
@@ -54,7 +54,7 @@ test('it cannot update recipes from other teams', function () {
     $user = User::factory()->create();
     $recipe = Recipe::factory()->create(['name' => 'Secret Family Recipe']);
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(UpdateRecipe::class, ['id' => $recipe->id, 'name' => 'Stolen Recipe'])
         ->assertHasErrors(['Recipe not found.']);
 

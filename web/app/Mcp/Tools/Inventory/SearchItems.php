@@ -14,15 +14,16 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Enum;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
+use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Tool;
 use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 
 #[IsReadOnly]
-#[Description('Search the home inventory of the current team. Items form a hierarchy: locations contain bins, bins contain items. Filter by name, type, or parent to browse the tree. Returns a compact list; use the get-item tool for full details.')]
+#[Description('Search the home inventory of the current team. Items form a hierarchy: locations contain bins, bins contain items. Filter by name, type, or parent to browse the tree. Returns a compact list; use the get-item tool for full details. Set trashed to true to search only deleted items instead, e.g. to find an id for the restore-item tool.')]
 class SearchItems extends Tool
 {
-    public function handle(Request $request): Response
+    public function handle(Request $request): ResponseFactory
     {
         Gate::forUser($request->user())->authorize('viewAny', Item::class);
 
@@ -31,35 +32,36 @@ class SearchItems extends Tool
             'type' => ['nullable', new Enum(ItemType::class)],
             'parent_id' => ['nullable', 'integer'],
             'limit' => ['nullable', 'integer', 'min:1', 'max:100'],
+            'trashed' => ['nullable', 'boolean'],
         ]);
+
+        $trashed = (bool) ($validated['trashed'] ?? false);
 
         $limit = $validated['limit'] ?? 20;
 
         $itemsQuery = Item::query()
             ->whereBelongsTo($request->user()->currentTeam)
+            ->when($trashed, fn ($query) => $query->onlyTrashed())
             ->when(isset($validated['type']), fn ($query) => $query->where('type', $validated['type']))
             ->when(isset($validated['parent_id']), fn ($query) => $query->where('parent_id', $validated['parent_id']))
             ->orderBy('name');
 
         $items = $this->search($itemsQuery, $validated['query'] ?? null, $limit);
 
-        if ($items->isEmpty()) {
-            return Response::text('No items found matching the given filters.');
-        }
-
-        $lines = $items->map(fn (Item $item): string => sprintf(
-            '#%d %s (type: %s, parent_id: %s)',
-            $item->id,
-            $item->name,
-            $item->type->value,
-            $item->parent_id ?? 'none',
-        ));
-
-        return Response::text(
-            "Found {$items->count()} item(s):\n\n"
-            . $lines->implode("\n")
-            . "\n\nUse the get-item tool with an item's id for full details, its children, and its location path.",
-        );
+        return Response::structured([
+            'count' => $items->count(),
+            'items' => $items->map(fn (Item $item): array => [
+                'id' => $item->id,
+                'name' => $item->name,
+                'type' => $item->type->value,
+                'parent_id' => $item->parent_id,
+            ])->all(),
+            'note' => match (true) {
+                $items->isEmpty() => $trashed ? 'No deleted items found matching the given filters.' : 'No items found matching the given filters.',
+                $trashed => "These items are deleted. Use the restore-item tool with an item's id to bring it back.",
+                default => "Use the get-item tool with an item's id for full details, its children, and its location path.",
+            },
+        ]);
     }
 
     /** @return array<string, JsonSchema> */
@@ -81,6 +83,25 @@ class SearchItems extends Tool
                 ->default(20)
                 ->description('Maximum number of items to return (default 20, max 100).')
                 ->nullable(),
+            'trashed' => $schema->boolean()
+                ->default(false)
+                ->description('When true, search only deleted items instead of active ones. Use this to find ids for the restore-item tool.')
+                ->nullable(),
+        ];
+    }
+
+    /** @return array<string, JsonSchema> */
+    public function outputSchema(JsonSchema $schema): array
+    {
+        return [
+            'count' => $schema->integer()->required(),
+            'items' => $schema->array()->items($schema->object([
+                'id' => $schema->integer()->required(),
+                'name' => $schema->string()->required(),
+                'type' => $schema->string()->enum(ItemType::class)->required(),
+                'parent_id' => $schema->integer()->nullable()->required(),
+            ]))->required(),
+            'note' => $schema->string()->required(),
         ];
     }
 

@@ -4,6 +4,7 @@ use App\Mcp\Servers\SunnyServer;
 use App\Mcp\Tools\Inventory\GetItem;
 use App\Models\Item;
 use App\Models\User;
+use Illuminate\Testing\Fluent\AssertableJson;
 
 test('it returns full details for an item including its location path', function () {
     $user = User::factory()->create();
@@ -18,10 +19,14 @@ test('it returns full details for an item including its location path', function
     SunnyServer::actingAs($user)
         ->tool(GetItem::class, ['id' => $hammer->id])
         ->assertOk()
-        ->assertSee('Hammer')
-        ->assertSee('Type: item')
-        ->assertSee('Garage > Shelf 3 > Blue Bin')
-        ->assertSee('DeWalt');
+        ->assertStructuredContent(fn (AssertableJson $json) => $json
+            ->where('name', 'Hammer')
+            ->where('type', 'item')
+            ->where('location_path', 'Garage > Shelf 3 > Blue Bin')
+            ->where('parent_id', $bin->id)
+            ->where('metadata', ['brand' => 'DeWalt'])
+            ->where('children', [])
+            ->etc());
 });
 
 test('it lists the direct children of an item', function () {
@@ -33,9 +38,13 @@ test('it lists the direct children of an item', function () {
     SunnyServer::actingAs($user)
         ->tool(GetItem::class, ['id' => $garage->id])
         ->assertOk()
-        ->assertSee('Top level (no parent)')
-        ->assertSee('Children (1)')
-        ->assertSee('Shelf 3')
+        ->assertStructuredContent(fn (AssertableJson $json) => $json
+            ->where('location_path', null)
+            ->where('parent_id', null)
+            ->where('children', [
+                ['id' => $shelf->id, 'name' => 'Shelf 3', 'type' => 'bin'],
+            ])
+            ->etc())
         ->assertDontSee('Grandchild Item');
 });
 

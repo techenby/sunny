@@ -8,9 +8,9 @@ use App\Actions\Calendars\FetchCalendarEvents;
 use App\Models\CalendarFeed;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
-use Illuminate\Support\Collection;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
+use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Tool;
 use Laravel\Mcp\Server\Tools\Annotations\IsOpenWorld;
@@ -18,10 +18,10 @@ use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 
 #[IsReadOnly]
 #[IsOpenWorld]
-#[Description('Get upcoming events from the team\'s calendar feeds, grouped by date. Events include the time (or "All day"), title, calendar name, and location when available. Optionally limit results to a single feed or a custom date range.')]
+#[Description('Get upcoming events from the team\'s calendar feeds, sorted by start time. Events include the start and end time (or an all-day flag), title, calendar name, and location when available. Optionally limit results to a single feed or a custom date range.')]
 class GetCalendarEvents extends Tool
 {
-    public function handle(Request $request, FetchCalendarEvents $fetchCalendarEvents): Response
+    public function handle(Request $request, FetchCalendarEvents $fetchCalendarEvents): Response|ResponseFactory
     {
         $validated = $request->validate([
             'days' => ['sometimes', 'integer', 'min:1', 'max:30'],
@@ -51,8 +51,19 @@ class GetCalendarEvents extends Tool
             }
         }
 
+        $period = [
+            'from' => $from->toDateString(),
+            'days' => $days,
+            'timezone' => $timezone,
+        ];
+
         if ($feeds->isEmpty()) {
-            return Response::text('No calendar feeds have been added yet. Use the create-calendar-feed tool to add one.');
+            return Response::structured([
+                ...$period,
+                'events' => [],
+                'warnings' => [],
+                'note' => 'No calendar feeds have been added yet. Use the create-calendar-feed tool to add one.',
+            ]);
         }
 
         $warnings = collect();
@@ -62,7 +73,7 @@ class GetCalendarEvents extends Tool
                 $events = $fetchCalendarEvents->handle($feed, $days, $from);
 
                 if ($feed->isFailing()) {
-                    $warnings->push("Warning: could not fetch events from \"{$feed->name}\": {$feed->last_error}");
+                    $warnings->push("Could not fetch events from \"{$feed->name}\": {$feed->last_error}");
                 }
 
                 return $events;
@@ -70,7 +81,19 @@ class GetCalendarEvents extends Tool
             ->sortBy('starts_at')
             ->values();
 
-        return Response::text($this->format($events, $warnings, $from, $days, $timezone));
+        return Response::structured([
+            ...$period,
+            'events' => $events->map(fn (array $event): array => [
+                'date' => $event['starts_at']->toDateString(),
+                'title' => $event['title'],
+                'feed_name' => $event['feed_name'],
+                'location' => $event['location'],
+                'all_day' => $event['all_day'],
+                'starts_at' => $event['starts_at']->toIso8601String(),
+                'ends_at' => $event['ends_at']?->toIso8601String(),
+            ])->all(),
+            'warnings' => $warnings->all(),
+        ]);
     }
 
     /** @return array<string, JsonSchema> */
@@ -89,48 +112,29 @@ class GetCalendarEvents extends Tool
         ];
     }
 
-    /**
-     * @param  Collection<int, array{feed_name: string, title: string, location: string|null, starts_at: CarbonImmutable, ends_at: CarbonImmutable|null, all_day: bool}>  $events
-     * @param  Collection<int, string>  $warnings
-     */
-    private function format(Collection $events, Collection $warnings, CarbonImmutable $from, int $days, string $timezone): string
+    /** @return array<string, JsonSchema> */
+    public function outputSchema(JsonSchema $schema): array
     {
-        $lines = collect([
-            sprintf('Events for %d day(s) starting %s (%s):', $days, $from->toDateString(), $timezone),
-        ]);
-
-        if ($events->isEmpty()) {
-            $lines->push('', 'No events found in this period.');
-        }
-
-        $events
-            ->groupBy(fn (array $event): string => $event['starts_at']->toDateString())
-            ->each(function (Collection $dayEvents, string $date) use ($lines): void {
-                $lines->push('', '## ' . CarbonImmutable::parse($date)->format('l, F j, Y'));
-
-                $dayEvents->each(fn (array $event) => $lines->push($this->formatEvent($event)));
-            });
-
-        if ($warnings->isNotEmpty()) {
-            $lines->push('', ...$warnings->all());
-        }
-
-        return $lines->implode("\n");
-    }
-
-    /** @param  array{feed_name: string, title: string, location: string|null, starts_at: CarbonImmutable, ends_at: CarbonImmutable|null, all_day: bool}  $event */
-    private function formatEvent(array $event): string
-    {
-        $time = $event['all_day']
-            ? 'All day'
-            : $event['starts_at']->format('g:i A') . ($event['ends_at'] ? ' - ' . $event['ends_at']->format('g:i A') : '');
-
-        $line = "- {$time}: {$event['title']} [{$event['feed_name']}]";
-
-        if ($event['location'] !== null) {
-            $line .= " ({$event['location']})";
-        }
-
-        return $line;
+        return [
+            'from' => $schema->string()->required()
+                ->description('The first date covered, as an ISO date.'),
+            'days' => $schema->integer()->required(),
+            'timezone' => $schema->string()->required()
+                ->description("The team's timezone, which all event times are expressed in."),
+            'events' => $schema->array()->items($schema->object([
+                'date' => $schema->string()->required()
+                    ->description('The ISO date the event starts on.'),
+                'title' => $schema->string()->required(),
+                'feed_name' => $schema->string()->required(),
+                'location' => $schema->string()->nullable()->required(),
+                'all_day' => $schema->boolean()->required(),
+                'starts_at' => $schema->string()->required(),
+                'ends_at' => $schema->string()->nullable()->required(),
+            ]))->required()
+                ->description('Events sorted by start time.'),
+            'warnings' => $schema->array()->items($schema->string())->required()
+                ->description('Feeds that could not be fetched.'),
+            'note' => $schema->string(),
+        ];
     }
 }

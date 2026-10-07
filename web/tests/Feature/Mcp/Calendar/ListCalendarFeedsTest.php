@@ -1,10 +1,11 @@
 <?php
 
 use App\Enums\CalendarColor;
-use App\Mcp\Servers\SunnyServer;
 use App\Mcp\Tools\Calendar\ListCalendarFeeds;
 use App\Models\CalendarFeed;
 use App\Models\User;
+use Illuminate\Testing\Fluent\AssertableJson;
+use Tests\Feature\Mcp\SunnyTestServer;
 
 test('it lists the feeds for the current team', function () {
     $user = User::factory()->create();
@@ -15,13 +16,23 @@ test('it lists the feeds for the current team', function () {
         'last_fetched_at' => now(),
     ]);
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(ListCalendarFeeds::class)
         ->assertOk()
-        ->assertSee("Crew Calendar (ID: {$feed->id})")
-        ->assertSee('URL: https://example.com/crew.ics')
-        ->assertSee('Color: Blue (#2563eb)')
-        ->assertSee('Status: ok');
+        ->assertStructuredContent([
+            'feeds' => [
+                [
+                    'id' => $feed->id,
+                    'name' => 'Crew Calendar',
+                    'url' => 'https://example.com/crew.ics',
+                    'color' => '#2563eb',
+                    'color_name' => 'Blue',
+                    'last_fetched_at' => $feed->last_fetched_at->toIso8601String(),
+                    'status' => 'ok',
+                    'last_error' => null,
+                ],
+            ],
+        ]);
 });
 
 test('it shows the failing status and last error for a broken feed', function () {
@@ -30,11 +41,13 @@ test('it shows the failing status and last error for a broken feed', function ()
         'name' => 'Broken Calendar',
     ]);
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(ListCalendarFeeds::class)
         ->assertOk()
-        ->assertSee('Status: failing')
-        ->assertSee('Last error: The calendar server responded with HTTP 401.');
+        ->assertStructuredContent(fn (AssertableJson $json) => $json
+            ->where('feeds.0.status', 'failing')
+            ->where('feeds.0.last_error', 'The calendar server responded with HTTP 401.')
+            ->etc());
 });
 
 test('it does not list feeds belonging to other teams', function () {
@@ -42,7 +55,7 @@ test('it does not list feeds belonging to other teams', function () {
     CalendarFeed::factory()->for($user->currentTeam)->create(['name' => 'Crew Calendar']);
     CalendarFeed::factory()->create(['name' => 'Marine Calendar']);
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(ListCalendarFeeds::class)
         ->assertOk()
         ->assertSee('Crew Calendar')
@@ -52,8 +65,11 @@ test('it does not list feeds belonging to other teams', function () {
 test('it explains when the team has no feeds', function () {
     $user = User::factory()->create();
 
-    SunnyServer::actingAs($user)
+    SunnyTestServer::actingAs($user)
         ->tool(ListCalendarFeeds::class)
         ->assertOk()
-        ->assertSee('No calendar feeds have been added yet.');
+        ->assertStructuredContent([
+            'feeds' => [],
+            'note' => 'No calendar feeds have been added yet. Use the create-calendar-feed tool to add one.',
+        ]);
 });

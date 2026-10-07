@@ -6,12 +6,13 @@ use App\Models\CalendarFeed;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Testing\Fluent\AssertableJson;
 
 beforeEach(function () {
     $this->travelTo(CarbonImmutable::parse('2026-05-05 08:00', 'America/Chicago'));
 });
 
-test('it returns upcoming events grouped by date', function () {
+test('it returns upcoming events sorted by start time', function () {
     Http::fake([
         'https://example.com/crew.ics' => Http::response(file_get_contents(base_path('tests/Fixtures/ics/events.ics'))),
     ]);
@@ -25,10 +26,24 @@ test('it returns upcoming events grouped by date', function () {
     SunnyServer::actingAs($user)
         ->tool(GetCalendarEvents::class)
         ->assertOk()
-        ->assertSee('Tuesday, May 5, 2026')
-        ->assertSee('10:00 AM - 11:00 AM: Crew Meeting [Crew Calendar] (The Galley)')
-        ->assertSee('Wednesday, May 6, 2026')
-        ->assertSee('All day: Shore Leave [Crew Calendar]');
+        ->assertStructuredContent(fn (AssertableJson $json) => $json
+            ->where('from', '2026-05-05')
+            ->where('days', 7)
+            ->where('timezone', 'America/Chicago')
+            ->where('events.0', [
+                'date' => '2026-05-05',
+                'title' => 'Crew Meeting',
+                'feed_name' => 'Crew Calendar',
+                'location' => 'The Galley',
+                'all_day' => false,
+                'starts_at' => '2026-05-05T10:00:00-05:00',
+                'ends_at' => '2026-05-05T11:00:00-05:00',
+            ])
+            ->where('events.1.date', '2026-05-06')
+            ->where('events.1.title', 'Shore Leave')
+            ->where('events.1.all_day', true)
+            ->where('warnings', [])
+            ->etc());
 });
 
 test('it limits events to a single feed', function () {
@@ -104,5 +119,7 @@ test('it warns about a failing feed and still returns events from other feeds', 
         ->tool(GetCalendarEvents::class)
         ->assertOk()
         ->assertSee('Crew Meeting')
-        ->assertSee('Warning: could not fetch events from "Broken Calendar": The calendar server responded with HTTP 401.');
+        ->assertStructuredContent(fn (AssertableJson $json) => $json
+            ->where('warnings', ['Could not fetch events from "Broken Calendar": The calendar server responded with HTTP 401.'])
+            ->etc());
 });

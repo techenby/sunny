@@ -4,6 +4,7 @@ use App\Mcp\Servers\SunnyServer;
 use App\Mcp\Tools\Inventory\SearchItems;
 use App\Models\Item;
 use App\Models\User;
+use Illuminate\Testing\Fluent\AssertableJson;
 
 test('can search items by name', function () {
     $user = User::factory()->create();
@@ -13,8 +14,10 @@ test('can search items by name', function () {
     SunnyServer::actingAs($user)
         ->tool(SearchItems::class, ['query' => 'Ham'])
         ->assertOk()
-        ->assertSee('Found 1 item(s)')
-        ->assertSee('Hammer')
+        ->assertStructuredContent(fn (AssertableJson $json) => $json
+            ->where('count', 1)
+            ->where('items.0.name', 'Hammer')
+            ->etc())
         ->assertDontSee('Screwdriver');
 });
 
@@ -37,8 +40,10 @@ test('searches item names case insensitively', function () {
     SunnyServer::actingAs($user)
         ->tool(SearchItems::class, ['query' => 'gopro camera bag'])
         ->assertOk()
-        ->assertSee('Found 1 item(s)')
-        ->assertSee('GoPro Camera Bag');
+        ->assertStructuredContent(fn (AssertableJson $json) => $json
+            ->where('count', 1)
+            ->where('items.0.name', 'GoPro Camera Bag')
+            ->etc());
 });
 
 test('prioritizes full phrase matches before individual word matches', function () {
@@ -111,6 +116,37 @@ test('does not return items from other teams', function () {
     SunnyServer::actingAs($user)
         ->tool(SearchItems::class, ['query' => 'GoPro backpack'])
         ->assertOk()
-        ->assertSee('No items found')
-        ->assertDontSee('Secret GoPro Camera Bag');
+        ->assertStructuredContent([
+            'count' => 0,
+            'items' => [],
+            'note' => 'No items found matching the given filters.',
+        ]);
+});
+
+test('can search only deleted items', function () {
+    $user = User::factory()->create();
+    Item::factory()->for($user->currentTeam)->create(['name' => 'Active Hammer']);
+    Item::factory()->for($user->currentTeam)->create(['name' => 'Deleted Hammer'])->delete();
+    Item::factory()->create(['name' => 'Foreign Hammer'])->delete();
+
+    SunnyServer::actingAs($user)
+        ->tool(SearchItems::class, ['query' => 'Hammer', 'trashed' => true])
+        ->assertOk()
+        ->assertStructuredContent(fn (AssertableJson $json) => $json
+            ->where('count', 1)
+            ->where('items.0.name', 'Deleted Hammer')
+            ->where('note', fn (string $note) => str_contains($note, 'restore-item'))
+            ->etc());
+});
+
+test('excludes deleted items by default', function () {
+    $user = User::factory()->create();
+    Item::factory()->for($user->currentTeam)->create(['name' => 'Deleted Hammer'])->delete();
+
+    SunnyServer::actingAs($user)
+        ->tool(SearchItems::class, ['query' => 'Hammer'])
+        ->assertOk()
+        ->assertStructuredContent(fn (AssertableJson $json) => $json
+            ->where('count', 0)
+            ->etc());
 });
