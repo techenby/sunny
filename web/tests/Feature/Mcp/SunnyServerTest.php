@@ -146,7 +146,7 @@ test('catalog tools cannot be called directly', function () {
         'arguments' => (object) [],
     ]);
 
-    $response->assertStatus(400);
+    $response->assertBadRequest();
     expect($response->json('error.message'))->toContain('list-calendar-feeds');
 });
 
