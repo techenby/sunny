@@ -11,9 +11,7 @@
             </flux:callout.text>
         </flux:callout>
 
-        <div class="text-sm text-center text-zinc-600 dark:text-zinc-400">
-            {{ __('Signed in as :email', ['email' => $user->email]) }}
-        </div>
+        <flux:text class="text-center">{{ __('Signed in as :email', ['email' => $user->email]) }}</flux:text>
 
         <div class="flex flex-col gap-3">
             <form method="POST" action="{{ route('passport.authorizations.approve') }}">
@@ -40,8 +38,6 @@
             </form>
         </div>
 
-        <div class="text-sm text-center text-zinc-600 dark:text-zinc-400">
-            {{ __('You can disconnect it at any time from your API token settings.') }}
-        </div>
+        <flux:text class="text-center">{{ __('You can disconnect it at any time from your API token settings.') }}</flux:text>
     </div>
 </x-layouts::auth>
