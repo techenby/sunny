@@ -142,7 +142,22 @@ PASSPORT_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----
 ```
 
 Keep the same keys between deployments. Replacing them invalidates every
-token that was already issued.
+token that was already issued. Both keys are required: without the public key,
+every request to `/mcp` fails with a `500` (`Invalid key supplied`), even
+unauthenticated ones.
+
+3. Use a server-side session driver, such as `database`:
+
+```bash
+SESSION_DRIVER=database
+```
+
+The consent screen stores Passport's pending authorization request in the
+session. With the `cookie` driver, that makes the session cookie larger than
+the 4 KB browsers accept, so the browser keeps the old cookie and
+**Allow access** fails with a `403`. Laravel Cloud sets `SESSION_DRIVER=cookie`
+unless you override it in the environment's variables. Switching drivers signs
+everyone out once.
 
 ## Verify from tests
 
@@ -164,6 +179,14 @@ php artisan test --compact tests/Feature/Mcp
   API token from settings always gets a `401` here, because `/mcp` only
   accepts OAuth. If OAuth fails for everyone, check that the Passport keys are
   present and haven't changed.
+- **`403` "The provided auth token for the request is different from the
+  session auth token"** when allowing access: the session lost the token that
+  the consent screen stored. Check that production uses a server-side session
+  driver, not `cookie` (see [Deploying](#deploying)). Each attempt also needs a
+  fresh consent screen, so start again from the client rather than reloading
+  an old page.
+- **`500` on every request to `/mcp`**: Passport can't load its public key.
+  Check that `PASSPORT_PUBLIC_KEY` is set and matches `PASSPORT_PRIVATE_KEY`.
 - **Empty or unexpected data**: check the user's current team. Tools act on
   that team, and every account also has a personal team that is often empty.
 - **A redirect to the login page instead of a `401`**: the request didn't ask
