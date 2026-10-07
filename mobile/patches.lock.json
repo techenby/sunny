@@ -1,5 +1,5 @@
 {
-    "_hash": "04dd34e9300b5274e307b487cf44e52ff8288d09e0417be412d0f1debef7243a",
+    "_hash": "71e5c5187c156f0adc5eab65a5b6c3855031b8c72e31ae205c92ccdc8ebcda4e",
     "patches": {
         "nativephp/mobile": [
             {
@@ -19,6 +19,16 @@
                 "description": "iOS: focus outlined/filled text inputs when their padded box is tapped (upstream issue #19 in our scratchpad)",
                 "url": "patches/nativephp-mobile-ui-text-input-tap-to-focus.patch",
                 "sha256": "96027bfb40913de5031675e1f4517ffba915a059ef125c66ab962b02fa3eb4cf",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
+            },
+            {
+                "package": "nativephp/mobile-ui",
+                "description": "iOS: keep a cover-fit image's overflow from swallowing taps meant for the fields around it",
+                "url": "patches/nativephp-mobile-ui-image-fill-hit-testing.patch",
+                "sha256": "3ef12a52913b20d01d5f6d331f65edf4c0dc81c03ef1fb3986ef31120282ac47",
                 "depth": 1,
                 "extra": {
                     "provenance": "root"
