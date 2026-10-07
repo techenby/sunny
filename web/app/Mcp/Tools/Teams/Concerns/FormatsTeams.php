@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools\Teams\Concerns;
 
+use Illuminate\Support\Facades\Date;
 use App\Enums\Appearance;
 use App\Enums\TeamRole;
 use App\Models\Team;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
-use Illuminate\Support\Carbon;
 
 trait FormatsTeams
 {
@@ -55,7 +55,7 @@ trait FormatsTeams
             'name' => $team->name,
             'timezone' => $team->timezone,
             'week_start' => $team->week_start,
-            'week_start_day' => Carbon::getDays()[$team->week_start],
+            'week_start_day' => Date::getDays()[$team->week_start],
             'appearance' => $team->appearance->value,
             'rotation' => $team->rotation,
             'address' => $address,
