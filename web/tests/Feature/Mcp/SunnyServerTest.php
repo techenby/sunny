@@ -64,6 +64,8 @@ test('the server lists the everyday tools and the tool catalog', function () {
         'list-routines',
         'get-routine-board',
         'complete-routine-step',
+        'list-teams',
+        'switch-team',
         'search_tools',
         'execute_tools',
     ]);
@@ -105,8 +107,6 @@ test('the tool catalog holds every other tool', function () {
             'update-routine-step',
             'reorder-routine-steps',
             'remove-routine-step',
-            'list-teams',
-            'switch-team',
             'update-team',
             'get-team-settings',
             'update-team-settings',

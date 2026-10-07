@@ -72,8 +72,8 @@ use Laravel\Mcp\Server\Tools\ToolSearch;
     lists, and routines.
 
     Finding tools: the everyday tools are listed directly. Everything else (editing
-    and deleting records, recipe sharing, calendar feeds, routine setup, teams, and
-    settings) is in a catalog: use `search_tools` to find a tool and its input schema,
+    and deleting records, recipe sharing, calendar feeds, routine setup, team renaming,
+    and settings) is in a catalog: use `search_tools` to find a tool and its input schema,
     then `execute_tools` to call it by its exact name.
 
     Teams: every tool acts on the authenticated user's current team. Use `list-teams`
@@ -125,6 +125,8 @@ class SunnyServer extends Server
         ListRoutines::class,
         GetRoutineBoard::class,
         CompleteRoutineStep::class,
+        ListTeams::class,
+        SwitchTeam::class,
         ToolSearch::class => [
             UpdateRecipe::class,
             DeleteRecipe::class,
@@ -152,8 +154,6 @@ class SunnyServer extends Server
             UpdateRoutineStep::class,
             ReorderRoutineSteps::class,
             RemoveRoutineStep::class,
-            ListTeams::class,
-            SwitchTeam::class,
             UpdateTeam::class,
             GetTeamSettings::class,
             UpdateTeamSettings::class,
