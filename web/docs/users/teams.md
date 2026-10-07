@@ -20,7 +20,9 @@ you want to use. Sunny updates the page to show that team's information.
 
 Always check the current team before adding or editing shared information. API
 and MCP actions also use the account's currently selected team unless their
-documentation says otherwise.
+documentation says otherwise. If you ask a connected AI assistant to switch
+teams, your current team in the web app changes too; see
+[Connect an AI Assistant](/docs/users/ai-assistants).
 
 ## Create a team
 

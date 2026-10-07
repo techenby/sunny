@@ -6,11 +6,13 @@ namespace App\Providers;
 
 use App\Models\User;
 use Carbon\CarbonImmutable;
+use Carbon\CarbonInterval;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use Laravel\Passport\Passport;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -23,6 +25,15 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->configureDefaults();
         $this->configureGates();
+        $this->configurePassport();
+    }
+
+    protected function configurePassport(): void
+    {
+        Passport::authorizationView(fn (array $parameters) => view('pages::auth.oauth-authorize', $parameters));
+
+        Passport::tokensExpireIn(CarbonInterval::day());
+        Passport::refreshTokensExpireIn(CarbonInterval::days(90));
     }
 
     protected function configureGates(): void

@@ -21,6 +21,15 @@ This command installs Composer dependencies, creates `.env` from
 `.env.example` when needed, generates the application key, runs migrations,
 installs npm dependencies, and builds the frontend assets.
 
+To try the MCP server's OAuth flow locally, generate Passport's encryption
+keys once:
+
+```bash
+php artisan passport:keys
+```
+
+See [MCP Setup](/docs/developers/mcp/setup) for connecting a client.
+
 The example environment uses SQLite, so the default setup does not require a
 separate database server. Configure `DB_*` variables if you want to use the
 PostgreSQL environment used by the deployed application.

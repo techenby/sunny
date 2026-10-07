@@ -14,7 +14,7 @@ Use these pages when developing or integrating with Sunny.
   scoping, application layers, scheduled work, queues, and integrations.
 - [HTTP API](/docs/developers/http-api): Authenticate with Sanctum and work with
   recipe, inventory, list, routine, and synchronization endpoints.
-- [MCP Setup](/docs/developers/mcp/setup): Connect an MCP client to Sunny's
-  recipe, inventory, and calendar tools.
+- [MCP Setup](/docs/developers/mcp/setup): Connect an MCP client to Sunny with
+  OAuth, and work on the MCP server locally.
 - [Database ERD](/docs/developers/database): Review Sunny's tables and
   relationships.

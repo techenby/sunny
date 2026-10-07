@@ -22,3 +22,5 @@ These guides explain how to use Sunny's household features.
   with a household.
 - [Calendar Feeds](/docs/users/kiosk/calendar-feeds): Add events from Proton
   Calendar or Google Calendar to a kiosk.
+- [Connect an AI Assistant](/docs/users/ai-assistants): Let Claude, ChatGPT, or
+  another assistant use Sunny for you.

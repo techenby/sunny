@@ -7,6 +7,7 @@ use Illuminate\Testing\TestResponse;
 use Laravel\Mcp\Server\Tools\ExecuteTools;
 use Laravel\Mcp\Server\Tools\ToolSearch;
 use Laravel\Mcp\Server\Transport\FakeTransporter;
+use Laravel\Passport\Passport;
 use Tests\Feature\Mcp\SunnyTestServer;
 
 test('guests cannot access the mcp server', function () {
@@ -19,9 +20,19 @@ test('guests cannot access the mcp server', function () {
         ->assertHeader('WWW-Authenticate');
 });
 
-test('a bearer token authenticates against the mcp server', function () {
-    $user = User::factory()->create();
-    $token = $user->createToken('Test')->plainTextToken;
+test('an oauth user can access the mcp server', function () {
+    Passport::actingAs(User::factory()->create(), ['mcp:use']);
+
+    $this->postJson('/mcp', [
+        'jsonrpc' => '2.0',
+        'id' => 1,
+        'method' => 'ping',
+    ])
+        ->assertOk();
+});
+
+test('api tokens cannot access the mcp server', function () {
+    $token = User::factory()->create()->createToken('Test')->plainTextToken;
 
     $this->withToken($token)
         ->postJson('/mcp', [
@@ -29,18 +40,19 @@ test('a bearer token authenticates against the mcp server', function () {
             'id' => 1,
             'method' => 'ping',
         ])
-        ->assertOk();
+        ->assertUnauthorized();
 });
 
 function mcp(User $user, string $method, array $params = []): TestResponse
 {
-    return test()->withToken($user->createToken('Test')->plainTextToken)
-        ->postJson('/mcp', [
-            'jsonrpc' => '2.0',
-            'id' => 1,
-            'method' => $method,
-            'params' => (object) $params,
-        ]);
+    Passport::actingAs($user, ['mcp:use']);
+
+    return test()->postJson('/mcp', [
+        'jsonrpc' => '2.0',
+        'id' => 1,
+        'method' => $method,
+        'params' => (object) $params,
+    ]);
 }
 
 test('the server lists the everyday tools and the tool catalog', function () {

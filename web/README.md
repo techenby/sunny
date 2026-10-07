@@ -19,6 +19,7 @@
 - [laravel/fortify](https://github.com/laravel/fortify)
 - [laravel/mcp](https://github.com/laravel/mcp)
 - [laravel/pao](https://github.com/laravel/pao)
+- [laravel/passport](https://github.com/laravel/passport)
 - [laravel/pennant](https://github.com/laravel/pennant)
 - [livewire/flux-pro](https://fluxui.dev/)
 - [nunomaduro/essentials](https://github.com/nunomaduro/essentials)
@@ -71,6 +72,7 @@ and is served by Laradocs at `/docs`.
 | --- | --- |
 | Blue | Application tables |
 | Red Orange | Laravel default tables |
+| Purple | Passport OAuth tables |
 
 ```mermaid
 ---
@@ -310,6 +312,60 @@ erDiagram
 		datetime updated_at  ""
 	}
 
+	oauth_clients {
+		uuid id PK ""
+		varchar owner_type  ""
+		integer owner_id  ""
+		varchar name  ""
+		varchar secret  ""
+		varchar provider  ""
+		text redirect_uris  ""
+		text grant_types  ""
+		boolean revoked  ""
+		datetime created_at  ""
+		datetime updated_at  ""
+	}
+
+	oauth_auth_codes {
+		char id PK ""
+		integer user_id FK ""
+		uuid client_id FK ""
+		text scopes  ""
+		boolean revoked  ""
+		datetime expires_at  ""
+	}
+
+	oauth_access_tokens {
+		char id PK ""
+		integer user_id FK ""
+		uuid client_id FK ""
+		varchar name  ""
+		text scopes  ""
+		boolean revoked  ""
+		datetime created_at  ""
+		datetime updated_at  ""
+		datetime expires_at  ""
+	}
+
+	oauth_refresh_tokens {
+		char id PK ""
+		char access_token_id FK ""
+		boolean revoked  ""
+		datetime expires_at  ""
+	}
+
+	oauth_device_codes {
+		char id PK ""
+		integer user_id FK ""
+		uuid client_id FK ""
+		char user_code UK ""
+		text scopes  ""
+		boolean revoked  ""
+		datetime user_approved_at  ""
+		datetime last_polled_at  ""
+		datetime expires_at  ""
+	}
+
 	users||--o{team_members:"belongs to"
 	users||--o|teams:"current team"
 	users||--o{team_invitations:"invited by"
@@ -335,11 +391,24 @@ erDiagram
 	routines||--o{routine_occurrences:"generates"
 	routine_steps||--o{routine_occurrence_steps:"instantiated as"
 	routine_occurrences||--o{routine_occurrence_steps:"has steps"
+	users||--o{oauth_auth_codes:"authorized"
+	users||--o{oauth_access_tokens:"authorized"
+	users|o--o{oauth_device_codes:"approved"
+	oauth_clients||--o{oauth_auth_codes:"issued"
+	oauth_clients||--o{oauth_access_tokens:"issued"
+	oauth_clients||--o{oauth_device_codes:"issued"
+	oauth_access_tokens||--o|oauth_refresh_tokens:"refreshed by"
 
 	sessions:::Laravel
 	password_reset_tokens:::Laravel
 	personal_access_tokens:::Laravel
+	oauth_clients:::Passport
+	oauth_auth_codes:::Passport
+	oauth_access_tokens:::Passport
+	oauth_refresh_tokens:::Passport
+	oauth_device_codes:::Passport
 
 	classDef Rose :,stroke-width:1px, stroke-dasharray:none, stroke:#FF5978, fill:#FFDFE5, color:#8E2236
 	classDef Laravel stroke:#FF2D20, fill:#FFD6D4, color:#BF2118
+	classDef Passport stroke:#7C3AED, fill:#EDE9FE, color:#5B21B6
 ```

@@ -24,6 +24,8 @@ everyday information.
   how it refreshes and records changes.
 - [Calendar Feeds](/docs/users/kiosk/calendar-feeds): Add Proton Calendar or Google
   Calendar events to the kiosk.
+- [Connect an AI Assistant](/docs/users/ai-assistants): Let Claude, ChatGPT, or
+  another assistant use Sunny for you.
 
 ## Developer Guides
 
@@ -32,4 +34,5 @@ everyday information.
 - [Architecture and Operations](/docs/developers/architecture): Understand the
   application layers, team scoping, queues, scheduling, and integrations.
 - [HTTP API](/docs/developers/http-api): Integrate with Sunny through Sanctum.
-- [MCP Setup](/docs/developers/mcp/setup): Connect an MCP client to Sunny.
+- [MCP Setup](/docs/developers/mcp/setup): Connect an MCP client to Sunny with
+  OAuth.

@@ -333,4 +333,4 @@ Expect standard Laravel JSON errors:
 - `422` when validation fails.
 - `429` when too many token or two-factor requests are made.
 
-The same Sanctum token can also authenticate Sunny's [MCP server](/docs/developers/mcp/setup).
+Sanctum tokens don't work with Sunny's [MCP server](/docs/developers/mcp/setup), which only accepts OAuth.

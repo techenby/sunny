@@ -13,3 +13,5 @@ Artisan::command('inspire', function () {
 Schedule::command('routines:generate')->dailyAt('00:15')->withoutOverlapping();
 
 Schedule::command('sanctum:prune-expired --hours=24')->daily();
+
+Schedule::command('passport:purge --hours=24')->daily();
