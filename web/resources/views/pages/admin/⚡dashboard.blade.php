@@ -99,7 +99,7 @@ new class extends Component {
             ->selectRaw('team_members.team_id, max(users.last_active_at) as last_active_at, count(*) as members')
             ->groupBy('team_members.team_id')
             ->havingRaw('max(users.last_active_at) is not null')
-            ->orderByDesc('last_active_at')
+            ->latest('last_active_at')
             ->limit(10)
             ->get()
             ->map(fn (object $row) => [

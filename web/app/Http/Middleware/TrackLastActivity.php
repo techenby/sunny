@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
+use Illuminate\Support\Facades\Date;
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 use Symfony\Component\HttpFoundation\Response;
 
 class TrackLastActivity
@@ -26,7 +26,7 @@ class TrackLastActivity
 
         $lastActiveAt = $user->getAttributes()['last_active_at'] ?? null;
 
-        if ($lastActiveAt === null || Carbon::parse($lastActiveAt)->lt(now()->subMinutes(self::THROTTLE_MINUTES))) {
+        if ($lastActiveAt === null || Date::parse($lastActiveAt)->lt(now()->subMinutes(self::THROTTLE_MINUTES))) {
             $user->forceFill(['last_active_at' => now()])->save();
         }
 
