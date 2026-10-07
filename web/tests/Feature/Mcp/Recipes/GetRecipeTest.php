@@ -4,6 +4,7 @@ use App\Mcp\Servers\SunnyServer;
 use App\Mcp\Tools\Recipes\GetRecipe;
 use App\Models\Recipe;
 use App\Models\User;
+use Illuminate\Testing\Fluent\AssertableJson;
 
 test('it returns a recipe by id', function () {
     $user = User::factory()->create();
@@ -18,11 +19,14 @@ test('it returns a recipe by id', function () {
     SunnyServer::actingAs($user)
         ->tool(GetRecipe::class, ['id' => $recipe->id])
         ->assertOk()
-        ->assertSee('Chocolate Cake')
-        ->assertSee('2 cups flour')
-        ->assertSee('Mix and bake.')
-        ->assertSee('Best served warm.')
-        ->assertSee('Calories: 350 kcal');
+        ->assertStructuredContent(fn (AssertableJson $json) => $json
+            ->where('id', $recipe->id)
+            ->where('name', 'Chocolate Cake')
+            ->where('ingredients', '<ul><li>2 cups flour</li></ul>')
+            ->where('instructions', '<ol><li>Mix and bake.</li></ol>')
+            ->where('notes', 'Best served warm.')
+            ->where('nutrition', 'Calories: 350 kcal')
+            ->etc());
 });
 
 test('it returns a recipe by slug', function () {

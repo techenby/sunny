@@ -14,6 +14,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Enum;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
+use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Tool;
 use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
@@ -22,7 +23,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 #[Description('Search the home inventory of the current team. Items form a hierarchy: locations contain bins, bins contain items. Filter by name, type, or parent to browse the tree. Returns a compact list; use the get-item tool for full details.')]
 class SearchItems extends Tool
 {
-    public function handle(Request $request): Response
+    public function handle(Request $request): ResponseFactory
     {
         Gate::forUser($request->user())->authorize('viewAny', Item::class);
 
@@ -43,23 +44,18 @@ class SearchItems extends Tool
 
         $items = $this->search($itemsQuery, $validated['query'] ?? null, $limit);
 
-        if ($items->isEmpty()) {
-            return Response::text('No items found matching the given filters.');
-        }
-
-        $lines = $items->map(fn (Item $item): string => sprintf(
-            '#%d %s (type: %s, parent_id: %s)',
-            $item->id,
-            $item->name,
-            $item->type->value,
-            $item->parent_id ?? 'none',
-        ));
-
-        return Response::text(
-            "Found {$items->count()} item(s):\n\n"
-            . $lines->implode("\n")
-            . "\n\nUse the get-item tool with an item's id for full details, its children, and its location path.",
-        );
+        return Response::structured([
+            'count' => $items->count(),
+            'items' => $items->map(fn (Item $item): array => [
+                'id' => $item->id,
+                'name' => $item->name,
+                'type' => $item->type->value,
+                'parent_id' => $item->parent_id,
+            ])->all(),
+            'note' => $items->isEmpty()
+                ? 'No items found matching the given filters.'
+                : "Use the get-item tool with an item's id for full details, its children, and its location path.",
+        ]);
     }
 
     /** @return array<string, JsonSchema> */
@@ -81,6 +77,21 @@ class SearchItems extends Tool
                 ->default(20)
                 ->description('Maximum number of items to return (default 20, max 100).')
                 ->nullable(),
+        ];
+    }
+
+    /** @return array<string, JsonSchema> */
+    public function outputSchema(JsonSchema $schema): array
+    {
+        return [
+            'count' => $schema->integer()->required(),
+            'items' => $schema->array()->items($schema->object([
+                'id' => $schema->integer()->required(),
+                'name' => $schema->string()->required(),
+                'type' => $schema->string()->enum(ItemType::class)->required(),
+                'parent_id' => $schema->integer()->nullable()->required(),
+            ]))->required(),
+            'note' => $schema->string()->required(),
         ];
     }
 

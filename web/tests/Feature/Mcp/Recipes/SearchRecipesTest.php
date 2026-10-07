@@ -4,6 +4,7 @@ use App\Mcp\Servers\SunnyServer;
 use App\Mcp\Tools\Recipes\SearchRecipes;
 use App\Models\Recipe;
 use App\Models\User;
+use Illuminate\Testing\Fluent\AssertableJson;
 
 test('it returns recipes for the current team', function () {
     $user = User::factory()->create();
@@ -54,7 +55,10 @@ test('it respects the limit argument', function () {
     SunnyServer::actingAs($user)
         ->tool(SearchRecipes::class, ['limit' => 2])
         ->assertOk()
-        ->assertSee('"count": 2');
+        ->assertStructuredContent(fn (AssertableJson $json) => $json
+            ->where('count', 2)
+            ->has('recipes', 2)
+            ->etc());
 });
 
 test('it validates the limit argument', function () {
