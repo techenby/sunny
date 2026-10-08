@@ -1,10 +1,10 @@
 <?php
 
-use App\Models\KioskDevice;
-use App\Enums\TeamRole;
 use App\Enums\Appearance;
 use App\Enums\CalendarColor;
+use App\Enums\TeamRole;
 use App\Models\CalendarFeed;
+use App\Models\KioskDevice;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Support\Facades\Date;

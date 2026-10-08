@@ -1,9 +1,9 @@
 <?php
 
-use Illuminate\Contracts\Database\Query\Builder;
 use App\Livewire\Traits\WithKioskTeam;
 use App\Models\Checklist;
 use App\Models\ChecklistItem;
+use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;

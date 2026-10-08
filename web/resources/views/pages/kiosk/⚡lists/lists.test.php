@@ -1,10 +1,10 @@
 <?php
 
-use App\Models\Team;
-use App\Models\KioskDevice;
 use App\Enums\TeamRole;
 use App\Models\Checklist;
 use App\Models\ChecklistItem;
+use App\Models\KioskDevice;
+use App\Models\Team;
 use App\Models\User;
 use Livewire\Livewire;
 
