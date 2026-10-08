@@ -1,5 +1,6 @@
 @use('App\Icons\Android')
 @use('App\Icons\Ios')
+@use('App\Ui\Card')
 
 <native:top-bar title="Routines" display-mode="large" :back="false">
     <native:top-bar-action
@@ -25,15 +26,15 @@
                         <icon :ios="$routine['timeOfDay']->iosIcon()" :android="$routine['timeOfDay']->androidIcon()" :size="18" class="text-theme-on-primary" />
                     </column>
                     <column class="flex-1 gap-0.5">
-                        <text font="semibold" class="text-xl text-theme-on-background">{{ $routine['name'] }}</text>
-                        <text class="text-sm text-theme-on-surface-variant">{{ $routine['timeOfDay']->label() }} · {{ $routine['assignee'] }}</text>
+                        <x-ui.heading size="lg">{{ $routine['name'] }}</x-ui.heading>
+                        <x-ui.text size="sm">{{ $routine['timeOfDay']->label() }} · {{ $routine['assignee'] }}</x-ui.text>
                     </column>
                     @if ($routine['total'])
                         <text ref="routine-{{ $routine['id'] }}-progress" class="text-sm text-theme-on-surface-variant">{{ $routine['completed'] }} of {{ $routine['total'] }}</text>
                     @endif
                 </row>
 
-                <column class="w-full rounded-xl bg-theme-surface">
+                <column class="{{ Card::classes() }} w-full">
                     @forelse ($routine['steps'] as $step)
                         <pressable
                             ref="routine-step-{{ $step['id'] }}"
@@ -60,10 +61,10 @@
                 </column>
             </column>
         @empty
-            <column ref="routines-empty" class="w-full items-center gap-2 rounded-xl bg-theme-surface px-4 py-6">
+            <column ref="routines-empty" class="{{ Card::classes() }} w-full items-center gap-2 px-4 py-6">
                 <icon :ios="Ios::ChecklistChecked" :android="Android::Checklist" :size="28" class="text-theme-primary" />
-                <text font="semibold" class="text-base text-theme-on-surface">No routines today</text>
-                <text class="text-center text-sm text-theme-on-surface-variant">Routines due today will show up here. Pull down on the summary to refresh.</text>
+                <x-ui.heading>No routines today</x-ui.heading>
+                <x-ui.text size="sm" class="text-center">Routines due today will show up here. Pull down on the summary to refresh.</x-ui.text>
             </column>
         @endforelse
     </column>

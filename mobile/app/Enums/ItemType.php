@@ -41,12 +41,17 @@ enum ItemType: string
         };
     }
 
-    public function iconColor(): string
+    public function color(): string
     {
         return match ($this) {
-            self::Location => 'red-500',
-            self::Bin => 'orange-500',
-            self::Item => 'amber-500',
+            self::Location => 'red',
+            self::Bin => 'orange',
+            self::Item => 'amber',
         };
+    }
+
+    public function iconColor(): string
+    {
+        return $this->color().'-500';
     }
 }

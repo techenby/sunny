@@ -1,5 +1,6 @@
 @use('App\Icons\Android')
 @use('App\Icons\Ios')
+@use('App\Ui\Card')
 @use('App\NativeComponents\Recipes')
 
 @php($recipe = $this->recipe)
@@ -26,10 +27,10 @@
                         ref="recipe-photo"
                         :src="$recipe['photo_url']"
                         :alt="'Photo of '.$recipe['name']"
-                        class="w-full h-[240] rounded-xl object-cover"
+                        class="w-full h-[240] rounded-[18] object-cover"
                     />
                 @else
-                    <column class="w-full h-[160] items-center justify-center rounded-xl bg-theme-primary/15">
+                    <column class="w-full h-[160] items-center justify-center rounded-[18] bg-theme-primary/15">
                         <icon :ios="Ios::ForkKnife" :android="Android::Restaurant" :size="44" class="text-theme-primary" />
                     </column>
                 @endif
@@ -45,7 +46,7 @@
                 @if ($recipe['tags'])
                     <row ref="recipe-tags" class="w-full flex-wrap gap-2">
                         @foreach ($recipe['tags'] as $tag)
-                            <text font="semibold" class="rounded-full bg-theme-primary/15 px-3 py-1 text-sm text-theme-primary">{{ $tag }}</text>
+                            <x-ui.badge size="sm">{{ $tag }}</x-ui.badge>
                         @endforeach
                     </row>
                 @endif
@@ -56,9 +57,9 @@
                     @foreach (array_chunk($this->details, 2, true) as $pair)
                         <row class="w-full gap-3">
                             @foreach ($pair as $label => $value)
-                                <column class="flex-1 gap-0.5 rounded-xl bg-theme-surface p-4 shadow-sm">
-                                    <text class="text-sm text-theme-on-surface-variant">{{ $label }}</text>
-                                    <text font="semibold" class="text-base text-theme-on-surface">{{ $value }}</text>
+                                <column class="{{ Card::classes() }} flex-1 gap-0.5 p-4">
+                                    <x-ui.text size="sm">{{ $label }}</x-ui.text>
+                                    <x-ui.heading>{{ $value }}</x-ui.heading>
                                 </column>
                             @endforeach
                             @if (count($pair) === 1)
@@ -76,21 +77,21 @@
                         @press="openSource"
                         a11y-label="Open source"
                         a11y-hint="Opens the source in the browser"
-                        class="w-full rounded-xl bg-theme-surface px-4 py-3 shadow-sm"
+                        class="{{ Card::classes() }} w-full px-4 py-3"
                     >
                         <row class="w-full items-center gap-3">
                             <icon :ios="Ios::Link" :android="Android::Link" :size="18" class="text-theme-primary" />
                             <column class="flex-1 gap-0.5">
-                                <text class="text-sm text-theme-on-surface-variant">Source</text>
-                                <text font="semibold" class="text-base text-theme-on-surface">{{ Recipes::shortenedSource($recipe['source']) }}</text>
+                                <x-ui.text size="sm">Source</x-ui.text>
+                                <x-ui.heading>{{ Recipes::shortenedSource($recipe['source']) }}</x-ui.heading>
                             </column>
                             <icon :ios="Ios::ArrowUpRight" :android="Android::OpenInNew" :size="16" class="text-theme-on-surface-variant" />
                         </row>
                     </pressable>
                 @else
-                    <column ref="recipe-source" class="w-full gap-0.5 rounded-xl bg-theme-surface px-4 py-3 shadow-sm">
-                        <text class="text-sm text-theme-on-surface-variant">Source</text>
-                        <text font="semibold" class="text-base text-theme-on-surface">{{ $recipe['source'] }}</text>
+                    <column ref="recipe-source" class="{{ Card::classes() }} w-full gap-0.5 px-4 py-3">
+                        <x-ui.text size="sm">Source</x-ui.text>
+                        <x-ui.heading>{{ $recipe['source'] }}</x-ui.heading>
                     </column>
                 @endif
             @endif
@@ -98,12 +99,12 @@
             @if ($this->ingredients)
                 <column class="w-full gap-3">
                     <row class="w-full items-center">
-                        <text font="semibold" class="flex-1 text-xl text-theme-on-background">Ingredients</text>
+                        <x-ui.heading size="lg" class="flex-1">Ingredients</x-ui.heading>
                         @if ($this->checkedCount)
-                            <text class="text-sm text-theme-on-surface-variant">{{ $this->checkedCount }} of {{ count($this->ingredients) }}</text>
+                            <x-ui.text size="sm">{{ $this->checkedCount }} of {{ count($this->ingredients) }}</x-ui.text>
                         @endif
                     </row>
-                    <column class="w-full rounded-xl bg-theme-surface">
+                    <column class="{{ Card::classes() }} w-full">
                         @foreach ($this->ingredients as $index => $ingredient)
                             @php($checked = $this->isChecked($index))
                             <pressable
@@ -132,8 +133,8 @@
 
             @if ($this->instructions)
                 <column class="w-full gap-3">
-                    <text font="semibold" class="text-xl text-theme-on-background">Instructions</text>
-                    <column class="w-full gap-4 rounded-xl bg-theme-surface p-4">
+                    <x-ui.heading size="lg">Instructions</x-ui.heading>
+                    <column class="{{ Card::classes() }} w-full gap-4 p-4">
                         @foreach ($this->instructions as $instruction)
                             <row ref="step-{{ $loop->iteration }}" class="w-full items-start gap-3">
                                 <column class="h-7 w-7 items-center justify-center rounded-full bg-theme-primary/15">
@@ -151,25 +152,25 @@
                     ref="recipe-add-steps"
                     @navigate('/recipes/'.$recipe['id'].'/edit')
                     a11y-label="Add ingredients and steps"
-                    class="w-full items-center gap-2 rounded-xl bg-theme-surface px-4 py-6"
+                    class="{{ Card::classes() }} w-full items-center gap-2 px-4 py-6"
                 >
                     <icon :ios="Ios::Pencil" :android="Android::Edit" :size="26" class="text-theme-primary" />
-                    <text font="semibold" class="text-base text-theme-on-surface">Add ingredients and steps</text>
-                    <text class="text-sm text-theme-on-surface-variant">This recipe doesn’t have any yet.</text>
+                    <x-ui.heading>Add ingredients and steps</x-ui.heading>
+                    <x-ui.text size="sm">This recipe doesn’t have any yet.</x-ui.text>
                 </pressable>
             @endif
 
             @if ($recipe['notes'])
                 <column class="w-full gap-3">
-                    <text font="semibold" class="text-xl text-theme-on-background">Notes</text>
-                    <text ref="recipe-notes" class="w-full rounded-xl bg-theme-surface p-4 text-base text-theme-on-surface">{{ $recipe['notes'] }}</text>
+                    <x-ui.heading size="lg">Notes</x-ui.heading>
+                    <text ref="recipe-notes" class="{{ Card::classes() }} w-full p-4 text-base text-theme-on-surface">{{ $recipe['notes'] }}</text>
                 </column>
             @endif
 
             @if ($recipe['nutrition'])
                 <column class="w-full gap-3">
-                    <text font="semibold" class="text-xl text-theme-on-background">Nutrition</text>
-                    <column ref="recipe-nutrition" class="w-full gap-1 rounded-xl bg-theme-surface p-4">
+                    <x-ui.heading size="lg">Nutrition</x-ui.heading>
+                    <column ref="recipe-nutrition" class="{{ Card::classes() }} w-full gap-1 p-4">
                         @foreach (preg_split('/\R/', $recipe['nutrition']) as $line)
                             <text class="text-base text-theme-on-surface">{{ $line }}</text>
                         @endforeach
@@ -180,8 +181,8 @@
             @foreach (['Remixed from' => $this->parent ? [$this->parent] : [], 'Remixes' => $this->remixes] as $heading => $relatedRecipes)
                 @if ($relatedRecipes)
                     <column class="w-full gap-3">
-                        <text font="semibold" class="text-xl text-theme-on-background">{{ $heading }}</text>
-                        <column class="w-full rounded-xl bg-theme-surface">
+                        <x-ui.heading size="lg">{{ $heading }}</x-ui.heading>
+                        <column class="{{ Card::classes() }} w-full">
                             @foreach ($relatedRecipes as $related)
                                 <pressable
                                     ref="related-recipe-{{ $related['id'] }}"
@@ -193,7 +194,7 @@
                                         <column class="h-9 w-9 items-center justify-center rounded-full bg-theme-primary">
                                             <icon :ios="Ios::ForkKnife" :android="Android::Restaurant" :size="16" class="text-theme-on-primary" />
                                         </column>
-                                        <text font="semibold" class="flex-1 text-base text-theme-on-surface">{{ $related['name'] }}</text>
+                                        <x-ui.heading class="flex-1">{{ $related['name'] }}</x-ui.heading>
                                         <icon :ios="Ios::ChevronRight" :android="Android::ChevronRight" :size="14" class="text-theme-on-surface-variant" />
                                     </row>
                                 </pressable>

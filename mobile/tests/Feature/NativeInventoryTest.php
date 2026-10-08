@@ -23,7 +23,7 @@ it('lists the top-level locations', function () {
 it('shows a platform icon for each item type', function (string $platform, string $path, string $iconName) {
     Native::visit($path, platform: $platform)
         ->assertElement('icon', fn (array $node): bool => ($node['props']['name'] ?? null) === $iconName
-            && (float) ($node['props']['size'] ?? 0) === 14.0);
+            && (float) ($node['props']['size'] ?? 0) === 16.0);
 })->with([
     'ios location' => ['ios', '/inventory/6', 'mappin'],
     'ios bin' => ['ios', '/inventory/7', 'archivebox'],
