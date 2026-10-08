@@ -108,9 +108,13 @@
                                 class="w-full px-4 py-3"
                             >
                                 <row class="w-full items-center gap-3">
-                                    <column class="h-9 w-9 items-center justify-center rounded-full bg-{{ $child['type']->iconColor() }}">
-                                        <icon :ios="$child['type']->iosIcon()" :android="$child['type']->androidIcon()" :size="18" class="text-white" />
-                                    </column>
+                                    @if ($child['photo_url'])
+                                        <image :src="$child['photo_url']" :alt="'Photo of '.$child['name']" class="h-9 w-9 rounded-full object-cover" />
+                                    @else
+                                        <column class="h-9 w-9 items-center justify-center rounded-full bg-{{ $child['type']->iconColor() }}">
+                                            <icon :ios="$child['type']->iosIcon()" :android="$child['type']->androidIcon()" :size="18" class="text-white" />
+                                        </column>
+                                    @endif
                                     <column class="flex-1 gap-0.5">
                                         <text font="semibold" class="text-base text-theme-on-surface">{{ $child['name'] }}</text>
                                         <text class="text-sm text-theme-on-surface-variant">

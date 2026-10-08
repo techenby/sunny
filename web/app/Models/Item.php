@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection as BaseCollection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class Item extends Model
@@ -72,6 +73,13 @@ class Item extends Model
     {
         return Attribute::make(
             get: fn () => Str::limit($this->name, 75),
+        );
+    }
+
+    protected function photoUrl(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->photo_path ? Storage::temporaryUrl($this->photo_path, now()->addMinutes(30)) : null,
         );
     }
 }

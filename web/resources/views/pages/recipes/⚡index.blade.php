@@ -108,8 +108,9 @@ new class extends Component {
             @forelse ($this->recipes as $recipe)
                 <flux:table.row :key="$recipe->id">
                     <flux:table.cell variant="strong">
-                        <flux:link href="{{ route('recipes.show', $recipe) }}" wire:navigate>
-                            {{ $recipe->name }}
+                        <flux:link href="{{ route('recipes.show', $recipe) }}" wire:navigate inset="top bottom" class="!flex !items-center gap-3">
+                            <flux:avatar size="xs" :src="$recipe->photo_url" icon="book-open" color="amber" icon:variant="outline" />
+                            <span>{{ $recipe->name }}</span>
                         </flux:link>
                     </flux:table.cell>
                     <flux:table.cell>

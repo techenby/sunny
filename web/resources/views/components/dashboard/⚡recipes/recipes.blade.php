@@ -26,7 +26,7 @@
                         wire:navigate
                         class="flex items-center gap-3 px-(--flux-bleed-x) py-3 hover:bg-zinc-900/2 dark:hover:bg-white/3"
                     >
-                        <flux:avatar size="sm" icon="book-open" color="amber" icon:variant="outline" />
+                        <flux:avatar size="sm" :src="$recipe->photo_url" icon="book-open" color="amber" icon:variant="outline" />
 
                         <div class="min-w-0 flex-1">
                             <flux:heading class="truncate">{{ $recipe->name }}</flux:heading>

@@ -55,7 +55,7 @@ class InventoryItemDetail extends NativeComponent
     }
 
     /**
-     * @return list<array{id: int, parent_id: int|null, type: ItemType, name: string, metadata: array<string, string>|null, created_at: string, updated_at: string, children_count: int}>
+     * @return list<array{id: int, parent_id: int|null, type: ItemType, name: string, metadata: array<string, string>|null, photo_url: string|null, created_at: string, updated_at: string, children_count: int}>
      */
     #[Computed]
     public function children(): array

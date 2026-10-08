@@ -33,6 +33,24 @@ it('shows a platform icon for each item type', function (string $platform, strin
     'android item' => ['android', '/inventory/8', 'view_in_ar'],
 ]);
 
+it('shows an item’s photo in place of its type icon', function () {
+    Item::findOrFail(6)->update(['photo_url' => 'https://sunny.example/garage.jpg']);
+    Item::findOrFail(7)->update(['photo_url' => 'https://sunny.example/bin.jpg']);
+
+    Native::visit('/inventory')
+        ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === 'Garage'
+            && ($node['props']['leading_type'] ?? null) === 'image'
+            && ($node['props']['leading_value'] ?? null) === 'https://sunny.example/garage.jpg')
+        ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === 'Basement'
+            && ($node['props']['leading_type'] ?? null) !== 'image')
+        ->input('updateSearch', 'garage')
+        ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === 'Garage'
+            && ($node['props']['leading_value'] ?? null) === 'https://sunny.example/garage.jpg');
+
+    Native::visit('/inventory/6')
+        ->assertElement('image', fn (array $node): bool => ($node['props']['src'] ?? null) === 'https://sunny.example/bin.jpg');
+});
+
 it('searches nested items and says where each one lives', function () {
     Native::visit('/inventory')
         ->input('updateSearch', 'light')

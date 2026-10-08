@@ -92,7 +92,7 @@
                     </flux:table.cell>
                     <flux:table.cell>
                         <flux:link wire:click="navigateDown({{ $item->id }})" as="button" inset="top bottom" class="!flex !items-center gap-3">
-                            <flux:avatar size="xs" :icon="$item->type->getIcon()" :color="$item->type->getIconColor()" icon:variant="outline" />
+                            <flux:avatar size="xs" :src="$item->photo_url" :icon="$item->type->getIcon()" :color="$item->type->getIconColor()" icon:variant="outline" />
                             <span>{{ $item->truncated_name }}</span>
                         </flux:link>
                     </flux:table.cell>

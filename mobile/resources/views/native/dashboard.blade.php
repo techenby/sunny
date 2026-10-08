@@ -174,9 +174,13 @@
                             class="w-full px-4 py-3"
                         >
                             <row class="w-full items-center gap-3">
-                                <column class="h-9 w-9 items-center justify-center rounded-full bg-{{ $item['type']->iconColor() }}">
-                                    <icon :ios="$item['type']->iosIcon()" :android="$item['type']->androidIcon()" :size="18" class="text-white" />
-                                </column>
+                                @if ($item['photo'])
+                                    <image :src="$item['photo']" :alt="'Photo of '.$item['name']" class="h-9 w-9 rounded-full object-cover" />
+                                @else
+                                    <column class="h-9 w-9 items-center justify-center rounded-full bg-{{ $item['type']->iconColor() }}">
+                                        <icon :ios="$item['type']->iosIcon()" :android="$item['type']->androidIcon()" :size="18" class="text-white" />
+                                    </column>
+                                @endif
                                 <column class="flex-1 gap-0.5">
                                     <text font="semibold" max-lines="1" class="text-base text-theme-on-surface">{{ $item['name'] }}</text>
                                     <text max-lines="1" class="text-sm text-theme-on-surface-variant">{{ $item['supporting'] }}</text>

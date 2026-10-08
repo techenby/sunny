@@ -3,6 +3,7 @@
 use App\Models\Recipe;
 use App\Models\Team;
 use App\Models\User;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
 test('guests are redirected to the login page', function () {
@@ -25,6 +26,20 @@ test('renders recipes for the current team only', function () {
         ->test('pages::recipes.index')
         ->assertSee('Pasta Carbonara')
         ->assertDontSee('Chicken Tikka');
+});
+
+test('shows the recipe photo in place of the icon', function () {
+    Storage::fake();
+
+    $user = User::factory()->create();
+    Recipe::factory()->for($user->currentTeam)->create([
+        'name' => 'Chocolate Cake',
+        'photo_path' => "teams/{$user->current_team_id}/recipes/chocolate-cake.png",
+    ]);
+
+    Livewire::actingAs($user)
+        ->test('pages::recipes.index')
+        ->assertSeeHtml('chocolate-cake.png');
 });
 
 test('can search recipes by name', function () {
