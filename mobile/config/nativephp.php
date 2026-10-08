@@ -126,7 +126,7 @@ return [
     */
 
     'permissions' => [
-        'NSCameraUsageDescription' => 'Used to photograph the things you add to your inventory.',
+        'NSCameraUsageDescription' => 'Used to photograph the things you add to your inventory and to scan Sunny labels.',
         'NSPhotoLibraryUsageDescription' => 'Used to pick an existing photo for an inventory item.',
         // 'NSMicrophoneUsageDescription' => 'Used to record audio with your videos.',
     ],

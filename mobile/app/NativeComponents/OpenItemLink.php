@@ -35,11 +35,37 @@ class OpenItemLink extends NativeComponent
         $this->replace('/inventory/'.$item->id);
     }
 
+    /**
+     * The app path for a scanned Sunny item URL, or null when it isn't one.
+     */
+    public static function pathFor(string $url): ?string
+    {
+        if (! str_starts_with($url, self::siteUrl().'/')) {
+            return null;
+        }
+
+        $path = (string) parse_url($url, PHP_URL_PATH);
+        parse_str((string) parse_url($url, PHP_URL_QUERY), $query);
+
+        $id = match (true) {
+            preg_match('~^/i/(\d+)$~', $path, $matches) === 1 => $matches[1],
+            preg_match('~^/[^/]+/inventory/(\d+)$~', $path, $matches) === 1 => $matches[1],
+            preg_match('~^/[^/]+/inventory/?$~', $path) === 1 => $query['parentId'] ?? null,
+            default => null,
+        };
+
+        return is_string($id) && ctype_digit($id) ? '/i/'.(int) $id : null;
+    }
+
     public function openInBrowser(): void
     {
-        $baseUrl = app(SunnyConnector::class)->resolveBaseUrl();
-        $url = preg_replace('~/api$~', '', $baseUrl).'/i/'.(int) $this->param('id');
+        $url = self::siteUrl().'/i/'.(int) $this->param('id');
         $this->error = Browser::open($url) ? '' : 'Unable to open Sunny in the browser. Please try again.';
+    }
+
+    protected static function siteUrl(): string
+    {
+        return preg_replace('~/api$~', '', app(SunnyConnector::class)->resolveBaseUrl());
     }
 
     public function render(): View

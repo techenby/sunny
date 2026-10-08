@@ -1,7 +1,16 @@
 @use('App\Icons\Android')
 @use('App\Icons\Ios')
 
-<native:top-bar title="Inventory" display-mode="large" :back="false" />
+<native:top-bar title="Inventory" display-mode="large" :back="false">
+    <native:top-bar-action
+        ref="scan-code"
+        id="scan-code"
+        label="Scan label"
+        :ios-icon="Ios::QrcodeViewfinder"
+        :android-icon="Android::QrCodeScanner"
+        @tap="scanCode"
+    />
+</native:top-bar>
 
 @include('native.search-bottom-bar', [
     'refPrefix' => 'inventory',

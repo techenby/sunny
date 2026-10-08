@@ -10,10 +10,15 @@ use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
 use Native\Mobile\Attributes\On;
 use Native\Mobile\Edge\NativeComponent;
+use Native\Mobile\Events\Scanner\CodeScanned;
+use Native\Mobile\Facades\Dialog;
+use Native\Mobile\Facades\Scanner;
 
 class Inventory extends NativeComponent
 {
     use ChecksSunnySync;
+
+    protected const SCAN_ID = 'item-code';
 
     public string $search = '';
 
@@ -132,6 +137,29 @@ class Inventory extends NativeComponent
     }
 
     #[On('sunny-sync-complete')]
+    public function scanCode(): void
+    {
+        Scanner::scan()->prompt('Scan a Sunny label')->id(self::SCAN_ID);
+    }
+
+    #[On(CodeScanned::class)]
+    public function codeScanned(string $data, string $format, ?string $id = null): void
+    {
+        if ($id !== self::SCAN_ID) {
+            return;
+        }
+
+        $path = OpenItemLink::pathFor($data);
+
+        if ($path === null) {
+            Dialog::toast('That code isn’t a Sunny label.');
+
+            return;
+        }
+
+        $this->navigate($path);
+    }
+
     public function onSyncComplete(string $status): void
     {
         if ($status === 'finished') {
