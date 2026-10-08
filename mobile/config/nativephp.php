@@ -69,6 +69,22 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Deeplink Paths
+    |--------------------------------------------------------------------------
+    |
+    | Restrict which paths on the deeplink host open the app on Android. iOS
+    | reads its paths from the host's apple-app-site-association file, so
+    | keep the two in sync.
+    |
+    */
+
+    'deeplink_paths' => array_values(array_filter(
+        array_map('trim', explode(',', (string) env('NATIVEPHP_DEEPLINK_PATHS', ''))),
+        fn ($path) => $path !== '',
+    )),
+
+    /*
+    |--------------------------------------------------------------------------
     | Start URL
     |--------------------------------------------------------------------------
     |

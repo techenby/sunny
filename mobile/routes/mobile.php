@@ -16,6 +16,7 @@ use App\NativeComponents\InventoryItemDetail;
 use App\NativeComponents\ListDetail;
 use App\NativeComponents\Lists;
 use App\NativeComponents\Login;
+use App\NativeComponents\OpenItemLink;
 use App\NativeComponents\RecipeDetail;
 use App\NativeComponents\Recipes;
 use App\NativeComponents\Register;
@@ -44,6 +45,7 @@ Route::nativeGroup(TabsLayout::class, function () {
     Route::native('/inventory/scan', ScanInventory::class);
     Route::native('/inventory/{id}', InventoryItemDetail::class);
     Route::native('/inventory/{id}/edit', EditInventoryItem::class);
+    Route::native('/i/{id}', OpenItemLink::class);
     Route::native('/lists', Lists::class);
     Route::native('/lists/create', CreateList::class);
     Route::native('/lists/{id}', ListDetail::class);
