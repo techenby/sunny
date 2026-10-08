@@ -1,7 +1,7 @@
 <div class="flex h-full flex-col overflow-hidden" wire:poll.600s>
     <div class="flex shrink-0 flex-col gap-3 border-b border-zinc-200 px-5 py-4 dark:border-zinc-700 sm:flex-row sm:items-center sm:justify-between">
         <div class="flex items-baseline gap-3">
-            <x-ui.clock :timezone="auth()->user()->currentTeam->timezone" />
+            <x-ui.clock :timezone="$this->team->timezone" />
             <flux:heading size="lg">{{ $this->heading }}</flux:heading>
         </div>
 

@@ -1,5 +1,8 @@
 <?php
 
+use App\Models\Team;
+use App\Models\KioskDevice;
+use App\Enums\TeamRole;
 use App\Actions\Routines\GenerateRoutineOccurrences;
 use App\Enums\TimeOfDay;
 use App\Models\Routine;
@@ -115,7 +118,7 @@ test('it will not toggle a step from another team', function () use ($routineBoa
     Livewire::actingAs($user)
         ->test('pages::kiosk.routines')
         ->call('toggle', $step->id)
-        ->assertForbidden();
+        ->assertNotFound();
 
     expect($step->fresh()->isCompleted())->toBeFalse();
 });
@@ -186,4 +189,45 @@ test('a paused routine drops off the board', function () use ($routineBoardUser)
     Livewire::actingAs($user)
         ->test('pages::kiosk.routines')
         ->assertSee(__('Nothing to do'));
+});
+
+$pairKioskToFirstTeam = function (): array {
+    $user = User::factory()->create();
+    $teamA = $user->currentTeam;
+    $teamB = Team::factory()->create();
+    $user->teams()->attach($teamB, ['role' => TeamRole::Member]);
+    $device = KioskDevice::factory()->paired($user, $teamA)->create();
+
+    session(['kiosk_device_id' => $device->id]);
+
+    return [$user, $teamA, $teamB];
+};
+
+test('a kiosk cannot complete a routine step from another of the user\'s teams', function () use ($pairKioskToFirstTeam) {
+    [$user, , $teamB] = $pairKioskToFirstTeam();
+    $routine = Routine::factory()->for($teamB)->daily()->create();
+    RoutineStep::factory()->for($routine)->create();
+
+    resolve(GenerateRoutineOccurrences::class)->handle($teamB);
+    $step = RoutineOccurrenceStep::sole();
+
+    Livewire::actingAs($user)
+        ->test('pages::kiosk.routines')
+        ->call('toggle', $step->id)
+        ->assertNotFound();
+
+    expect($step->fresh()->isCompleted())->toBeFalse();
+});
+
+test('a kiosk keeps showing its own team routines after the user switches teams elsewhere', function () use ($pairKioskToFirstTeam) {
+    [$user, $teamA, $teamB] = $pairKioskToFirstTeam();
+    Routine::factory()->for($teamA)->daily()->create(['name' => 'Feed the cat']);
+    Routine::factory()->for($teamB)->daily()->create(['name' => 'Water the office plants']);
+
+    $user->switchTeam($teamB);
+
+    Livewire::actingAs($user->fresh())
+        ->test('pages::kiosk.routines')
+        ->assertSee('Feed the cat')
+        ->assertDontSee('Water the office plants');
 });

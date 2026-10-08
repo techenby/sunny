@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
+use App\Support\KioskTeam;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -13,7 +14,7 @@ class RestrictKioskSession
     /** @param  Closure(Request): (Response)  $next */
     public function handle(Request $request, Closure $next): Response
     {
-        if (! $request->session()->has('kiosk_device_id')) {
+        if (! KioskTeam::inKioskSession()) {
             return $next($request);
         }
 
@@ -32,12 +33,16 @@ class RestrictKioskSession
             return true;
         }
 
-        if ($path === '/kiosk' || str_starts_with($path, '/kiosk/')) {
+        if ($path === '/kiosk') {
             return true;
         }
 
         $segments = explode('/', trim($path, '/'));
 
-        return count($segments) >= 2 && $segments[1] === 'kiosk';
+        if (count($segments) < 3 || $segments[1] !== 'kiosk' || $segments[2] === 'configure') {
+            return false;
+        }
+
+        return $segments[0] === KioskTeam::device()?->team->slug;
     }
 }

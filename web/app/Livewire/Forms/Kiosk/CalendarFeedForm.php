@@ -8,7 +8,7 @@ use App\Actions\Kiosk\CreateFeed;
 use App\Actions\Kiosk\UpdateFeed;
 use App\Enums\CalendarColor;
 use App\Models\CalendarFeed;
-use Illuminate\Support\Facades\Auth;
+use App\Models\Team;
 use Illuminate\Validation\Rule;
 use Livewire\Form;
 
@@ -32,14 +32,14 @@ class CalendarFeedForm extends Form
         ]);
     }
 
-    public function save(): void
+    public function save(Team $team): void
     {
         $data = $this->validate();
 
         if ($this->editingFeed) {
             (new UpdateFeed)->handle($this->editingFeed, $data);
         } else {
-            (new CreateFeed)->handle(Auth::user()->currentTeam, $data);
+            (new CreateFeed)->handle($team, $data);
         }
 
         $this->reset();

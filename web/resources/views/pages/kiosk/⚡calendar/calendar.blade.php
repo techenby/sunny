@@ -1,6 +1,6 @@
 <div class="flex h-full flex-col overflow-hidden" wire:poll.600s>
     <div class="flex shrink-0 flex-col gap-3 border-b border-zinc-200 px-5 py-4 dark:border-zinc-700 sm:flex-row sm:items-center sm:justify-between">
-        <x-ui.clock :timezone="auth()->user()->currentTeam->timezone"/>
+        <x-ui.clock :timezone="$this->team->timezone"/>
 
         <div class="flex items-center gap-2">
             @if ($this->failedFeeds->isNotEmpty())
