@@ -2,6 +2,7 @@
 @use('Native\Mobile\Facades\System')
 @use('App\Icons\Android')
 @use('App\Icons\Ios')
+@use('App\Ui\Card')
 
 <native:top-bar title="Summary" display-mode="large" :back="false">
     <native:top-bar-action id="add" label="Add" :ios-icon="Ios::Plus" :android-icon="Android::Add">
@@ -48,8 +49,8 @@
                 <row class="w-full items-center gap-3">
                     <icon :ios="Ios::ExclamationmarkTriangle" :android="Android::Warning" :size="22" class="text-theme-destructive" />
                     <column class="flex-1 gap-0.5">
-                        <text font="semibold" class="text-base text-theme-destructive">Download failed</text>
-                        <text class="text-sm text-theme-on-surface-variant">{{ $syncError }}</text>
+                        <x-ui.heading class="text-theme-destructive">Download failed</x-ui.heading>
+                        <x-ui.text size="sm">{{ $syncError }}</x-ui.text>
                     </column>
                 </row>
             </pressable>
@@ -77,9 +78,9 @@
                 </row>
             </pressable>
         @else
-            <column ref="no-teams" class="w-full rounded-xl bg-theme-surface px-4 py-3 gap-0.5">
-                <text font="semibold" class="text-base text-theme-on-surface">No teams available</text>
-                <text class="text-sm text-theme-on-surface-variant">Pull down to download your teams.</text>
+            <column ref="no-teams" class="{{ Card::classes() }} w-full gap-0.5 px-4 py-3">
+                <x-ui.heading>No teams available</x-ui.heading>
+                <x-ui.text size="sm">Pull down to download your teams.</x-ui.text>
             </column>
         @endif
 
@@ -89,15 +90,15 @@
                 @navigate.replace('/recipes')
                 a11y-label="Recipes"
                 :press-scale="0.97"
-                class="flex-1 gap-3 rounded-xl bg-theme-surface p-4 shadow-sm"
+                class="{{ Card::classes() }} flex-1 gap-3 p-4"
             >
                 <column class="h-9 w-9 items-center justify-center rounded-full bg-theme-primary">
                     <icon :ios="Ios::ForkKnife" :android="Android::Restaurant" :size="18" class="text-theme-on-primary" />
                 </column>
                 <column class="gap-0.5">
                     <text font="accent" class="text-3xl text-theme-on-surface">{{ $this->summary['recipes'] }}</text>
-                    <text font="semibold" class="text-base text-theme-on-surface">Recipes</text>
-                    <text class="text-sm text-theme-on-surface-variant">Ready to cook</text>
+                    <x-ui.heading>Recipes</x-ui.heading>
+                    <x-ui.text size="sm">Ready to cook</x-ui.text>
                 </column>
             </pressable>
             <pressable
@@ -105,23 +106,23 @@
                 @navigate.replace('/inventory')
                 a11y-label="Inventory"
                 :press-scale="0.97"
-                class="flex-1 gap-3 rounded-xl bg-theme-surface p-4 shadow-sm"
+                class="{{ Card::classes() }} flex-1 gap-3 p-4"
             >
                 <column class="h-9 w-9 items-center justify-center rounded-full bg-theme-accent">
                     <icon :ios="Ios::Archivebox" :android="Android::Inventory2" :size="18" class="text-theme-on-accent" />
                 </column>
                 <column class="gap-0.5">
                     <text font="accent" class="text-3xl text-theme-on-surface">{{ $this->summary['items'] }}</text>
-                    <text font="semibold" class="text-base text-theme-on-surface">Items</text>
-                    <text class="text-sm text-theme-on-surface-variant">
+                    <x-ui.heading>Items</x-ui.heading>
+                    <x-ui.text size="sm">
                         {{ $this->summary['locations'] }} {{ Str::plural('location', $this->summary['locations']) }} · {{ $this->summary['bins'] }} {{ Str::plural('bin', $this->summary['bins']) }}
-                    </text>
+                    </x-ui.text>
                 </column>
             </pressable>
         </row>
 
         <column class="w-full gap-3">
-            <text font="semibold" class="text-xl text-theme-on-background">Recent recipes</text>
+            <x-ui.heading size="lg">Recent recipes</x-ui.heading>
             @if ($this->recentRecipes)
                 {{-- iOS insets the carousel's content by 16pt, so let it bleed to the screen edges to line up with the heading. --}}
                 <carousel ref="recent-recipes" :item-width="180" :item-spacing="12" :class="System::isIos() ? '-mx-4' : null">
@@ -130,7 +131,7 @@
                             ref="dashboard-recipes-{{ $recipe['id'] }}"
                             @navigate($recipe['url'])
                             :a11y-label="$recipe['name']"
-                            class="w-full h-[210] bg-theme-surface"
+                            class="{{ Card::classes() }} w-full h-[210]"
                         >
                             <stack class="w-full h-[130]">
                                 <column class="w-full h-full items-center justify-center bg-theme-primary/15">
@@ -141,8 +142,8 @@
                                 @endif
                             </stack>
                             <column class="w-full gap-0.5 px-3 py-2">
-                                <text font="semibold" max-lines="2" class="text-base text-theme-on-surface">{{ $recipe['name'] }}</text>
-                                <text max-lines="1" class="text-sm text-theme-on-surface-variant">{{ $recipe['supporting'] }}</text>
+                                <x-ui.heading max-lines="2">{{ $recipe['name'] }}</x-ui.heading>
+                                <x-ui.text size="sm" max-lines="1">{{ $recipe['supporting'] }}</x-ui.text>
                             </column>
                         </pressable>
                     @endforeach
@@ -152,19 +153,19 @@
                     ref="recipes-empty"
                     @navigate('/recipes/create')
                     a11y-label="Add your first recipe"
-                    class="w-full items-center gap-2 rounded-xl bg-theme-surface px-4 py-6"
+                    class="{{ Card::classes() }} w-full items-center gap-2 px-4 py-6"
                 >
                     <icon :ios="Ios::ForkKnife" :android="Android::Restaurant" :size="28" class="text-theme-primary" />
-                    <text font="semibold" class="text-base text-theme-on-surface">Add your first recipe</text>
-                    <text class="text-sm text-theme-on-surface-variant">Recipes you add or update will show up here.</text>
+                    <x-ui.heading>Add your first recipe</x-ui.heading>
+                    <x-ui.text size="sm">Recipes you add or update will show up here.</x-ui.text>
                 </pressable>
             @endif
         </column>
 
         <column class="w-full gap-3">
-            <text font="semibold" class="text-xl text-theme-on-background">Recent items</text>
+            <x-ui.heading size="lg">Recent items</x-ui.heading>
             @if ($this->recentItems)
-                <column class="w-full rounded-xl bg-theme-surface">
+                <column class="{{ Card::classes() }} w-full">
                     @foreach ($this->recentItems as $item)
                         <pressable
                             ref="dashboard-inventory-{{ $item['id'] }}"
@@ -174,16 +175,17 @@
                             class="w-full px-4 py-3"
                         >
                             <row class="w-full items-center gap-4">
-                                @if ($item['photo'])
-                                    <image :src="$item['photo']" :alt="'Photo of '.$item['name']" class="h-14 w-14 rounded object-cover" />
-                                @else
-                                    <column class="h-10 w-10 items-center justify-center rounded-full bg-{{ $item['type']->iconColor() }}">
-                                        <icon :ios="$item['type']->iosIcon()" :android="$item['type']->androidIcon()" :size="18" class="text-white" />
-                                    </column>
-                                @endif
+                                <x-ui.avatar
+                                    :size="$item['photo'] ? '2xl' : 'md'"
+                                    :src="$item['photo']"
+                                    :alt="'Photo of '.$item['name']"
+                                    :color="$item['type']->color()"
+                                    :ios="$item['type']->iosIcon()"
+                                    :android="$item['type']->androidIcon()"
+                                />
                                 <column class="flex-1 gap-0.5">
-                                    <text font="semibold" max-lines="1" class="text-base text-theme-on-surface">{{ $item['name'] }}</text>
-                                    <text max-lines="1" class="text-sm text-theme-on-surface-variant">{{ $item['supporting'] }}</text>
+                                    <x-ui.heading max-lines="1">{{ $item['name'] }}</x-ui.heading>
+                                    <x-ui.text size="sm" max-lines="1">{{ $item['supporting'] }}</x-ui.text>
                                 </column>
                                 <icon :ios="Ios::ChevronRight" :android="Android::ChevronRight" :size="14" class="text-theme-on-surface-variant" />
                             </row>
@@ -198,11 +200,11 @@
                     ref="items-empty"
                     @navigate('/inventory/create')
                     a11y-label="Add your first item"
-                    class="w-full items-center gap-2 rounded-xl bg-theme-surface px-4 py-6"
+                    class="{{ Card::classes() }} w-full items-center gap-2 px-4 py-6"
                 >
                     <icon :ios="Ios::Archivebox" :android="Android::Inventory2" :size="28" class="text-theme-accent" />
-                    <text font="semibold" class="text-base text-theme-on-surface">Add your first item</text>
-                    <text class="text-sm text-theme-on-surface-variant">Items you add or update will show up here.</text>
+                    <x-ui.heading>Add your first item</x-ui.heading>
+                    <x-ui.text size="sm">Items you add or update will show up here.</x-ui.text>
                 </pressable>
             @endif
         </column>
