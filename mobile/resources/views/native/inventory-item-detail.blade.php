@@ -107,11 +107,11 @@
                                 :a11y-label="$child['name']"
                                 class="w-full px-4 py-3"
                             >
-                                <row class="w-full items-center gap-3">
+                                <row class="w-full items-center gap-4">
                                     @if ($child['photo_url'])
-                                        <image :src="$child['photo_url']" :alt="'Photo of '.$child['name']" class="h-9 w-9 rounded-full object-cover" />
+                                        <image :src="$child['photo_url']" :alt="'Photo of '.$child['name']" class="h-14 w-14 rounded object-cover" />
                                     @else
-                                        <column class="h-9 w-9 items-center justify-center rounded-full bg-{{ $child['type']->iconColor() }}">
+                                        <column class="h-10 w-10 items-center justify-center rounded-full bg-{{ $child['type']->iconColor() }}">
                                             <icon :ios="$child['type']->iosIcon()" :android="$child['type']->androidIcon()" :size="18" class="text-white" />
                                         </column>
                                     @endif
@@ -124,7 +124,7 @@
                                     <icon :ios="Ios::ChevronRight" :android="Android::ChevronRight" :size="14" class="text-theme-on-surface-variant" />
                                 </row>
                             </pressable>
-                            <divider class="ml-16" />
+                            <divider class="ml-[72]" />
                         @endforeach
                         <pressable
                             ref="item-add-child"
@@ -132,22 +132,22 @@
                             :a11y-label="'Add an item inside '.$item['name']"
                             class="w-full px-4 py-3"
                         >
-                            <row class="w-full items-center gap-3">
-                                <column class="h-9 w-9 items-center justify-center rounded-full bg-theme-primary/15">
+                            <row class="w-full items-center gap-4">
+                                <column class="h-10 w-10 items-center justify-center rounded-full bg-theme-primary/15">
                                     <icon :ios="Ios::Plus" :android="Android::Add" :size="18" class="text-theme-primary" />
                                 </column>
                                 <text font="semibold" class="flex-1 text-base text-theme-primary">Add item here</text>
                             </row>
                         </pressable>
-                        <divider class="ml-16" />
+                        <divider class="ml-[72]" />
                         <pressable
                             ref="item-scan-children"
                             @navigate('/inventory/scan', ['parent' => $item['id']])
                             :a11y-label="'Scan items into '.$item['name']"
                             class="w-full px-4 py-3"
                         >
-                            <row class="w-full items-center gap-3">
-                                <column class="h-9 w-9 items-center justify-center rounded-full bg-theme-primary/15">
+                            <row class="w-full items-center gap-4">
+                                <column class="h-10 w-10 items-center justify-center rounded-full bg-theme-primary/15">
                                     <icon :ios="Ios::CameraViewfinder" :android="Android::DocumentScanner" :size="18" class="text-theme-primary" />
                                 </column>
                                 <text font="semibold" class="flex-1 text-base text-theme-primary">Scan items here</text>
