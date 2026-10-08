@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Contracts\Database\Query\Builder;
 use App\Livewire\Traits\WithKioskTeam;
 use App\Models\Checklist;
 use App\Models\ChecklistItem;
@@ -115,7 +116,7 @@ new #[Layout('layouts::kiosk')] class extends Component
     {
         return ChecklistItem::query()
             ->with('checklist')
-            ->whereHas('checklist', fn ($query) => $query->whereBelongsTo($this->team))
+            ->whereHas('checklist', fn (Builder $query) => $query->whereBelongsTo($this->team))
             ->findOrFail($itemId);
     }
 };

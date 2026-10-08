@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Contracts\Database\Query\Builder;
 use App\Actions\Routines\GenerateRoutineOccurrences;
 use App\Livewire\Traits\WithKioskTeam;
 use App\Models\RoutineOccurrence;
@@ -86,7 +87,7 @@ new #[Layout('layouts::kiosk')] class extends Component
     {
         $occurrenceStep = RoutineOccurrenceStep::query()
             ->with('occurrence.routine')
-            ->whereHas('occurrence.routine', fn ($query) => $query->whereBelongsTo($this->team))
+            ->whereHas('occurrence.routine', fn (Builder $query) => $query->whereBelongsTo($this->team))
             ->findOrFail($occurrenceStepId);
 
         $this->authorize('complete', $occurrenceStep->occurrence->routine);
