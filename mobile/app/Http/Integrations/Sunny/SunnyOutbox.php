@@ -113,6 +113,11 @@ class SunnyOutbox
                 $this->forgetChildren($resource, $id);
             }
 
+            if ($resource === 'items') {
+                Item::query()->forCurrentServer()->where('parent_id', $id)->update(['parent_id' => null]);
+                $this->rewritePendingReference($resource, 'parent_id', $id, null);
+            }
+
             if ($resource === 'routines') {
                 $this->forgetRoutineOccurrences($id);
             }
