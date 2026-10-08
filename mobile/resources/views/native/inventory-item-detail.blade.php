@@ -15,6 +15,14 @@
             :android-icon="Android::Edit"
             @navigate('/inventory/'.$item['id'].'/edit')
         />
+        <native:top-bar-action
+            ref="delete-item"
+            id="delete-item"
+            label="Delete"
+            :ios-icon="Ios::Trash"
+            :android-icon="Android::Delete"
+            @tap="confirmDeleteItem"
+        />
     @endif
 </native:top-bar>
 
@@ -35,6 +43,10 @@
                 </row>
 
                 @include('native.queued-change', ['refPrefix' => 'item', 'queuedChange' => $this->queuedChange])
+
+                @if ($error !== '')
+                    <text ref="item-error" class="text-sm text-theme-destructive">{{ $error }}</text>
+                @endif
 
                 @if ($item['photo_url'] ?? null)
                     <image

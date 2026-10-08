@@ -5,15 +5,22 @@ namespace App\NativeComponents;
 use App\Concerns\ChecksSunnySync;
 use App\Concerns\ShowsQueuedChange;
 use App\Enums\ItemType;
+use App\Http\Integrations\Sunny\SunnyOutbox;
+use App\Http\Integrations\Sunny\SunnySyncCoordinator;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
 use Native\Mobile\Attributes\On;
 use Native\Mobile\Edge\NativeComponent;
+use Native\Mobile\Events\Alert\ButtonPressed;
+use Native\Mobile\Facades\Dialog;
 
 class InventoryItemDetail extends NativeComponent
 {
     use ChecksSunnySync;
     use ShowsQueuedChange;
+
+    public string $error = '';
 
     /**
      * @return array{id: int, parent_id: int|null, type: ItemType, name: string, metadata: array<string, string>|null, created_at: string, updated_at: string}|null
@@ -86,6 +93,53 @@ class InventoryItemDetail extends NativeComponent
         }
 
         $this->navigate('/inventory/'.$parent['id'], ['from' => $this->item['id']]);
+    }
+
+    public function confirmDeleteItem(): void
+    {
+        if ($this->item === null) {
+            return;
+        }
+
+        $count = count($this->children);
+        $message = '“'.$this->item['name'].'” will be deleted for everyone on your team.';
+
+        if ($count > 0) {
+            $message .= ' '.trans_choice('The :count item inside it will move to the top level.|The :count items inside it will move to the top level.', $count);
+        }
+
+        Dialog::alert('Delete item?', $message, [
+            ['label' => 'Cancel', 'style' => 'cancel'],
+            ['label' => 'Delete', 'style' => 'destructive'],
+        ])->id('delete-item')->show();
+    }
+
+    #[On(ButtonPressed::class)]
+    public function onAlertButtonPressed(string $label, ?string $id = null): void
+    {
+        if ($id === 'delete-item' && $label === 'Delete') {
+            $this->deleteItem();
+        } elseif ($id === 'discard-queued-change' && $label === 'Discard') {
+            $this->discardQueuedChange();
+        }
+    }
+
+    public function deleteItem(): void
+    {
+        if ($this->item === null) {
+            return;
+        }
+
+        try {
+            app(SunnyOutbox::class)->delete('items', $this->item['team_id'], $this->item['id']);
+        } catch (ValidationException $exception) {
+            $this->error = collect($exception->errors())->flatten()->first() ?? 'Unable to delete on this phone. Try again.';
+
+            return;
+        }
+
+        app(SunnySyncCoordinator::class)->dispatch();
+        $this->back();
     }
 
     #[On('sunny-sync-complete')]
