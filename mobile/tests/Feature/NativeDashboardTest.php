@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\ItemType;
+use App\Models\Item;
 use App\Models\Recipe;
 use App\NativeComponents\CreateInventoryItem;
 use App\NativeComponents\CreateRecipe;
@@ -77,11 +78,13 @@ it('lists the most recently added or updated recipes', function () {
 });
 
 it('lists the most recently added or updated items', function () {
+    Item::find(13)->update(['photo_url' => 'https://sunny.example/lights.jpg']);
+
     Native::visit('/dashboard')
         ->assertSet('recentItems', [
-            ['id' => 3, 'name' => 'Canned tomatoes', 'type' => ItemType::Item, 'supporting' => 'Item · Updated 17 hours ago', 'url' => '/inventory/3'],
-            ['id' => 13, 'name' => 'String lights', 'type' => ItemType::Item, 'supporting' => 'Item · Updated 3 days ago', 'url' => '/inventory/13'],
-            ['id' => 8, 'name' => 'Cordless drill', 'type' => ItemType::Item, 'supporting' => 'Item · Updated 1 week ago', 'url' => '/inventory/8'],
+            ['id' => 3, 'name' => 'Canned tomatoes', 'type' => ItemType::Item, 'supporting' => 'Item · Updated 17 hours ago', 'photo' => null, 'url' => '/inventory/3'],
+            ['id' => 13, 'name' => 'String lights', 'type' => ItemType::Item, 'supporting' => 'Item · Updated 3 days ago', 'photo' => 'https://sunny.example/lights.jpg', 'url' => '/inventory/13'],
+            ['id' => 8, 'name' => 'Cordless drill', 'type' => ItemType::Item, 'supporting' => 'Item · Updated 1 week ago', 'photo' => null, 'url' => '/inventory/8'],
         ]);
 });
 

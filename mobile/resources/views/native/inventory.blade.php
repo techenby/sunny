@@ -20,8 +20,9 @@
                 <list-item
                     :headline="$result['name']"
                     :supporting="$result['location'] ? $result['type']->label().' · in '.$result['location'] : $result['type']->label()"
-                    :leadingIconIos="$result['type']->iosIcon()"
-                    :leadingIconAndroid="$result['type']->androidIcon()"
+                    :leadingImage="$result['photo']"
+                    :leadingIconIos="$result['photo'] ? null : $result['type']->iosIcon()"
+                    :leadingIconAndroid="$result['photo'] ? null : $result['type']->androidIcon()"
                     :leadingIconBgColor="$result['type']->iconColor()"
                     :trailingIconIos="Ios::ChevronRight"
                     :trailingIconAndroid="Android::ChevronRight"

@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Database\Factories\RecipeFactory;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class Recipe extends Model
@@ -112,5 +114,12 @@ class Recipe extends Model
         return [
             'tags' => 'array',
         ];
+    }
+
+    protected function photoUrl(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->photo_path ? Storage::temporaryUrl($this->photo_path, now()->addMinutes(30)) : null,
+        );
     }
 }

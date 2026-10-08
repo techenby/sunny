@@ -30,6 +30,20 @@ test('renders items for the current team only', function () {
         ->assertDontSee('Pink Hammer');
 });
 
+test('shows the item photo in place of the icon', function () {
+    Storage::fake();
+
+    $user = User::factory()->create();
+    Item::factory()->for($user->currentTeam)->create([
+        'name' => 'Brown Hammer',
+        'photo_path' => "teams/{$user->current_team_id}/items/brown-hammer.png",
+    ]);
+
+    Livewire::actingAs($user)
+        ->test('pages::inventory.index')
+        ->assertSeeHtml('brown-hammer.png');
+});
+
 test('can search items by name', function () {
     $user = User::factory()->create();
     Item::factory()

@@ -143,7 +143,7 @@ class Dashboard extends NativeComponent
     }
 
     /**
-     * @return list<array{id: int, name: string, type: ItemType, supporting: string, url: string}>
+     * @return list<array{id: int, name: string, type: ItemType, supporting: string, photo: string|null, url: string}>
      */
     #[Computed]
     public function recentItems(): array
@@ -154,6 +154,7 @@ class Dashboard extends NativeComponent
                 'name' => $item['name'],
                 'type' => $item['type'],
                 'supporting' => $item['type']->label().' · '.$this->activity($item),
+                'photo' => $item['photo_url'],
                 'url' => '/inventory/'.$item['id'],
             ])
             ->all();
