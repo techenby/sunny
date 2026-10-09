@@ -377,7 +377,7 @@ it('adds every item to Sunny under the chosen place with its details and photo',
         ->tap('scan-submit')
         ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Add', 'id' => 'add-items'])
         ->assertSet('error', '')
-        ->assertReplacedWith('/inventory/7');
+        ->assertWentBack();
 
     $fields = fn (SaveRecordRequest $request): array => collect($request->body()->all())
         ->reject(fn ($part): bool => $part->name === 'client_uuid')
@@ -440,7 +440,7 @@ it('still adds an item whose photo has since been cleared from the phone', funct
     $screen->tap('scan-submit')
         ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Add', 'id' => 'add-items'])
         ->assertSet('error', '')
-        ->assertReplacedWith('/inventory');
+        ->assertWentBack();
 
     Saloon::assertSent(fn (SaveRecordRequest $request): bool => Arr::except($request->body()->all(), 'client_uuid') === [
         'name' => 'Hammer', 'type' => 'item', 'parent_id' => null, 'metadata' => null,
@@ -460,7 +460,7 @@ it('adds every item and flags the one Sunny refuses', function () {
         ->tap('scan-submit')
         ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Add', 'id' => 'add-items'])
         ->assertSet('error', '')
-        ->assertReplacedWith('/inventory');
+        ->assertWentBack();
 
     Saloon::assertSentCount(3);
     expect(Item::whereIn('id', [100, 101])->pluck('name')->all())->toBe(['Hammer', 'Saw'])

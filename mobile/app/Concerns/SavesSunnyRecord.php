@@ -47,6 +47,11 @@ trait SavesSunnyRecord
         try {
             $this->savedId = app(SunnyOutbox::class)->queue($resource, $this->teamId, $payload, $id, $this->photoPath ?? null);
             app(SunnySyncCoordinator::class)->dispatch();
+            if ($id !== null) {
+                $this->back();
+
+                return;
+            }
             $path = match ($resource) {
                 'items' => 'inventory',
                 'checklists' => 'lists',

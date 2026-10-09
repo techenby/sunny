@@ -96,7 +96,7 @@ it('keeps the recipe edit queued on the phone when Sunny rejects the session', f
         ->assertSee('Update recipe')
         ->tap('edit-recipe-submit')
         ->assertSet('error', '')
-        ->assertReplacedWith('/recipes/1');
+        ->assertWentBack();
 
     expect(PendingWrite::sole()->error)->toBeNull();
 });

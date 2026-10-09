@@ -25,15 +25,16 @@ beforeEach(function (): void {
     seedSunnyData();
 });
 
-it('saves on the phone, opens the record, then stores what Sunny confirms', function (string $resource, string $route, string $ref, bool $editing): void {
+it('saves on the phone, shows the record, then stores what Sunny confirms', function (string $resource, string $route, string $ref, bool $editing): void {
     $model = $resource === 'recipes' ? Recipe::class : Item::class;
     $record = $model::find(1)->toArray();
     $record['id'] = $editing ? 1 : 90;
     $record['name'] = 'Saved by Sunny';
     Saloon::fake([SaveRecordRequest::class => MockResponse::make(['data' => $record], $editing ? 200 : 201)]);
-    Native::visit('/'.$route.($editing ? '/1/edit' : '/create'))
+    $screen = Native::visit('/'.$route.($editing ? '/1/edit' : '/create'))
         ->set('name', 'Draft name')->tap($ref.'-submit')
-        ->assertSet('error', '')->assertReplacedWith('/'.$route.'/'.($editing ? 1 : -1));
+        ->assertSet('error', '');
+    $editing ? $screen->assertWentBack() : $screen->assertReplacedWith('/'.$route.'/-1');
     expect($model::find($record['id'])->name)->toBe('Saved by Sunny')
         ->and(PendingWrite::count())->toBe(0);
     Saloon::assertSent(fn (SaveRecordRequest $request): bool => $request->resolveEndpoint() === '/teams/family/'.$resource.($editing ? '/1' : '')
@@ -133,7 +134,7 @@ it('removes an existing recipe photo explicitly', function (): void {
 
 it('keeps a change Sunny refuses on the phone and explains why', function (int $status, string $message): void {
     Saloon::fake([SaveRecordRequest::class => MockResponse::make(['errors' => ['name' => ['That name is taken.']]], $status)]);
-    Native::visit('/recipes/1/edit')->set('name', 'Unsaved')->tap('edit-recipe-submit')->assertReplacedWith('/recipes/1');
+    Native::visit('/recipes/1/edit')->set('name', 'Unsaved')->tap('edit-recipe-submit')->assertWentBack();
 
     expect(Recipe::find(1)->name)->toBe('Unsaved')
         ->and(PendingWrite::sole()->error)->toBe($message);
@@ -145,7 +146,7 @@ it('keeps a change Sunny refuses on the phone and explains why', function (int $
 
 it('keeps sending a change after Sunny fails for a reason that may pass', function (): void {
     Saloon::fake([SaveRecordRequest::class => MockResponse::make([], 500)]);
-    Native::visit('/recipes/1/edit')->set('name', 'Unsaved')->tap('edit-recipe-submit')->assertReplacedWith('/recipes/1');
+    Native::visit('/recipes/1/edit')->set('name', 'Unsaved')->tap('edit-recipe-submit')->assertWentBack();
 
     expect(PendingWrite::sole()->error)->toBeNull();
     Native::visit('/recipes/1')->assertSee('Saved on this phone · syncing with Sunny');

@@ -337,7 +337,13 @@ class ScanInventory extends NativeComponent
             app(SunnySyncCoordinator::class)->dispatch();
         }
 
-        if ($this->error === '') {
+        if ($this->error !== '') {
+            return;
+        }
+
+        if ($this->parentId === ($this->parentChoice((int) $this->data('parent'))['id'] ?? null)) {
+            $this->back();
+        } else {
             $this->replace($this->parentId === null ? '/inventory' : '/inventory/'.$this->parentId);
         }
     }
