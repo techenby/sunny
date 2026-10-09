@@ -33,7 +33,7 @@
                         let response = await fetch(window.location.href, { cache: 'no-store' })
 
                         if (response.ok) {
-                            return this.reload()
+                            return response.redirected ? this.visit(response.url) : this.reload()
                         }
                     } catch {}
                 }
@@ -44,6 +44,10 @@
 
         reload() {
             window.location.reload()
+        },
+
+        visit(url) {
+            window.location.assign(url)
         },
     }
 

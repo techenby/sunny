@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\KioskDevice;
 use App\Models\Team;
 use App\Models\User;
 
@@ -113,4 +114,33 @@ test('the screensaver comes back after a reload', function () {
     $page->wait(2)
         ->assertScript('typeof window.beforeReload', 'undefined')
         ->assertVisible('[data-kiosk-screensaver]');
+});
+
+test('a forgotten kiosk returns to the pairing screen', function () {
+    $user = User::factory()->create();
+
+    $page = visit('/kiosk');
+
+    $page->assertSee(__('Pairing code'));
+
+    KioskDevice::query()->sole()->update([
+        'user_id' => $user->id,
+        'team_id' => $user->currentTeam->id,
+        'paired_at' => now(),
+        'expires_at' => null,
+        'pairing_code' => null,
+    ]);
+
+    $page->wait(3)
+        ->assertPathIs(route('kiosk.calendar', ['current_team' => $user->currentTeam], absolute: false));
+
+    KioskDevice::query()->sole()->delete();
+
+    $page->script('Livewire.all()[0].$wire.$refresh().catch(() => {})');
+
+    $page->wait(2)
+        ->assertPathIs('/kiosk')
+        ->assertSee(__('Pairing code'));
+
+    expect(KioskDevice::query()->sole())->isPaired()->toBeFalse();
 });

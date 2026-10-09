@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
+use App\Models\KioskDevice;
 use App\Support\KioskTeam;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 class RestrictKioskSession
@@ -18,14 +20,28 @@ class RestrictKioskSession
             return $next($request);
         }
 
-        if ($this->isKioskPath($request)) {
+        $device = KioskTeam::device();
+
+        if (! $device instanceof KioskDevice) {
+            $this->signOut($request);
+
+            if ($request->is('kiosk')) {
+                return $next($request);
+            }
+
+            abort_if($request->hasHeader('X-Livewire'), 401);
+
+            return redirect()->route('kiosk.index');
+        }
+
+        if ($this->isKioskPath($request, $device)) {
             return $next($request);
         }
 
         abort(403, 'This kiosk session is restricted to kiosk pages.');
     }
 
-    protected function isKioskPath(Request $request): bool
+    protected function isKioskPath(Request $request, KioskDevice $device): bool
     {
         $path = '/' . ltrim($request->path(), '/');
 
@@ -43,6 +59,14 @@ class RestrictKioskSession
             return false;
         }
 
-        return $segments[0] === KioskTeam::device()?->team->slug;
+        return $segments[0] === $device->team->slug;
+    }
+
+    protected function signOut(Request $request): void
+    {
+        Auth::guard('web')->logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
     }
 }

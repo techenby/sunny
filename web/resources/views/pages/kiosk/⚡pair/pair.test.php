@@ -171,9 +171,10 @@ test('approve fails if pairing_code rotates between mount and approve', function
 
 test('paired kiosk session cannot access dashboard', function (): void {
     $user = User::factory()->create();
+    $device = KioskDevice::factory()->paired($user, $user->currentTeam)->create();
 
     actingAs($user)
-        ->withSession(['kiosk_device_id' => 99])
+        ->withSession(['kiosk_device_id' => $device->id])
         ->get(route('dashboard'))
         ->assertForbidden();
 });
@@ -188,13 +189,47 @@ test('paired kiosk session can access kiosk pages', function (): void {
         ->assertOk();
 });
 
-test('kiosk session without a paired device cannot access kiosk pages', function (): void {
+test('a forgotten kiosk is signed out and sent back to pairing', function (string $route): void {
+    $user = User::factory()->create();
+    $device = KioskDevice::factory()->paired($user, $user->currentTeam)->create();
+    $device->delete();
+
+    actingAs($user)
+        ->withSession(['kiosk_device_id' => $device->id])
+        ->get(route($route))
+        ->assertRedirect(route('kiosk.index'))
+        ->assertSessionMissing('kiosk_device_id');
+
+    $this->assertGuest();
+})->with(['kiosk.calendar', 'dashboard']);
+
+test('a forgotten kiosk\'s Livewire requests are rejected as unauthenticated', function (): void {
     $user = User::factory()->create();
 
     actingAs($user)
         ->withSession(['kiosk_device_id' => 99])
+        ->withHeader('X-Livewire', 'true')
         ->get(route('kiosk.calendar'))
-        ->assertForbidden();
+        ->assertUnauthorized();
+
+    $this->assertGuest();
+});
+
+test('a kiosk that lost its session goes back to pairing instead of the login page', function (): void {
+    withCookie(KioskDevice::COOKIE_NAME, 'some-uuid')
+        ->get('/straw-hats/kiosk/calendar')
+        ->assertRedirect(route('kiosk.index'));
+});
+
+test('guests are sent to the login page for kiosk configuration', function (): void {
+    withCookie(KioskDevice::COOKIE_NAME, 'some-uuid')
+        ->get('/straw-hats/kiosk/configure/settings')
+        ->assertRedirect(route('login'));
+});
+
+test('guests without a kiosk cookie are sent to the login page', function (): void {
+    get('/straw-hats/kiosk/calendar')
+        ->assertRedirect(route('login'));
 });
 
 test('kiosk session cannot use a device paired by another user', function (): void {
@@ -204,7 +239,9 @@ test('kiosk session cannot use a device paired by another user', function (): vo
     actingAs($user)
         ->withSession(['kiosk_device_id' => $device->id])
         ->get(route('kiosk.calendar'))
-        ->assertForbidden();
+        ->assertRedirect(route('kiosk.index'));
+
+    $this->assertGuest();
 });
 
 test('kiosk session cannot reach kiosk pages for another of the user\'s teams', function (string $route): void {
@@ -249,7 +286,10 @@ test('paired kiosk session can access root /kiosk after its device row is delete
     actingAs($user)
         ->withSession(['kiosk_device_id' => 99])
         ->get('/kiosk')
-        ->assertOk();
+        ->assertOk()
+        ->assertSessionMissing('kiosk_device_id');
+
+    $this->assertGuest();
 });
 
 test('paired kiosk session can hit livewire update endpoint', function (): void {
