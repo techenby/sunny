@@ -24,6 +24,8 @@ class TeamFactory extends Factory
             'week_start' => Carbon::SUNDAY,
             'appearance' => Appearance::Dark,
             'rotation' => 0,
+            'screensaver_after' => 5,
+            'return_home_after' => 10,
         ];
     }
 

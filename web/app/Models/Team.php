@@ -19,7 +19,7 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['name', 'slug', 'is_personal', 'address', 'timezone', 'week_start', 'appearance', 'rotation'])]
+#[Fillable(['name', 'slug', 'is_personal', 'address', 'timezone', 'week_start', 'appearance', 'rotation', 'screensaver_after', 'return_home_after', 'night_starts_at', 'night_ends_at'])]
 #[RouteKey('slug')]
 class Team extends Model
 {
@@ -147,6 +147,8 @@ class Team extends Model
             'is_personal' => 'boolean',
             'address' => 'array',
             'appearance' => Appearance::class,
+            'screensaver_after' => 'integer',
+            'return_home_after' => 'integer',
         ];
     }
 }

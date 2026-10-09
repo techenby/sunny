@@ -112,6 +112,8 @@
             {{ $slot }}
         </flux:main>
 
+        <x-kiosk.idle :team="$kioskTeam" />
+
         <x-screensize />
 
         @persist('toast')

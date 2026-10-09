@@ -29,6 +29,35 @@
             <flux:radio value="270" label="270°" />
         </flux:radio.group>
 
+        <div class="grid gap-6 sm:grid-cols-2">
+            <flux:select wire:model="form.screensaver_after" :label="__('Screensaver')" :description="__('Shows a clock after the display sits untouched.')" variant="listbox">
+                <flux:select.option value="0">{{ __('Never') }}</flux:select.option>
+                @foreach ([1, 2, 5, 10, 15, 30] as $minutes)
+                    <flux:select.option value="{{ $minutes }}">{{ trans_choice('After :count minute|After :count minutes', $minutes) }}</flux:select.option>
+                @endforeach
+            </flux:select>
+
+            <flux:select wire:model="form.return_home_after" :label="__('Return to calendar')" :description="__('Goes back to today\'s calendar after the display sits untouched.')" variant="listbox">
+                <flux:select.option value="0">{{ __('Never') }}</flux:select.option>
+                @foreach ([5, 10, 15, 30, 60] as $minutes)
+                    <flux:select.option value="{{ $minutes }}">{{ trans_choice('After :count minute|After :count minutes', $minutes) }}</flux:select.option>
+                @endforeach
+            </flux:select>
+        </div>
+
+        <flux:text variant="subtle" class="-mt-3 text-sm">
+            {{ __('Both wait 30 minutes instead while the routines board shows a routine in progress.') }}
+        </flux:text>
+
+        <flux:fieldset>
+            <flux:switch wire:model.live="form.night_mode" :label="__('Night mode')" :description="__('A dim red clock replaces the screensaver overnight.')" align="left" />
+
+            <div class="mt-4 flex gap-4" wire:show="form.night_mode">
+                <flux:input type="time" wire:model="form.night_starts_at" :label="__('Starts')" />
+                <flux:input type="time" wire:model="form.night_ends_at" :label="__('Ends')" />
+            </div>
+        </flux:fieldset>
+
         <flux:field>
             <flux:label>Address for Weather</flux:label>
 

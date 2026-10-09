@@ -47,6 +47,9 @@
                                 }
                             },
                         }"
+                        @if ($this->isToday)
+                            x-bind:data-routine-in-progress="completed > 0 && completed < {{ $column['total'] }}"
+                        @endif
                         class="flex h-full w-80 shrink-0 flex-col overflow-hidden rounded-xl border border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900"
                     >
                         <header class="shrink-0 border-b border-zinc-200 p-4 dark:border-zinc-700">
