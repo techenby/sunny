@@ -1,12 +1,13 @@
+@php($kioskTeam = \App\Support\KioskTeam::resolve())
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark' => auth()->user()->currentTeam->appearance === \App\Enums\Appearance::Dark])>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark' => $kioskTeam->appearance === \App\Enums\Appearance::Dark])>
     <head>
         {{-- Must run before @fluxAppearance so Flux applies the team's appearance instead of the device preference --}}
         <script>
-            window.localStorage.setItem('flux.appearance', @js(auth()->user()->currentTeam->appearance->value));
+            window.localStorage.setItem('flux.appearance', @js($kioskTeam->appearance->value));
         </script>
 
-        @if (auth()->user()->currentTeam->rotation !== 0)
+        @if ($kioskTeam->rotation !== 0)
             {{-- Native popovers render in the browser's top layer, which ignores the body rotation
                  below. Removing the native API before Flux loads forces its popover polyfill, which
                  keeps dropdown panels inside the page so they rotate with it. --}}
@@ -84,12 +85,12 @@
     </head>
     <body
         class="min-h-screen bg-white dark:bg-zinc-800"
-        @if (auth()->user()->currentTeam->rotation !== 0)
-            data-rotation="{{ auth()->user()->currentTeam->rotation }}"
+        @if ($kioskTeam->rotation !== 0)
+            data-rotation="{{ $kioskTeam->rotation }}"
         @endif
     >
         <x-kiosk.sidebar>
-            <livewire:kiosk.weather-tile />
+            <livewire:kiosk.weather-tile :team="$kioskTeam" />
             <x-kiosk.sidebar.item icon="calendar" :href="route('kiosk.calendar')" :current="request()->routeIs('kiosk.calendar')" wire:navigate>{{ __('Calendar') }}</x-kiosk.sidebar.item>
             <x-kiosk.sidebar.item icon="arrow-path-rounded-square" :href="route('kiosk.routines')" :current="request()->routeIs('kiosk.routines')" wire:navigate>{{ __('Routines') }}</x-kiosk.sidebar.item>
             <x-kiosk.sidebar.item icon="queue-list" :href="route('kiosk.lists')" :current="request()->routeIs('kiosk.lists')" wire:navigate>{{ __('Lists') }}</x-kiosk.sidebar.item>

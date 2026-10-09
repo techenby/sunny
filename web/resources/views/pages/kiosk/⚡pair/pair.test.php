@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\TeamRole;
 use App\Models\KioskDevice;
 use App\Models\Team;
 use App\Models\User;
@@ -179,11 +180,67 @@ test('paired kiosk session cannot access dashboard', function (): void {
 
 test('paired kiosk session can access kiosk pages', function (): void {
     $user = User::factory()->create();
+    $device = KioskDevice::factory()->paired($user, $user->currentTeam)->create();
+
+    actingAs($user)
+        ->withSession(['kiosk_device_id' => $device->id])
+        ->get(route('kiosk.calendar'))
+        ->assertOk();
+});
+
+test('kiosk session without a paired device cannot access kiosk pages', function (): void {
+    $user = User::factory()->create();
 
     actingAs($user)
         ->withSession(['kiosk_device_id' => 99])
         ->get(route('kiosk.calendar'))
-        ->assertOk();
+        ->assertForbidden();
+});
+
+test('kiosk session cannot use a device paired by another user', function (): void {
+    $user = User::factory()->create();
+    $device = KioskDevice::factory()->paired(team: $user->currentTeam)->create();
+
+    actingAs($user)
+        ->withSession(['kiosk_device_id' => $device->id])
+        ->get(route('kiosk.calendar'))
+        ->assertForbidden();
+});
+
+test('kiosk session cannot reach kiosk pages for another of the user\'s teams', function (string $route): void {
+    $user = User::factory()->create();
+    $teamA = $user->currentTeam;
+    $teamB = Team::factory()->create();
+    $user->teams()->attach($teamB, ['role' => TeamRole::Member]);
+    $device = KioskDevice::factory()->paired($user, $teamA)->create();
+
+    actingAs($user)
+        ->withSession(['kiosk_device_id' => $device->id])
+        ->get(route($route, ['current_team' => $teamB->slug]))
+        ->assertForbidden();
+
+    expect($user->fresh()->current_team_id)->toBe($teamA->id);
+})->with(['kiosk.lists', 'kiosk.calendar', 'kiosk.routines', 'kiosk.meal-planning']);
+
+test('kiosk session cannot reach the configure pages', function (string $route): void {
+    $user = User::factory()->create();
+    $device = KioskDevice::factory()->paired($user, $user->currentTeam)->create();
+
+    actingAs($user)
+        ->withSession(['kiosk_device_id' => $device->id])
+        ->get(route($route))
+        ->assertForbidden();
+})->with(['kiosk.configure.preview', 'kiosk.configure.calendar', 'kiosk.configure.settings']);
+
+test('kiosk session cannot pair another device', function (): void {
+    $user = User::factory()->create();
+    $device = KioskDevice::factory()->paired($user, $user->currentTeam)->create();
+    $pending = KioskDevice::factory()->pending()->create();
+
+    actingAs($user)
+        ->withSession(['kiosk_device_id' => $device->id])
+        ->get(route('kiosk.pair', ['code' => $pending->pairing_code]))
+        ->assertForbidden();
 });
 
 test('paired kiosk session can access root /kiosk after its device row is deleted', function (): void {

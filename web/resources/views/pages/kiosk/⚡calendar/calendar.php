@@ -1,10 +1,10 @@
 <?php
 
 use App\Actions\Calendars\FetchCalendarEvents;
+use App\Livewire\Traits\WithKioskTeam;
 use App\Models\CalendarFeed;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
-use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
@@ -12,6 +12,8 @@ use Livewire\Component;
 
 new #[Layout('layouts::kiosk')] class extends Component
 {
+    use WithKioskTeam;
+
     #[Url]
     public string $focusedDate = '';
 
@@ -31,7 +33,7 @@ new #[Layout('layouts::kiosk')] class extends Component
     #[Computed]
     public function feeds(): EloquentCollection
     {
-        return Auth::user()->currentTeam
+        return $this->team
             ->calendarFeeds()
             ->get();
     }
@@ -224,7 +226,7 @@ new #[Layout('layouts::kiosk')] class extends Component
     private function weekStartsAt(): CarbonImmutable
     {
         return $this->focusedDate()
-            ->startOfWeek(Auth::user()->currentTeam->week_start);
+            ->startOfWeek($this->team->week_start);
     }
 
     private function monthStartsAt(): CarbonImmutable
@@ -235,7 +237,7 @@ new #[Layout('layouts::kiosk')] class extends Component
     private function monthGridStartsAt(): CarbonImmutable
     {
         return $this->monthStartsAt()
-            ->startOfWeek(Auth::user()->currentTeam->week_start);
+            ->startOfWeek($this->team->week_start);
     }
 
     private function focusedDate(): CarbonImmutable
@@ -263,6 +265,6 @@ new #[Layout('layouts::kiosk')] class extends Component
 
     private function timezoneName(): string
     {
-        return Auth::user()->currentTeam->timezone;
+        return $this->team->timezone;
     }
 };

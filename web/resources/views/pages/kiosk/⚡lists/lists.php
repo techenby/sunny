@@ -1,8 +1,9 @@
 <?php
 
+use App\Livewire\Traits\WithKioskTeam;
 use App\Models\Checklist;
 use App\Models\ChecklistItem;
-use App\Models\Team;
+use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
@@ -12,6 +13,8 @@ use Livewire\Component;
 
 new #[Layout('layouts::kiosk')] class extends Component
 {
+    use WithKioskTeam;
+
     #[Url]
     public ?int $selected = null;
 
@@ -26,7 +29,7 @@ new #[Layout('layouts::kiosk')] class extends Component
     #[Computed]
     public function lists(): EloquentCollection
     {
-        return $this->team()
+        return $this->team
             ->checklists()
             ->with(['user', 'items.completedBy'])
             ->orderBy('name')
@@ -74,7 +77,7 @@ new #[Layout('layouts::kiosk')] class extends Component
 
     public function toggle(int $itemId): void
     {
-        $item = ChecklistItem::with('checklist')->findOrFail($itemId);
+        $item = $this->findItem($itemId);
 
         $this->authorize('update', $item->checklist);
 
@@ -85,7 +88,7 @@ new #[Layout('layouts::kiosk')] class extends Component
 
     public function removeItem(int $itemId): void
     {
-        $item = ChecklistItem::with('checklist')->findOrFail($itemId);
+        $item = $this->findItem($itemId);
 
         $this->authorize('update', $item->checklist);
 
@@ -109,8 +112,11 @@ new #[Layout('layouts::kiosk')] class extends Component
         unset($this->lists, $this->list);
     }
 
-    private function team(): Team
+    private function findItem(int $itemId): ChecklistItem
     {
-        return Auth::user()->currentTeam;
+        return ChecklistItem::query()
+            ->with('checklist')
+            ->whereHas('checklist', fn (Builder $query) => $query->whereBelongsTo($this->team))
+            ->findOrFail($itemId);
     }
 };

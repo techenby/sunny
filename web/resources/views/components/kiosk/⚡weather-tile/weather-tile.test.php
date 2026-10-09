@@ -34,7 +34,7 @@ test('renders weather from api', function () {
     $user = User::factory()->memberOf($team)->create();
 
     Livewire::actingAs($user)
-        ->test('kiosk.weather-tile')
+        ->test('kiosk.weather-tile', ['team' => $team])
         ->assertSee('Chicago')
         ->assertSee('63°')
         ->assertSee('73°')
@@ -65,7 +65,7 @@ test('shows skeleton when api returns 429', function () {
     $user = User::factory()->memberOf($team)->create();
 
     Livewire::actingAs($user)
-        ->test('kiosk.weather-tile')
+        ->test('kiosk.weather-tile', ['team' => $team])
         ->assertDontSee('°')
         ->assertSee('shimmer');
 
@@ -76,6 +76,6 @@ test('renders nothing without address coordinates', function () {
     $user = User::factory()->create();
 
     Livewire::actingAs($user)
-        ->test('kiosk.weather-tile')
+        ->test('kiosk.weather-tile', ['team' => $user->currentTeam])
         ->assertDontSee('°');
 });

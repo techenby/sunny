@@ -2,7 +2,7 @@
 
 use App\Http\Integrations\OpenWeather\OpenWeatherConnector;
 use App\Http\Integrations\OpenWeather\Requests\OneCall;
-use Illuminate\Support\Facades\Auth;
+use App\Models\Team;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Component;
 use Saloon\Exceptions\Request\RequestException;
@@ -21,10 +21,8 @@ new class extends Component
 
     public ?string $icon = null;
 
-    public function mount(): void
+    public function mount(Team $team): void
     {
-        $team = Auth::user()->currentTeam;
-
         if (! ($team->address['lat'] ?? null) || ! ($team->address['long'] ?? null)) {
             return;
         }

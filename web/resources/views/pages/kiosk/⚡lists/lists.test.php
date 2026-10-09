@@ -1,7 +1,10 @@
 <?php
 
+use App\Enums\TeamRole;
 use App\Models\Checklist;
 use App\Models\ChecklistItem;
+use App\Models\KioskDevice;
+use App\Models\Team;
 use App\Models\User;
 use Livewire\Livewire;
 
@@ -127,7 +130,7 @@ test('it will not touch another team list', function () {
     Livewire::actingAs($user)
         ->test('pages::kiosk.lists')
         ->call('toggle', $item->id)
-        ->assertForbidden();
+        ->assertNotFound();
 
     expect($item->fresh()->isCompleted())->toBeFalse();
 });
@@ -182,4 +185,64 @@ test('an item name at the limit is accepted', function () {
         ->assertHasNoErrors();
 
     expect(ChecklistItem::count())->toBe(1);
+});
+
+$pairKioskToFirstTeam = function (): array {
+    $user = User::factory()->create();
+    $teamA = $user->currentTeam;
+    $teamB = Team::factory()->create();
+    $user->teams()->attach($teamB, ['role' => TeamRole::Member]);
+    $device = KioskDevice::factory()->paired($user, $teamA)->create();
+
+    session(['kiosk_device_id' => $device->id]);
+
+    return [$user, $teamA, $teamB];
+};
+
+test('a kiosk cannot toggle or remove items from another of the user\'s teams', function () use ($pairKioskToFirstTeam) {
+    [$user, , $teamB] = $pairKioskToFirstTeam();
+    $item = ChecklistItem::factory()->for(Checklist::factory()->for($teamB))->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::kiosk.lists')
+        ->call('toggle', $item->id)
+        ->assertNotFound();
+
+    Livewire::actingAs($user)
+        ->test('pages::kiosk.lists')
+        ->call('removeItem', $item->id)
+        ->assertNotFound();
+
+    expect($item->fresh())->not->toBeNull()
+        ->isCompleted()->toBeFalse();
+});
+
+test('a kiosk keeps showing its own team after the user switches teams elsewhere', function () use ($pairKioskToFirstTeam) {
+    [$user, $teamA, $teamB] = $pairKioskToFirstTeam();
+    Checklist::factory()->for($teamA)->create(['name' => 'Kitchen']);
+    Checklist::factory()->for($teamB)->create(['name' => 'Office']);
+
+    $component = Livewire::actingAs($user)->test('pages::kiosk.lists');
+
+    $user->switchTeam($teamB);
+
+    expect($component->get('lists')->pluck('name')->all())->toBe(['Kitchen']);
+
+    expect(Livewire::actingAs($user->fresh())->test('pages::kiosk.lists')->get('lists')->pluck('name')->all())
+        ->toBe(['Kitchen']);
+});
+
+test('a normal session keeps the team it mounted with', function () {
+    $user = User::factory()->create();
+    $teamA = $user->currentTeam;
+    $teamB = Team::factory()->create();
+    $user->teams()->attach($teamB, ['role' => TeamRole::Member]);
+    Checklist::factory()->for($teamA)->create(['name' => 'Kitchen']);
+    Checklist::factory()->for($teamB)->create(['name' => 'Office']);
+
+    $component = Livewire::actingAs($user)->test('pages::kiosk.lists');
+
+    $user->switchTeam($teamB);
+
+    expect($component->call('select', 0)->get('lists')->pluck('name')->all())->toBe(['Kitchen']);
 });

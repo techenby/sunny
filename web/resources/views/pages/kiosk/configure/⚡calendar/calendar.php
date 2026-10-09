@@ -1,21 +1,23 @@
 <?php
 
 use App\Livewire\Forms\Kiosk\CalendarFeedForm;
+use App\Livewire\Traits\WithKioskTeam;
 use App\Models\CalendarFeed;
 use Flux\Flux;
-use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
 new #[Layout('layouts::kiosk-configure')] class extends Component
 {
+    use WithKioskTeam;
+
     public CalendarFeedForm $form;
 
     #[Computed]
     public function feeds()
     {
-        return Auth::user()->currentTeam->calendarFeeds()->orderBy('name')->get();
+        return $this->team->calendarFeeds()->orderBy('name')->get();
     }
 
     public function delete(int $id): void
@@ -48,7 +50,7 @@ new #[Layout('layouts::kiosk-configure')] class extends Component
             $this->authorize('create', CalendarFeed::class);
         }
 
-        $this->form->save();
+        $this->form->save($this->team);
         $this->modal('feed-form')->close();
         unset($this->feeds);
     }

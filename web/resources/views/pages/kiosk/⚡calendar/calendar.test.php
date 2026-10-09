@@ -2,7 +2,9 @@
 
 use App\Enums\Appearance;
 use App\Enums\CalendarColor;
+use App\Enums\TeamRole;
 use App\Models\CalendarFeed;
+use App\Models\KioskDevice;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Support\Facades\Date;
@@ -420,4 +422,30 @@ ICS),
             'calendar-day-2026-03-19', // 'Dia de São José'
         ])
         ->assertDontSee(['Autonomia do Estado', 'Dia de São José']);
+});
+
+$pairKioskToFirstTeam = function (): array {
+    $user = User::factory()->create();
+    $teamA = $user->currentTeam;
+    $teamB = Team::factory()->create();
+    $user->teams()->attach($teamB, ['role' => TeamRole::Member]);
+    $device = KioskDevice::factory()->paired($user, $teamA)->create();
+
+    session(['kiosk_device_id' => $device->id]);
+
+    return [$user, $teamA, $teamB];
+};
+
+test('a kiosk keeps showing its own team calendars after the user switches teams elsewhere', function () use ($pairKioskToFirstTeam) {
+    Http::fake(['*' => Http::response('', 200)]);
+    [$user, $teamA, $teamB] = $pairKioskToFirstTeam();
+    $kitchen = CalendarFeed::factory()->for($teamA)->create(['name' => 'Kitchen']);
+    CalendarFeed::factory()->for($teamB)->create(['name' => 'Office']);
+
+    $user->switchTeam($teamB);
+
+    $component = Livewire::actingAs($user->fresh())->test('pages::kiosk.calendar');
+
+    expect($component->get('feeds')->pluck('id')->all())->toBe([$kitchen->id])
+        ->and($component->get('selectedFeeds'))->toBe([$kitchen->id]);
 });

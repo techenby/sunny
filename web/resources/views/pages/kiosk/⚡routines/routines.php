@@ -1,10 +1,11 @@
 <?php
 
 use App\Actions\Routines\GenerateRoutineOccurrences;
+use App\Livewire\Traits\WithKioskTeam;
 use App\Models\RoutineOccurrence;
 use App\Models\RoutineOccurrenceStep;
-use App\Models\Team;
 use Carbon\CarbonImmutable;
+use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
@@ -14,12 +15,14 @@ use Livewire\Component;
 
 new #[Layout('layouts::kiosk')] class extends Component
 {
+    use WithKioskTeam;
+
     #[Url]
     public string $focusedDate = '';
 
     public function mount(): void
     {
-        $this->focusedDate = $this->team()->today()->toDateString();
+        $this->focusedDate = $this->team->today()->toDateString();
     }
 
     /**
@@ -48,7 +51,7 @@ new #[Layout('layouts::kiosk')] class extends Component
     #[Computed]
     public function isToday(): bool
     {
-        return $this->date()->isSameDay($this->team()->today());
+        return $this->date()->isSameDay($this->team->today());
     }
 
     #[Computed]
@@ -75,14 +78,17 @@ new #[Layout('layouts::kiosk')] class extends Component
 
     public function current(): void
     {
-        $this->focusedDate = $this->team()->today()->toDateString();
+        $this->focusedDate = $this->team->today()->toDateString();
 
         unset($this->columns, $this->isToday, $this->heading);
     }
 
     public function toggle(int $occurrenceStepId): void
     {
-        $occurrenceStep = RoutineOccurrenceStep::with('occurrence.routine')->findOrFail($occurrenceStepId);
+        $occurrenceStep = RoutineOccurrenceStep::query()
+            ->with('occurrence.routine')
+            ->whereHas('occurrence.routine', fn (Builder $query) => $query->whereBelongsTo($this->team))
+            ->findOrFail($occurrenceStepId);
 
         $this->authorize('complete', $occurrenceStep->occurrence->routine);
 
@@ -125,16 +131,11 @@ new #[Layout('layouts::kiosk')] class extends Component
     /** @return Collection<int, RoutineOccurrence> */
     private function occurrences(): Collection
     {
-        return resolve(GenerateRoutineOccurrences::class)->forDate($this->team(), $this->date());
+        return resolve(GenerateRoutineOccurrences::class)->forDate($this->team, $this->date());
     }
 
     private function date(): CarbonImmutable
     {
-        return CarbonImmutable::parse($this->focusedDate, $this->team()->timezone)->startOfDay();
-    }
-
-    private function team(): Team
-    {
-        return Auth::user()->currentTeam;
+        return CarbonImmutable::parse($this->focusedDate, $this->team->timezone)->startOfDay();
     }
 };
