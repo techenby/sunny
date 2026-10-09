@@ -43,8 +43,9 @@
                     }
                 }
 
-                if (this.screensaverAfter && idleFor >= this.screensaverAfter) {
+                if (this.screensaverAfter && idleFor >= this.screensaverAfter && ! this.showing) {
                     this.showing = true
+                    this.$dispatch('kiosk-screensaver-shown')
                 }
             },
 
@@ -112,6 +113,8 @@
             </div>
 
             <div class="text-3xl font-medium" x-bind:class="isNight() ? 'opacity-70' : 'text-zinc-300'" x-text="`${parts().weekday}, ${parts().month} ${parts().day}`"></div>
+
+            <livewire:kiosk.screensaver-details :team-id="$team->id" lazy />
         </div>
     </div>
 @endpersist

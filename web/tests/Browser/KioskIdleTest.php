@@ -1,12 +1,14 @@
 <?php
 
 use App\Actions\Routines\GenerateRoutineOccurrences;
+use App\Models\CalendarFeed;
 use App\Models\Routine;
 use App\Models\RoutineOccurrenceStep;
 use App\Models\RoutineStep;
 use App\Models\Team;
 use App\Models\User;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\Http;
 
 use function Pest\Laravel\actingAs;
 
@@ -97,4 +99,38 @@ test('the screensaver turns into a night clock during night hours', function () 
 
     $page->wait(1.5)
         ->assertVisible('[data-kiosk-screensaver][data-night]');
+});
+
+test('the screensaver shows the next event', function () use ($idleFor) {
+    $team = Team::factory()->create(['timezone' => 'America/Chicago', 'screensaver_after' => 1, 'return_home_after' => 0]);
+    $user = User::factory()->memberOf($team)->create();
+    CalendarFeed::factory()->for($team)->create(['url' => 'https://example.com/family.ics']);
+    $startsAt = CarbonImmutable::now('America/Chicago')->addMinutes(31)->format('Ymd\THis');
+
+    Http::fake([
+        'https://example.com/family.ics' => Http::response(<<<ICS
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Sunny//Tests//EN
+BEGIN:VEVENT
+UID:soccer
+DTSTAMP:20260501T120000Z
+DTSTART;TZID=America/Chicago:{$startsAt}
+SUMMARY:Soccer practice
+END:VEVENT
+END:VCALENDAR
+ICS),
+    ]);
+
+    actingAs($user);
+
+    $page = visit(route('kiosk.lists', absolute: false));
+
+    $page->assertNoJavaScriptErrors()
+        ->script($idleFor(61));
+
+    $page->wait(1.5)
+        ->assertVisible('[data-kiosk-screensaver]')
+        ->waitForText('Soccer practice')
+        ->assertScript("/in \\d+ min/.test(document.querySelector('[data-screensaver-next-event]').textContent)");
 });

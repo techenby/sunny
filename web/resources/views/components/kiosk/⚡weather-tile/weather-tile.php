@@ -1,11 +1,8 @@
 <?php
 
-use App\Http\Integrations\OpenWeather\OpenWeatherConnector;
-use App\Http\Integrations\OpenWeather\Requests\OneCall;
+use App\Actions\Kiosk\FetchWeather;
 use App\Models\Team;
-use Illuminate\Support\Facades\Cache;
 use Livewire\Component;
-use Saloon\Exceptions\Request\RequestException;
 
 new class extends Component
 {
@@ -23,31 +20,17 @@ new class extends Component
 
     public function mount(Team $team): void
     {
-        if (! ($team->address['lat'] ?? null) || ! ($team->address['long'] ?? null)) {
+        $weather = resolve(FetchWeather::class)->handle($team);
+
+        if ($weather === null) {
             return;
         }
 
-        try {
-            $weather = Cache::remember(
-                "weather:{$team->id}",
-                now()->addMinutes(30),
-                fn () => (new OpenWeatherConnector)->send(
-                    new OneCall($team->address['lat'], $team->address['long'], 'minutely,hourly,alerts')
-                )->json(),
-            );
-        } catch (RequestException) {
-            $weather = null;
-        }
-
-        if (! $weather) {
-            return;
-        }
-
-        $this->location = $team->address['city'] ?? null;
-        $this->temp = round($weather['current']['temp']);
-        $this->high = round($weather['daily'][0]['temp']['max']);
-        $this->low = round($weather['daily'][0]['temp']['min']);
-        $this->description = $weather['current']['weather'][0]['description'] ?? null;
-        $this->icon = $weather['current']['weather'][0]['icon'] ?? null;
+        $this->location = $weather['location'];
+        $this->temp = $weather['temp'];
+        $this->high = $weather['high'];
+        $this->low = $weather['low'];
+        $this->description = $weather['description'];
+        $this->icon = $weather['icon'];
     }
 };
