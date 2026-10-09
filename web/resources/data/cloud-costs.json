@@ -1,0 +1,14 @@
+{
+    "period": {
+        "from": "Aug 24",
+        "to": "Sep 23"
+    },
+    "synced_at": "2026-10-09T17:35:00+00:00",
+    "items": {
+        "App servers": 756,
+        "Database": 899,
+        "File storage": 0,
+        "Cache": 0,
+        "WebSockets": 0
+    }
+}
