@@ -31,7 +31,7 @@ class RestrictKioskSession
 
             abort_if($request->hasHeader('X-Livewire'), 401);
 
-            return redirect()->route('kiosk.index');
+            return to_route('kiosk.index');
         }
 
         if ($this->isKioskPath($request, $device)) {
