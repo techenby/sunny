@@ -86,12 +86,12 @@ test('a column counts completed steps', function () use ($routineBoardUser) {
         ->and($component->get('columns')[0]['completed'])->toBe(0);
 
     $step = RoutineOccurrenceStep::first();
-    $component->call('toggle', $step->id);
+    $component->call('setStepCompleted', $step->id, true);
 
     expect($component->get('columns')[0]['completed'])->toBe(1);
 });
 
-test('toggling a step records the user and can be undone', function () use ($routineBoardUser) {
+test('completing a step records the user and can be undone', function () use ($routineBoardUser) {
     [$user, $team] = $routineBoardUser();
     $routine = Routine::factory()->for($team)->daily()->household()->create();
     RoutineStep::factory()->for($routine)->create();
@@ -99,12 +99,38 @@ test('toggling a step records the user and can be undone', function () use ($rou
     $component = Livewire::actingAs($user)->test('pages::kiosk.routines');
     $step = RoutineOccurrenceStep::sole();
 
-    $component->call('toggle', $step->id);
+    $component->call('setStepCompleted', $step->id, true);
     expect($step->fresh()->isCompleted())->toBeTrue()
         ->and($step->fresh()->completed_by)->toBe($user->id);
 
-    $component->call('toggle', $step->id);
+    $component->call('setStepCompleted', $step->id, false);
     expect($step->fresh()->isCompleted())->toBeFalse();
+});
+
+test('completing an already completed step keeps who completed it', function () use ($routineBoardUser) {
+    [$user, $team] = $routineBoardUser();
+    $other = User::factory()->memberOf($team)->create();
+    $routine = Routine::factory()->for($team)->daily()->household()->create();
+    RoutineStep::factory()->for($routine)->create();
+
+    $component = Livewire::actingAs($user)->test('pages::kiosk.routines');
+    $step = RoutineOccurrenceStep::sole();
+    $step->complete($other);
+
+    $component->call('setStepCompleted', $step->id, true);
+
+    expect($step->fresh()->completed_by)->toBe($other->id);
+});
+
+test('completing a step does not re-render the board', function () use ($routineBoardUser) {
+    [$user, $team] = $routineBoardUser();
+    $routine = Routine::factory()->for($team)->daily()->household()->create();
+    RoutineStep::factory()->for($routine)->create();
+
+    $component = Livewire::actingAs($user)->test('pages::kiosk.routines');
+
+    $component->call('setStepCompleted', RoutineOccurrenceStep::sole()->id, true)
+        ->assertRenderSkipped();
 });
 
 test('it will not toggle a step from another team', function () use ($routineBoardUser) {
@@ -117,7 +143,7 @@ test('it will not toggle a step from another team', function () use ($routineBoa
 
     Livewire::actingAs($user)
         ->test('pages::kiosk.routines')
-        ->call('toggle', $step->id)
+        ->call('setStepCompleted', $step->id, true)
         ->assertNotFound();
 
     expect($step->fresh()->isCompleted())->toBeFalse();
@@ -148,7 +174,7 @@ test('navigating changes the day and keeps completions apart', function () use (
     RoutineStep::factory()->for($routine)->create();
 
     $component = Livewire::actingAs($user)->test('pages::kiosk.routines');
-    $component->call('toggle', RoutineOccurrenceStep::sole()->id);
+    $component->call('setStepCompleted', RoutineOccurrenceStep::sole()->id, true);
 
     expect($component->get('columns')[0]['completed'])->toBe(1);
 
@@ -213,7 +239,7 @@ test('a kiosk cannot complete a routine step from another of the user\'s teams',
 
     Livewire::actingAs($user)
         ->test('pages::kiosk.routines')
-        ->call('toggle', $step->id)
+        ->call('setStepCompleted', $step->id, true)
         ->assertNotFound();
 
     expect($step->fresh()->isCompleted())->toBeFalse();

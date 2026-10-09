@@ -27,7 +27,26 @@
             <div class="flex h-full min-w-full gap-4">
                 @foreach ($this->columns as $column)
                     <section
-                        wire:key="routine-column-{{ $column['key'] }}"
+                        wire:key="routine-column-{{ $column['key'] }}-{{ $column['state'] }}"
+                        x-data="{
+                            completed: @js($column['completed']),
+                            completedBy: @js($column['steps']->mapWithKeys(fn ($step) => [$step->id => $step->isCompleted() ? $step->completedBy?->name : null])),
+                            async setCompleted(checkbox, stepId) {
+                                let completed = checkbox.checked
+                                let previousCompletedBy = this.completedBy[stepId]
+
+                                this.completed += completed ? 1 : -1
+                                this.completedBy[stepId] = completed ? @js(auth()->user()->name) : null
+
+                                try {
+                                    await $wire.setStepCompleted(stepId, completed)
+                                } catch {
+                                    checkbox.checked = ! completed
+                                    this.completed += completed ? -1 : 1
+                                    this.completedBy[stepId] = previousCompletedBy
+                                }
+                            },
+                        }"
                         class="flex h-full w-80 shrink-0 flex-col overflow-hidden rounded-xl border border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900"
                     >
                         <header class="shrink-0 border-b border-zinc-200 p-4 dark:border-zinc-700">
@@ -38,7 +57,7 @@
                                 </div>
 
                                 <flux:text class="tabular-nums">
-                                    {{ $column['completed'] }}/{{ $column['total'] }}
+                                    <span x-text="completed">{{ $column['completed'] }}</span>/{{ $column['total'] }}
                                 </flux:text>
                             </div>
 
@@ -53,6 +72,7 @@
                             <flux:progress
                                 :value="$column['completed']"
                                 :max="$column['total']"
+                                x-effect="$el.value = completed"
                                 class="mt-2 h-2"
                             />
                         </header>
@@ -71,24 +91,22 @@
                                             wire:key="routine-occurrence-step-{{ $step->id }}"
                                             :value="$step->id"
                                             :checked="$step->isCompleted()"
-                                            wire:click="toggle({{ $step->id }})"
+                                            x-on:change="setCompleted($el, {{ $step->id }})"
                                             class="items-center"
                                         >
                                             <flux:checkbox.indicator />
 
-                                            <span @class([
-                                                'flex-1',
-                                                'text-zinc-400 line-through dark:text-zinc-500' => $step->isCompleted(),
-                                                'text-zinc-800 dark:text-zinc-100' => ! $step->isCompleted(),
-                                            ])>
+                                            <span class="flex-1 text-zinc-800 dark:text-zinc-100 [ui-checkbox[data-checked]_&]:text-zinc-400 [ui-checkbox[data-checked]_&]:line-through dark:[ui-checkbox[data-checked]_&]:text-zinc-500">
                                                 {{ $step->step?->name }}
                                             </span>
 
-                                            @if ($step->isCompleted() && $step->completedBy)
-                                                <flux:text size="sm" variant="subtle" class="shrink-0">
-                                                    {{ $step->completedBy->name }}
-                                                </flux:text>
-                                            @endif
+                                            <flux:text
+                                                size="sm"
+                                                variant="subtle"
+                                                class="shrink-0"
+                                                x-show="completedBy[{{ $step->id }}]"
+                                                x-text="completedBy[{{ $step->id }}]"
+                                            >{{ $step->isCompleted() ? $step->completedBy?->name : '' }}</flux:text>
                                         </flux:checkbox>
                                     @endforeach
                                 </flux:checkbox.group>

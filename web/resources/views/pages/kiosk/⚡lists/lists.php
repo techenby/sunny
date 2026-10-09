@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Renderless;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
@@ -75,15 +76,18 @@ new #[Layout('layouts::kiosk')] class extends Component
         unset($this->lists, $this->list);
     }
 
-    public function toggle(int $itemId): void
+    #[Renderless]
+    public function setItemCompleted(int $itemId, bool $completed): void
     {
         $item = $this->findItem($itemId);
 
         $this->authorize('update', $item->checklist);
 
-        $item->toggle(Auth::user());
+        if ($item->isCompleted() === $completed) {
+            return;
+        }
 
-        unset($this->lists, $this->list);
+        $completed ? $item->complete(Auth::user()) : $item->uncomplete();
     }
 
     public function removeItem(int $itemId): void

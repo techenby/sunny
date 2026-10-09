@@ -83,19 +83,44 @@ test('it trims surrounding whitespace off an item', function () {
     expect($list->items()->sole()->name)->toBe('Oat milk');
 });
 
-test('it toggles an item and records who did it', function () {
+test('it completes an item, records who did it and can be undone', function () {
     $user = User::factory()->create();
     $list = Checklist::factory()->for($user->currentTeam)->create();
     $item = ChecklistItem::factory()->for($list)->create();
 
     $component = Livewire::actingAs($user)->test('pages::kiosk.lists');
 
-    $component->call('toggle', $item->id);
+    $component->call('setItemCompleted', $item->id, true);
     expect($item->fresh()->isCompleted())->toBeTrue()
         ->and($item->fresh()->completed_by)->toBe($user->id);
 
-    $component->call('toggle', $item->id);
+    $component->call('setItemCompleted', $item->id, false);
     expect($item->fresh()->isCompleted())->toBeFalse();
+});
+
+test('completing an already completed item keeps who completed it', function () {
+    $user = User::factory()->create();
+    $other = User::factory()->memberOf($user->currentTeam)->create();
+    $list = Checklist::factory()->for($user->currentTeam)->create();
+    $item = ChecklistItem::factory()->for($list)->create();
+    $item->complete($other);
+
+    Livewire::actingAs($user)
+        ->test('pages::kiosk.lists')
+        ->call('setItemCompleted', $item->id, true);
+
+    expect($item->fresh()->completed_by)->toBe($other->id);
+});
+
+test('completing an item does not re-render the list', function () {
+    $user = User::factory()->create();
+    $list = Checklist::factory()->for($user->currentTeam)->create();
+    $item = ChecklistItem::factory()->for($list)->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::kiosk.lists')
+        ->call('setItemCompleted', $item->id, true)
+        ->assertRenderSkipped();
 });
 
 test('it removes an item', function () {
@@ -129,7 +154,7 @@ test('it will not touch another team list', function () {
 
     Livewire::actingAs($user)
         ->test('pages::kiosk.lists')
-        ->call('toggle', $item->id)
+        ->call('setItemCompleted', $item->id, true)
         ->assertNotFound();
 
     expect($item->fresh()->isCompleted())->toBeFalse();
@@ -205,7 +230,7 @@ test('a kiosk cannot toggle or remove items from another of the user\'s teams', 
 
     Livewire::actingAs($user)
         ->test('pages::kiosk.lists')
-        ->call('toggle', $item->id)
+        ->call('setItemCompleted', $item->id, true)
         ->assertNotFound();
 
     Livewire::actingAs($user)
