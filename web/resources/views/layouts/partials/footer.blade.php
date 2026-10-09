@@ -8,6 +8,8 @@
         <nav class="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-zinc-600 dark:text-zinc-400">
             <a href="{{ route('privacy') }}" class="hover:text-zinc-950 dark:hover:text-white">{{ __('Privacy') }}</a>
             <a href="{{ route('terms') }}" class="hover:text-zinc-950 dark:hover:text-white">{{ __('Terms') }}</a>
+            <a href="{{ route('costs') }}" class="hover:text-zinc-950 dark:hover:text-white">{{ __('Costs') }}</a>
+            <a href="{{ config('costs.sponsor_url') }}" class="hover:text-zinc-950 dark:hover:text-white">{{ __('Sponsor') }}</a>
             <a href="https://github.com/techenby/sunny" class="hover:text-zinc-950 dark:hover:text-white">{{ __('GitHub') }}</a>
             <a href="https://github.com/techenby/sunny/blob/main/LICENSE.md" class="hover:text-zinc-950 dark:hover:text-white">{{ __('MIT License') }}</a>
         </nav>
