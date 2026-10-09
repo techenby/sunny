@@ -30,8 +30,6 @@ new class extends Component
     }
 
     /**
-     * The next timed event that hasn't started yet, looking through the end of tomorrow.
-     *
      * @return array{title: string, color: string, startsAt: string, label: string, time: string}|null
      */
     #[Computed]
