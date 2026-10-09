@@ -10,6 +10,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Renderless;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
@@ -30,6 +31,7 @@ new #[Layout('layouts::kiosk')] class extends Component
      *
      * @return array<int, array{
      *     key: string,
+     *     state: string,
      *     name: string,
      *     assignee: string,
      *     isHousehold: bool,
@@ -83,7 +85,8 @@ new #[Layout('layouts::kiosk')] class extends Component
         unset($this->columns, $this->isToday, $this->heading);
     }
 
-    public function toggle(int $occurrenceStepId): void
+    #[Renderless]
+    public function setStepCompleted(int $occurrenceStepId, bool $completed): void
     {
         $occurrenceStep = RoutineOccurrenceStep::query()
             ->with('occurrence.routine')
@@ -92,14 +95,17 @@ new #[Layout('layouts::kiosk')] class extends Component
 
         $this->authorize('complete', $occurrenceStep->occurrence->routine);
 
-        $occurrenceStep->toggle(Auth::user());
+        if ($occurrenceStep->isCompleted() === $completed) {
+            return;
+        }
 
-        unset($this->columns);
+        $completed ? $occurrenceStep->complete(Auth::user()) : $occurrenceStep->uncomplete();
     }
 
     /**
      * @return array{
      *     key: string,
+     *     state: string,
      *     name: string,
      *     assignee: string,
      *     isHousehold: bool,
@@ -117,6 +123,7 @@ new #[Layout('layouts::kiosk')] class extends Component
 
         return [
             'key' => 'occurrence-' . $occurrence->id,
+            'state' => md5($steps->map(fn (RoutineOccurrenceStep $step): string => $step->completed_at . '|' . $step->completed_by)->join(',')),
             'name' => $routine->name,
             'assignee' => $routine->user?->name ?? __('Household'),
             'isHousehold' => $routine->user === null,
