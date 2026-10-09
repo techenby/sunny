@@ -151,12 +151,15 @@
                 <section id="mobile" class="scroll-mt-8 py-16 sm:py-24">
                     <div class="mx-auto grid max-w-7xl items-center gap-x-16 gap-y-12 px-6 lg:grid-cols-2 lg:px-8">
                         <div>
-                            <p class="font-mono text-sm font-medium tracking-wide text-accent-content uppercase">{{ __('Mobile app') }}</p>
+                            <div class="flex items-center gap-3">
+                                <p class="font-mono text-sm font-medium tracking-wide text-accent-content uppercase">{{ __('Mobile app') }}</p>
+                                <flux:badge size="sm" color="amber">{{ __('Beta') }}</flux:badge>
+                            </div>
                             <h2 class="mt-3 max-w-[35ch] text-4xl font-semibold tracking-tight text-balance">
                                 {{ __('Works in the basement, too') }}
                             </h2>
                             <p class="mt-6 max-w-[48ch] text-lg text-pretty text-zinc-600 dark:text-zinc-400">
-                                {{ __('The Sunny app saves every change on your phone first, so it keeps working where the Wi-Fi does not reach.') }}
+                                {{ __('The Sunny app, now in beta, saves every change on your phone first, so it keeps working where the Wi-Fi does not reach.') }}
                             </p>
 
                             <dl class="mt-10 flex flex-col gap-8">
