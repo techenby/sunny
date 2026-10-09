@@ -56,16 +56,18 @@ enum ItemScannerFunctions {
             let batch = (parameters["batch"] as? String).flatMap { $0.isEmpty ? nil : $0 }
             let batchNames = Array((parameters["batchNames"] as? [String] ?? []).prefix(ItemScannerModel.maxBatchNames))
 
-            guard #available(iOS 27.0, *) else {
-                ItemScannerEvents.failed(id: id, message: ItemScannerModel.message(forUnavailable: "unsupportedOS"))
-                return BridgeResponse.success(data: ["started": false, "id": id])
-            }
+            #if compiler(>=6.4)
+            if #available(iOS 27.0, *) {
+                Task.detached(priority: .userInitiated) {
+                    await ItemScannerModel.identify(id: id, path: path, place: place, batch: batch, batchNames: batchNames)
+                }
 
-            Task.detached(priority: .userInitiated) {
-                await ItemScannerModel.identify(id: id, path: path, place: place, batch: batch, batchNames: batchNames)
+                return BridgeResponse.success(data: ["started": true, "id": id])
             }
+            #endif
 
-            return BridgeResponse.success(data: ["started": true, "id": id])
+            ItemScannerEvents.failed(id: id, message: ItemScannerModel.message(forUnavailable: "unsupportedOS"))
+            return BridgeResponse.success(data: ["started": false, "id": id])
         }
     }
 
@@ -169,6 +171,7 @@ enum ItemScannerModel {
     static let cameraDeniedMessage = "Allow camera access for Sunny in Settings to scan items."
 
     static func unavailableReason() -> String? {
+        #if compiler(>=6.4)
         guard #available(iOS 27.0, *) else {
             return "unsupportedOS"
         }
@@ -187,8 +190,12 @@ enum ItemScannerModel {
         case .unavailable:
             return "modelNotReady"
         }
+        #else
+        return "unsupportedOS"
+        #endif
     }
 
+    #if compiler(>=6.4)
     @available(iOS 27.0, *)
     static func identify(id: String, path: String, place: String?, batch: String?, batchNames: [String]) async {
         if let reason = unavailableReason() {
@@ -222,6 +229,7 @@ enum ItemScannerModel {
             ItemScannerEvents.failed(id: id, message: "Couldn't identify that item. Type a name instead.", detail: String(describing: error))
         }
     }
+    #endif
 
     static let instructions = """
         You catalog the contents of a home for a household inventory app. \
@@ -280,6 +288,7 @@ enum ItemScannerModel {
         }
     }
 
+    #if compiler(>=6.4)
     @available(iOS 27.0, *)
     static func message(for error: LanguageModelSession.GenerationError) -> String {
         switch error {
@@ -295,10 +304,12 @@ enum ItemScannerModel {
             return "Couldn't identify that item. Type a name instead."
         }
     }
+    #endif
 }
 
 // MARK: - Structured output
 
+#if compiler(>=6.4)
 @available(iOS 27.0, *)
 @Generable
 struct ScannedItem {
@@ -311,3 +322,4 @@ struct ScannedItem {
     @Guide(description: "How many of this item are visible", .range(1...99))
     var quantity: Int
 }
+#endif
