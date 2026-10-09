@@ -29,6 +29,8 @@ class KioskDevice extends Model
     /** @use HasFactory<KioskDeviceFactory> */
     use HasFactory;
 
+    public const COOKIE_NAME = 'kiosk_device_uuid';
+
     public const PAIRING_ALPHABET = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
 
     public const PAIRING_CODE_LENGTH = 8;

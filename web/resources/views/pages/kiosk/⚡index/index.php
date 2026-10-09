@@ -15,8 +15,6 @@ use Livewire\Component;
 
 new #[Layout('layouts.auth')] class extends Component
 {
-    public const COOKIE_NAME = 'kiosk_device_uuid';
-
     public string $pairingCode = '';
 
     public ?string $expiresAt = null;
@@ -72,7 +70,7 @@ new #[Layout('layouts.auth')] class extends Component
 
     protected function resolveDevice(): KioskDevice
     {
-        $uuid = request()->cookie(self::COOKIE_NAME);
+        $uuid = request()->cookie(KioskDevice::COOKIE_NAME);
 
         if ($uuid) {
             $device = KioskDevice::query()->where('uuid', $uuid)->first();
@@ -93,7 +91,7 @@ new #[Layout('layouts.auth')] class extends Component
 
     protected function deviceFromCookie(): ?KioskDevice
     {
-        $uuid = request()->cookie(self::COOKIE_NAME);
+        $uuid = request()->cookie(KioskDevice::COOKIE_NAME);
 
         if (! $uuid) {
             return null;
@@ -120,7 +118,7 @@ new #[Layout('layouts.auth')] class extends Component
                 ]);
 
                 Cookie::queue(Cookie::make(
-                    self::COOKIE_NAME,
+                    KioskDevice::COOKIE_NAME,
                     $device->uuid,
                     60 * 24 * 30,
                     '/',

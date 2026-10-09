@@ -1,4 +1,3 @@
-{{-- Inline so it still runs when the page's bundle fails to load (e.g. stale assets after a deploy) --}}
 <script data-navigate-once>
     window.kioskRecovery ??= {
         failures: 0,
@@ -18,8 +17,6 @@
             this.failures = 0
         },
 
-        // Only reload once the page actually loads, so an outage doesn't
-        // strand the kiosk on the browser's own error page.
         async recover() {
             if (this.recovering) {
                 return
@@ -33,7 +30,7 @@
                         let response = await fetch(window.location.href, { cache: 'no-store' })
 
                         if (response.ok) {
-                            return this.reload()
+                            return response.redirected ? this.visit(response.url) : this.reload()
                         }
                     } catch {}
                 }
@@ -44,6 +41,10 @@
 
         reload() {
             window.location.reload()
+        },
+
+        visit(url) {
+            window.location.assign(url)
         },
     }
 
@@ -58,8 +59,6 @@
             onFailure(() => window.kioskRecovery.fail())
 
             onError(({ response, preventDefault }) => {
-                // Livewire's default is a confirm() or an error modal, which
-                // would sit on an unattended kiosk until someone taps it.
                 preventDefault()
 
                 if ([401, 403, 419].includes(response.status)) {
