@@ -27,6 +27,20 @@ class SettingsForm extends Form
     #[Validate('required|int|in:0,90,180,270')]
     public int $rotation = 0;
 
+    #[Validate('required|int|in:0,1,2,5,10,15,30')]
+    public int $screensaver_after = 5;
+
+    #[Validate('required|int|in:0,5,10,15,30,60')]
+    public int $return_home_after = 10;
+
+    public bool $night_mode = false;
+
+    #[Validate('exclude_unless:night_mode,true|required|date_format:H:i')]
+    public ?string $night_starts_at = '22:00';
+
+    #[Validate('exclude_unless:night_mode,true|required|date_format:H:i|different:night_starts_at')]
+    public ?string $night_ends_at = '06:00';
+
     #[Validate([
         'address' => 'required|array',
         'address.*' => 'required',
@@ -47,6 +61,11 @@ class SettingsForm extends Form
         $this->week_start = $team->week_start;
         $this->appearance = $team->appearance->value;
         $this->rotation = $team->rotation;
+        $this->screensaver_after = $team->screensaver_after;
+        $this->return_home_after = $team->return_home_after;
+        $this->night_mode = $team->night_starts_at !== null;
+        $this->night_starts_at = $team->night_starts_at ?? $this->night_starts_at;
+        $this->night_ends_at = $team->night_ends_at ?? $this->night_ends_at;
         $this->address = $team->address ?? $this->address;
     }
 
@@ -54,6 +73,10 @@ class SettingsForm extends Form
     {
         $data = $this->validate();
 
-        $this->editingTeam->update($data);
+        $this->editingTeam->update([
+            ...$data,
+            'night_starts_at' => $this->night_mode ? $data['night_starts_at'] : null,
+            'night_ends_at' => $this->night_mode ? $data['night_ends_at'] : null,
+        ]);
     }
 }
