@@ -15,6 +15,8 @@
             {{ $slot }}
         </div>
 
+        @include('layouts.partials.footer')
+
         <x-screensize />
 
         @persist('toast')

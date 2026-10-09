@@ -23,10 +23,7 @@
         <div class="isolate">
             <header class="px-6 py-4 lg:px-8">
                 <div class="mx-auto flex max-w-7xl items-center justify-between gap-6">
-                    <a href="/" aria-label="Homepage" class="flex items-center gap-2">
-                        <img src="{{ asset('icon.svg') }}" alt="" class="size-7 rounded-md" />
-                        <span class="text-lg font-semibold">{{ config('app.name') }}</span>
-                    </a>
+                    <flux:brand href="/" :logo="asset('icon.svg')" name="Sunny Home" />
 
                     <nav class="flex items-center gap-8 text-sm font-medium text-zinc-600 max-md:hidden dark:text-zinc-400">
                         <a href="#features" class="hover:text-zinc-950 dark:hover:text-white">{{ __('Features') }}</a>
@@ -53,13 +50,17 @@
                 <section class="py-16 sm:py-24">
                     <div class="mx-auto grid max-w-7xl items-center gap-x-16 gap-y-12 px-6 lg:grid-cols-2 lg:px-8">
                         <div>
-                            <h1 class="max-w-[24ch] text-5xl font-semibold tracking-tight text-balance sm:text-6xl">
+                            <flux:heading level="1" size="2xl" class="max-w-[24ch] tracking-tight text-balance sm:text-6xl">
                                 {{ __('Your household, organized') }}
-                            </h1>
-                            <p class="mt-6 max-w-[48ch] text-lg text-pretty text-zinc-600 dark:text-zinc-400">
+                            </flux:heading>
+                            <flux:text size="xl" class="mt-6 max-w-[48ch] text-pretty">
                                 {{ __('Recipes, lists, routines, calendars, and everything in storage, shared with your whole family. On the web, on your phone, and on the wall.') }}
-                            </p>
+                            </flux:text>
                             <x-welcome.cta-buttons class="mt-10" />
+                            <flux:text class="mt-6">
+                                {{ __('Free and open source.') }}
+                                <flux:link href="https://github.com/techenby/sunny" external>{{ __('View the code on GitHub') }}</flux:link>
+                            </flux:text>
                         </div>
 
                         <div class="relative lg:pb-24">
@@ -72,19 +73,19 @@
                 <section id="features" class="scroll-mt-8 py-16 sm:py-24">
                     <div class="mx-auto max-w-7xl px-6 lg:px-8">
                         <div>
-                            <p class="font-mono text-sm font-medium tracking-wide text-accent-content uppercase">{{ __('Everything in one place') }}</p>
-                            <h2 class="mt-3 max-w-[35ch] text-4xl font-semibold tracking-tight text-balance">
+                            <flux:text class="font-mono font-medium tracking-wide text-accent-content uppercase">{{ __('Everything in one place') }}</flux:text>
+                            <flux:heading level="2" size="2xl" class="mt-3 max-w-[35ch] tracking-tight text-balance">
                                 {{ __('One home base for the whole family') }}
-                            </h2>
-                            <p class="mt-6 max-w-[48ch] text-lg text-pretty text-zinc-600 dark:text-zinc-400">
+                            </flux:heading>
+                            <flux:text size="xl" class="mt-6 max-w-[48ch] text-pretty">
                                 {{ __('Stop juggling a recipe app, a notes app, a shared calendar, and a spreadsheet of what is in the garage.') }}
-                            </p>
+                            </flux:text>
                         </div>
 
                         <div class="mt-16 grid gap-x-16 gap-y-12 lg:grid-cols-3">
                             @foreach ($featureGroups as $group => $groupFeatures)
                                 <div class="flex flex-col gap-8 rounded-2xl bg-zinc-50 p-8 dark:bg-white/5 dark:inset-ring dark:inset-ring-white/5">
-                                    <h3 class="text-sm font-medium text-zinc-500 dark:text-zinc-400">{{ $group }}</h3>
+                                    <flux:heading level="3" class="text-zinc-500 dark:text-zinc-400">{{ $group }}</flux:heading>
                                     <dl class="flex flex-col gap-8">
                                         @foreach ($groupFeatures as $feature)
                                             <div>
@@ -105,13 +106,13 @@
                 <section id="kiosk" class="scroll-mt-8 bg-zinc-50 py-16 sm:py-24 dark:border-y dark:border-white/10 dark:bg-zinc-900">
                     <div class="mx-auto max-w-7xl px-6 lg:px-8">
                         <div>
-                            <p class="font-mono text-sm font-medium tracking-wide text-accent-content uppercase">{{ __('Kiosk') }}</p>
-                            <h2 class="mt-3 max-w-[35ch] text-4xl font-semibold tracking-tight text-balance">
+                            <flux:text class="font-mono font-medium tracking-wide text-accent-content uppercase">{{ __('Kiosk') }}</flux:text>
+                            <flux:heading level="2" size="2xl" class="mt-3 max-w-[35ch] tracking-tight text-balance">
                                 {{ __('Put the day on the wall') }}
-                            </h2>
-                            <p class="mt-6 max-w-[48ch] text-lg text-pretty text-zinc-600 dark:text-zinc-400">
+                            </flux:heading>
+                            <flux:text size="xl" class="mt-6 max-w-[48ch] text-pretty">
                                 {{ __('Pair a spare tablet as a family kiosk. Everyone can see what is happening today and check things off without picking up a phone.') }}
-                            </p>
+                            </flux:text>
                         </div>
 
                         <x-welcome.kiosk-preview class="mt-16" />
@@ -152,15 +153,15 @@
                     <div class="mx-auto grid max-w-7xl items-center gap-x-16 gap-y-12 px-6 lg:grid-cols-2 lg:px-8">
                         <div>
                             <div class="flex items-center gap-3">
-                                <p class="font-mono text-sm font-medium tracking-wide text-accent-content uppercase">{{ __('Mobile app') }}</p>
+                                <flux:text class="font-mono font-medium tracking-wide text-accent-content uppercase">{{ __('Mobile app') }}</flux:text>
                                 <flux:badge size="sm" color="amber">{{ __('Beta') }}</flux:badge>
                             </div>
-                            <h2 class="mt-3 max-w-[35ch] text-4xl font-semibold tracking-tight text-balance">
+                            <flux:heading level="2" size="2xl" class="mt-3 max-w-[35ch] tracking-tight text-balance">
                                 {{ __('Works in the basement, too') }}
-                            </h2>
-                            <p class="mt-6 max-w-[48ch] text-lg text-pretty text-zinc-600 dark:text-zinc-400">
-                                {{ __('The Sunny app, now in beta, saves every change on your phone first, so it keeps working where the Wi-Fi does not reach.') }}
-                            </p>
+                            </flux:heading>
+                            <flux:text size="xl" class="mt-6 max-w-[48ch] text-pretty">
+                                {{ __('The Sunny Home app, now in beta, saves every change on your phone first, so it keeps working where the Wi-Fi does not reach.') }}
+                            </flux:text>
 
                             <dl class="mt-10 flex flex-col gap-8">
                                 <div>
@@ -202,13 +203,13 @@
                         <x-welcome.assistant-preview class="max-lg:order-last" />
 
                         <div>
-                            <p class="font-mono text-sm font-medium tracking-wide text-accent-content uppercase">{{ __('AI assistant') }}</p>
-                            <h2 class="mt-3 max-w-[35ch] text-4xl font-semibold tracking-tight text-balance">
+                            <flux:text class="font-mono font-medium tracking-wide text-accent-content uppercase">{{ __('AI assistant') }}</flux:text>
+                            <flux:heading level="2" size="2xl" class="mt-3 max-w-[35ch] tracking-tight text-balance">
                                 {{ __('Ask your assistant to handle it') }}
-                            </h2>
-                            <p class="mt-6 max-w-[48ch] text-lg text-pretty text-zinc-600 dark:text-zinc-400">
-                                {{ __('Sunny has a built-in MCP server. Connect Claude or any other assistant that supports MCP, sign in once, and it can work with your household for you.') }}
-                            </p>
+                            </flux:heading>
+                            <flux:text size="xl" class="mt-6 max-w-[48ch] text-pretty">
+                                {{ __('Sunny Home has a built-in MCP server. Connect Claude or any other assistant that supports MCP, sign in once, and it can work with your household for you.') }}
+                            </flux:text>
 
                             <ul role="list" class="mt-10 flex flex-col gap-4 text-base/7 text-zinc-600 dark:text-zinc-400">
                                 <li class="flex gap-3">
@@ -232,30 +233,58 @@
                     </div>
                 </section>
 
+                <section id="built-by" class="scroll-mt-8 border-t border-zinc-950/5 py-16 sm:py-24 dark:border-white/10">
+                    <div class="mx-auto grid max-w-7xl items-center gap-x-16 gap-y-12 px-6 lg:grid-cols-2 lg:px-8">
+                        <div>
+                            <flux:text class="font-mono font-medium tracking-wide text-accent-content uppercase">{{ __('Meet the maker') }}</flux:text>
+                            <flux:heading level="2" size="2xl" class="mt-3 max-w-[35ch] tracking-tight text-balance">
+                                {{ __('Built by Andy Swick') }}
+                            </flux:heading>
+                            <flux:text size="xl" class="mt-6 max-w-[48ch] text-pretty">
+                                I'm <a href="https://techenby.com" class="underline underline-offset-4 hover:text-zinc-950 dark:hover:text-white">Andy Swick</a>,
+                                aka <a href="https://github.com/techenby" class="underline underline-offset-4 hover:text-zinc-950 dark:hover:text-white">TechEnby</a>, a Lead Programmer at <a href="https://tighten.com" class="underline underline-offset-4 hover:text-zinc-950 dark:hover:text-white">Tighten</a>.
+                                Sunny Home is my personal project. It started as a way for me to experiment with new technologies and techniques,
+                                and grew into one place for everything I used to spread across a bunch of different apps. Now I use almost every feature daily,
+                                from finding where an extension cord ended up, to deciding what to make for dinner, to keeping track of what I need to do for work.
+                            </flux:text>
+                            <flux:text size="xl" class="mt-6 max-w-[48ch] text-pretty">
+                                It's not just me, either. My dad uses it to organize his garage, so my mom hears "where's the drill?" a lot less often.
+                                My partner checks it every morning to make sure they've finished their routine before work. We all depend on it, so it isn't going anywhere.
+                            </flux:text>
+                            <flux:text size="xl" class="mt-6 max-w-[48ch] text-pretty">
+                                There are no ads, and I'll never sell your data. Because Sunny Home is open source, you don't have to take my word for it:
+                                you can read exactly how your data is handled, open an issue when something breaks, or run your own copy.
+                            </flux:text>
+
+                            <div class="mt-10 flex flex-wrap gap-3">
+                                @foreach (array_filter(['Report an issue' => 'https://github.com/techenby/sunny/issues', 'Read the docs' => Route::has('laradocs.index') ? route('laradocs.index') : null, 'Sunny Home source' => 'https://github.com/techenby/sunny']) as $label => $url)
+                                    <a href="{{ $url }}" class="rounded-full border border-zinc-950/10 px-4 py-1.5 text-sm text-zinc-600 hover:border-zinc-950/20 hover:text-zinc-950 dark:border-white/10 dark:text-zinc-400 dark:hover:border-white/20 dark:hover:text-white">{{ $label }}</a>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        <div class="mx-auto w-full max-w-80 [--padding:--spacing(2)] [--radius:var(--radius-2xl)] rounded-(--radius) bg-zinc-950/5 p-(--padding) ring-1 ring-zinc-950/5 ring-inset dark:bg-white/5 dark:ring-white/10">
+                            <img src="https://github.com/techenby.png" alt="Andy Swick" class="aspect-square w-full rounded-[calc(var(--radius)-var(--padding))] object-cover shadow-lg ring-1 ring-zinc-950/10 dark:shadow-none dark:ring-white/10" />
+                        </div>
+                    </div>
+                </section>
+
                 <section class="border-t border-zinc-950/5 py-16 sm:py-24 dark:border-white/10">
                     <div class="mx-auto max-w-7xl px-6 lg:px-8">
                         <div class="text-center">
-                            <h2 class="mx-auto max-w-[35ch] text-4xl font-semibold tracking-tight text-balance">
+                            <flux:heading level="2" size="2xl" class="mx-auto max-w-[35ch] tracking-tight text-balance">
                                 {{ __('Bring your household together') }}
-                            </h2>
-                            <p class="mx-auto mt-6 max-w-[48ch] text-lg text-pretty text-zinc-600 dark:text-zinc-400">
+                            </flux:heading>
+                            <flux:text size="xl" class="mx-auto mt-6 max-w-[48ch] text-pretty">
                                 {{ __('Set up your household in a minute, then invite everyone else.') }}
-                            </p>
+                            </flux:text>
                             <x-welcome.cta-buttons class="mt-10 justify-center" />
                         </div>
                     </div>
                 </section>
             </main>
 
-            <footer class="border-t border-zinc-950/5 py-8 dark:border-white/10">
-                <div class="mx-auto flex max-w-7xl items-center justify-between gap-6 px-6 lg:px-8">
-                    <div class="flex items-center gap-2">
-                        <img src="{{ asset('icon.svg') }}" alt="" class="size-6 rounded-md" />
-                        <span class="font-semibold">{{ config('app.name') }}</span>
-                    </div>
-                    <p class="text-sm text-zinc-600 dark:text-zinc-400">&copy; {{ date('Y') }} {{ config('app.name') }}</p>
-                </div>
-            </footer>
+            @include('layouts.partials.footer')
         </div>
 
         @fluxScripts
