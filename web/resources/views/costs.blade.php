@@ -1,7 +1,3 @@
-@php
-    $money = fn (int $cents): string => '$' . number_format($cents / 100, 2);
-@endphp
-
 <x-layouts::guest :title="__('What it costs')">
     <div class="max-w-2xl">
         <flux:heading size="xl" level="1">{{ __('What it costs to run Sunny Home') }}</flux:heading>
@@ -20,20 +16,20 @@
                 @foreach (array_filter($cloud['items'] ?? []) as $name => $cents)
                     <flux:table.row>
                         <flux:table.cell>{{ __('Laravel Cloud: :name', ['name' => $name]) }}</flux:table.cell>
-                        <flux:table.cell align="end" class="tabular-nums">{{ $money($cents) }}</flux:table.cell>
+                        <x-ui.table.money-cell :$cents />
                     </flux:table.row>
                 @endforeach
 
                 @foreach ($services as $name => $cents)
                     <flux:table.row>
                         <flux:table.cell>{{ $name }}</flux:table.cell>
-                        <flux:table.cell align="end" class="tabular-nums">{{ $money($cents) }}</flux:table.cell>
+                        <x-ui.table.money-cell :$cents />
                     </flux:table.row>
                 @endforeach
 
                 <flux:table.row>
                     <flux:table.cell variant="strong">{{ __('Total') }}</flux:table.cell>
-                    <flux:table.cell variant="strong" align="end" class="tabular-nums">{{ $money($totalCents) }}</flux:table.cell>
+                    <x-ui.table.money-cell :cents="$totalCents" variant="strong" />
                 </flux:table.row>
             </flux:table.rows>
         </flux:table>
