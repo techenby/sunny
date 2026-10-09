@@ -1,11 +1,13 @@
-<div class="flex h-full flex-col overflow-hidden" wire:poll.600s>
+<div class="group/lists flex h-full flex-col overflow-hidden" wire:poll.600s>
     <div class="flex shrink-0 flex-col gap-3 border-b border-zinc-200 px-5 py-4 dark:border-zinc-700 sm:flex-row sm:items-center sm:justify-between">
         <x-ui.clock :timezone="$this->team->timezone" />
 
-        @if ($this->list?->items->contains(fn ($item) => $item->isCompleted()))
-            <flux:button variant="subtle" icon="trash" wire:click="clearCompleted">
-                {{ __('Clear completed') }}
-            </flux:button>
+        @if ($this->list?->items->isNotEmpty())
+            <div class="hidden group-has-data-completed/lists:block">
+                <flux:button variant="subtle" icon="trash" wire:click="clearCompleted">
+                    {{ __('Clear completed') }}
+                </flux:button>
+            </div>
         @endif
     </div>
 
@@ -62,35 +64,48 @@
                 @else
                     <ul class="flex flex-col gap-2">
                         @foreach ($this->list->items as $item)
-                            <li wire:key="checklist-item-{{ $item->id }}" class="flex items-center gap-2">
+                            <li
+                                wire:key="checklist-item-{{ $item->id }}-{{ $item->completed_at?->getTimestamp() ?? 'open' }}"
+                                x-data="{
+                                    completed: @js($item->isCompleted()),
+                                    completedBy: @js($item->isCompleted() ? $item->completedBy?->name : null),
+                                    async toggle() {
+                                        let previous = { completed: this.completed, completedBy: this.completedBy }
+
+                                        this.completed = ! this.completed
+                                        this.completedBy = this.completed ? @js(auth()->user()->name) : null
+
+                                        try {
+                                            await $wire.setItemCompleted({{ $item->id }}, this.completed)
+                                        } catch {
+                                            this.completed = previous.completed
+                                            this.completedBy = previous.completedBy
+                                        }
+                                    },
+                                }"
+                                class="flex items-center gap-2"
+                            >
                                 <button
                                     type="button"
-                                    wire:click="toggle({{ $item->id }})"
-                                    @class([
-                                        'flex flex-1 items-center gap-3 rounded-lg border p-4 text-left transition',
-                                        'border-zinc-200 bg-white hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:border-zinc-600' => ! $item->isCompleted(),
-                                        'border-transparent bg-zinc-100 dark:bg-zinc-800/50' => $item->isCompleted(),
-                                    ])
+                                    x-on:click="toggle"
+                                    x-bind:data-completed="completed"
+                                    @if ($item->isCompleted()) data-completed @endif
+                                    class="group flex flex-1 items-center gap-3 rounded-lg border p-4 text-left transition not-data-completed:border-zinc-200 not-data-completed:bg-white not-data-completed:hover:border-zinc-300 data-completed:border-transparent data-completed:bg-zinc-100 dark:not-data-completed:border-zinc-700 dark:not-data-completed:bg-zinc-900 dark:not-data-completed:hover:border-zinc-600 dark:data-completed:bg-zinc-800/50"
                                 >
-                                    @if ($item->isCompleted())
-                                        <flux:icon name="check-circle" variant="solid" class="size-6 shrink-0 text-(--color-accent)" />
-                                    @else
-                                        <span class="size-6 shrink-0 rounded-full border-2 border-zinc-300 dark:border-zinc-600"></span>
-                                    @endif
+                                    <flux:icon name="check-circle" variant="solid" class="hidden size-6 shrink-0 text-(--color-accent) group-data-completed:block" />
+                                    <span class="size-6 shrink-0 rounded-full border-2 border-zinc-300 group-data-completed:hidden dark:border-zinc-600"></span>
 
-                                    <span @class([
-                                        'flex-1 text-lg',
-                                        'text-zinc-400 line-through dark:text-zinc-500' => $item->isCompleted(),
-                                        'text-zinc-800 dark:text-zinc-100' => ! $item->isCompleted(),
-                                    ])>
+                                    <span class="flex-1 text-lg text-zinc-800 group-data-completed:text-zinc-400 group-data-completed:line-through dark:text-zinc-100 dark:group-data-completed:text-zinc-500">
                                         {{ $item->name }}
                                     </span>
 
-                                    @if ($item->isCompleted() && $item->completedBy)
-                                        <flux:text size="sm" variant="subtle" class="shrink-0">
-                                            {{ $item->completedBy->name }}
-                                        </flux:text>
-                                    @endif
+                                    <flux:text
+                                        size="sm"
+                                        variant="subtle"
+                                        class="shrink-0"
+                                        x-show="completedBy"
+                                        x-text="completedBy"
+                                    >{{ $item->isCompleted() ? $item->completedBy?->name : '' }}</flux:text>
                                 </button>
 
                                 <flux:button
