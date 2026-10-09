@@ -1,131 +1,258 @@
+@php
+    $featureGroups = [
+        __('In the kitchen') => [
+            ['icon' => 'book-open', 'name' => __('Recipes'), 'description' => __('Import recipes from any website, remix family favorites into your own versions, and share a link with anyone.')],
+            ['icon' => 'clipboard-document-list', 'name' => __('Lists'), 'description' => __('To-do, shopping, and wish lists that the whole household can check off, or keep one just for yourself.')],
+        ],
+        __('Around the house') => [
+            ['icon' => 'archive-box', 'name' => __('Inventory'), 'description' => __('Map the garage, basement, and pantry into locations and bins. Print QR labels so you know what is in a box without opening it.')],
+            ['icon' => 'arrow-path', 'name' => __('Routines'), 'description' => __('Morning routines and chore charts that reset themselves every day, on chosen weekdays, or once a month.')],
+        ],
+        __('Across the family') => [
+            ['icon' => 'calendar-days', 'name' => __('Calendars'), 'description' => __('Subscribe to Google, Proton, or any iCal feed and see everyone\'s plans side by side.')],
+            ['icon' => 'user-group', 'name' => __('Households'), 'description' => __('Invite family members to share everything, and switch between households when you help run more than one.')],
+        ],
+    ];
+@endphp
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark antialiased">
     <head>
         @include('layouts.partials.head')
     </head>
-    <body class="min-h-screen bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">
-        {{-- Header --}}
-        <header class="flex items-center justify-between px-6 py-4 lg:px-10">
-            <div class="flex items-center gap-2">
-                <flux:avatar :src="asset('icon.svg')" size="sm" />
-                <span class="text-lg font-semibold">{{ config('app.name') }}</span>
-            </div>
+    <body class="min-h-dvh bg-white text-zinc-950 dark:bg-zinc-900 dark:text-white">
+        <div class="isolate">
+            <header class="px-6 py-4 lg:px-8">
+                <div class="mx-auto flex max-w-7xl items-center justify-between gap-6">
+                    <a href="/" aria-label="Homepage" class="flex items-center gap-2">
+                        <img src="{{ asset('icon.svg') }}" alt="" class="size-7 rounded-md" />
+                        <span class="text-lg font-semibold">{{ config('app.name') }}</span>
+                    </a>
 
-            @if (Route::has('login'))
-                <nav class="flex items-center gap-3">
-                    @auth
-                        <flux:button :href="route('dashboard')" variant="primary" size="sm">
-                            Dashboard
-                        </flux:button>
-                    @else
-                        <flux:button :href="route('login')" variant="ghost" size="sm">
-                            Log in
-                        </flux:button>
+                    <nav class="flex items-center gap-8 text-sm font-medium text-zinc-600 max-md:hidden dark:text-zinc-400">
+                        <a href="#features" class="hover:text-zinc-950 dark:hover:text-white">{{ __('Features') }}</a>
+                        <a href="#kiosk" class="hover:text-zinc-950 dark:hover:text-white">{{ __('Kiosk') }}</a>
+                        <a href="#mobile" class="hover:text-zinc-950 dark:hover:text-white">{{ __('Mobile') }}</a>
+                        <a href="#assistant" class="hover:text-zinc-950 dark:hover:text-white">{{ __('AI assistant') }}</a>
+                    </nav>
 
-                        @if (Route::has('register'))
-                            <flux:button :href="route('register')" variant="primary" size="sm">
-                                Register
-                            </flux:button>
-                        @endif
-                    @endauth
-                </nav>
-            @endif
-        </header>
+                    <div class="flex items-center gap-2">
+                        @auth
+                            <flux:button :href="route('dashboard')" size="sm">{{ __('Dashboard') }}</flux:button>
+                        @else
+                            <flux:button :href="route('login')" variant="ghost" size="sm">{{ __('Log in') }}</flux:button>
 
-        {{-- Hero --}}
-        <section class="mx-auto max-w-4xl px-6 py-16 text-center lg:py-24">
-            <h1 class="text-4xl font-semibold tracking-tight lg:text-5xl">
-                Your household, organized
-            </h1>
-            <p class="mx-auto mt-4 max-w-2xl text-lg text-zinc-600 dark:text-zinc-400">
-                Sunny helps your family collaborate on recipes<br class="hidden md:inline"> and keep track of what's in storage, all in one place.
-            </p>
-
-            @guest
-                <div class="mt-8 flex items-center justify-center gap-3">
-                    <flux:button :href="route('register')" variant="primary">
-                        Get started
-                    </flux:button>
-                    <flux:button :href="route('login')" variant="ghost">
-                        Log in
-                    </flux:button>
+                            @if (Route::has('register'))
+                                <flux:button :href="route('register')" size="sm">{{ __('Register') }}</flux:button>
+                            @endif
+                        @endauth
+                    </div>
                 </div>
-            @endguest
-        </section>
+            </header>
 
-        {{-- Features --}}
-        <section class="mx-auto max-w-5xl px-6 pb-24">
-            <div class="grid gap-8 md:grid-cols-3">
-                {{-- Recipes --}}
-                <flux:card>
-                    <flux:avatar icon="book-open" icon-variant="outline" color="amber" class="mb-3" />
-                    <flux:heading size="lg">{{ __('Recipes') }}</flux:heading>
-                    <flux:text class="mt-1">
-                        {{ __('Save your favorite recipes, track ingredients, prep times, and nutrition info. Remix recipes to create your own variations.') }}
-                    </flux:text>
-                </flux:card>
+            <main>
+                <section class="py-16 sm:py-24">
+                    <div class="mx-auto grid max-w-7xl items-center gap-x-16 gap-y-12 px-6 lg:grid-cols-2 lg:px-8">
+                        <div>
+                            <h1 class="max-w-[24ch] text-5xl font-semibold tracking-tight text-balance sm:text-6xl">
+                                {{ __('Your household, organized') }}
+                            </h1>
+                            <p class="mt-6 max-w-[48ch] text-lg text-pretty text-zinc-600 dark:text-zinc-400">
+                                {{ __('Recipes, lists, routines, calendars, and everything in storage, shared with your whole family. On the web, on your phone, and on the wall.') }}
+                            </p>
+                            <x-welcome.cta-buttons class="mt-10" />
+                        </div>
 
-                {{-- Inventory --}}
-                <flux:card>
-                    <flux:avatar icon="archive-box" icon-variant="outline" color="sky" class="mb-3" />
-                    <flux:heading size="lg">{{ __('Inventory') }}</flux:heading>
-                    <flux:text class="mt-1">
-                        {{ __('Organize your garage, basement, and pantry. Always know what you have and where it lives.') }}
-                    </flux:text>
-                </flux:card>
-
-                {{-- Teams --}}
-                <flux:card>
-                    <flux:avatar icon="user-group" icon-variant="outline" color="violet" class="mb-3" />
-                    <flux:heading size="lg">{{ __('Teams') }}</flux:heading>
-                    <flux:text class="mt-1">
-                        {{ __('Invite family members to collaborate. Share recipes and inventory across your household with ease.') }}
-                    </flux:text>
-                </flux:card>
-
-                {{-- Dashboard --}}
-                <flux:card>
-                    <flux:avatar icon="squares-2x2" icon-variant="outline" color="emerald" class="mb-3" />
-                    <div class="flex items-center gap-2">
-                        <flux:heading size="lg">{{ __('Dashboard') }}</flux:heading>
-                        <flux:badge size="sm" color="lime">{{ __('Soon') }}</flux:badge>
+                        <div class="relative lg:pb-24">
+                            <x-welcome.dashboard-preview class="lg:mr-16" />
+                            <x-welcome.phone-preview size="sm" class="absolute right-0 bottom-0 w-44 max-lg:hidden" />
+                        </div>
                     </div>
-                    <flux:text class="mt-1">
-                        {{ __('A family homepage with shared calendars, weather updates, and more, all at a glance.') }}
-                    </flux:text>
-                </flux:card>
+                </section>
 
-                {{-- Collections --}}
-                <flux:card>
-                    <flux:avatar icon="rectangle-stack" icon-variant="outline" color="pink" class="mb-3" />
-                    <div class="flex items-center gap-2">
-                        <flux:heading size="lg">{{ __('Collections') }}</flux:heading>
-                        <flux:badge size="sm" color="lime">{{ __('Soon') }}</flux:badge>
+                <section id="features" class="scroll-mt-8 py-16 sm:py-24">
+                    <div class="mx-auto max-w-7xl px-6 lg:px-8">
+                        <div>
+                            <p class="font-mono text-sm font-medium tracking-wide text-accent-content uppercase">{{ __('Everything in one place') }}</p>
+                            <h2 class="mt-3 max-w-[35ch] text-4xl font-semibold tracking-tight text-balance">
+                                {{ __('One home base for the whole family') }}
+                            </h2>
+                            <p class="mt-6 max-w-[48ch] text-lg text-pretty text-zinc-600 dark:text-zinc-400">
+                                {{ __('Stop juggling a recipe app, a notes app, a shared calendar, and a spreadsheet of what is in the garage.') }}
+                            </p>
+                        </div>
+
+                        <div class="mt-16 grid gap-x-16 gap-y-12 lg:grid-cols-3">
+                            @foreach ($featureGroups as $group => $groupFeatures)
+                                <div class="flex flex-col gap-8 rounded-2xl bg-zinc-50 p-8 dark:bg-white/5 dark:inset-ring dark:inset-ring-white/5">
+                                    <h3 class="text-sm font-medium text-zinc-500 dark:text-zinc-400">{{ $group }}</h3>
+                                    <dl class="flex flex-col gap-8">
+                                        @foreach ($groupFeatures as $feature)
+                                            <div>
+                                                <dt class="flex items-center gap-3 text-base/7 font-semibold">
+                                                    <flux:icon :icon="$feature['icon']" class="shrink-0 text-accent-content" />
+                                                    {{ $feature['name'] }}
+                                                </dt>
+                                                <dd class="mt-2 text-base/7 text-pretty text-zinc-600 dark:text-zinc-400">{{ $feature['description'] }}</dd>
+                                            </div>
+                                        @endforeach
+                                    </dl>
+                                </div>
+                            @endforeach
+                        </div>
                     </div>
-                    <flux:text class="mt-1">
-                        {{ __('Track collections outside of inventory like TCG cards, LEGO sets, and anything else you collect.') }}
-                    </flux:text>
-                </flux:card>
+                </section>
 
-                {{-- Budgeting --}}
-                <flux:card>
-                    <flux:avatar icon="currency-dollar" icon-variant="outline" color="teal" class="mb-3" />
-                    <div class="flex items-center gap-2">
-                        <flux:heading size="lg">{{ __('Budgeting') }}</flux:heading>
-                        <flux:badge size="sm" color="lime">{{ __('Soon') }}</flux:badge>
+                <section id="kiosk" class="scroll-mt-8 bg-zinc-50 py-16 sm:py-24 dark:border-y dark:border-white/10 dark:bg-zinc-900">
+                    <div class="mx-auto max-w-7xl px-6 lg:px-8">
+                        <div>
+                            <p class="font-mono text-sm font-medium tracking-wide text-accent-content uppercase">{{ __('Kiosk') }}</p>
+                            <h2 class="mt-3 max-w-[35ch] text-4xl font-semibold tracking-tight text-balance">
+                                {{ __('Put the day on the wall') }}
+                            </h2>
+                            <p class="mt-6 max-w-[48ch] text-lg text-pretty text-zinc-600 dark:text-zinc-400">
+                                {{ __('Pair a spare tablet as a family kiosk. Everyone can see what is happening today and check things off without picking up a phone.') }}
+                            </p>
+                        </div>
+
+                        <x-welcome.kiosk-preview class="mt-16" />
+
+                        <dl class="mt-16 grid gap-x-16 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+                            <div>
+                                <dt class="flex items-center gap-3 text-base/7 font-semibold">
+                                    <flux:icon.squares-2x2 class="shrink-0 text-accent-content" />
+                                    {{ __('Everything at a glance') }}
+                                </dt>
+                                <dd class="mt-2 text-base/7 text-pretty text-zinc-600 dark:text-zinc-400">
+                                    {{ __('The calendar, routines, lists, and meal plan are one tap apart, with the local weather always in view.') }}
+                                </dd>
+                            </div>
+                            <div>
+                                <dt class="flex items-center gap-3 text-base/7 font-semibold">
+                                    <flux:icon.hand-raised class="shrink-0 text-accent-content" />
+                                    {{ __('Made for tapping') }}
+                                </dt>
+                                <dd class="mt-2 text-base/7 text-pretty text-zinc-600 dark:text-zinc-400">
+                                    {{ __('Big touch targets so kids can finish their routines and anyone can tick off the grocery list.') }}
+                                </dd>
+                            </div>
+                            <div>
+                                <dt class="flex items-center gap-3 text-base/7 font-semibold">
+                                    <flux:icon.moon class="shrink-0 text-accent-content" />
+                                    {{ __('Quiet when idle') }}
+                                </dt>
+                                <dd class="mt-2 text-base/7 text-pretty text-zinc-600 dark:text-zinc-400">
+                                    {{ __('When nobody is around the screen switches to a big clock, with a dim night mode for the hours you choose.') }}
+                                </dd>
+                            </div>
+                        </dl>
                     </div>
-                    <flux:text class="mt-1">
-                        {{ __('Connect your YNAB account to view budgets and track spending right from Sunny.') }}
-                    </flux:text>
-                </flux:card>
-            </div>
-        </section>
+                </section>
 
-        <flux:separator />
+                <section id="mobile" class="scroll-mt-8 py-16 sm:py-24">
+                    <div class="mx-auto grid max-w-7xl items-center gap-x-16 gap-y-12 px-6 lg:grid-cols-2 lg:px-8">
+                        <div>
+                            <p class="font-mono text-sm font-medium tracking-wide text-accent-content uppercase">{{ __('Mobile app') }}</p>
+                            <h2 class="mt-3 max-w-[35ch] text-4xl font-semibold tracking-tight text-balance">
+                                {{ __('Works in the basement, too') }}
+                            </h2>
+                            <p class="mt-6 max-w-[48ch] text-lg text-pretty text-zinc-600 dark:text-zinc-400">
+                                {{ __('The Sunny app saves every change on your phone first, so it keeps working where the Wi-Fi does not reach.') }}
+                            </p>
 
-        {{-- Footer --}}
-        <div class="text-center mt-4">
-            <flux:text size="sm">&copy; {{ date('Y') }} {{ config('app.name') }}. {{ __('All rights reserved') }}.</flux:text>
+                            <dl class="mt-10 flex flex-col gap-8">
+                                <div>
+                                    <dt class="flex items-center gap-3 text-base/7 font-semibold">
+                                        <flux:icon.qr-code class="shrink-0 text-accent-content" />
+                                        {{ __('Scan a label, see the bin') }}
+                                    </dt>
+                                    <dd class="mt-2 text-base/7 text-pretty text-zinc-600 dark:text-zinc-400">
+                                        {{ __('Point your camera at any Sunny QR label to open that location, bin, or item.') }}
+                                    </dd>
+                                </div>
+                                <div>
+                                    <dt class="flex items-center gap-3 text-base/7 font-semibold">
+                                        <flux:icon.camera class="shrink-0 text-accent-content" />
+                                        {{ __('Add items with a photo') }}
+                                    </dt>
+                                    <dd class="mt-2 text-base/7 text-pretty text-zinc-600 dark:text-zinc-400">
+                                        {{ __('Snap what is going into a box, one photo at a time, instead of typing it all out.') }}
+                                    </dd>
+                                </div>
+                                <div>
+                                    <dt class="flex items-center gap-3 text-base/7 font-semibold">
+                                        <flux:icon.arrow-path-rounded-square class="shrink-0 text-accent-content" />
+                                        {{ __('Syncs when you are back') }}
+                                    </dt>
+                                    <dd class="mt-2 text-base/7 text-pretty text-zinc-600 dark:text-zinc-400">
+                                        {{ __('Lists, routines, and inventory changes upload automatically once you are online again.') }}
+                                    </dd>
+                                </div>
+                            </dl>
+                        </div>
+
+                        <x-welcome.phone-preview class="mx-auto w-full max-w-72" />
+                    </div>
+                </section>
+
+                <section id="assistant" class="scroll-mt-8 py-16 sm:py-24 dark:border-t dark:border-white/10">
+                    <div class="mx-auto grid max-w-7xl items-center gap-x-16 gap-y-12 px-6 lg:grid-cols-2 lg:px-8">
+                        <x-welcome.assistant-preview class="max-lg:order-last" />
+
+                        <div>
+                            <p class="font-mono text-sm font-medium tracking-wide text-accent-content uppercase">{{ __('AI assistant') }}</p>
+                            <h2 class="mt-3 max-w-[35ch] text-4xl font-semibold tracking-tight text-balance">
+                                {{ __('Ask your assistant to handle it') }}
+                            </h2>
+                            <p class="mt-6 max-w-[48ch] text-lg text-pretty text-zinc-600 dark:text-zinc-400">
+                                {{ __('Sunny has a built-in MCP server. Connect Claude or any other assistant that supports MCP, sign in once, and it can work with your household for you.') }}
+                            </p>
+
+                            <ul role="list" class="mt-10 flex flex-col gap-4 text-base/7 text-zinc-600 dark:text-zinc-400">
+                                <li class="flex gap-3">
+                                    <flux:icon.check variant="micro" class="h-lh shrink-0 text-accent-content" />
+                                    {{ __('Plan meals and build the grocery list from your recipes') }}
+                                </li>
+                                <li class="flex gap-3">
+                                    <flux:icon.check variant="micro" class="h-lh shrink-0 text-accent-content" />
+                                    {{ __('Import a recipe by pasting a link into the chat') }}
+                                </li>
+                                <li class="flex gap-3">
+                                    <flux:icon.check variant="micro" class="h-lh shrink-0 text-accent-content" />
+                                    {{ __('Find out which bin the camping stove ended up in') }}
+                                </li>
+                                <li class="flex gap-3">
+                                    <flux:icon.check variant="micro" class="h-lh shrink-0 text-accent-content" />
+                                    {{ __('Check what is on the calendar and which chores are left') }}
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="border-t border-zinc-950/5 py-16 sm:py-24 dark:border-white/10">
+                    <div class="mx-auto max-w-7xl px-6 lg:px-8">
+                        <div class="text-center">
+                            <h2 class="mx-auto max-w-[35ch] text-4xl font-semibold tracking-tight text-balance">
+                                {{ __('Bring your household together') }}
+                            </h2>
+                            <p class="mx-auto mt-6 max-w-[48ch] text-lg text-pretty text-zinc-600 dark:text-zinc-400">
+                                {{ __('Set up your household in a minute, then invite everyone else.') }}
+                            </p>
+                            <x-welcome.cta-buttons class="mt-10 justify-center" />
+                        </div>
+                    </div>
+                </section>
+            </main>
+
+            <footer class="border-t border-zinc-950/5 py-8 dark:border-white/10">
+                <div class="mx-auto flex max-w-7xl items-center justify-between gap-6 px-6 lg:px-8">
+                    <div class="flex items-center gap-2">
+                        <img src="{{ asset('icon.svg') }}" alt="" class="size-6 rounded-md" />
+                        <span class="font-semibold">{{ config('app.name') }}</span>
+                    </div>
+                    <p class="text-sm text-zinc-600 dark:text-zinc-400">&copy; {{ date('Y') }} {{ config('app.name') }}</p>
+                </div>
+            </footer>
         </div>
 
         @fluxScripts

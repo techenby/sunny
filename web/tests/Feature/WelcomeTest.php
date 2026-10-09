@@ -8,7 +8,10 @@ test('displays the landing page for guests', function () {
         ->assertSee(asset('icon.svg'))
         ->assertSee('Log in')
         ->assertSee('Register')
-        ->assertSee('Your household, organized');
+        ->assertSee('Get started')
+        ->assertSee('Your household, organized')
+        ->assertSeeInOrder(['id="features"', 'id="kiosk"', 'id="mobile"', 'id="assistant"'], false)
+        ->assertDontSee('Soon');
 });
 
 test('shows dashboard link for authenticated users', function () {
@@ -17,5 +20,7 @@ test('shows dashboard link for authenticated users', function () {
     $this->actingAs($user)
         ->get('/')
         ->assertOk()
-        ->assertSee('Dashboard');
+        ->assertSee('Dashboard')
+        ->assertSee('Open your dashboard')
+        ->assertDontSee('Get started');
 });
