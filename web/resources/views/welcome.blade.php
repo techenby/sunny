@@ -25,7 +25,7 @@
                 <div class="mx-auto flex max-w-7xl items-center justify-between gap-6">
                     <a href="/" aria-label="Homepage" class="flex items-center gap-2">
                         <img src="{{ asset('icon.svg') }}" alt="" class="size-7 rounded-md" />
-                        <span class="text-lg font-semibold">{{ config('app.name') }}</span>
+                        <span class="text-lg font-semibold">Sunny Home</span>
                     </a>
 
                     <nav class="flex items-center gap-8 text-sm font-medium text-zinc-600 max-md:hidden dark:text-zinc-400">
@@ -60,6 +60,10 @@
                                 {{ __('Recipes, lists, routines, calendars, and everything in storage, shared with your whole family. On the web, on your phone, and on the wall.') }}
                             </p>
                             <x-welcome.cta-buttons class="mt-10" />
+                            <p class="mt-6 text-sm text-zinc-600 dark:text-zinc-400">
+                                {{ __('Free and open source.') }}
+                                <flux:link href="https://github.com/techenby/sunny" external>{{ __('View the code on GitHub') }}</flux:link>
+                            </p>
                         </div>
 
                         <div class="relative lg:pb-24">
@@ -159,7 +163,7 @@
                                 {{ __('Works in the basement, too') }}
                             </h2>
                             <p class="mt-6 max-w-[48ch] text-lg text-pretty text-zinc-600 dark:text-zinc-400">
-                                {{ __('The Sunny app, now in beta, saves every change on your phone first, so it keeps working where the Wi-Fi does not reach.') }}
+                                {{ __('The Sunny Home app, now in beta, saves every change on your phone first, so it keeps working where the Wi-Fi does not reach.') }}
                             </p>
 
                             <dl class="mt-10 flex flex-col gap-8">
@@ -207,7 +211,7 @@
                                 {{ __('Ask your assistant to handle it') }}
                             </h2>
                             <p class="mt-6 max-w-[48ch] text-lg text-pretty text-zinc-600 dark:text-zinc-400">
-                                {{ __('Sunny has a built-in MCP server. Connect Claude or any other assistant that supports MCP, sign in once, and it can work with your household for you.') }}
+                                {{ __('Sunny Home has a built-in MCP server. Connect Claude or any other assistant that supports MCP, sign in once, and it can work with your household for you.') }}
                             </p>
 
                             <ul role="list" class="mt-10 flex flex-col gap-4 text-base/7 text-zinc-600 dark:text-zinc-400">
@@ -232,6 +236,42 @@
                     </div>
                 </section>
 
+                <section id="built-by" class="scroll-mt-8 border-t border-zinc-950/5 py-16 sm:py-24 dark:border-white/10">
+                    <div class="mx-auto grid max-w-7xl items-center gap-x-16 gap-y-12 px-6 lg:grid-cols-2 lg:px-8">
+                        <div>
+                            <p class="font-mono text-sm font-medium tracking-wide text-accent-content uppercase">{{ __('Meet the maker') }}</p>
+                            <h2 class="mt-3 max-w-[35ch] text-4xl font-semibold tracking-tight text-balance">
+                                {{ __('Built by Andy Swick') }}
+                            </h2>
+                            <p class="mt-6 max-w-[48ch] text-lg text-pretty text-zinc-600 dark:text-zinc-400">
+                                I'm <a href="https://techenby.com" class="underline underline-offset-4 hover:text-zinc-950 dark:hover:text-white">Andy Swick</a>,
+                                aka <a href="https://github.com/techenby" class="underline underline-offset-4 hover:text-zinc-950 dark:hover:text-white">TechEnby</a>, a Lead Programmer at <a href="https://tighten.com" class="underline underline-offset-4 hover:text-zinc-950 dark:hover:text-white">Tighten</a>.
+                                Sunny Home is my personal project. It started as a way for me to experiment with new technologies and techniques,
+                                and grew into one place for everything I used to spread across a bunch of different apps. Now I use almost every feature daily,
+                                from finding where an extension cord ended up, to deciding what to make for dinner, to keeping track of what I need to do for work.
+                            </p>
+                            <p class="mt-6 max-w-[48ch] text-lg text-pretty text-zinc-600 dark:text-zinc-400">
+                                It's not just me, either. My dad uses it to organize his garage, so my mom hears "where's the drill?" a lot less often.
+                                My partner checks it every morning to make sure they've finished their routine before work. We all depend on it, so it isn't going anywhere.
+                            </p>
+                            <p class="mt-6 max-w-[48ch] text-lg text-pretty text-zinc-600 dark:text-zinc-400">
+                                There are no ads, and I'll never sell your data. Because Sunny Home is open source, you don't have to take my word for it:
+                                you can read exactly how your data is handled, open an issue when something breaks, or run your own copy.
+                            </p>
+
+                            <div class="mt-10 flex flex-wrap gap-3">
+                                @foreach (array_filter(['Report an issue' => 'https://github.com/techenby/sunny/issues', 'Read the docs' => Route::has('laradocs.index') ? route('laradocs.index') : null, 'Sunny Home source' => 'https://github.com/techenby/sunny']) as $label => $url)
+                                    <a href="{{ $url }}" class="rounded-full border border-zinc-950/10 px-4 py-1.5 text-sm text-zinc-600 hover:border-zinc-950/20 hover:text-zinc-950 dark:border-white/10 dark:text-zinc-400 dark:hover:border-white/20 dark:hover:text-white">{{ $label }}</a>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        <div class="mx-auto w-full max-w-80 [--padding:--spacing(2)] [--radius:var(--radius-2xl)] rounded-(--radius) bg-zinc-950/5 p-(--padding) ring-1 ring-zinc-950/5 ring-inset dark:bg-white/5 dark:ring-white/10">
+                            <img src="https://github.com/techenby.png" alt="Andy Swick" class="aspect-square w-full rounded-[calc(var(--radius)-var(--padding))] object-cover shadow-lg ring-1 ring-zinc-950/10 dark:shadow-none dark:ring-white/10" />
+                        </div>
+                    </div>
+                </section>
+
                 <section class="border-t border-zinc-950/5 py-16 sm:py-24 dark:border-white/10">
                     <div class="mx-auto max-w-7xl px-6 lg:px-8">
                         <div class="text-center">
@@ -247,15 +287,7 @@
                 </section>
             </main>
 
-            <footer class="border-t border-zinc-950/5 py-8 dark:border-white/10">
-                <div class="mx-auto flex max-w-7xl items-center justify-between gap-6 px-6 lg:px-8">
-                    <div class="flex items-center gap-2">
-                        <img src="{{ asset('icon.svg') }}" alt="" class="size-6 rounded-md" />
-                        <span class="font-semibold">{{ config('app.name') }}</span>
-                    </div>
-                    <p class="text-sm text-zinc-600 dark:text-zinc-400">&copy; {{ date('Y') }} {{ config('app.name') }}</p>
-                </div>
-            </footer>
+            @include('layouts.partials.footer')
         </div>
 
         @fluxScripts
