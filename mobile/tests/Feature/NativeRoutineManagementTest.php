@@ -211,7 +211,7 @@ it('edits a routine and shows the change on today’s routines', function () {
         ->set('name', 'Lights out')
         ->set('frequencyIndex', 0)
         ->tap('edit-routine-submit')
-        ->assertReplacedWith('/routines/2');
+        ->assertWentBack();
 
     expect(Routine::find(2)->only('name', 'frequency', 'weekdays', 'user_id'))->toBe(['name' => 'Lights out', 'frequency' => RoutineFrequency::Daily, 'weekdays' => null, 'user_id' => 7])
         ->and(PendingWrite::sole()->payload)->toBe([

@@ -75,7 +75,7 @@ it('keeps the item edit queued on the phone when Sunny rejects the session', fun
     Native::visit('/inventory/8/edit')
         ->tap('edit-item-submit')
         ->assertSet('error', '')
-        ->assertReplacedWith('/inventory/8');
+        ->assertWentBack();
 
     expect(PendingWrite::sole()->error)->toBeNull();
 });

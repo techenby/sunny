@@ -221,7 +221,7 @@ it('edits a list’s name and type', function () {
         ->set('name', 'Pantry')
         ->set('typeIndex', 0)
         ->tap('edit-list-submit')
-        ->assertReplacedWith('/lists/1');
+        ->assertWentBack();
 
     expect(Checklist::find(1)->only('name', 'type', 'user_id'))->toBe(['name' => 'Pantry', 'type' => ChecklistType::Todo, 'user_id' => null])
         ->and(PendingWrite::sole()->payload)->toBe(['name' => 'Pantry', 'type' => 'todo']);
