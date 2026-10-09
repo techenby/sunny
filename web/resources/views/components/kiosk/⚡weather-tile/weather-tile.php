@@ -2,35 +2,26 @@
 
 use App\Actions\Kiosk\FetchWeather;
 use App\Models\Team;
+use Livewire\Attributes\Computed;
 use Livewire\Component;
 
 new class extends Component
 {
-    public ?string $location = null;
+    public Team $team;
 
-    public ?float $temp = null;
-
-    public ?float $high = null;
-
-    public ?float $low = null;
-
-    public ?string $description = null;
-
-    public ?string $icon = null;
-
-    public function mount(Team $team): void
+    /**
+     * @return array{
+     *     location: string|null,
+     *     temp: float,
+     *     high: float,
+     *     low: float,
+     *     description: string|null,
+     *     icon: string|null
+     * }|null
+     */
+    #[Computed]
+    public function weather(): ?array
     {
-        $weather = resolve(FetchWeather::class)->handle($team);
-
-        if ($weather === null) {
-            return;
-        }
-
-        $this->location = $weather['location'];
-        $this->temp = $weather['temp'];
-        $this->high = $weather['high'];
-        $this->low = $weather['low'];
-        $this->description = $weather['description'];
-        $this->icon = $weather['icon'];
+        return resolve(FetchWeather::class)->handle($this->team);
     }
 };

@@ -1,6 +1,13 @@
-<div class="p-2">
-    @if ($temp !== null)
-        <x-kiosk.weather :$location :$temp :$high :$low :$icon :$description />
+<div class="p-2" wire:poll.900s>
+    @if ($this->weather)
+        <x-kiosk.weather
+            :location="$this->weather['location']"
+            :temp="$this->weather['temp']"
+            :high="$this->weather['high']"
+            :low="$this->weather['low']"
+            :icon="$this->weather['icon']"
+            :description="$this->weather['description']"
+        />
     @else
         <flux:skeleton.group animate="shimmer">
             <div class="flex justify-between">

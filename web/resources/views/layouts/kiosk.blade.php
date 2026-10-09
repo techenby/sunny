@@ -7,6 +7,8 @@
             window.localStorage.setItem('flux.appearance', @js($kioskTeam->appearance->value));
         </script>
 
+        <x-kiosk.recovery />
+
         @if ($kioskTeam->rotation !== 0)
             {{-- Native popovers render in the browser's top layer, which ignores the body rotation
                  below. Removing the native API before Flux loads forces its popover polyfill, which

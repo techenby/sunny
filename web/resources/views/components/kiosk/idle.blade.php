@@ -11,7 +11,7 @@
             timezone: @js($team->timezone),
             nightStartsAt: @js($team->night_starts_at),
             nightEndsAt: @js($team->night_ends_at),
-            lastActivityAt: Date.now(),
+            lastActivityAt: $persist(Date.now()).using(sessionStorage).as('kiosk-last-activity'),
             returnedHomeFor: null,
             showing: false,
             now: new Date(),

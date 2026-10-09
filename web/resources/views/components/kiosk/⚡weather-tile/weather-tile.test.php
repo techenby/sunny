@@ -79,3 +79,32 @@ test('renders nothing without address coordinates', function () {
         ->test('kiosk.weather-tile', ['team' => $user->currentTeam])
         ->assertDontSee('°');
 });
+
+test('picks up new weather when it polls after the cache expires', function () {
+    $weather = fn (float $temp): MockResponse => MockResponse::make([
+        'current' => [
+            'temp' => $temp,
+            'weather' => [['description' => 'clear sky', 'icon' => '01d']],
+        ],
+        'daily' => [
+            ['temp' => ['max' => 80.0, 'min' => 50.0]],
+        ],
+    ]);
+
+    Saloon::fake([OneCall::class => $weather(63.4)]);
+
+    $team = Team::factory()->create([
+        'address' => ['city' => 'Chicago', 'lat' => '41.8781', 'long' => '-87.6298'],
+    ]);
+    $user = User::factory()->memberOf($team)->create();
+
+    $component = Livewire::actingAs($user)
+        ->test('kiosk.weather-tile', ['team' => $team])
+        ->assertSeeHtml('wire:poll.900s')
+        ->assertSee('63°');
+
+    Saloon::fake([OneCall::class => $weather(71.2)]);
+    $this->travel(31)->minutes();
+
+    $component->call('$refresh')->assertSee('71°');
+});
