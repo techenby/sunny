@@ -57,9 +57,14 @@ class OpenItemLink extends NativeComponent
         return is_string($id) && ctype_digit($id) ? '/i/'.(int) $id : null;
     }
 
+    public static function urlFor(int $id): string
+    {
+        return self::siteUrl().'/i/'.$id;
+    }
+
     public function openInBrowser(): void
     {
-        $url = self::siteUrl().'/i/'.(int) $this->param('id');
+        $url = self::urlFor((int) $this->param('id'));
         $this->error = Browser::open($url) ? '' : 'Unable to open Sunny in the browser. Please try again.';
     }
 

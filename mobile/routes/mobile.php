@@ -13,6 +13,7 @@ use App\NativeComponents\EditRoutine;
 use App\NativeComponents\Home;
 use App\NativeComponents\Inventory;
 use App\NativeComponents\InventoryItemDetail;
+use App\NativeComponents\InventoryItemQrCode;
 use App\NativeComponents\ListDetail;
 use App\NativeComponents\Lists;
 use App\NativeComponents\Login;
@@ -45,6 +46,7 @@ Route::nativeGroup(TabsLayout::class, function () {
     Route::native('/inventory/scan', ScanInventory::class);
     Route::native('/inventory/{id}', InventoryItemDetail::class);
     Route::native('/inventory/{id}/edit', EditInventoryItem::class);
+    Route::native('/inventory/{id}/qr-code', InventoryItemQrCode::class);
     Route::native('/i/{id}', OpenItemLink::class);
     Route::native('/lists', Lists::class);
     Route::native('/lists/create', CreateList::class);

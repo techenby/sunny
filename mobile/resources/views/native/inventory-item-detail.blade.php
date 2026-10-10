@@ -16,6 +16,14 @@
             @navigate('/inventory/'.$item['id'].'/edit')
         />
         <native:top-bar-action
+            ref="item-qr-code"
+            id="item-qr-code"
+            label="QR Code"
+            :ios-icon="Ios::Qrcode"
+            :android-icon="Android::QrCode2"
+            @navigate('/inventory/'.$item['id'].'/qr-code')
+        />
+        <native:top-bar-action
             ref="delete-item"
             id="delete-item"
             label="Delete"
