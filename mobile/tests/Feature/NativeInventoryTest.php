@@ -177,3 +177,13 @@ it('stops walking descendants when the synced data contains a parent cycle', fun
 
     expect(Inventory::descendantIdsOf(6))->toEqualCanonicalizing([7, 8, 9, 10]);
 });
+
+it('keeps an item’s edit and QR code actions above the tab bar and delete at the top', function () {
+    seedSunnyData();
+
+    Native::visit('/inventory/8')
+        ->assertElement('bottom_bar', fn (array $node): bool => str_contains(json_encode($node), '"ref":"edit-item"')
+            && str_contains(json_encode($node), '"ref":"item-qr-code"'))
+        ->assertElement('top_bar_action', fn (array $node): bool => ($node['ref'] ?? null) === 'delete-item')
+        ->assertMissingElement('top_bar_action', fn (array $node): bool => in_array($node['ref'] ?? null, ['edit-item', 'item-qr-code'], true));
+});

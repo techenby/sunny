@@ -8,22 +8,6 @@
 <native:top-bar :title="$item['name'] ?? 'Item'" display-mode="large" back>
     @if ($item)
         <native:top-bar-action
-            ref="edit-item"
-            id="edit-item"
-            label="Edit"
-            :ios-icon="Ios::Pencil"
-            :android-icon="Android::Edit"
-            @navigate('/inventory/'.$item['id'].'/edit')
-        />
-        <native:top-bar-action
-            ref="item-qr-code"
-            id="item-qr-code"
-            label="QR Code"
-            :ios-icon="Ios::Qrcode"
-            :android-icon="Android::QrCode2"
-            @navigate('/inventory/'.$item['id'].'/qr-code')
-        />
-        <native:top-bar-action
             ref="delete-item"
             id="delete-item"
             label="Delete"
@@ -35,6 +19,11 @@
 </native:top-bar>
 
 @if ($item)
+    @include('native.action-bottom-bar', ['actions' => [
+        ['ref' => 'edit-item', 'label' => 'Edit', 'ios' => Ios::Pencil, 'android' => Android::Edit, 'url' => '/inventory/'.$item['id'].'/edit'],
+        ['ref' => 'item-qr-code', 'label' => 'QR Code', 'ios' => Ios::Qrcode, 'android' => Android::QrCode2, 'url' => '/inventory/'.$item['id'].'/qr-code'],
+    ]])
+
     <scroll-view ref="item-detail" fill class="bg-theme-background">
         <column class="w-full gap-6 px-4 pt-2 pb-8">
             <column class="w-full gap-3">
