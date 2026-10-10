@@ -7,7 +7,7 @@ beforeEach(fn () => seedSunnyData());
 
 it('opens the QR code from an item', function () {
     Native::visit('/inventory/8')
-        ->tap('item-qr-code')
+        ->tap('QR Code')
         ->assertNavigatedTo('/inventory/8/qr-code');
 });
 

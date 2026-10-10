@@ -7,10 +7,13 @@ use App\Concerns\ShowsQueuedChange;
 use App\Enums\ItemType;
 use App\Http\Integrations\Sunny\SunnyOutbox;
 use App\Http\Integrations\Sunny\SunnySyncCoordinator;
+use App\Icons\Android;
+use App\Icons\Ios;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
 use Native\Mobile\Attributes\On;
+use Native\Mobile\Edge\Layouts\Builders\NavAction;
 use Native\Mobile\Edge\NativeComponent;
 use Native\Mobile\Events\Alert\ButtonPressed;
 use Native\Mobile\Facades\Dialog;
@@ -68,6 +71,43 @@ class InventoryItemDetail extends NativeComponent
     public function children(): array
     {
         return $this->item === null ? [] : Inventory::childrenOf($this->item['id']);
+    }
+
+    public function canHoldItems(): bool
+    {
+        return $this->item !== null && ($this->children || $this->item['type'] !== ItemType::Item);
+    }
+
+    /**
+     * @return list<NavAction>
+     */
+    public function actionMenu(): array
+    {
+        $menu = [
+            NavAction::make('edit-item')->label('Edit')->icon(ios: Ios::Pencil->value, android: Android::Edit->value)->press('editItem'),
+            NavAction::make('item-qr-code')->label('QR Code')->icon(ios: Ios::Qrcode->value, android: Android::QrCode2->value)->press('showQrCode'),
+        ];
+
+        if ($this->canHoldItems()) {
+            $menu[] = NavAction::make('item-scan-children')->label('Scan items here')->icon(ios: Ios::CameraViewfinder->value, android: Android::DocumentScanner->value)->press('scanChildren');
+        }
+
+        return $menu;
+    }
+
+    public function editItem(): void
+    {
+        $this->navigate('/inventory/'.$this->item['id'].'/edit');
+    }
+
+    public function showQrCode(): void
+    {
+        $this->navigate('/inventory/'.$this->item['id'].'/qr-code');
+    }
+
+    public function scanChildren(): void
+    {
+        $this->navigate('/inventory/scan', ['parent' => $this->item['id']]);
     }
 
     /**

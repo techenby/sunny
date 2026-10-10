@@ -11,7 +11,7 @@ beforeEach(fn () => seedSunnyData());
 
 it('opens the edit screen from the item', function () {
     Native::visit('/inventory/8')
-        ->tap('edit-item')
+        ->tap('Edit')
         ->assertNavigatedTo('/inventory/8/edit')
         ->follow()
         ->assertScreen(EditInventoryItem::class);

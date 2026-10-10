@@ -104,7 +104,7 @@ it('scans into the container it was opened from', function () {
     Native::fakeBridge()->respondTo('ItemScanner.Availability', ['available' => true, 'reason' => null]);
 
     Native::visit('/inventory/7')
-        ->tap('item-scan-children')
+        ->tap('Scan items here')
         ->assertNavigatedTo('/inventory/scan')
         ->follow()
         ->assertSet('parentId', 7)
