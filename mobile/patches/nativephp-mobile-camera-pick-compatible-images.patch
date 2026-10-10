@@ -1,0 +1,12 @@
+diff --git a/resources/ios/CameraFunctions.swift b/resources/ios/CameraFunctions.swift
+--- a/resources/ios/CameraFunctions.swift
++++ b/resources/ios/CameraFunctions.swift
+@@ -541,7 +541,7 @@
+             configuration.selectionLimit = 1
+         }
+ 
+-        configuration.preferredAssetRepresentationMode = .current
++        configuration.preferredAssetRepresentationMode = .compatible
+ 
+         let picker = PHPickerViewController(configuration: configuration)
+         picker.delegate = self
