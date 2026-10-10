@@ -123,6 +123,43 @@ enum ItemScannerFunctions {
             }
         }
     }
+
+    // MARK: - ItemScanner.WhenUncovered
+
+    /// Parameters:
+    ///   - id: string - chosen by PHP and echoed back on the event
+    ///
+    /// Sends ScreenUncovered once nothing is presented over the app, so a
+    /// navigation doesn't run underneath a camera that's still closing.
+    class WhenUncovered: BridgeFunction {
+        func execute(parameters: [String: Any]) throws -> [String: Any] {
+            guard let id = parameters["id"] as? String, !id.isEmpty else {
+                throw BridgeError.invalidParameters("id is required")
+            }
+
+            DispatchQueue.main.async {
+                Self.wait(id: id, until: Date().addingTimeInterval(3))
+            }
+
+            return BridgeResponse.success(data: ["id": id])
+        }
+
+        private static func wait(id: String, until deadline: Date) {
+            let covered = UIApplication.shared.connectedScenes
+                .compactMap { $0 as? UIWindowScene }
+                .flatMap(\.windows)
+                .contains { $0.isKeyWindow && $0.rootViewController?.presentedViewController != nil }
+
+            guard covered, Date() < deadline else {
+                ItemScannerEvents.uncovered(id: id)
+                return
+            }
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                wait(id: id, until: deadline)
+            }
+        }
+    }
 }
 
 // MARK: - Events
@@ -146,6 +183,10 @@ enum ItemScannerEvents {
 
     static func captureFailed(id: String, message: String) {
         send("Sunny\\ItemScanner\\Events\\CaptureFailed", ["id": id, "message": message])
+    }
+
+    static func uncovered(id: String) {
+        send("Sunny\\ItemScanner\\Events\\ScreenUncovered", ["id": id])
     }
 
     private static func send(_ event: String, _ payload: [String: Any]) {

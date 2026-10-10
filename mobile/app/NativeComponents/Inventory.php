@@ -16,6 +16,8 @@ use Native\Mobile\Edge\NativeComponent;
 use Native\Mobile\Events\Scanner\CodeScanned;
 use Native\Mobile\Facades\Dialog;
 use Native\Mobile\Facades\Scanner;
+use Sunny\ItemScanner\Events\ScreenUncovered;
+use Sunny\ItemScanner\Facades\ItemScanner;
 
 class Inventory extends NativeComponent
 {
@@ -24,6 +26,8 @@ class Inventory extends NativeComponent
     protected const SCAN_ID = 'item-code';
 
     public string $search = '';
+
+    public ?string $scannedPath = null;
 
     /**
      * The last downloaded inventory, read entirely from the local database.
@@ -174,6 +178,25 @@ class Inventory extends NativeComponent
 
             return;
         }
+
+        if (! ItemScanner::whenUncovered(self::SCAN_ID)) {
+            $this->navigate($path);
+
+            return;
+        }
+
+        $this->scannedPath = $path;
+    }
+
+    #[On(ScreenUncovered::class)]
+    public function scannerClosed(string $id): void
+    {
+        if ($id !== self::SCAN_ID || $this->scannedPath === null) {
+            return;
+        }
+
+        $path = $this->scannedPath;
+        $this->scannedPath = null;
 
         $this->navigate($path);
     }
