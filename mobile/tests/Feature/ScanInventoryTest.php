@@ -11,6 +11,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Native\Mobile\Events\Alert\ButtonPressed;
+use Native\Mobile\Events\Camera\PhotoTaken;
 use Native\Mobile\Events\Gallery\MediaSelected;
 use Native\Mobile\Testing\Native;
 use Native\Mobile\Testing\TestableComponent;
@@ -71,25 +72,38 @@ function scanNamedPhotos(array $names): TestableComponent
     return $screen;
 }
 
-it('explains why scanning is unavailable instead of offering the camera', function (?array $availability, string $message) {
-    $bridge = Native::fakeBridge();
+it('scans without Apple Intelligence, leaving the naming to the user', function (array $availability) {
+    Native::fakeBridge()->respondTo('ItemScanner.Availability', $availability);
 
-    if ($availability !== null) {
-        $bridge->respondTo('ItemScanner.Availability', $availability);
-    } else {
-        $bridge->withoutCapability('ItemScanner.Availability');
-    }
+    $screen = Native::visit('/inventory/scan')
+        ->assertSee('Tap the camera and photograph each item in turn, then give each one a name.')
+        ->assertDontSee('What are you scanning?')
+        ->assertDontSee('Let Apple Intelligence guess')
+        ->tap('scan-take-photos')
+        ->assertNativeCalled('ItemScanner.Capture', fn (array $params): bool => $params['id'] === 'scan')
+        ->emitNative(PhotoCaptured::class, ['id' => 'scan', 'path' => '/tmp/hammer.jpg'])
+        ->assertNativeNotCalled('ItemScanner.Identify')
+        ->assertDontSee('Identifying…');
 
-    Native::visit('/inventory/scan')
-        ->assertSee($message)
-        ->assertDontSee('What are you scanning?');
+    expect($screen->get('candidates')[0])->toMatchArray(['photoPath' => '/tmp/hammer.jpg', 'suggestedName' => '', 'scanId' => null]);
 })->with([
-    'android' => [null, 'Scanning uses Apple Intelligence, so it only works on iPhone for now.'],
-    'older iOS' => [['available' => false, 'reason' => 'unsupportedOS'], 'Scanning needs iOS 27 or later. Update your iPhone to use it.'],
-    'ineligible device' => [['available' => false, 'reason' => 'deviceNotEligible'], 'This iPhone can’t run Apple Intelligence, which scanning needs.'],
-    'Apple Intelligence off' => [['available' => false, 'reason' => 'appleIntelligenceNotEnabled'], 'Turn on Apple Intelligence in Settings to scan items.'],
-    'model downloading' => [['available' => false, 'reason' => 'modelNotReady'], 'Apple Intelligence is still getting ready. Try again in a few minutes.'],
+    'older iOS' => [['available' => false, 'reason' => 'unsupportedOS']],
+    'ineligible device' => [['available' => false, 'reason' => 'deviceNotEligible']],
+    'Apple Intelligence off' => [['available' => false, 'reason' => 'appleIntelligenceNotEnabled']],
+    'model downloading' => [['available' => false, 'reason' => 'modelNotReady']],
 ]);
+
+it('falls back to the system camera when the capture camera isn’t available', function () {
+    Native::fakeBridge()->withoutCapability('ItemScanner.Availability', 'ItemScanner.Capture');
+
+    $screen = Native::visit('/inventory/scan')
+        ->tap('scan-take-photos')
+        ->assertNativeNotCalled('ItemScanner.Capture')
+        ->assertNativeCalled('Camera.GetPhoto', fn (array $params): bool => $params['id'] === 'scan')
+        ->emitNative(PhotoTaken::class, ['path' => '/tmp/hammer.jpg', 'id' => 'scan']);
+
+    expect($screen->get('candidates')[0])->toMatchArray(['photoPath' => '/tmp/hammer.jpg', 'scanId' => null]);
+});
 
 it('opens the scan screen from the inventory scan menu', function () {
     Native::visit('/inventory')
@@ -305,14 +319,12 @@ it('removes an item and its photo from the list', function () {
 it('picks up where it left off after the screen is closed', function () {
     [$screen, $scan] = scanPhoto(['parent' => 7]);
     $screen->call('updateBatch', 'Christmas ornaments')
-        ->call('updateCategory', 'Holiday')
         ->call('renameCandidate', 1, 'Glass snowman')
         ->emitNative(PhotoCaptured::class, ['id' => 'scan', 'path' => '/tmp/reindeer.jpg']);
 
     $reopened = Native::visit('/inventory/scan')
         ->assertSet('parentId', 7)
         ->assertSet('batch', 'Christmas ornaments')
-        ->assertSet('category', 'Holiday')
         ->assertSet('nextCandidateId', 3);
 
     expect(collect($reopened->get('candidates'))->pluck('name', 'id')->all())->toBe([2 => '', 1 => 'Glass snowman'])
@@ -373,7 +385,6 @@ it('adds every item to Sunny under the chosen place with its details and photo',
         ->emitNative(PhotoCaptured::class, ['id' => 'scan', 'path' => $photoPath])
         ->emitNative(ItemIdentified::class, ['id' => $screen->get('candidates')[0]['scanId'], 'item' => ['name' => 'Level', 'category' => '', 'quantity' => 1]])
         ->call('renameCandidate', 2, 'Torpedo level')
-        ->call('updateCategory', '')
         ->tap('scan-submit')
         ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Add', 'id' => 'add-items'])
         ->assertSet('error', '')
@@ -412,21 +423,6 @@ it('asks before adding the items', function () {
 
     Saloon::assertNothingSent();
     expect($screen->get('candidates'))->toHaveCount(1);
-});
-
-it('uses the batch category for every item', function () {
-    Saloon::fake([SaveRecordRequest::class => MockResponse::make(['data' => [
-        'id' => 100, 'team_id' => 1, 'parent_id' => null, 'type' => 'item', 'name' => 'Glass snowman', 'metadata' => null,
-    ]], 201)]);
-    [$screen, $scan] = scanPhoto();
-
-    $screen->call('updateCategory', 'Holiday')
-        ->emitNative(ItemIdentified::class, ['id' => $scan, 'item' => ['name' => 'Glass snowman', 'category' => 'Decor']])
-        ->tap('scan-submit')
-        ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Add', 'id' => 'add-items'])
-        ->assertSet('error', '');
-
-    Saloon::assertSent(fn (SaveRecordRequest $request): bool => $request->body()->get('metadata')->value === json_encode(['category' => 'Holiday']));
 });
 
 it('still adds an item whose photo has since been cleared from the phone', function () {

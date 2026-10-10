@@ -20,6 +20,7 @@ use Native\Mobile\Attributes\Computed;
 use Native\Mobile\Attributes\On;
 use Native\Mobile\Edge\NativeComponent;
 use Native\Mobile\Events\Alert\ButtonPressed;
+use Native\Mobile\Events\Camera\PhotoTaken;
 use Native\Mobile\Events\Gallery\MediaSelected;
 use Native\Mobile\Facades\Camera;
 use Native\Mobile\Facades\Dialog;
@@ -32,8 +33,8 @@ use Sunny\ItemScanner\Facades\ItemScanner;
 use Throwable;
 
 /**
- * Photograph items one at a time and let Apple's on-device model name each
- * one in the background, then add them all to Sunny in one go.
+ * Photograph items one at a time, then add them all to Sunny in one go. When
+ * Apple's on-device model can run, it names each one in the background.
  */
 class ScanInventory extends NativeComponent
 {
@@ -52,8 +53,6 @@ class ScanInventory extends NativeComponent
     public ?string $unavailableReason = null;
 
     public string $batch = '';
-
-    public string $category = '';
 
     /**
      * @var list<array{id: int, name: string, suggestedName: string, photoPath: string, category: string, quantity: int, extraCopies: int, scanId: string|null, scanError: string|null, error: string|null}>
@@ -81,16 +80,9 @@ class ScanInventory extends NativeComponent
     }
 
     #[Computed]
-    public function unavailableMessage(): ?string
+    public function canIdentify(): bool
     {
-        return match ($this->unavailableReason) {
-            null => null,
-            'bridgeUnavailable' => 'Scanning uses Apple Intelligence, so it only works on iPhone for now.',
-            'unsupportedOS' => 'Scanning needs iOS 27 or later. Update your iPhone to use it.',
-            'deviceNotEligible', 'visionUnsupported' => 'This iPhone can’t run Apple Intelligence, which scanning needs.',
-            'appleIntelligenceNotEnabled' => 'Turn on Apple Intelligence in Settings to scan items.',
-            default => 'Apple Intelligence is still getting ready. Try again in a few minutes.',
-        };
+        return $this->unavailableReason === null;
     }
 
     #[Computed]
@@ -103,12 +95,12 @@ class ScanInventory extends NativeComponent
     {
         $this->error = '';
 
-        ItemScanner::capture(self::CAPTURE_ID);
+        $this->capture(self::CAPTURE_ID);
     }
 
     public function retakePhoto(int $id): void
     {
-        ItemScanner::capture(self::RETAKE_PREFIX.$id, single: true);
+        $this->capture(self::RETAKE_PREFIX.$id, single: true);
     }
 
     public function choosePhotos(): void
@@ -124,6 +116,14 @@ class ScanInventory extends NativeComponent
         } elseif ($id === self::CAPTURE_ID) {
             $this->lastCapturedCandidateId = $this->nextCandidateId;
             $this->addCandidate($path);
+        }
+    }
+
+    #[On(PhotoTaken::class)]
+    public function photoTaken(string $path, string $mimeType = 'image/jpeg', ?string $id = null): void
+    {
+        if ($id !== null) {
+            $this->photoCaptured($id, $path);
         }
     }
 
@@ -231,12 +231,6 @@ class ScanInventory extends NativeComponent
     public function updateBatch(string $batch): void
     {
         $this->batch = Str::limit(trim($batch), 255, '');
-        $this->persistDraft();
-    }
-
-    public function updateCategory(string $category): void
-    {
-        $this->category = Str::limit(trim($category), 255, '');
         $this->persistDraft();
     }
 
@@ -392,9 +386,18 @@ class ScanInventory extends NativeComponent
         $this->persistDraft();
     }
 
+    protected function capture(string $id, bool $single = false): void
+    {
+        if (function_exists('nativephp_can') && nativephp_can('ItemScanner.Capture')) {
+            ItemScanner::capture($id, $single);
+        } else {
+            Camera::getPhoto()->id($id)->start();
+        }
+    }
+
     protected function identify(string $photoPath): ?string
     {
-        if ($this->unavailableReason !== null) {
+        if (! $this->canIdentify) {
             return null;
         }
 
@@ -439,7 +442,6 @@ class ScanInventory extends NativeComponent
         }
 
         $this->batch = $draft->batch ?? '';
-        $this->category = $draft->category ?? '';
         $this->nextCandidateId = $draft->next_candidate_id;
         $this->candidates = collect($draft->candidates)
             ->map(fn (array $candidate): array => ['suggestedName' => '', 'extraCopies' => 0, ...Arr::except($candidate, ['nameEdited', 'brand', 'model'])])
@@ -468,7 +470,6 @@ class ScanInventory extends NativeComponent
         ScanDraft::query()->updateOrCreate(['server' => SunnyStore::server(), 'team_id' => $this->teamId], [
             'parent_id' => $this->parentId,
             'batch' => $this->optionalString($this->batch),
-            'category' => $this->optionalString($this->category),
             'candidates' => $this->candidates,
             'next_candidate_id' => $this->nextCandidateId,
         ]);
@@ -480,7 +481,6 @@ class ScanInventory extends NativeComponent
 
         $this->candidates = [];
         $this->batch = '';
-        $this->category = '';
         $this->error = '';
     }
 
@@ -522,7 +522,7 @@ class ScanInventory extends NativeComponent
     protected function candidatePayload(array $candidate): array
     {
         $metadata = array_filter([
-            'category' => $this->optionalString($this->category) ?? $this->optionalString($candidate['category']),
+            'category' => $this->optionalString($candidate['category']),
             'quantity' => $this->quantityOf($candidate) > 1 ? (string) $this->quantityOf($candidate) : null,
         ], fn (?string $value): bool => $value !== null);
 
