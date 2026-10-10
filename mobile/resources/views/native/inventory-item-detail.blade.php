@@ -8,14 +8,6 @@
 <native:top-bar :title="$item['name'] ?? 'Item'" display-mode="large" back>
     @if ($item)
         <native:top-bar-action
-            ref="edit-item"
-            id="edit-item"
-            label="Edit"
-            :ios-icon="Ios::Pencil"
-            :android-icon="Android::Edit"
-            @navigate('/inventory/'.$item['id'].'/edit')
-        />
-        <native:top-bar-action
             ref="delete-item"
             id="delete-item"
             label="Delete"
@@ -27,6 +19,27 @@
 </native:top-bar>
 
 @if ($item)
+    <native:bottom-bar>
+        <row class="w-full items-center justify-end gap-3 px-4 pb-2">
+            <pressable
+                ref="item-actions"
+                a11y-label="Item actions"
+                class="h-12 w-12 items-center justify-center rounded-full glass android:bg-theme-surface"
+                :menu="$this->actionMenu()"
+            >
+                <native:icon :ios="Ios::LineHorizontal3" :android="Android::Menu" :size="22" class="text-theme-on-surface" />
+            </pressable>
+            <pressable
+                ref="edit-item"
+                a11y-label="Edit"
+                class="h-12 w-12 items-center justify-center rounded-full glass android:bg-theme-surface"
+                @navigate('/inventory/'.$item['id'].'/edit')
+            >
+                <native:icon :ios="Ios::Pencil" :android="Android::Edit" :size="22" class="text-theme-on-surface" />
+            </pressable>
+        </row>
+    </native:bottom-bar>
+
     <scroll-view ref="item-detail" fill class="bg-theme-background">
         <column class="w-full gap-6 px-4 pt-2 pb-8">
             <column class="w-full gap-3">
@@ -119,7 +132,7 @@
                         @endif
                     </row>
                     <column class="{{ Card::classes() }} w-full">
-                        @foreach ($this->children as $child)
+                        @forelse ($this->children as $child)
                             <pressable
                                 ref="item-child-{{ $child['id'] }}"
                                 @navigate('/inventory/'.$child['id'], ['from' => $item['id']])
@@ -144,35 +157,14 @@
                                     <icon :ios="Ios::ChevronRight" :android="Android::ChevronRight" :size="14" class="text-theme-on-surface-variant" />
                                 </row>
                             </pressable>
-                            <divider class="ml-[72]" />
-                        @endforeach
-                        <pressable
-                            ref="item-add-child"
-                            @navigate('/inventory/create', ['parent' => $item['id']])
-                            :a11y-label="'Add an item inside '.$item['name']"
-                            class="w-full px-4 py-3"
-                        >
-                            <row class="w-full items-center gap-4">
-                                <column class="h-10 w-10 items-center justify-center rounded-lg bg-theme-primary/15">
-                                    <icon :ios="Ios::Plus" :android="Android::Add" :size="24" class="text-theme-primary" />
-                                </column>
-                                <x-ui.heading accent class="flex-1">Add item here</x-ui.heading>
-                            </row>
-                        </pressable>
-                        <divider class="ml-[72]" />
-                        <pressable
-                            ref="item-scan-children"
-                            @navigate('/inventory/scan', ['parent' => $item['id']])
-                            :a11y-label="'Scan items into '.$item['name']"
-                            class="w-full px-4 py-3"
-                        >
-                            <row class="w-full items-center gap-4">
-                                <column class="h-10 w-10 items-center justify-center rounded-lg bg-theme-primary/15">
-                                    <icon :ios="Ios::CameraViewfinder" :android="Android::DocumentScanner" :size="24" class="text-theme-primary" />
-                                </column>
-                                <x-ui.heading accent class="flex-1">Scan items here</x-ui.heading>
-                            </row>
-                        </pressable>
+                            @unless ($loop->last)
+                                <divider class="ml-[72]" />
+                            @endunless
+                        @empty
+                            <text ref="item-contents-empty" class="w-full px-4 py-3 text-base text-theme-on-surface-variant">
+                                Nothing in here yet. Use the menu to add an item.
+                            </text>
+                        @endforelse
                     </column>
                 </column>
             @endif

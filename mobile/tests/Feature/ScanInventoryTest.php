@@ -91,9 +91,9 @@ it('explains why scanning is unavailable instead of offering the camera', functi
     'model downloading' => [['available' => false, 'reason' => 'modelNotReady'], 'Apple Intelligence is still getting ready. Try again in a few minutes.'],
 ]);
 
-it('opens the scan screen from the inventory list', function () {
+it('opens the scan screen from the inventory scan menu', function () {
     Native::visit('/inventory')
-        ->tap('inventory-scan')
+        ->tap('Scan items')
         ->assertNavigatedTo('/inventory/scan')
         ->follow()
         ->assertScreen(ScanInventory::class)
@@ -104,7 +104,7 @@ it('scans into the container it was opened from', function () {
     Native::fakeBridge()->respondTo('ItemScanner.Availability', ['available' => true, 'reason' => null]);
 
     Native::visit('/inventory/7')
-        ->tap('item-scan-children')
+        ->tap('Scan items here')
         ->assertNavigatedTo('/inventory/scan')
         ->follow()
         ->assertSet('parentId', 7)

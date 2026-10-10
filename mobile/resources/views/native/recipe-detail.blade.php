@@ -5,20 +5,13 @@
 
 @php($recipe = $this->recipe)
 
-<native:top-bar :title="$recipe['name'] ?? 'Recipe'" back>
-    @if ($recipe)
-        <native:top-bar-action
-            ref="edit-recipe"
-            id="edit-recipe"
-            label="Edit"
-            :ios-icon="Ios::Pencil"
-            :android-icon="Android::Edit"
-            @navigate('/recipes/'.$recipe['id'].'/edit')
-        />
-    @endif
-</native:top-bar>
+<native:top-bar :title="$recipe['name'] ?? 'Recipe'" back />
 
 @if ($recipe)
+    @include('native.action-bottom-bar', ['actions' => [
+        ['ref' => 'edit-recipe', 'label' => 'Edit', 'ios' => Ios::Pencil, 'android' => Android::Edit, 'url' => '/recipes/'.$recipe['id'].'/edit'],
+    ]])
+
     <scroll-view ref="recipe-detail" fill class="bg-theme-background">
         <column class="w-full gap-6 px-4 pt-2 pb-8">
             <column class="w-full gap-3">

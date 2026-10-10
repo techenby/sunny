@@ -1,16 +1,7 @@
 @use('App\Icons\Android')
 @use('App\Icons\Ios')
 
-<native:top-bar title="Inventory" display-mode="large" :back="false">
-    <native:top-bar-action
-        ref="scan-code"
-        id="scan-code"
-        label="Scan label"
-        :ios-icon="Ios::QrcodeViewfinder"
-        :android-icon="Android::QrCodeScanner"
-        @tap="scanCode"
-    />
-</native:top-bar>
+<native:top-bar title="Inventory" display-mode="large" :back="false" />
 
 @include('native.search-bottom-bar', [
     'refPrefix' => 'inventory',
@@ -18,8 +9,8 @@
     'search' => $search,
     'createLabel' => 'New item',
     'createUrl' => '/inventory/create',
-    'scanLabel' => 'Scan items',
-    'scanUrl' => '/inventory/scan',
+    'scanLabel' => 'Scan',
+    'scanMenu' => $this->scanMenu(),
 ])
 
 <list ref="inventory-list" fill separator class="bg-theme-background">

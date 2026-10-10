@@ -173,3 +173,11 @@ it('shows the synced recipe photo with an accessible description', function () {
 it('omits the photo when the recipe has none', function () {
     Native::visit('/recipes/1')->assertMissingElement('image');
 });
+
+it('keeps a recipe’s edit action above the tab bar', function () {
+    seedSunnyData();
+
+    Native::visit('/recipes/1')
+        ->assertElement('bottom_bar', fn (array $node): bool => str_contains(json_encode($node), '"ref":"edit-recipe"'))
+        ->assertMissingElement('top_bar_action');
+});

@@ -97,7 +97,6 @@ it('shows an item’s type, path, and metadata', function () {
         ->assertSee('Model')
         ->assertSee('DCD771')
         ->assertDontSee('Contents')
-        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'item-add-child')
         ->assertAccessible();
 });
 
@@ -109,7 +108,7 @@ it('jumps to any container in the path', function () {
 
 it('adds an item inside a location or bin', function () {
     Native::visit('/inventory/7')
-        ->tap('item-add-child')
+        ->tap('Add item here')
         ->assertNavigatedTo('/inventory/create')
         ->follow()
         ->assertSet('parentId', 7)
@@ -176,4 +175,73 @@ it('stops walking descendants when the synced data contains a parent cycle', fun
     Item::find(6)->update(['parent_id' => 8]);
 
     expect(Inventory::descendantIdsOf(6))->toEqualCanonicalizing([7, 8, 9, 10]);
+});
+
+it('puts an item’s actions above the tab bar, with edit on the far right', function () {
+    seedSunnyData();
+
+    Native::visit('/inventory/7')
+        ->assertElement('bottom_bar', function (array $node): bool {
+            $buttons = $node['children'][0]['children'];
+            $menu = array_column(array_column($buttons[0]['children'], 'props'), 'label');
+
+            return array_column($buttons, 'ref') === ['item-actions', 'edit-item']
+                && $menu === ['Add item here', 'QR Code', 'Scan items here'];
+        })
+        ->assertElement('top_bar_action', fn (array $node): bool => ($node['ref'] ?? null) === 'delete-item')
+        ->assertAccessible();
+});
+
+it('lets a plain item hold other items, like insoles in shoes', function () {
+    seedSunnyData();
+
+    Native::visit('/inventory/8')
+        ->assertElement('bottom_bar', function (array $node): bool {
+            $buttons = $node['children'][0]['children'];
+            $menu = array_column(array_column($buttons[0]['children'], 'props'), 'label');
+
+            return array_column($buttons, 'ref') === ['item-actions', 'edit-item']
+                && $menu === ['Add item here', 'QR Code', 'Scan items here'];
+        })
+        ->tap('Add item here')
+        ->assertNavigatedTo('/inventory/create')
+        ->follow()
+        ->assertSet('parentId', 8);
+});
+
+it('invites adding to an empty container', function () {
+    seedSunnyData();
+    Item::create([...Item::find(7)->toArray(), 'id' => 90, 'name' => 'Empty bin']);
+
+    Native::visit('/inventory/90')
+        ->assertSee('Contents')
+        ->assertSee('Nothing in here yet. Use the menu to add an item.')
+        ->tap('Add item here')
+        ->assertNavigatedTo('/inventory/create');
+});
+
+it('gathers the inventory scans into one menu beside the new item button', function () {
+    seedSunnyData();
+
+    Native::visit('/inventory')
+        ->assertMissingElement('top_bar_action', fn (array $node): bool => ($node['ref'] ?? null) === 'scan-code')
+        ->assertElement('bottom_bar', function (array $node): bool {
+            $buttons = array_values(array_filter($node['children'][0]['children'], fn (array $child): bool => isset($child['ref'])));
+            $menu = array_column(array_column($buttons[0]['children'], 'props'), 'label');
+
+            return array_column($buttons, 'ref') === ['inventory-scan', 'inventory-create']
+                && $menu === ['Scan label', 'Scan items'];
+        })
+        ->assertAccessible();
+});
+
+it('refreshes the inventory after a sync without opening the scanner', function () {
+    seedSunnyData();
+    $screen = Native::visit('/inventory')->assertDontSee('Attic');
+
+    Item::create([...Item::find(6)->toArray(), 'id' => 90, 'name' => 'Attic']);
+
+    $screen->emitNative('sunny-sync-complete', ['status' => 'finished'])
+        ->assertSee('Attic')
+        ->assertNothingScanned();
 });

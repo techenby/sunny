@@ -6,9 +6,9 @@ use Native\Mobile\Testing\Native;
 
 beforeEach(fn () => seedSunnyData());
 
-it('opens the scanner from the inventory top bar', function () {
+it('opens the scanner from the inventory scan menu', function () {
     Native::visit('/inventory')
-        ->tap('scan-code')
+        ->tap('Scan label')
         ->assertScanRequested('Scan a Sunny label');
 });
 
