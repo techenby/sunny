@@ -1,6 +1,6 @@
 ## sunny/item-scanner
 
-Identifies the item in a photo with Apple's on-device Foundation Models (iOS 27+, Apple Intelligence devices). iOS only.
+Identifies the item in a photo with Apple's on-device Foundation Models (iOS 27+, Apple Intelligence devices), and offers a capture camera that works without them. iOS only.
 
 @verbatim
 <code-snippet name="Identifying the item in a photo" lang="php">

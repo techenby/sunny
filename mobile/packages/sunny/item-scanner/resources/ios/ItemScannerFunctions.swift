@@ -319,11 +319,11 @@ enum ItemScannerModel {
     static func message(forUnavailable reason: String) -> String {
         switch reason {
         case "unsupportedOS":
-            return "Scanning needs iOS 27 or later."
+            return "Naming items with Apple Intelligence needs iOS 27 or later."
         case "deviceNotEligible", "visionUnsupported":
-            return "This device can't run Apple Intelligence, which scanning needs."
+            return "This device can't run Apple Intelligence, which names items."
         case "appleIntelligenceNotEnabled":
-            return "Turn on Apple Intelligence in Settings to scan items."
+            return "Turn on Apple Intelligence in Settings to name items."
         default:
             return "Apple Intelligence is still getting ready. Try again in a few minutes."
         }
