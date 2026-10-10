@@ -97,7 +97,6 @@ it('shows an item’s type, path, and metadata', function () {
         ->assertSee('Model')
         ->assertSee('DCD771')
         ->assertDontSee('Contents')
-        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'item-add-child')
         ->assertAccessible();
 });
 
@@ -178,7 +177,7 @@ it('stops walking descendants when the synced data contains a parent cycle', fun
     expect(Inventory::descendantIdsOf(6))->toEqualCanonicalizing([7, 8, 9, 10]);
 });
 
-it('puts a container’s actions above the tab bar, with add on the far right', function () {
+it('puts an item’s actions above the tab bar, with add on the far right', function () {
     seedSunnyData();
 
     Native::visit('/inventory/7')
@@ -193,7 +192,7 @@ it('puts a container’s actions above the tab bar, with add on the far right', 
         ->assertAccessible();
 });
 
-it('leaves adding and scanning out of a plain item’s actions', function () {
+it('lets a plain item hold other items, like insoles in shoes', function () {
     seedSunnyData();
 
     Native::visit('/inventory/8')
@@ -201,8 +200,13 @@ it('leaves adding and scanning out of a plain item’s actions', function () {
             $buttons = $node['children'][0]['children'];
             $menu = array_column(array_column($buttons[0]['children'], 'props'), 'label');
 
-            return array_column($buttons, 'ref') === ['item-actions'] && $menu === ['Edit', 'QR Code'];
-        });
+            return array_column($buttons, 'ref') === ['item-actions', 'item-add-child']
+                && $menu === ['Edit', 'QR Code', 'Scan items here'];
+        })
+        ->tap('item-add-child')
+        ->assertNavigatedTo('/inventory/create')
+        ->follow()
+        ->assertSet('parentId', 8);
 });
 
 it('invites adding to an empty container', function () {

@@ -73,26 +73,16 @@ class InventoryItemDetail extends NativeComponent
         return $this->item === null ? [] : Inventory::childrenOf($this->item['id']);
     }
 
-    public function canHoldItems(): bool
-    {
-        return $this->item !== null && ($this->children || $this->item['type'] !== ItemType::Item);
-    }
-
     /**
      * @return list<NavAction>
      */
     public function actionMenu(): array
     {
-        $menu = [
+        return [
             NavAction::make('edit-item')->label('Edit')->icon(ios: Ios::Pencil->value, android: Android::Edit->value)->press('editItem'),
             NavAction::make('item-qr-code')->label('QR Code')->icon(ios: Ios::Qrcode->value, android: Android::QrCode2->value)->press('showQrCode'),
+            NavAction::make('item-scan-children')->label('Scan items here')->icon(ios: Ios::CameraViewfinder->value, android: Android::DocumentScanner->value)->press('scanChildren'),
         ];
-
-        if ($this->canHoldItems()) {
-            $menu[] = NavAction::make('item-scan-children')->label('Scan items here')->icon(ios: Ios::CameraViewfinder->value, android: Android::DocumentScanner->value)->press('scanChildren');
-        }
-
-        return $menu;
     }
 
     public function editItem(): void

@@ -1,3 +1,4 @@
+@use('App\Enums\ItemType')
 @use('App\Icons\Android')
 @use('App\Icons\Ios')
 @use('App\Ui\Card')
@@ -28,16 +29,14 @@
             >
                 <native:icon :ios="Ios::LineHorizontal3" :android="Android::Menu" :size="22" class="text-theme-on-surface" />
             </pressable>
-            @if ($this->canHoldItems())
-                <pressable
-                    ref="item-add-child"
-                    :a11y-label="'Add an item inside '.$item['name']"
-                    class="h-12 w-12 items-center justify-center rounded-full glass android:bg-theme-surface"
-                    @navigate('/inventory/create', ['parent' => $item['id']])
-                >
-                    <native:icon :ios="Ios::Plus" :android="Android::Add" :size="22" class="text-theme-on-surface" />
-                </pressable>
-            @endif
+            <pressable
+                ref="item-add-child"
+                :a11y-label="'Add an item inside '.$item['name']"
+                class="h-12 w-12 items-center justify-center rounded-full glass android:bg-theme-surface"
+                @navigate('/inventory/create', ['parent' => $item['id']])
+            >
+                <native:icon :ios="Ios::Plus" :android="Android::Add" :size="22" class="text-theme-on-surface" />
+            </pressable>
         </row>
     </native:bottom-bar>
 
@@ -122,7 +121,7 @@
                 </column>
             @endif
 
-            @if ($this->canHoldItems())
+            @if ($this->children || $item['type'] !== ItemType::Item)
                 <column class="w-full gap-3">
                     <row class="w-full items-center">
                         <x-ui.heading size="lg" class="flex-1">Contents</x-ui.heading>
