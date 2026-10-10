@@ -79,15 +79,15 @@ class InventoryItemDetail extends NativeComponent
     public function actionMenu(): array
     {
         return [
-            NavAction::make('edit-item')->label('Edit')->icon(ios: Ios::Pencil->value, android: Android::Edit->value)->press('editItem'),
+            NavAction::make('item-add-child')->label('Add item here')->icon(ios: Ios::Plus->value, android: Android::Add->value)->press('addChild'),
             NavAction::make('item-qr-code')->label('QR Code')->icon(ios: Ios::Qrcode->value, android: Android::QrCode2->value)->press('showQrCode'),
             NavAction::make('item-scan-children')->label('Scan items here')->icon(ios: Ios::CameraViewfinder->value, android: Android::DocumentScanner->value)->press('scanChildren'),
         ];
     }
 
-    public function editItem(): void
+    public function addChild(): void
     {
-        $this->navigate('/inventory/'.$this->item['id'].'/edit');
+        $this->navigate('/inventory/create', ['parent' => $this->item['id']]);
     }
 
     public function showQrCode(): void

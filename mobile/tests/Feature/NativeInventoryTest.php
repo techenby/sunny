@@ -108,7 +108,7 @@ it('jumps to any container in the path', function () {
 
 it('adds an item inside a location or bin', function () {
     Native::visit('/inventory/7')
-        ->tap('item-add-child')
+        ->tap('Add item here')
         ->assertNavigatedTo('/inventory/create')
         ->follow()
         ->assertSet('parentId', 7)
@@ -177,7 +177,7 @@ it('stops walking descendants when the synced data contains a parent cycle', fun
     expect(Inventory::descendantIdsOf(6))->toEqualCanonicalizing([7, 8, 9, 10]);
 });
 
-it('puts an item’s actions above the tab bar, with add on the far right', function () {
+it('puts an item’s actions above the tab bar, with edit on the far right', function () {
     seedSunnyData();
 
     Native::visit('/inventory/7')
@@ -185,8 +185,8 @@ it('puts an item’s actions above the tab bar, with add on the far right', func
             $buttons = $node['children'][0]['children'];
             $menu = array_column(array_column($buttons[0]['children'], 'props'), 'label');
 
-            return array_column($buttons, 'ref') === ['item-actions', 'item-add-child']
-                && $menu === ['Edit', 'QR Code', 'Scan items here'];
+            return array_column($buttons, 'ref') === ['item-actions', 'edit-item']
+                && $menu === ['Add item here', 'QR Code', 'Scan items here'];
         })
         ->assertElement('top_bar_action', fn (array $node): bool => ($node['ref'] ?? null) === 'delete-item')
         ->assertAccessible();
@@ -200,10 +200,10 @@ it('lets a plain item hold other items, like insoles in shoes', function () {
             $buttons = $node['children'][0]['children'];
             $menu = array_column(array_column($buttons[0]['children'], 'props'), 'label');
 
-            return array_column($buttons, 'ref') === ['item-actions', 'item-add-child']
-                && $menu === ['Edit', 'QR Code', 'Scan items here'];
+            return array_column($buttons, 'ref') === ['item-actions', 'edit-item']
+                && $menu === ['Add item here', 'QR Code', 'Scan items here'];
         })
-        ->tap('item-add-child')
+        ->tap('Add item here')
         ->assertNavigatedTo('/inventory/create')
         ->follow()
         ->assertSet('parentId', 8);
@@ -215,8 +215,8 @@ it('invites adding to an empty container', function () {
 
     Native::visit('/inventory/90')
         ->assertSee('Contents')
-        ->assertSee('Nothing in here yet. Tap + to add an item.')
-        ->tap('item-add-child')
+        ->assertSee('Nothing in here yet. Use the menu to add an item.')
+        ->tap('Add item here')
         ->assertNavigatedTo('/inventory/create');
 });
 

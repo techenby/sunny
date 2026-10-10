@@ -30,12 +30,12 @@
                 <native:icon :ios="Ios::LineHorizontal3" :android="Android::Menu" :size="22" class="text-theme-on-surface" />
             </pressable>
             <pressable
-                ref="item-add-child"
-                :a11y-label="'Add an item inside '.$item['name']"
+                ref="edit-item"
+                a11y-label="Edit"
                 class="h-12 w-12 items-center justify-center rounded-full glass android:bg-theme-surface"
-                @navigate('/inventory/create', ['parent' => $item['id']])
+                @navigate('/inventory/'.$item['id'].'/edit')
             >
-                <native:icon :ios="Ios::Plus" :android="Android::Add" :size="22" class="text-theme-on-surface" />
+                <native:icon :ios="Ios::Pencil" :android="Android::Edit" :size="22" class="text-theme-on-surface" />
             </pressable>
         </row>
     </native:bottom-bar>
@@ -162,7 +162,7 @@
                             @endunless
                         @empty
                             <text ref="item-contents-empty" class="w-full px-4 py-3 text-base text-theme-on-surface-variant">
-                                Nothing in here yet. Tap + to add an item.
+                                Nothing in here yet. Use the menu to add an item.
                             </text>
                         @endforelse
                     </column>
