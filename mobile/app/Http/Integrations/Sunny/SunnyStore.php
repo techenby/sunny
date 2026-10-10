@@ -136,6 +136,7 @@ class SunnyStore
             DB::table('sunny_sync_states')->delete();
         });
         app(SunnyOutbox::class)->prunePhotos();
+        app(SunnyThumbnails::class)->prune();
     }
 
     /**
@@ -159,7 +160,7 @@ class SunnyStore
     public static function storedFields(string $type): array
     {
         return match ($type) {
-            'recipes', 'items' => ['team_id', ...self::editableFields($type), 'photo_url', 'created_at', 'updated_at'],
+            'recipes', 'items' => ['team_id', ...self::editableFields($type), 'photo_url', 'thumb_url', 'created_at', 'updated_at'],
             'checklists' => ['team_id', 'user_id', ...self::editableFields($type), 'created_at', 'updated_at'],
             'checklist_items' => [...self::editableFields($type), 'position', 'completed_at', 'completed_by', 'created_at', 'updated_at'],
             'routines' => ['team_id', 'user_id', ...self::editableFields($type), 'starts_on', 'created_at', 'updated_at'],

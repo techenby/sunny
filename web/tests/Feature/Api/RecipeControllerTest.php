@@ -222,23 +222,30 @@ test('recipe API stores tags and a photo and supports replacing and removing the
     ], ['Accept' => 'application/json'])->assertCreated()->assertJsonPath('data.tags', ['Dessert', 'Family favorite']);
     $recipe = Recipe::findOrFail($response->json('data.id'));
     $original = $recipe->photo_path;
+    $originalThumb = $recipe->thumb_path;
     Storage::assertExists($original);
+    Storage::assertExists($originalThumb);
+    expect($response->json('data.thumb_url'))->toContain('/thumbs/');
 
     $this->post(route('api.recipes.update', [$user->currentTeam, $recipe]), [
         '_method' => 'PATCH', 'tags' => ['Vegan'], 'remove_photo' => '0',
         'photo' => UploadedFile::fake()->image('replacement.png'),
     ], ['Accept' => 'application/json'])->assertOk()->assertJsonPath('data.tags', ['Vegan']);
     $replacement = $recipe->fresh()->photo_path;
+    $replacementThumb = $recipe->fresh()->thumb_path;
     Storage::assertMissing($original);
+    Storage::assertMissing($originalThumb);
     Storage::assertExists($replacement);
+    Storage::assertExists($replacementThumb);
 
     $this->patchJson(route('api.recipes.update', [$user->currentTeam, $recipe]), ['name' => 'Renamed cake'])
         ->assertOk()->assertJsonPath('data.tags', ['Vegan']);
     expect($recipe->fresh()->photo_path)->toBe($replacement);
 
     $this->patchJson(route('api.recipes.update', [$user->currentTeam, $recipe]), ['tags' => [], 'remove_photo' => true])
-        ->assertOk()->assertJsonPath('data.tags', [])->assertJsonPath('data.photo_url', null);
+        ->assertOk()->assertJsonPath('data.tags', [])->assertJsonPath('data.photo_url', null)->assertJsonPath('data.thumb_url', null);
     Storage::assertMissing($replacement);
+    Storage::assertMissing($replacementThumb);
 });
 
 test('recipe API rejects invalid tags and photos on create and update', function () {

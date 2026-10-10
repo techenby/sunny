@@ -15,8 +15,9 @@ class ItemResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            ...Arr::except(parent::toArray($request), ['photo_path']),
+            ...Arr::except(parent::toArray($request), ['photo_path', 'thumb_path']),
             'photo_url' => $this->photo_path ? Storage::temporaryUrl($this->photo_path, now()->addMinutes(30)) : null,
+            'thumb_url' => $this->thumb_path ? Storage::temporaryUrl($this->thumb_path, now()->addMinutes(30)) : null,
         ];
     }
 }

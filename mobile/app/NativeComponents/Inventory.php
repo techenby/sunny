@@ -64,7 +64,7 @@ class Inventory extends NativeComponent
     /**
      * The direct children of an item (or the top-level items when null), sorted by name, with their own child counts.
      *
-     * @return list<array{id: int, parent_id: int|null, type: ItemType, name: string, metadata: array<string, string>|null, photo_url: string|null, created_at: string, updated_at: string, children_count: int}>
+     * @return list<array{id: int, parent_id: int|null, type: ItemType, name: string, metadata: array<string, string>|null, photo_url: string|null, thumb_path: string|null, created_at: string, updated_at: string, children_count: int}>
      */
     public static function childrenOf(?int $parentId): array
     {
@@ -101,7 +101,7 @@ class Inventory extends NativeComponent
     }
 
     /**
-     * @return list<array{id: int, parent_id: int|null, type: ItemType, name: string, metadata: array<string, string>|null, photo_url: string|null, created_at: string, updated_at: string, children_count: int}>
+     * @return list<array{id: int, parent_id: int|null, type: ItemType, name: string, metadata: array<string, string>|null, photo_url: string|null, thumb_path: string|null, created_at: string, updated_at: string, children_count: int}>
      */
     #[Computed]
     public function items(): array
@@ -132,7 +132,7 @@ class Inventory extends NativeComponent
                 'type' => $item['type'],
                 'name' => $item['name'],
                 'location' => $names[$item['parent_id']] ?? null,
-                'photo' => $item['photo_url'],
+                'photo' => $item['thumb_path'] ?? $item['photo_url'],
             ])
             ->values()
             ->all();

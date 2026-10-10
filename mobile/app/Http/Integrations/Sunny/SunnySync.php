@@ -13,7 +13,7 @@ use UnexpectedValueException;
 
 class SunnySync
 {
-    public function __construct(private readonly SunnyAuth $auth, private readonly SunnyStore $store) {}
+    public function __construct(private readonly SunnyAuth $auth, private readonly SunnyStore $store, private readonly SunnyThumbnails $thumbnails) {}
 
     /**
      * Pass the token when syncing off the UI thread, where secure storage is not available.
@@ -49,6 +49,8 @@ class SunnySync
         $rules['teams.*.timezone'] = ['nullable', 'timezone'];
         $rules['recipes.*.photo_url'] = ['nullable', 'url'];
         $rules['items.*.photo_url'] = ['nullable', 'url'];
+        $rules['recipes.*.thumb_url'] = ['nullable', 'url'];
+        $rules['items.*.thumb_url'] = ['nullable', 'url'];
 
         $rules['items.*.type'] = ['required', Rule::enum(ItemType::class)];
         $rules['items.*.metadata'] = ['nullable', 'array'];
@@ -94,5 +96,6 @@ class SunnySync
         Validator::make($snapshot, $rules)->validate();
 
         $this->store->applySnapshot($snapshot);
+        $this->thumbnails->refresh();
     }
 }

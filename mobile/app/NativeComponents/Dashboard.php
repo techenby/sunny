@@ -136,7 +136,7 @@ class Dashboard extends NativeComponent
                 'id' => $recipe['id'],
                 'name' => $recipe['name'],
                 'supporting' => $recipe['total_time'] ?: $this->activity($recipe),
-                'photo' => $recipe['photo_url'],
+                'photo' => $recipe['thumb_path'] ?? $recipe['photo_url'],
                 'url' => '/recipes/'.$recipe['id'],
             ])
             ->all();
@@ -154,7 +154,7 @@ class Dashboard extends NativeComponent
                 'name' => $item['name'],
                 'type' => $item['type'],
                 'supporting' => $item['type']->label().' · '.$this->activity($item),
-                'photo' => $item['photo_url'],
+                'photo' => $item['thumb_path'] ?? $item['photo_url'],
                 'url' => '/inventory/'.$item['id'],
             ])
             ->all();

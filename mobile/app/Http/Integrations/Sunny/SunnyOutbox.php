@@ -56,6 +56,8 @@ class SunnyOutbox
             $record->fill([...Arr::only($payload, SunnyStore::editableFields($resource)), 'updated_at' => now()]);
             if ($photoPath !== null || ($payload['remove_photo'] ?? false)) {
                 $record->photo_url = $photoPath;
+                $record->thumb_url = null;
+                $record->thumb_path = null;
             }
             if (array_key_exists('completed', $payload)) {
                 $record->completed_at = $payload['completed'] ? ($record->completed_at ?? now()) : null;

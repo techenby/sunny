@@ -18,7 +18,7 @@
                     :meta="$recipe->created_at->diffForHumans(short: true)"
                 >
                     <x-slot:avatar>
-                        <flux:avatar size="sm" :src="$recipe->photo_url" icon="book-open" color="amber" icon:variant="outline" />
+                        <flux:avatar size="sm" :src="$recipe->thumb_url" icon="book-open" color="amber" icon:variant="outline" />
                     </x-slot:avatar>
                 </x-dashboard.row>
             @endforeach

@@ -142,7 +142,7 @@
                                 <row class="w-full items-center gap-4">
                                     <x-ui.avatar
                                         :size="$child['photo_url'] ? '2xl' : 'md'"
-                                        :src="$child['photo_url']"
+                                        :src="$child['thumb_path'] ?? $child['photo_url']"
                                         :alt="'Photo of '.$child['name']"
                                         :color="$child['type']->color()"
                                         :ios="$child['type']->iosIcon()"
