@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Recipes;
 
+use App\Actions\Photos\CreateThumbnail;
 use App\Models\Recipe;
 use App\Models\Team;
 use Illuminate\Http\UploadedFile;
@@ -25,7 +26,7 @@ class CreateRecipe
 
             $path = $photo->storeAs("teams/{$team->id}/recipes", $filename);
 
-            $recipe->update(['photo_path' => $path]);
+            $recipe->update(['photo_path' => $path, 'thumb_path' => (new CreateThumbnail)->handle($path)]);
         }
 
         return $recipe;

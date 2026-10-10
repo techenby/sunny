@@ -180,7 +180,9 @@ test('show returns photo_url when item has a photo', function () {
     $response = $this->actingAs($user)
         ->getJson(route('api.items.show', [$user->currentTeam, $item]))
         ->assertOk()
-        ->assertJsonMissingPath('data.photo_path');
+        ->assertJsonMissingPath('data.photo_path')
+        ->assertJsonMissingPath('data.thumb_path')
+        ->assertJsonPath('data.thumb_url', null);
 
     expect($response->json('data.photo_url'))->toBeString()->toContain('wrench.png');
 });
@@ -308,14 +310,22 @@ test('item API accepts JSON metadata alongside photos and removes a photo explic
     ], ['Accept' => 'application/json'])->assertCreated()->assertJsonPath('data.metadata', ['size[inches]' => '12']);
     $item = Item::findOrFail($response->json('data.id'));
     $path = $item->photo_path;
+    $thumb = $item->thumb_path;
     Storage::assertExists($path);
+    Storage::assertExists($thumb);
+    expect($response->json('data.thumb_url'))->toContain('/thumbs/');
     $this->post(route('api.items.update', [$user->currentTeam, $item]), [
         '_method' => 'PATCH', 'metadata' => json_encode(['size[inches]' => '24']),
         'photo' => UploadedFile::fake()->image('tape.png'),
     ], ['Accept' => 'application/json'])->assertOk()->assertJsonPath('data.metadata', ['size[inches]' => '24']);
     Storage::assertMissing($path);
+    Storage::assertMissing($thumb);
     $path = $item->fresh()->photo_path;
+    $thumb = $item->fresh()->thumb_path;
+    Storage::assertExists($thumb);
     $this->patchJson(route('api.items.update', [$user->currentTeam, $item]), ['remove_photo' => true, 'metadata' => null])
-        ->assertOk()->assertJsonPath('data.photo_url', null)->assertJsonPath('data.metadata', null);
+        ->assertOk()->assertJsonPath('data.photo_url', null)->assertJsonPath('data.thumb_url', null)->assertJsonPath('data.metadata', null);
     Storage::assertMissing($path);
+    Storage::assertMissing($thumb);
+    expect($item->fresh()->thumb_path)->toBeNull();
 });

@@ -102,7 +102,7 @@ class Recipes extends NativeComponent
                 'id' => $recipe['id'],
                 'name' => $recipe['name'],
                 'summary' => collect([static::shortenedSource($recipe['source']), $recipe['total_time']])->filter()->implode(' · ') ?: null,
-                'photo' => $recipe['photo_url'],
+                'photo' => $recipe['thumb_path'] ?? $recipe['photo_url'],
             ])
             ->values()
             ->all();

@@ -19,7 +19,7 @@
         <div class="flex items-center gap-4">
             <flux:button :href="route('inventory.index', ['parentId' => $item->parent_id])" icon="arrow-left" variant="ghost" wire:navigate />
             <flux:heading size="xl" class="flex items-center gap-3">
-                <flux:avatar size="sm" :src="$item->photo_url" :icon="$item->type->getIcon()" :color="$item->type->getIconColor()" icon:variant="outline" />
+                <flux:avatar size="sm" :src="$item->thumb_url" :icon="$item->type->getIcon()" :color="$item->type->getIconColor()" icon:variant="outline" />
                 {{ $item->name }}
             </flux:heading>
         </div>

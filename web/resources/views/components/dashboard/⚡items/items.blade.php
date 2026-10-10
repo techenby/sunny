@@ -18,7 +18,7 @@
                     :meta="$item->created_at->diffForHumans(short: true)"
                 >
                     <x-slot:avatar>
-                        <flux:avatar size="sm" :src="$item->photo_url" :icon="$item->type->getIcon()" :color="$item->type->getIconColor()" icon:variant="outline" />
+                        <flux:avatar size="sm" :src="$item->thumb_url" :icon="$item->type->getIcon()" :color="$item->type->getIconColor()" icon:variant="outline" />
                     </x-slot:avatar>
                 </x-dashboard.row>
             @endforeach

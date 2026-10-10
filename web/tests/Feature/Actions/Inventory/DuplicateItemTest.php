@@ -53,3 +53,23 @@ test('it copies the photo to a new file for each duplicate', function () {
     expect($copies->pluck('photo_path')->unique())->toHaveCount(2);
     Storage::assertExists($path);
 });
+
+test('it copies the thumbnail to a new file for each duplicate', function () {
+    Storage::fake();
+
+    $item = Item::factory()->create(['name' => 'Guitar']);
+    $path = "teams/{$item->team_id}/items/guitar-{$item->id}.jpg";
+    $thumb = "teams/{$item->team_id}/items/thumbs/guitar-{$item->id}-abcdefgh.jpg";
+    Storage::put($path, 'photo-contents');
+    Storage::put($thumb, 'thumb-contents');
+    $item->update(['photo_path' => $path, 'thumb_path' => $thumb]);
+
+    $copies = (new DuplicateItem)->handle($item, 2);
+
+    $copies->each(function (Item $copy) use ($thumb) {
+        expect($copy->thumb_path)->not->toBe($thumb);
+        expect(Storage::get($copy->thumb_path))->toBe('thumb-contents');
+    });
+
+    expect($copies->pluck('thumb_path')->unique())->toHaveCount(2);
+});

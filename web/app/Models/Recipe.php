@@ -122,4 +122,11 @@ class Recipe extends Model
             get: fn () => $this->photo_path ? Storage::temporaryUrl($this->photo_path, now()->addMinutes(30)) : null,
         );
     }
+
+    protected function thumbUrl(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->thumb_path ? Storage::temporaryUrl($this->thumb_path, now()->addMinutes(30)) : $this->photo_url,
+        );
+    }
 }

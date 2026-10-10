@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Inventory;
 
+use App\Actions\Photos\CreateThumbnail;
 use App\Models\Item;
 use App\Models\Team;
 use Illuminate\Http\UploadedFile;
@@ -26,7 +27,7 @@ class CreateItem
 
             $path = $photo->storeAs("teams/{$team->id}/items", $filename);
 
-            $item->update(['photo_path' => $path]);
+            $item->update(['photo_path' => $path, 'thumb_path' => (new CreateThumbnail)->handle($path)]);
         }
 
         return $item;

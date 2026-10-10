@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Inventory;
 
+use App\Actions\Photos\CreateThumbnail;
 use App\Models\Item;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
@@ -22,21 +23,17 @@ class UpdateItem
         $item->update($data);
 
         if ($removePhoto && ! $photo instanceof UploadedFile) {
-            if ($item->photo_path) {
-                Storage::delete($item->photo_path);
-            }
+            Storage::delete(array_filter([$item->photo_path, $item->thumb_path]));
 
-            $item->update(['photo_path' => null]);
+            $item->update(['photo_path' => null, 'thumb_path' => null]);
         } elseif ($photo instanceof UploadedFile) {
-            if ($item->photo_path) {
-                Storage::delete($item->photo_path);
-            }
+            Storage::delete(array_filter([$item->photo_path, $item->thumb_path]));
 
             $filename = Str::slug($item->name) . '-' . $item->id . '.' . $photo->getClientOriginalExtension();
 
             $path = $photo->storeAs("teams/{$item->team_id}/items", $filename);
 
-            $item->update(['photo_path' => $path]);
+            $item->update(['photo_path' => $path, 'thumb_path' => (new CreateThumbnail)->handle($path)]);
         }
 
         return $item;
