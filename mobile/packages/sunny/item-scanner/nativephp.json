@@ -18,6 +18,11 @@
             "name": "ItemScanner.Capture",
             "ios": "ItemScannerFunctions.Capture",
             "description": "Open a camera that stays up between shots (emits PhotoCaptured per photo, ItemRepeated per +1, or CaptureFailed)"
+        },
+        {
+            "name": "ItemScanner.WhenUncovered",
+            "ios": "ItemScannerFunctions.WhenUncovered",
+            "description": "Wait until nothing is presented over the app, such as a closing camera (emits ScreenUncovered)"
         }
     ],
     "android": {
@@ -39,6 +44,7 @@
         "Sunny\\ItemScanner\\Events\\IdentificationFailed",
         "Sunny\\ItemScanner\\Events\\PhotoCaptured",
         "Sunny\\ItemScanner\\Events\\ItemRepeated",
-        "Sunny\\ItemScanner\\Events\\CaptureFailed"
+        "Sunny\\ItemScanner\\Events\\CaptureFailed",
+        "Sunny\\ItemScanner\\Events\\ScreenUncovered"
     ]
 }

@@ -70,4 +70,15 @@ class ItemScanner
 
         return $id;
     }
+
+    public function whenUncovered(string $id): bool
+    {
+        if (! function_exists('nativephp_can') || ! nativephp_can('ItemScanner.WhenUncovered')) {
+            return false;
+        }
+
+        nativephp_call('ItemScanner.WhenUncovered', json_encode(['id' => $id]));
+
+        return true;
+    }
 }

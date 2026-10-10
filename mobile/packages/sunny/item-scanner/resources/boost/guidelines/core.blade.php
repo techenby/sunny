@@ -9,6 +9,7 @@ use Sunny\ItemScanner\Events\IdentificationFailed;
 use Sunny\ItemScanner\Events\ItemIdentified;
 use Sunny\ItemScanner\Events\ItemRepeated;
 use Sunny\ItemScanner\Events\PhotoCaptured;
+use Sunny\ItemScanner\Events\ScreenUncovered;
 use Sunny\ItemScanner\Facades\ItemScanner;
 
 // ['available' => bool, 'reason' => ?string]
@@ -34,6 +35,15 @@ public function itemRepeated(string $id): void {}
 
 #[On(CaptureFailed::class)]
 public function captureFailed(string $id, string $message): void {}
+
+// Wait for anything presented over the app (e.g. a closing camera) to go away before navigating.
+// False when it can't be watched (no bridge), so carry on straight away.
+if (! ItemScanner::whenUncovered('scan')) {
+    $this->navigate($path);
+}
+
+#[On(ScreenUncovered::class)]
+public function screenUncovered(string $id): void {}
 </code-snippet>
 @endverbatim
 
