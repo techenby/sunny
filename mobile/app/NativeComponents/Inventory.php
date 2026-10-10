@@ -4,11 +4,14 @@ namespace App\NativeComponents;
 
 use App\Concerns\ChecksSunnySync;
 use App\Enums\ItemType;
+use App\Icons\Android;
+use App\Icons\Ios;
 use App\Models\Item;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
 use Native\Mobile\Attributes\On;
+use Native\Mobile\Edge\Layouts\Builders\NavAction;
 use Native\Mobile\Edge\NativeComponent;
 use Native\Mobile\Events\Scanner\CodeScanned;
 use Native\Mobile\Facades\Dialog;
@@ -136,10 +139,25 @@ class Inventory extends NativeComponent
         $this->search = trim($query);
     }
 
-    #[On('sunny-sync-complete')]
+    /**
+     * @return list<NavAction>
+     */
+    public function scanMenu(): array
+    {
+        return [
+            NavAction::make('scan-code')->label('Scan label')->icon(ios: Ios::QrcodeViewfinder->value, android: Android::QrCodeScanner->value)->press('scanCode'),
+            NavAction::make('scan-items')->label('Scan items')->icon(ios: Ios::CameraViewfinder->value, android: Android::DocumentScanner->value)->press('scanItems'),
+        ];
+    }
+
     public function scanCode(): void
     {
         Scanner::scan()->prompt('Scan a Sunny label')->id(self::SCAN_ID);
+    }
+
+    public function scanItems(): void
+    {
+        $this->navigate('/inventory/scan');
     }
 
     #[On(CodeScanned::class)]
@@ -160,6 +178,7 @@ class Inventory extends NativeComponent
         $this->navigate($path);
     }
 
+    #[On('sunny-sync-complete')]
     public function onSyncComplete(string $status): void
     {
         if ($status === 'finished') {

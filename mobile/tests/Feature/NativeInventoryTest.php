@@ -219,3 +219,29 @@ it('invites adding to an empty container', function () {
         ->tap('item-add-child')
         ->assertNavigatedTo('/inventory/create');
 });
+
+it('gathers the inventory scans into one menu beside the new item button', function () {
+    seedSunnyData();
+
+    Native::visit('/inventory')
+        ->assertMissingElement('top_bar_action', fn (array $node): bool => ($node['ref'] ?? null) === 'scan-code')
+        ->assertElement('bottom_bar', function (array $node): bool {
+            $buttons = array_values(array_filter($node['children'][0]['children'], fn (array $child): bool => isset($child['ref'])));
+            $menu = array_column(array_column($buttons[0]['children'], 'props'), 'label');
+
+            return array_column($buttons, 'ref') === ['inventory-scan', 'inventory-create']
+                && $menu === ['Scan label', 'Scan items'];
+        })
+        ->assertAccessible();
+});
+
+it('refreshes the inventory after a sync without opening the scanner', function () {
+    seedSunnyData();
+    $screen = Native::visit('/inventory')->assertDontSee('Attic');
+
+    Item::create([...Item::find(6)->toArray(), 'id' => 90, 'name' => 'Attic']);
+
+    $screen->emitNative('sunny-sync-complete', ['status' => 'finished'])
+        ->assertSee('Attic')
+        ->assertNothingScanned();
+});

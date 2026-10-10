@@ -91,9 +91,9 @@ it('explains why scanning is unavailable instead of offering the camera', functi
     'model downloading' => [['available' => false, 'reason' => 'modelNotReady'], 'Apple Intelligence is still getting ready. Try again in a few minutes.'],
 ]);
 
-it('opens the scan screen from the inventory list', function () {
+it('opens the scan screen from the inventory scan menu', function () {
     Native::visit('/inventory')
-        ->tap('inventory-scan')
+        ->tap('Scan items')
         ->assertNavigatedTo('/inventory/scan')
         ->follow()
         ->assertScreen(ScanInventory::class)
