@@ -105,6 +105,12 @@
             "dont-discover": []
         },
         "patches": {
+            "nativephp/mobile-camera": [
+                {
+                    "description": "iOS: hand back camera-roll HEIC photos as JPEG so Sunny can make thumbnails and every browser can show them",
+                    "url": "patches/nativephp-mobile-camera-pick-compatible-images.patch"
+                }
+            ],
             "nativephp/mobile": [
                 {
                     "description": "iOS: keep the tab bar on pushed screens so it doesn't pop back in after a swipe back",

@@ -1,6 +1,18 @@
 {
-    "_hash": "71e5c5187c156f0adc5eab65a5b6c3855031b8c72e31ae205c92ccdc8ebcda4e",
+    "_hash": "346e95f98f0452b0f8ab17c0bcc0d96e594785b69753ad40c6d28a40151d8b97",
     "patches": {
+        "nativephp/mobile-camera": [
+            {
+                "package": "nativephp/mobile-camera",
+                "description": "iOS: hand back camera-roll HEIC photos as JPEG so Sunny can make thumbnails and every browser can show them",
+                "url": "patches/nativephp-mobile-camera-pick-compatible-images.patch",
+                "sha256": "67e37b94f196c5dd0ad0d57a03fef6e79f0df905b84efd89317bf1f3813e1ca9",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
+            }
+        ],
         "nativephp/mobile": [
             {
                 "package": "nativephp/mobile",
