@@ -52,7 +52,7 @@ class CreateDemoHouseholdCommand extends Command
             $user->switchTeam($team);
 
             $family = collect(['Jordan', 'Maya', 'Leo'])->mapWithKeys(function (string $name) use ($email, $team): array {
-                $member = $this->member("{$name} Rivera", Str::replaceFirst('@', '+'.Str::lower($name).'@', $email), Str::password());
+                $member = $this->member("{$name} Rivera", Str::replaceFirst('@', '+' . Str::lower($name) . '@', $email), Str::password());
                 $team->memberships()->create(['user_id' => $member->id, 'role' => TeamRole::Member]);
                 $member->switchTeam($team);
 
@@ -298,7 +298,7 @@ class CreateDemoHouseholdCommand extends Command
     /** @param array<int, string> $items */
     private function list(string $tag, array $items): string
     {
-        return "<{$tag}>".collect($items)->map(fn (string $item): string => '<li>'.e($item).'</li>')->implode('')."</{$tag}>";
+        return "<{$tag}>" . collect($items)->map(fn (string $item): string => '<li>' . e($item) . '</li>')->implode('') . "</{$tag}>";
     }
 
     private function photo(string $path): UploadedFile
