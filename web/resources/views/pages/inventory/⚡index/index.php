@@ -84,6 +84,7 @@ new #[Title('Inventory')] class extends Component
         return Auth::user()->currentTeam
             ->items()
             ->withCount('children')
+            ->when($this->search, fn ($query) => $query->with('parent'))
             ->when($this->filters['showTrashed'] ?? false, fn ($query) => $query->onlyTrashed())
             ->when(filled($this->filters['types']), fn ($query) => $query->whereIn('type', $this->filters['types']))
             ->when($this->search, fn ($query) => $query->whereRaw('LOWER(name) LIKE ?', ['%' . Str::lower($this->search) . '%']))
@@ -333,6 +334,7 @@ new #[Title('Inventory')] class extends Component
         }
 
         $this->parentId = $id;
+        $this->resetPage();
         unset($this->items, $this->parentItems, $this->breadcrumbs);
     }
 
@@ -341,8 +343,14 @@ new #[Title('Inventory')] class extends Component
         if ($this->parentId) {
             $parent = Auth::user()->currentTeam->items()->find($this->parentId);
             $this->parentId = $parent?->parent_id;
+            $this->resetPage();
             unset($this->items, $this->parentItems, $this->breadcrumbs);
         }
+    }
+
+    public function updatedParentId(): void
+    {
+        $this->resetPage();
     }
 
     public function showQrCode(int $id): void

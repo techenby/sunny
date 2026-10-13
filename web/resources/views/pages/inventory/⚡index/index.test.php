@@ -64,6 +64,19 @@ test('can search items by name', function () {
         ->assertDontSeeHtml('<span>Screwdriver</span>');
 });
 
+test('searching resets to the first page', function () {
+    $user = User::factory()->create();
+    Item::factory()->for($user->currentTeam)->count(10)->create();
+    Item::factory()->for($user->currentTeam)->create(['name' => 'Hammer']);
+
+    Livewire::actingAs($user)
+        ->test('pages::inventory.index')
+        ->call('setPage', 2)
+        ->set('search', 'Hammer')
+        ->assertSet('paginators.page', 1)
+        ->assertSeeHtml('<span>Hammer</span>');
+});
+
 test('searches items case insensitively', function () {
     $user = User::factory()->create();
     Item::factory()->for($user->currentTeam)->create(['name' => '3D Printed Foot Stool']);
@@ -93,6 +106,27 @@ test('searches all current team items while viewing a parent', function () {
         ->assertSeeHtml('<span>Framing Hammer</span>')
         ->assertDontSeeHtml('<span>Wool Blanket</span>')
         ->assertDontSeeHtml('<span>Pink Hammer</span>');
+});
+
+test('search results show the item they are inside', function () {
+    $user = User::factory()->create();
+    $garage = Item::factory()->for($user->currentTeam)->location()->create(['name' => 'Garage']);
+    Item::factory()->for($user->currentTeam)->childOf($garage)->create(['name' => 'Framing Hammer']);
+
+    Livewire::actingAs($user)
+        ->test('pages::inventory.index')
+        ->assertDontSee('in Garage')
+        ->set('search', 'Hammer')
+        ->assertSee('in Garage');
+});
+
+test('rows link to the item page', function () {
+    $user = User::factory()->create();
+    $garage = Item::factory()->for($user->currentTeam)->location()->create(['name' => 'Garage']);
+
+    Livewire::actingAs($user)
+        ->test('pages::inventory.index')
+        ->assertSeeHtml('href="' . route('inventory.show', ['item' => $garage]) . '"');
 });
 
 test('can sort items', function () {
@@ -185,6 +219,48 @@ describe('can navigate up and down', function () {
             ->call('navigateDown', $parent->id)
             ->call('navigateDown', $child->id)
             ->assertRedirect(route('inventory.show', ['item' => $child]));
+    });
+
+    test('navigating down resets to the first page', function () {
+        $user = User::factory()->create();
+        Item::factory()->for($user->currentTeam)->location()->count(10)->create();
+        $parent = Item::factory()->for($user->currentTeam)->location()->create(['name' => 'Zebra Room']);
+        Item::factory()->for($user->currentTeam)->bin()->childOf($parent)->create(['name' => 'Closet']);
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->call('setPage', 2)
+            ->call('navigateDown', $parent->id)
+            ->assertSet('paginators.page', 1)
+            ->assertSeeHtml('<span>Closet</span>');
+    });
+
+    test('navigating up resets to the first page', function () {
+        $user = User::factory()->create();
+        $parent = Item::factory()->for($user->currentTeam)->location()->create(['name' => 'Bedroom']);
+        Item::factory()->for($user->currentTeam)->bin()->childOf($parent)->count(11)->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->call('navigateDown', $parent->id)
+            ->call('setPage', 2)
+            ->call('navigateUp')
+            ->assertSet('paginators.page', 1)
+            ->assertSeeHtml('<span>Bedroom</span>');
+    });
+
+    test('returning to the top level resets to the first page', function () {
+        $user = User::factory()->create();
+        $parent = Item::factory()->for($user->currentTeam)->location()->create(['name' => 'Bedroom']);
+        Item::factory()->for($user->currentTeam)->bin()->childOf($parent)->count(11)->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->call('navigateDown', $parent->id)
+            ->call('setPage', 2)
+            ->set('parentId', null)
+            ->assertSet('paginators.page', 1)
+            ->assertSeeHtml('<span>Bedroom</span>');
     });
 });
 

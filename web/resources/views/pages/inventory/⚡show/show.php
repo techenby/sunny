@@ -3,10 +3,12 @@
 use App\Actions\Inventory\DuplicateItem;
 use App\Actions\Inventory\GenerateItemQrCode;
 use App\Actions\Inventory\MoveItemToTeam;
+use App\Enums\ItemType;
 use App\Livewire\Forms\Inventory\ItemForm;
 use App\Models\Item;
 use App\Models\Team;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection as BaseCollection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -14,10 +16,12 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use Livewire\WithPagination;
 
 new #[Title('Inventory: Item')] class extends Component
 {
     use WithFileUploads;
+    use WithPagination;
 
     public Item $item;
 
@@ -45,6 +49,15 @@ new #[Title('Inventory: Item')] class extends Component
         return $breadcrumbs;
     }
 
+    #[Computed]
+    public function children(): LengthAwarePaginator
+    {
+        return $this->item->children()
+            ->withCount('children')
+            ->orderBy('name')
+            ->paginate(10);
+    }
+
     /** @return Collection<int, Team> */
     #[Computed]
     public function otherTeams(): Collection
@@ -56,7 +69,7 @@ new #[Title('Inventory: Item')] class extends Component
     public function parentItems(): Collection
     {
         return Auth::user()->currentTeam->items()
-            ->where('id', '!=', $this->item->id)
+            ->when($this->form->editingItem, fn ($query) => $query->where('id', '!=', $this->form->editingItem->id))
             ->orderBy('name')
             ->get();
     }
@@ -64,6 +77,15 @@ new #[Title('Inventory: Item')] class extends Component
     public function addMetadata(): void
     {
         $this->form->addMetadata();
+    }
+
+    public function create(): void
+    {
+        $this->authorize('create', Item::class);
+
+        $this->form->reset();
+        $this->form->fill(['parent_id' => $this->item->id, 'type' => ItemType::Item->value]);
+        $this->modal('item-form')->show();
     }
 
     public function delete(): void
@@ -103,14 +125,18 @@ new #[Title('Inventory: Item')] class extends Component
 
     public function removeMetadata(int $index): void
     {
-        $this->authorize('update', $this->item);
+        if ($this->form->editingItem) {
+            $this->authorize('update', $this->form->editingItem);
+        }
 
         $this->form->removeMetadata($index);
     }
 
     public function removePhoto(): void
     {
-        $this->authorize('update', $this->item);
+        if ($this->form->editingItem) {
+            $this->authorize('update', $this->form->editingItem);
+        }
 
         if ($this->form->photo) {
             $this->form->photo->delete();
@@ -138,11 +164,16 @@ new #[Title('Inventory: Item')] class extends Component
 
     public function save(): void
     {
-        $this->authorize('update', $this->item);
+        if ($this->form->editingItem) {
+            $this->authorize('update', $this->form->editingItem);
+        } else {
+            $this->authorize('create', Item::class);
+        }
 
         $this->form->save();
         $this->modal('item-form')->close();
-        unset($this->parentItems);
+        $this->item->refresh();
+        unset($this->breadcrumbs, $this->children, $this->parentItems);
     }
 
     public function showQrCode(): void

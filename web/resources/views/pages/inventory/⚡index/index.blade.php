@@ -91,10 +91,15 @@
                         <flux:checkbox :value="$item->id"/>
                     </flux:table.cell>
                     <flux:table.cell>
-                        <flux:link wire:click="navigateDown({{ $item->id }})" as="button" inset="top bottom" class="!flex !items-center gap-3">
-                            <flux:avatar size="xs" :src="$item->thumb_url" :icon="$item->type->getIcon()" :color="$item->type->getIconColor()" icon:variant="outline" />
-                            <span>{{ $item->truncated_name }}</span>
-                        </flux:link>
+                        <div class="flex items-center gap-2">
+                            <flux:link wire:click="navigateDown({{ $item->id }})" as="button" inset="top bottom" class="!flex !items-center gap-3">
+                                <flux:avatar size="xs" :src="$item->thumb_url" :icon="$item->type->getIcon()" :color="$item->type->getIconColor()" icon:variant="outline" />
+                                <span>{{ $item->truncated_name }}</span>
+                            </flux:link>
+                            @if (filled($search) && $item->parent)
+                                <flux:text size="sm">{{ __('in :parent', ['parent' => $item->parent->name]) }}</flux:text>
+                            @endif
+                        </div>
                     </flux:table.cell>
                     <flux:table.cell>{{ $item->updated_at->diffForHumans() }}</flux:table.cell>
                     <flux:table.cell>
@@ -111,6 +116,7 @@
                                 <flux:button variant="ghost" size="sm" icon="ellipsis-vertical" />
 
                                 <flux:menu>
+                                    <flux:menu.item :href="route('inventory.show', ['item' => $item])" icon="eye" wire:navigate>{{ __('View') }}</flux:menu.item>
                                     <flux:menu.item wire:click="edit({{ $item->id }})" icon="pencil">{{ __('Edit') }}</flux:menu.item>
                                     <flux:menu.item wire:click="showQrCode({{ $item->id }})" icon="qr-code">{{ __('QR Code') }}</flux:menu.item>
                                     <flux:menu.item wire:click="openDuplicateModal({{ $item->id }})" icon="square-2-stack">{{ __('Duplicate') }}</flux:menu.item>
