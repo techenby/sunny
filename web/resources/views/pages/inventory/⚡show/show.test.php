@@ -42,6 +42,80 @@ test('cannot view item for different team', function () {
         ->assertForbidden();
 });
 
+test('shows the type and the item it is inside', function () {
+    $user = User::factory()->create();
+    $garage = Item::factory()->for($user->currentTeam)->location()->create(['name' => 'Garage']);
+    $bin = Item::factory()->for($user->currentTeam)->bin()->childOf($garage)->create(['name' => 'Blue Bin']);
+
+    Livewire::actingAs($user)
+        ->test('pages::inventory.show', ['item' => $bin])
+        ->assertSeeInOrder(['Blue Bin', 'Bin', 'in', 'Garage']);
+});
+
+describe('contents', function () {
+    test('lists the items inside', function () {
+        $user = User::factory()->create();
+        $bin = Item::factory()->for($user->currentTeam)->bin()->create(['name' => 'Blue Bin']);
+        Item::factory()->for($user->currentTeam)->childOf($bin)->create(['name' => 'Extension Cord']);
+        Item::factory()->for($user->currentTeam)->create(['name' => 'Garden Hose']);
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.show', ['item' => $bin])
+            ->assertSee('1 item')
+            ->assertSeeHtml('<span>Extension Cord</span>')
+            ->assertDontSeeHtml('<span>Garden Hose</span>');
+    });
+
+    test('says when nothing is inside', function () {
+        $user = User::factory()->create();
+        $bin = Item::factory()->for($user->currentTeam)->bin()->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.show', ['item' => $bin])
+            ->assertSee('Nothing in here yet.');
+    });
+
+    test('can add an item inside', function () {
+        $user = User::factory()->create();
+        $bin = Item::factory()->for($user->currentTeam)->bin()->create(['name' => 'Blue Bin']);
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.show', ['item' => $bin])
+            ->call('create')
+            ->assertSet('form.parent_id', $bin->id)
+            ->assertSet('form.type', ItemType::Item->value)
+            ->set('form.name', 'Extension Cord')
+            ->call('save')
+            ->assertHasNoErrors()
+            ->assertSeeHtml('<span>Extension Cord</span>');
+
+        expect($bin->children()->sole())
+            ->name->toBe('Extension Cord')
+            ->type->toBe(ItemType::Item)
+            ->team_id->toBe($user->current_team_id);
+    });
+
+    test('offers the item itself as a parent when adding', function () {
+        $user = User::factory()->create();
+        $bin = Item::factory()->for($user->currentTeam)->bin()->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.show', ['item' => $bin])
+            ->call('create')
+            ->assertSet('parentItems', fn ($items) => $items->contains($bin));
+    });
+
+    test('cannot add items inside a deleted item', function () {
+        $user = User::factory()->create();
+        $bin = Item::factory()->for($user->currentTeam)->bin()->create();
+        $bin->delete();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.show', ['item' => $bin])
+            ->assertDontSeeHtml('wire:click="create"');
+    });
+});
+
 test('can edit an item', function () {
     $user = User::factory()->create();
     $bin = Item::factory()->for($user->currentTeam)->create(['name' => 'Soft Shell Case', 'type' => ItemType::Bin]);
@@ -57,7 +131,9 @@ test('can edit an item', function () {
         ->call('save')
         ->assertHasNoErrors()
         ->assertSet('form.name', '')
-        ->assertSet('form.parent_id', null);
+        ->assertSet('form.parent_id', null)
+        ->assertSee('Yamaha Guitar')
+        ->assertSeeInOrder(['in', 'Soft Shell Case']);
 
     expect($item->fresh())
         ->name->toBe('Yamaha Guitar')

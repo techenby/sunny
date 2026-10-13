@@ -36,10 +36,18 @@ The type supplies a recognizable icon and can be used as a filter. The
 Select an entry's name to open it. Use the breadcrumbs or back button to move
 through the inventory hierarchy.
 
+## View an entry
+
+An entry's page shows its type, the entry it is inside, its photo, any metadata,
+and its contents. Select **Add Item** there to add something inside it; the new
+entry's parent is already filled in. Select an entry in **Contents** to open it.
+Use **View** in an entry's menu to open its page from the inventory list.
+
 ## Search, filter, and update inventory
 
-Use the search field to find entries by name. The filter menu can limit results
-to Locations, Bins, or Items and can show deleted entries.
+Use the search field to find entries by name anywhere in the inventory. Each
+result shows the entry it is inside. The filter menu can limit results to
+Locations, Bins, or Items and can show deleted entries.
 
 An entry's menu provides these actions:
 
