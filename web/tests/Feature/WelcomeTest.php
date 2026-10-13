@@ -19,6 +19,19 @@ test('displays the landing page for guests', function () {
         ->assertSee(route('terms'));
 });
 
+test('lets visitors switch between kiosk preview tabs', function () {
+    $this->get('/')
+        ->assertOk()
+        ->assertSee("tab = 'calendar'", false)
+        ->assertSee("tab = 'routines'", false)
+        ->assertSee("tab = 'lists'", false)
+        ->assertSee("tab = 'meals'", false)
+        ->assertSee('Piano lesson')
+        ->assertSee('Weekend chores')
+        ->assertSee('Birthday wishlist')
+        ->assertSee('Meal plans and dinner ideas will live here.');
+});
+
 test('shows dashboard link for authenticated users', function () {
     $user = User::factory()->create();
 

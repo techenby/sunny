@@ -1,4 +1,4 @@
-@props(['width', 'height'])
+@props(['width', 'height', 'interactive' => false])
 
 @once
     <script>
@@ -12,7 +12,7 @@
     </script>
 @endonce
 
-<div {{ $attributes->class('relative overflow-hidden') }} style="aspect-ratio: {{ $width }} / {{ $height }}" aria-hidden="true" inert>
+<div {{ $attributes->class('relative overflow-hidden') }} style="aspect-ratio: {{ $width }} / {{ $height }}" @unless ($interactive) aria-hidden="true" inert @endunless>
     <div class="absolute top-0 left-0 origin-top-left" style="width: {{ $width }}px; height: {{ $height }}px">
         {{ $slot }}
     </div>
