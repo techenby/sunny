@@ -1,7 +1,7 @@
 @use('App\Icons\Android')
 @use('App\Icons\Ios')
 
-<native:top-bar title="Scan items" back>
+<native:top-bar title="Bulk add" back>
     @if ($candidates !== [])
         <native:top-bar-action
             ref="scan-start-over"
