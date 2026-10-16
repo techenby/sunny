@@ -1,4 +1,4 @@
-<x-layouts::guest :title="__('What it costs')">
+<x-layouts::guest>
     <div class="max-w-2xl">
         <flux:heading size="xl" level="1">{{ __('What it costs to run Sunny Home') }}</flux:heading>
 

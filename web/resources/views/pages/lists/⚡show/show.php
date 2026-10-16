@@ -5,10 +5,9 @@ use App\Models\ChecklistItem;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
-use Livewire\Attributes\Title;
 use Livewire\Component;
 
-new #[Title('List')] class extends Component
+new class extends Component
 {
     public Checklist $checklist;
 

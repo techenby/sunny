@@ -13,12 +13,11 @@ use Illuminate\Support\Collection as BaseCollection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
-use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 
-new #[Title('Inventory: Item')] class extends Component
+new class extends Component
 {
     use WithFileUploads;
     use WithPagination;

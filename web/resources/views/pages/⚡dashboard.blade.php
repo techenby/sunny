@@ -3,10 +3,9 @@
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
-use Livewire\Attributes\Title;
 use Livewire\Component;
 
-new #[Title('Dashboard')] class extends Component
+new class extends Component
 {
     #[Computed]
     public function greeting(): string

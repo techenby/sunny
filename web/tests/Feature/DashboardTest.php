@@ -10,5 +10,6 @@ test('guests are redirected to the login page', function () {
 test('authenticated users can visit the dashboard', function () {
     $this->actingAs($user = User::factory()->create())
         ->get(route('dashboard'))
-        ->assertOk();
+        ->assertOk()
+        ->assertSee('<title>Dashboard - ' . config('app.name') . '</title>', false);
 });

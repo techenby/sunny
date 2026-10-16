@@ -3,10 +3,9 @@
 use App\Models\Routine;
 use App\Models\RoutineStep;
 use Livewire\Attributes\Computed;
-use Livewire\Attributes\Title;
 use Livewire\Component;
 
-new #[Title('Routine')] class extends Component
+new class extends Component
 {
     public Routine $routine;
 

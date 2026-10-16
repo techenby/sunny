@@ -6,5 +6,6 @@ Route::middleware(['auth', 'verified', 'can:admin'])
     ->prefix('admin')
     ->group(function (): void {
         Route::livewire('/', 'pages::admin.dashboard')
-            ->name('admin.dashboard');
+            ->name('admin.dashboard')
+            ->withHead(title: 'Admin');
     });
