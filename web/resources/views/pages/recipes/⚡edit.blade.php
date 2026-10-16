@@ -3,6 +3,7 @@
 use App\Actions\Recipes\ImportRecipeFromUrl;
 use App\Livewire\Forms\Recipes\RecipeForm;
 use App\Models\Recipe;
+use Laravel\Head\Facades\Head;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -50,6 +51,13 @@ new class extends Component {
         $this->form->save();
 
         $this->redirect(route('recipes.show', $this->recipe), navigate: true);
+    }
+
+    public function render()
+    {
+        Head::title(__('Edit :name', ['name' => $this->recipe->name]));
+
+        return $this->view();
     }
 }; ?>
 

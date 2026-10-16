@@ -3,6 +3,7 @@
 use App\Actions\Recipes\CreateRecipe;
 use App\Models\Recipe;
 use Illuminate\Support\Facades\Auth;
+use Laravel\Head\Facades\Head;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -43,6 +44,14 @@ new #[Layout('layouts::guest')] class extends Component {
         ]);
 
         $this->redirect(route('recipes.show', $recipe), navigate: true);
+    }
+
+    public function render()
+    {
+        Head::title($this->recipe->name)
+            ->description(__('A recipe shared with you on Sunny. Add it to your household\'s recipes in one click.'));
+
+        return $this->view();
     }
 }; ?>
 

@@ -17,6 +17,7 @@
 - [laravel/boost](https://github.com/laravel/boost)
 - [laravel/chisel](https://github.com/laravel/chisel)
 - [laravel/fortify](https://github.com/laravel/fortify)
+- [laravel/head](https://github.com/laravel/head)
 - [laravel/mcp](https://github.com/laravel/mcp)
 - [laravel/pao](https://github.com/laravel/pao)
 - [laravel/passport](https://github.com/laravel/passport)

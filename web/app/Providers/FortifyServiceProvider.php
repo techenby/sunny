@@ -24,6 +24,7 @@ use Laravel\Fortify\Contracts\RegisterResponse as RegisterResponseContract;
 use Laravel\Fortify\Contracts\TwoFactorLoginResponse as TwoFactorLoginResponseContract;
 use Laravel\Fortify\Contracts\VerifyEmailResponse as VerifyEmailResponseContract;
 use Laravel\Fortify\Fortify;
+use Laravel\Head\Facades\Head;
 use Laravel\Passkeys\Contracts\PasskeyLoginResponse as PasskeyLoginResponseContract;
 
 class FortifyServiceProvider extends ServiceProvider
@@ -53,13 +54,41 @@ class FortifyServiceProvider extends ServiceProvider
 
     private function configureViews(): void
     {
-        Fortify::loginView(fn () => view('pages::auth.login'));
-        Fortify::verifyEmailView(fn () => view('pages::auth.verify-email'));
-        Fortify::twoFactorChallengeView(fn () => view('pages::auth.two-factor-challenge'));
-        Fortify::confirmPasswordView(fn () => view('pages::auth.confirm-password'));
-        Fortify::registerView(fn () => view('pages::auth.register'));
-        Fortify::resetPasswordView(fn () => view('pages::auth.reset-password'));
-        Fortify::requestPasswordResetLinkView(fn () => view('pages::auth.forgot-password'));
+        Fortify::loginView(function () {
+            Head::title('Log in');
+
+            return view('pages::auth.login');
+        });
+        Fortify::verifyEmailView(function () {
+            Head::title('Verify email');
+
+            return view('pages::auth.verify-email');
+        });
+        Fortify::twoFactorChallengeView(function () {
+            Head::title('Two-factor authentication');
+
+            return view('pages::auth.two-factor-challenge');
+        });
+        Fortify::confirmPasswordView(function () {
+            Head::title('Confirm password');
+
+            return view('pages::auth.confirm-password');
+        });
+        Fortify::registerView(function () {
+            Head::title('Register');
+
+            return view('pages::auth.register');
+        });
+        Fortify::resetPasswordView(function () {
+            Head::title('Reset password');
+
+            return view('pages::auth.reset-password');
+        });
+        Fortify::requestPasswordResetLinkView(function () {
+            Head::title('Forgot password');
+
+            return view('pages::auth.forgot-password');
+        });
     }
 
     private function configureRateLimiting(): void
