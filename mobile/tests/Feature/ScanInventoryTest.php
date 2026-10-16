@@ -107,18 +107,18 @@ it('falls back to the system camera when the capture camera isn’t available', 
 
 it('opens the scan screen from the inventory scan menu', function () {
     Native::visit('/inventory')
-        ->tap('Scan items')
+        ->tap('Bulk add')
         ->assertNavigatedTo('/inventory/scan')
         ->follow()
         ->assertScreen(ScanInventory::class)
-        ->assertNavTitle('Scan items');
+        ->assertNavTitle('Bulk add');
 });
 
 it('scans into the container it was opened from', function () {
     Native::fakeBridge()->respondTo('ItemScanner.Availability', ['available' => true, 'reason' => null]);
 
     Native::visit('/inventory/7')
-        ->tap('Scan items here')
+        ->tap('Bulk add here')
         ->assertNavigatedTo('/inventory/scan')
         ->follow()
         ->assertSet('parentId', 7)

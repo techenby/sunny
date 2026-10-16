@@ -81,7 +81,7 @@ class InventoryItemDetail extends NativeComponent
         return [
             NavAction::make('item-add-child')->label('Add item here')->icon(ios: Ios::Plus->value, android: Android::Add->value)->press('addChild'),
             NavAction::make('item-qr-code')->label('QR Code')->icon(ios: Ios::Qrcode->value, android: Android::QrCode2->value)->press('showQrCode'),
-            NavAction::make('item-scan-children')->label('Scan items here')->icon(ios: Ios::CameraViewfinder->value, android: Android::DocumentScanner->value)->press('scanChildren'),
+            NavAction::make('item-scan-children')->label('Bulk add here')->icon(ios: Ios::CameraViewfinder->value, android: Android::DocumentScanner->value)->press('scanChildren'),
         ];
     }
 

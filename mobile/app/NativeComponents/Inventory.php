@@ -150,7 +150,7 @@ class Inventory extends NativeComponent
     {
         return [
             NavAction::make('scan-code')->label('Scan label')->icon(ios: Ios::QrcodeViewfinder->value, android: Android::QrCodeScanner->value)->press('scanCode'),
-            NavAction::make('scan-items')->label('Scan items')->icon(ios: Ios::CameraViewfinder->value, android: Android::DocumentScanner->value)->press('scanItems'),
+            NavAction::make('scan-items')->label('Bulk add')->icon(ios: Ios::CameraViewfinder->value, android: Android::DocumentScanner->value)->press('scanItems'),
         ];
     }
 

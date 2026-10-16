@@ -186,7 +186,7 @@ it('puts an item’s actions above the tab bar, with edit on the far right', fun
             $menu = array_column(array_column($buttons[0]['children'], 'props'), 'label');
 
             return array_column($buttons, 'ref') === ['item-actions', 'edit-item']
-                && $menu === ['Add item here', 'QR Code', 'Scan items here'];
+                && $menu === ['Add item here', 'QR Code', 'Bulk add here'];
         })
         ->assertElement('top_bar_action', fn (array $node): bool => ($node['ref'] ?? null) === 'delete-item')
         ->assertAccessible();
@@ -201,7 +201,7 @@ it('lets a plain item hold other items, like insoles in shoes', function () {
             $menu = array_column(array_column($buttons[0]['children'], 'props'), 'label');
 
             return array_column($buttons, 'ref') === ['item-actions', 'edit-item']
-                && $menu === ['Add item here', 'QR Code', 'Scan items here'];
+                && $menu === ['Add item here', 'QR Code', 'Bulk add here'];
         })
         ->tap('Add item here')
         ->assertNavigatedTo('/inventory/create')
@@ -230,7 +230,7 @@ it('gathers the inventory scans into one menu beside the new item button', funct
             $menu = array_column(array_column($buttons[0]['children'], 'props'), 'label');
 
             return array_column($buttons, 'ref') === ['inventory-scan', 'inventory-create']
-                && $menu === ['Scan label', 'Scan items'];
+                && $menu === ['Scan label', 'Bulk add'];
         })
         ->assertAccessible();
 });
