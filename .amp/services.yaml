@@ -1,0 +1,12 @@
+services:
+  web:
+    cwd: web/public
+    command: php -S "127.0.0.1:$PORT" ../../.agents/portal-server.php
+    env:
+      PHP_CLI_SERVER_WORKERS: "4"
+    health: /up
+    portal:
+      title: Sunny Home
+  assets:
+    cwd: web
+    command: npm run build -- --watch

@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# Prints a COMPOSER_AUTH value for the private Composer repositories, built from
+# Amp project secrets, so credentials never need to be written to auth.json:
+#   FLUX_USERNAME, FLUX_LICENSE_KEY                  (web: livewire/flux-pro)
+#   NATIVEPHP_LICENSE_EMAIL, NATIVEPHP_LICENSE_KEY   (mobile: NativePHP plugins)
+set -euo pipefail
+
+jq -cn \
+	--arg flux_user "${FLUX_USERNAME:-}" --arg flux_key "${FLUX_LICENSE_KEY:-}" \
+	--arg native_user "${NATIVEPHP_LICENSE_EMAIL:-}" --arg native_key "${NATIVEPHP_LICENSE_KEY:-}" \
+	'{"http-basic": (
+		(if $flux_user != "" and $flux_key != "" then {"composer.fluxui.dev": {username: $flux_user, password: $flux_key}} else {} end)
+		+ (if $native_user != "" and $native_key != "" then {"plugins.nativephp.com": {username: $native_user, password: $native_key}} else {} end)
+	)}'

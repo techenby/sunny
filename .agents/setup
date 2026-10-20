@@ -1,0 +1,130 @@
+#!/usr/bin/env bash
+# Prepares an Amp orb for this repository: PHP 8.4, Composer, web and mobile
+# dependencies, the local SQLite database, built assets, and Playwright Chromium.
+# Safe to run repeatedly; a warm run only verifies what is already installed.
+#
+# Private Composer repositories use the project secrets read by .agents/composer-auth.
+# Without them, the matching `composer install` and the steps that need vendor/ are skipped.
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+php_version=8.4
+
+step() {
+	local label="$1"
+	shift
+	local start=$SECONDS
+	echo "==> $label"
+	"$@"
+	echo "    $label took $((SECONDS - start))s"
+}
+
+install_php() {
+	local packages=(
+		"php$php_version-cli" "php$php_version-bcmath" "php$php_version-curl" "php$php_version-gd"
+		"php$php_version-intl" "php$php_version-mbstring" "php$php_version-readline"
+		"php$php_version-sqlite3" "php$php_version-xml" "php$php_version-zip"
+	)
+	local missing=()
+	local package
+	for package in "${packages[@]}"; do
+		dpkg-query -W -f='${Status}' "$package" 2>/dev/null | grep -q 'install ok installed' || missing+=("$package")
+	done
+	if [ ${#missing[@]} -eq 0 ]; then
+		echo "    PHP $php_version packages already installed"
+		return
+	fi
+
+	# Debian 12 ships PHP 8.2, so use the Sury repository for PHP 8.4.
+	if [ ! -f /etc/apt/sources.list.d/php.list ]; then
+		curl -fsSLo /tmp/debsuryorg-archive-keyring.deb https://packages.sury.org/debsuryorg-archive-keyring.deb
+		sudo dpkg -i /tmp/debsuryorg-archive-keyring.deb
+		rm -f /tmp/debsuryorg-archive-keyring.deb
+		echo "deb [signed-by=/usr/share/keyrings/debsuryorg-archive-keyring.gpg] https://packages.sury.org/php/ $(. /etc/os-release && echo "$VERSION_CODENAME") main" |
+			sudo tee /etc/apt/sources.list.d/php.list >/dev/null
+	fi
+	sudo apt-get update -qq
+	sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends "${missing[@]}"
+}
+
+install_composer() {
+	if command -v composer >/dev/null 2>&1; then
+		composer --version --no-ansi 2>/dev/null
+		return
+	fi
+	local tmp
+	tmp="$(mktemp -d)"
+	curl -fsSLo "$tmp/composer.phar" https://getcomposer.org/download/latest-stable/composer.phar
+	curl -fsSLo "$tmp/composer.phar.sha256" https://getcomposer.org/download/latest-stable/composer.phar.sha256
+	echo "$(cat "$tmp/composer.phar.sha256")  $tmp/composer.phar" | sha256sum --check --status
+	sudo install -m 0755 "$tmp/composer.phar" /usr/local/bin/composer
+	rm -rf "$tmp"
+	composer --version --no-ansi
+}
+
+# Lets agents run Composer against the private repositories from login shells.
+# The profile derives COMPOSER_AUTH from the runtime secrets; it stores no credentials.
+configure_composer_auth_profile() {
+	local marker="# sunny: Composer credentials from Amp secrets"
+	grep -Fqx "$marker" "$HOME/.bash_profile" 2>/dev/null && return
+	cat >>"$HOME/.bash_profile" <<EOF
+
+$marker
+if [ -z "\${COMPOSER_AUTH:-}" ] && [ -f "$repo_root/.agents/composer-auth" ]; then
+	COMPOSER_AUTH="\$("$repo_root/.agents/composer-auth")" && export COMPOSER_AUTH
+fi
+EOF
+}
+
+composer_install() {
+	COMPOSER_AUTH="$("$repo_root/.agents/composer-auth")" composer install --no-interaction --no-progress --prefer-dist
+}
+
+prepare_laravel_app() {
+	[ -f .env ] || cp -- .env.example .env
+	grep -q '^APP_KEY=base64:' .env || php artisan key:generate --no-interaction
+	[ -f database/database.sqlite ] || touch database/database.sqlite
+	php artisan migrate --force --no-interaction
+}
+
+install_playwright_chromium() {
+	npx --no-install playwright install chromium
+	# Install system libraries only when the downloaded browser is missing some.
+	local binary
+	binary="$(find "$HOME/.cache/ms-playwright" -type f \( -name chrome-headless-shell -o -name chrome \) -perm -u+x 2>/dev/null | head -n 1)"
+	if [ -z "$binary" ] || ldd "$binary" | grep -q 'not found'; then
+		sudo env "PATH=$PATH" npx --no-install playwright install-deps chromium
+	fi
+}
+
+setup_web() {
+	cd "$repo_root/web"
+	# --no-save keeps the orb's npm from rewriting package-lock.json.
+	step "web: npm install" npm install --no-save --no-audit --no-fund --loglevel=error
+	step "web: Playwright Chromium" install_playwright_chromium
+	if [ -z "${FLUX_USERNAME:-}" ] || [ -z "${FLUX_LICENSE_KEY:-}" ]; then
+		echo "!! FLUX_USERNAME and FLUX_LICENSE_KEY are not set; skipping web composer install, migrations, and asset build."
+		echo "!! Add them as Amp project secrets so new orbs can install livewire/flux-pro."
+		return
+	fi
+	step "web: composer install" composer_install
+	step "web: env, key, migrations" prepare_laravel_app
+	step "web: npm run build" npm run build --silent
+}
+
+setup_mobile() {
+	cd "$repo_root/mobile"
+	if [ -z "${NATIVEPHP_LICENSE_EMAIL:-}" ] || [ -z "${NATIVEPHP_LICENSE_KEY:-}" ]; then
+		echo "!! NATIVEPHP_LICENSE_EMAIL and NATIVEPHP_LICENSE_KEY are not set; skipping mobile composer install."
+		return
+	fi
+	step "mobile: composer install" composer_install
+	step "mobile: env, key, migrations" prepare_laravel_app
+}
+
+step "PHP $php_version" install_php
+step "Composer" install_composer
+step "Composer credentials profile" configure_composer_auth_profile
+setup_web
+setup_mobile
+echo "==> Setup finished in ${SECONDS}s"
