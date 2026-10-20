@@ -87,6 +87,32 @@ prepare_laravel_app() {
 	php artisan migrate --force --no-interaction
 }
 
+# Seeds the Strawhat Pirates demo data once; the seeder is not safe to run twice.
+seed_web_database() {
+	local seeded
+	seeded="$(php artisan tinker --no-ansi --execute 'echo App\Models\User::where("email", "luffy@strawhat.pirates")->exists() ? "yes" : "no";')"
+	if [ "$seeded" = yes ]; then
+		echo "    Database already seeded"
+		return
+	fi
+	php artisan db:seed --force --no-interaction
+}
+
+# Tells agents in the orb how to sign in to the seeded app.
+write_orb_agent_notes() {
+	local notes="$HOME/.config/amp/AGENTS.md"
+	local marker="# Sunny Home local login"
+	grep -Fqx "$marker" "$notes" 2>/dev/null && return
+	mkdir -p "$(dirname "$notes")"
+	cat >>"$notes" <<EOF
+
+$marker
+
+- The web app's SQLite database is seeded with the Strawhat Pirates demo team.
+- Sign in as \`luffy@strawhat.pirates\` with password \`password\`.
+EOF
+}
+
 install_playwright_chromium() {
 	npx --no-install playwright install chromium
 	# Install system libraries only when the downloaded browser is missing some.
@@ -109,6 +135,8 @@ setup_web() {
 	fi
 	step "web: composer install" composer_install
 	step "web: env, key, migrations" prepare_laravel_app
+	step "web: seed database" seed_web_database
+	step "web: orb agent notes" write_orb_agent_notes
 	step "web: npm run build" npm run build --silent
 }
 
