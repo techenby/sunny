@@ -5,9 +5,9 @@ use Native\Mobile\Testing\Native;
 
 beforeEach(fn () => seedSunnyData());
 
-it('opens the QR code from an item', function () {
+it('opens the QR code from an item’s print label button', function () {
     Native::visit('/inventory/8')
-        ->tap('QR Code')
+        ->tap('Print label')
         ->assertNavigatedTo('/inventory/8/qr-code');
 });
 

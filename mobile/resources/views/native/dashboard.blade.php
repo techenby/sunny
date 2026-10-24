@@ -115,7 +115,7 @@
                     <text font="accent" class="text-3xl text-theme-on-surface">{{ $this->summary['items'] }}</text>
                     <x-ui.heading>Items</x-ui.heading>
                     <x-ui.text size="sm">
-                        {{ $this->summary['locations'] }} {{ Str::plural('location', $this->summary['locations']) }} · {{ $this->summary['bins'] }} {{ Str::plural('bin', $this->summary['bins']) }}
+                        {{ $this->summary['locations'] }} {{ Str::plural('place', $this->summary['locations']) }} · {{ $this->summary['bins'] }} {{ Str::plural('storage spot', $this->summary['bins']) }}
                     </x-ui.text>
                 </column>
             </pressable>

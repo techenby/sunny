@@ -1,11 +1,12 @@
-<native:top-bar title="New item" back />
+<native:top-bar title="Add something" back />
 
 @include('native.inventory-item-form', [
     'formRef' => 'create-item',
-    'submitLabel' => 'Save item',
-    'subtitle' => 'Name it, pick what kind of thing it is, and choose where it lives.',
-    'typeOptions' => $this->typeOptions,
+    'submitLabel' => $this->selectedParent ? 'Save to '.$this->selectedParent['name'] : 'Save',
+    'typeChoices' => $this->typeChoices,
+    'selectedType' => $this->type,
     'selectedParent' => $this->selectedParent,
     'browsedParent' => $this->browsedParent,
     'parentPickerRows' => $this->parentPickerRows,
+    'parentTrail' => $this->parentTrail,
 ])

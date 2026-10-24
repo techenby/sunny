@@ -51,6 +51,7 @@
         "laravel/pint": "^1.24",
         "laravel/sail": "^1.41",
         "mockery/mockery": "^1.6",
+        "nativephp/php-bin": "^1.2",
         "nunomaduro/collision": "^8.6",
         "pestphp/pest": "^5.2",
         "pestphp/pest-plugin-laravel": "^5.0",

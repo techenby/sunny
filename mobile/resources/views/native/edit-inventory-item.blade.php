@@ -5,11 +5,13 @@
 @if ($item)
     @include('native.inventory-item-form', [
         'formRef' => 'edit-item',
-        'submitLabel' => 'Update item',
-        'typeOptions' => $this->typeOptions,
+        'submitLabel' => 'Save changes',
+        'typeChoices' => $this->typeChoices,
+        'selectedType' => $this->type,
         'selectedParent' => $this->selectedParent,
         'browsedParent' => $this->browsedParent,
         'parentPickerRows' => $this->parentPickerRows,
+        'parentTrail' => $this->parentTrail,
     ])
 @else
     <column ref="edit-item-missing" fill center class="bg-theme-background ios:bg-theme-grouped-background px-6">

@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\ItemType;
 use App\Models\Item;
 use App\NativeComponents\Inventory;
 use App\NativeComponents\InventoryItemDetail;
@@ -8,16 +9,27 @@ use Native\Mobile\Testing\Native;
 
 beforeEach(fn () => seedSunnyData());
 
-it('lists the top-level locations', function () {
+it('lists the places in the home and what is inside each', function () {
     Native::visit('/inventory')
         ->assertNavTitle('Inventory')
-        ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === 'Garage'
-            && ($node['props']['supporting'] ?? null) === 'Location · 2 items'
-            && ($node['props']['leading_icon_bg_color'] ?? null) !== null)
-        ->assertSee('Basement')
-        ->assertSee('Kitchen')
+        ->assertSee('Places in your home')
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'inventory-item-6')
+        ->assertSee('2 things inside')
+        ->assertSee('1 thing inside')
+        ->assertDontSee('Not in a place yet')
         ->assertDontSee('Cordless drill')
         ->assertAccessible();
+});
+
+it('sets apart top-level things that are not in a place yet', function () {
+    Item::findOrFail(12)->update(['parent_id' => null]);
+
+    $screen = Native::visit('/inventory')
+        ->assertSee('Not in a place yet')
+        ->assertSee('Open one and tap Move to put it away.');
+
+    expect(array_column($screen->get('places'), 'name'))->toBe(['Basement', 'Garage', 'Kitchen'])
+        ->and(array_column($screen->get('unplaced'), 'name'))->toBe(['Holiday decorations']);
 });
 
 it('shows a platform icon for each item type', function (string $platform, string $path, string $iconName) {
@@ -38,36 +50,37 @@ it('shows an item’s photo in place of its type icon', function () {
     Item::findOrFail(7)->update(['photo_url' => 'https://sunny.example/bin.jpg']);
 
     Native::visit('/inventory')
-        ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === 'Garage'
-            && ($node['props']['leading_type'] ?? null) === 'image'
-            && ($node['props']['leading_value'] ?? null) === 'https://sunny.example/garage.jpg')
-        ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === 'Basement'
-            && ($node['props']['leading_type'] ?? null) !== 'image')
+        ->assertElement('image', fn (array $node): bool => ($node['props']['src'] ?? null) === 'https://sunny.example/garage.jpg')
+        ->assertMissingElement('image', fn (array $node): bool => ($node['props']['src'] ?? null) === 'https://sunny.example/bin.jpg')
         ->input('updateSearch', 'garage')
-        ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === 'Garage'
-            && ($node['props']['leading_value'] ?? null) === 'https://sunny.example/garage.jpg');
+        ->assertElement('image', fn (array $node): bool => ($node['props']['src'] ?? null) === 'https://sunny.example/garage.jpg');
 
     Native::visit('/inventory/6')
         ->assertElement('image', fn (array $node): bool => ($node['props']['src'] ?? null) === 'https://sunny.example/bin.jpg');
 });
 
-it('searches nested items and says where each one lives', function () {
+it('searches nested items and shows the full path to each one', function () {
     Native::visit('/inventory')
         ->input('updateSearch', 'light')
-        ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === 'String lights'
-            && ($node['props']['supporting'] ?? null) === 'Item · in Holiday decorations')
-        ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === 'Spare light bulbs'
-            && ($node['props']['supporting'] ?? null) === 'Item · in Basement')
+        ->assertSee('In Basement › Holiday decorations')
+        ->assertSee('In Basement')
         ->assertDontSee('Kitchen')
         ->tap('String lights')
         ->assertNavigatedTo('/inventory/13');
 
     Native::visit('/inventory')
         ->input('updateSearch', 'garage')
-        ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === 'Garage'
-            && ($node['props']['supporting'] ?? null) === 'Location')
+        ->assertSee('Place')
         ->input('updateSearch', 'zzz')
-        ->assertSee('No items match “zzz”');
+        ->assertSee('Nothing called “zzz”');
+});
+
+it('says when a search result is not in a place yet', function () {
+    Item::findOrFail(12)->update(['parent_id' => null]);
+
+    Native::visit('/inventory')
+        ->input('updateSearch', 'holiday')
+        ->assertSee('Not in a place yet');
 });
 
 it('drills into a location’s contents', function () {
@@ -77,26 +90,26 @@ it('drills into a location’s contents', function () {
         ->follow()
         ->assertScreen(InventoryItemDetail::class)
         ->assertNavTitle('Garage')
-        ->assertSee('Garage')
-        ->assertSee('Contents')
-        ->assertSee('2 items')
-        ->assertSee('Bin · 2 items')
+        ->assertSee('Place · 2 things inside')
+        ->assertSee('What’s inside (2)')
+        ->assertSee('2 things inside')
         ->tap('item-child-7')
         ->assertNavigatedTo('/inventory/7');
 });
 
-it('shows an item’s type, path, and metadata', function () {
+it('shows an item’s type, the trail to it, and its metadata', function () {
     Native::visit('/inventory/8')
         ->assertNavTitle('Cordless drill')
         ->assertElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'item-summary'
-            && trim($node['props']['text'] ?? '') === 'Item · in Tool chest')
+            && trim($node['props']['text'] ?? '') === 'Thing')
         ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'item-ancestor-6')
         ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'item-parent')
+        ->assertSee('You’re here')
         ->assertSee('Brand')
         ->assertSee('DeWalt')
         ->assertSee('Model')
         ->assertSee('DCD771')
-        ->assertDontSee('Contents')
+        ->assertSee('Put something inside')
         ->assertAccessible();
 });
 
@@ -106,13 +119,14 @@ it('jumps to any container in the path', function () {
         ->assertNavigatedTo('/inventory/6');
 });
 
-it('adds an item inside a location or bin', function () {
+it('adds a thing inside a place or storage', function () {
     Native::visit('/inventory/7')
-        ->tap('Add item here')
+        ->assertSee('Add something here')
+        ->tap('Add one thing')
         ->assertNavigatedTo('/inventory/create')
         ->follow()
         ->assertSet('parentId', 7)
-        ->assertSet('typeIndex', 2);
+        ->assertSet('type', ItemType::Item);
 });
 
 it('navigates up to the containing item when it is not already on the stack', function () {
@@ -136,11 +150,22 @@ it('pops back to the containing item instead of pushing a duplicate of it', func
         ->assertWentBack();
 });
 
-it('omits the parent and metadata sections when there are none', function () {
+it('shows a top-level place as one of the places in the home, without asking to put it away', function () {
     Native::visit('/inventory/1')
         ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'item-parent')
-        ->assertDontSee('Where it is')
+        ->assertSee('One of the places in your home')
+        ->assertDontSee('Not in a place yet')
+        ->assertDontSee('Tap Move to put it away.')
         ->assertDontSee('Details');
+});
+
+it('asks to put away top-level storage and things', function () {
+    Item::findOrFail(12)->update(['parent_id' => null]);
+
+    Native::visit('/inventory/12')
+        ->assertSee('Not in a place yet')
+        ->assertSee('Tap Move to put it away.')
+        ->assertDontSee('One of the places in your home');
 });
 
 it('explains when an item does not exist', function () {
@@ -177,33 +202,23 @@ it('stops walking descendants when the synced data contains a parent cycle', fun
     expect(Inventory::descendantIdsOf(6))->toEqualCanonicalizing([7, 8, 9, 10]);
 });
 
-it('puts an item’s actions above the tab bar, with edit on the far right', function () {
-    seedSunnyData();
-
+it('puts labeled edit and print buttons above the tab bar and delete at the end of the page', function () {
     Native::visit('/inventory/7')
-        ->assertElement('bottom_bar', function (array $node): bool {
-            $buttons = $node['children'][0]['children'];
-            $menu = array_column(array_column($buttons[0]['children'], 'props'), 'label');
-
-            return array_column($buttons, 'ref') === ['item-actions', 'edit-item']
-                && $menu === ['Add item here', 'QR Code', 'Scan items here'];
-        })
-        ->assertElement('top_bar_action', fn (array $node): bool => ($node['ref'] ?? null) === 'delete-item')
-        ->assertAccessible();
+        ->assertElement('bottom_bar', fn (array $node): bool => array_column($node['children'][0]['children'], 'ref') === ['edit-item', 'item-print-label'])
+        ->assertMissingElement('top_bar_action', fn (array $node): bool => ($node['ref'] ?? null) === 'delete-item')
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'delete-item')
+        ->assertSee('Delete Tool chest')
+        ->tap('item-print-label')
+        ->assertNavigatedTo('/inventory/7/qr-code');
 });
 
 it('lets a plain item hold other items, like insoles in shoes', function () {
-    seedSunnyData();
-
     Native::visit('/inventory/8')
-        ->assertElement('bottom_bar', function (array $node): bool {
-            $buttons = $node['children'][0]['children'];
-            $menu = array_column(array_column($buttons[0]['children'], 'props'), 'label');
-
-            return array_column($buttons, 'ref') === ['item-actions', 'edit-item']
-                && $menu === ['Add item here', 'QR Code', 'Scan items here'];
+        ->assertElement('pressable', function (array $node): bool {
+            return ($node['ref'] ?? null) === 'item-add'
+                && array_column(array_column($node['children'], 'props'), 'label') === ['Add one thing', 'Photograph several things'];
         })
-        ->tap('Add item here')
+        ->tap('Add one thing')
         ->assertNavigatedTo('/inventory/create')
         ->follow()
         ->assertSet('parentId', 8);
@@ -214,24 +229,20 @@ it('invites adding to an empty container', function () {
     Item::create([...Item::find(7)->toArray(), 'id' => 90, 'name' => 'Empty bin']);
 
     Native::visit('/inventory/90')
-        ->assertSee('Contents')
-        ->assertSee('Nothing in here yet. Use the menu to add an item.')
-        ->tap('Add item here')
+        ->assertSee('What’s inside')
+        ->assertSee('Put something inside')
+        ->tap('Add one thing')
         ->assertNavigatedTo('/inventory/create');
 });
 
-it('gathers the inventory scans into one menu beside the new item button', function () {
-    seedSunnyData();
-
+it('keeps search alone at the bottom and puts labeled add and scan buttons above the list', function () {
     Native::visit('/inventory')
-        ->assertMissingElement('top_bar_action', fn (array $node): bool => ($node['ref'] ?? null) === 'scan-code')
-        ->assertElement('bottom_bar', function (array $node): bool {
-            $buttons = array_values(array_filter($node['children'][0]['children'], fn (array $child): bool => isset($child['ref'])));
-            $menu = array_column(array_column($buttons[0]['children'], 'props'), 'label');
-
-            return array_column($buttons, 'ref') === ['inventory-scan', 'inventory-create']
-                && $menu === ['Scan label', 'Scan items'];
+        ->assertElement('bottom_bar', fn (array $node): bool => array_values(array_filter(array_column($node['children'][0]['children'], 'ref'))) === [])
+        ->assertElement('pressable', function (array $node): bool {
+            return ($node['ref'] ?? null) === 'inventory-add'
+                && array_column(array_column($node['children'], 'props'), 'label') === ['Add one thing', 'Photograph several things'];
         })
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'inventory-scan-label')
         ->assertAccessible();
 });
 

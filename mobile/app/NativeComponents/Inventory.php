@@ -7,6 +7,7 @@ use App\Enums\ItemType;
 use App\Icons\Android;
 use App\Icons\Ios;
 use App\Models\Item;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
@@ -101,6 +102,20 @@ class Inventory extends NativeComponent
     }
 
     /**
+     * @param  array{type: ItemType, children_count?: int}  $item
+     */
+    public static function summary(array $item): string
+    {
+        $count = $item['children_count'] ?? 0;
+
+        if ($count > 0) {
+            return trans_choice(':count thing inside|:count things inside', $count);
+        }
+
+        return $item['type'] === ItemType::Location ? 'Nothing inside yet' : $item['type']->label();
+    }
+
+    /**
      * @return list<array{id: int, parent_id: int|null, type: ItemType, name: string, metadata: array<string, string>|null, photo_url: string|null, thumb_path: string|null, created_at: string, updated_at: string, children_count: int}>
      */
     #[Computed]
@@ -110,9 +125,25 @@ class Inventory extends NativeComponent
     }
 
     /**
-     * Every item matching the search, at any depth, with the name of the item it lives in.
-     *
-     * @return list<array{id: int, type: ItemType, name: string, location: string|null, photo: string|null}>
+     * @return list<array{id: int, parent_id: int|null, type: ItemType, name: string, metadata: array<string, string>|null, photo_url: string|null, thumb_path: string|null, created_at: string, updated_at: string, children_count: int}>
+     */
+    #[Computed]
+    public function places(): array
+    {
+        return array_values(array_filter($this->items, fn (array $item): bool => $item['type'] === ItemType::Location));
+    }
+
+    /**
+     * @return list<array{id: int, parent_id: int|null, type: ItemType, name: string, metadata: array<string, string>|null, photo_url: string|null, thumb_path: string|null, created_at: string, updated_at: string, children_count: int}>
+     */
+    #[Computed]
+    public function unplaced(): array
+    {
+        return array_values(array_filter($this->items, fn (array $item): bool => $item['type'] !== ItemType::Location));
+    }
+
+    /**
+     * @return list<array{id: int, parent_id: int|null, type: ItemType, name: string, metadata: array<string, string>|null, photo_url: string|null, thumb_path: string|null, created_at: string, updated_at: string, where: string}>
      */
     #[Computed]
     public function searchResults(): array
@@ -121,19 +152,12 @@ class Inventory extends NativeComponent
             return [];
         }
 
-        $items = collect(static::all());
-        $names = $items->pluck('name', 'id');
+        $items = collect(static::all())->keyBy('id');
 
         return $items
             ->filter(fn (array $item): bool => Str::contains($item['name'], $this->search, ignoreCase: true))
             ->sortBy('name')
-            ->map(fn (array $item): array => [
-                'id' => $item['id'],
-                'type' => $item['type'],
-                'name' => $item['name'],
-                'location' => $names[$item['parent_id']] ?? null,
-                'photo' => $item['thumb_path'] ?? $item['photo_url'],
-            ])
+            ->map(fn (array $item): array => [...$item, 'where' => $this->whereItIs($item, $items)])
             ->values()
             ->all();
     }
@@ -146,12 +170,17 @@ class Inventory extends NativeComponent
     /**
      * @return list<NavAction>
      */
-    public function scanMenu(): array
+    public function addMenu(): array
     {
         return [
-            NavAction::make('scan-code')->label('Scan label')->icon(ios: Ios::QrcodeViewfinder->value, android: Android::QrCodeScanner->value)->press('scanCode'),
-            NavAction::make('scan-items')->label('Scan items')->icon(ios: Ios::CameraViewfinder->value, android: Android::DocumentScanner->value)->press('scanItems'),
+            NavAction::make('add-one')->label('Add one thing')->icon(ios: Ios::Plus->value, android: Android::Add->value)->press('addOne'),
+            NavAction::make('add-several')->label('Photograph several things')->icon(ios: Ios::CameraViewfinder->value, android: Android::DocumentScanner->value)->press('scanItems'),
         ];
+    }
+
+    public function addOne(): void
+    {
+        $this->navigate('/inventory/create');
     }
 
     public function scanCode(): void
@@ -211,7 +240,27 @@ class Inventory extends NativeComponent
 
     protected function refreshLocalSyncedData(): void
     {
-        unset($this->items, $this->searchResults);
+        unset($this->items, $this->places, $this->unplaced, $this->searchResults);
+    }
+
+    /**
+     * @param  Collection<int, array<string, mixed>>  $items
+     */
+    protected function whereItIs(array $item, Collection $items): string
+    {
+        $names = [];
+        $ancestor = $items->get($item['parent_id']);
+
+        while ($ancestor !== null && count($names) < 50) {
+            array_unshift($names, $ancestor['name']);
+            $ancestor = $items->get($ancestor['parent_id']);
+        }
+
+        if ($names !== []) {
+            return 'In '.implode(' › ', $names);
+        }
+
+        return $item['type'] === ItemType::Location ? $item['type']->label() : 'Not in a place yet';
     }
 
     public function render(): View

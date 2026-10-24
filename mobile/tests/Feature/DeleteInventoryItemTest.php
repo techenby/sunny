@@ -30,13 +30,13 @@ it('deletes an item once confirmed', function () {
     Native::visit('/inventory/7')->assertDontSee('Cordless drill')->assertSee('Tape measure');
 });
 
-it('moves what was inside a deleted container to the top level, like Sunny does', function () {
+it('moves what was inside a deleted container out of every place, like Sunny does', function () {
     app(SunnyOutbox::class)->queue('items', 1, ['name' => 'Socket set', 'type' => 'item', 'parent_id' => 7], 9);
 
     Native::visit('/inventory/7')
         ->tap('delete-item')
         ->assertNativeCalled('Dialog.Alert', fn (array $params): bool => $params['message']
-            === '“Tool chest” will be deleted for everyone on your team. The 2 items inside it will move to the top level.')
+            === '“Tool chest” will be deleted for everyone on your team. The 2 things inside it will move to “Not in a place yet”.')
         ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Delete', 'id' => 'delete-item']);
 
     expect(Item::find(7))->toBeNull()

@@ -31,7 +31,7 @@ it('prefills the form from the item', function () {
             ['key' => 'brand', 'value' => 'DeWalt'],
             ['key' => 'model', 'value' => 'DCD771'],
         ])
-        ->assertSee('Update item');
+        ->assertSee('Save changes');
 });
 
 it('prefills a top-level item with no metadata', function () {
@@ -52,9 +52,8 @@ it('edits a field and keeps the rest intact', function () {
     Native::visit('/inventory/8/edit')
         ->input('edit-item-name', 'Hammer drill')
         ->tap('edit-item-parent')
-        ->tap('edit-item-parent-up')
-        ->tap('edit-item-parent-6')
-        ->tap('edit-item-parent-here')
+        ->assertSet('parentBrowseId', 6)
+        ->tap('edit-item-parent-choose')
         ->assertSet('name', 'Hammer drill')
         ->assertSet('parentId', 6)
         ->assertSet('metadataMap', ['brand' => 'DeWalt', 'model' => 'DCD771']);
@@ -65,7 +64,7 @@ it('refuses to update an item without a name', function () {
         ->input('edit-item-name', '   ')
         ->tap('edit-item-submit')
         ->assertNoNavigation()
-        ->assertSee('Give the item a name.');
+        ->assertSee('Give it a name.');
 });
 
 it('keeps the item edit queued on the phone when Sunny rejects the session', function () {

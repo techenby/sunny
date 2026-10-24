@@ -105,9 +105,9 @@ it('falls back to the system camera when the capture camera isn’t available', 
     expect($screen->get('candidates')[0])->toMatchArray(['photoPath' => '/tmp/hammer.jpg', 'scanId' => null]);
 });
 
-it('opens the scan screen from the inventory scan menu', function () {
+it('opens the scan screen from the inventory add menu', function () {
     Native::visit('/inventory')
-        ->tap('Scan items')
+        ->tap('Photograph several things')
         ->assertNavigatedTo('/inventory/scan')
         ->follow()
         ->assertScreen(ScanInventory::class)
@@ -118,7 +118,7 @@ it('scans into the container it was opened from', function () {
     Native::fakeBridge()->respondTo('ItemScanner.Availability', ['available' => true, 'reason' => null]);
 
     Native::visit('/inventory/7')
-        ->tap('Scan items here')
+        ->tap('Photograph several things')
         ->assertNavigatedTo('/inventory/scan')
         ->follow()
         ->assertSet('parentId', 7)
