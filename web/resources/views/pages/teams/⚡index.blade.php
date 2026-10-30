@@ -3,7 +3,7 @@
 use App\Actions\Teams\CreateTeam;
 use App\Models\Team;
 use App\Rules\TeamName;
-use App\Support\UserTeam;
+use App\Data\UserTeam;
 use Flux\Flux;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
