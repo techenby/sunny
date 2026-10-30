@@ -30,3 +30,11 @@ test('can safely delete user', function () {
         ->and($deuce->fresh()->teams->pluck('name'))->toContain("Edward Newgate's Team")
         ->and($whitebeard->fresh()->members->pluck('name'))->toHaveCount(2)->toContain('Edward Newgate')->toContain('Masked Deuce');
 });
+
+test('initials use the first and last name', function (string $name, string $initials) {
+    expect(User::factory()->make(['name' => $name])->initials())->toBe($initials);
+})->with([
+    'three words' => ['Monkey D. Luffy', 'ML'],
+    'two words' => ['nico robin', 'NR'],
+    'one word' => ['Chopper', 'C'],
+]);
