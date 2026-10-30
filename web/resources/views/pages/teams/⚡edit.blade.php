@@ -141,7 +141,7 @@ new class extends Component
 <section class="w-full">
     @include('pages.settings.heading')
 
-    <flux:heading class="sr-only">{{ __('Teams') }}</flux:heading>
+    <flux:heading level="2" class="sr-only">{{ __('Teams') }}</flux:heading>
 
     <x-pages::settings.layout :heading="__('Teams')" :subheading="__('Manage your team settings')">
         <div class="space-y-10">

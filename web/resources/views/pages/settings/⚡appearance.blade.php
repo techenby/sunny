@@ -9,7 +9,7 @@ new class extends Component {
 <section class="w-full">
     @include('pages.settings.heading')
 
-    <flux:heading class="sr-only">{{ __('Appearance Settings') }}</flux:heading>
+    <flux:heading level="2" class="sr-only">{{ __('Appearance Settings') }}</flux:heading>
 
     <x-pages::settings.layout :heading="__('Appearance')" :subheading="__('Update the appearance settings for your account')">
         <flux:radio.group x-data variant="segmented" x-model="$flux.appearance">
