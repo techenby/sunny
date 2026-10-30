@@ -4,11 +4,48 @@
 
 <native:top-bar title="Inventory" display-mode="large" :back="false" />
 
-@include('native.search-bottom-bar', [
-    'refPrefix' => 'inventory',
-    'placeholder' => 'Find something',
-    'search' => $search,
-])
+{{-- Search with Scan inside it and a labeled Add beside it. The row wraps
+     in reverse, so when large text leaves no room the Add button moves up
+     onto its own line instead of squeezing the search field. --}}
+<native:bottom-bar>
+    <row class="w-full flex-wrap-reverse items-center gap-3 px-4 pb-2">
+        <row class="min-h-12 min-w-[220] flex-1 items-center gap-2 rounded-full pr-1 pl-4 glass android:bg-theme-surface">
+            <native:icon :ios="Ios::Magnifyingglass" :android="Android::Search" :size="18" class="text-theme-on-surface-variant" />
+            <bare-text-input
+                ref="inventory-search"
+                class="flex-1"
+                placeholder="Search"
+                a11y-label="Search"
+                :value="$search"
+                sync-mode="debounce"
+                debounce-ms="300"
+                @change="updateSearch"
+            />
+            <pressable
+                ref="inventory-scan-label"
+                a11y-label="Scan label"
+                class="min-h-10 items-center justify-center rounded-full bg-theme-surface-variant px-3"
+                @tap="scanCode"
+            >
+                <row class="items-center gap-1.5">
+                    <icon :ios="Ios::QrcodeViewfinder" :android="Android::QrCodeScanner" :size="16" class="text-theme-on-surface" />
+                    <text font="semibold" class="text-base text-theme-on-surface">Scan</text>
+                </row>
+            </pressable>
+        </row>
+        <pressable
+            ref="inventory-add"
+            a11y-label="Add"
+            class="min-h-12 items-center justify-center rounded-full bg-theme-primary px-4"
+            :menu="$this->addMenu()"
+        >
+            <row class="items-center gap-1.5">
+                <icon :ios="Ios::Plus" :android="Android::Add" :size="16" class="text-theme-on-primary" />
+                <text font="semibold" class="text-base text-theme-on-primary">Add</text>
+            </row>
+        </pressable>
+    </row>
+</native:bottom-bar>
 
 <scroll-view ref="inventory-list" fill class="bg-theme-background">
     <column class="w-full gap-6 px-4 pt-2 pb-8">
@@ -35,31 +72,6 @@
                 </column>
             @endif
         @else
-            <row class="w-full items-center gap-3">
-                <pressable
-                    ref="inventory-add"
-                    a11y-label="Add"
-                    class="min-h-12 flex-1 items-center justify-center rounded-full bg-theme-primary px-4"
-                    :menu="$this->addMenu()"
-                >
-                    <row class="items-center gap-2">
-                        <icon :ios="Ios::Plus" :android="Android::Add" :size="16" class="text-theme-on-primary" />
-                        <text font="semibold" class="text-base text-theme-on-primary">Add</text>
-                    </row>
-                </pressable>
-                <pressable
-                    ref="inventory-scan-label"
-                    a11y-label="Scan label"
-                    class="min-h-12 flex-1 items-center justify-center rounded-full bg-theme-surface-variant px-4"
-                    @tap="scanCode"
-                >
-                    <row class="items-center gap-2">
-                        <icon :ios="Ios::QrcodeViewfinder" :android="Android::QrCodeScanner" :size="16" class="text-theme-on-surface" />
-                        <text font="semibold" class="text-base text-theme-on-surface">Scan label</text>
-                    </row>
-                </pressable>
-            </row>
-
             @if ($this->places)
                 <column class="w-full gap-2">
                     <x-ui.subheading class="px-1">Places in your home</x-ui.subheading>

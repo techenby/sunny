@@ -235,14 +235,24 @@ it('invites adding to an empty container', function () {
         ->assertNavigatedTo('/inventory/create');
 });
 
-it('keeps search alone at the bottom and puts labeled add and scan buttons above the list', function () {
+it('puts a labeled add button and a scan button inside search in the bottom bar', function () {
     Native::visit('/inventory')
-        ->assertElement('bottom_bar', fn (array $node): bool => array_values(array_filter(array_column($node['children'][0]['children'], 'ref'))) === [])
+        ->assertElement('bottom_bar', function (array $node): bool {
+            $refs = [];
+            $collect = function (array $node) use (&$collect, &$refs): void {
+                $refs[] = $node['ref'] ?? null;
+                foreach ($node['children'] ?? [] as $child) {
+                    $collect($child);
+                }
+            };
+            $collect($node);
+
+            return array_values(array_filter($refs)) === ['inventory-search', 'inventory-scan-label', 'inventory-add'];
+        })
         ->assertElement('pressable', function (array $node): bool {
             return ($node['ref'] ?? null) === 'inventory-add'
                 && array_column(array_column($node['children'], 'props'), 'label') === ['Add one thing', 'Photograph several things'];
         })
-        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'inventory-scan-label')
         ->assertAccessible();
 });
 
