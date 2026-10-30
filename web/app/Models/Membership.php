@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Enums\TeamRole;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -20,6 +21,7 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
 #[Table(name: 'team_members')]
 class Membership extends Pivot
 {
+    use HasFactory;
     /** @var bool */
     public $incrementing = true;
 

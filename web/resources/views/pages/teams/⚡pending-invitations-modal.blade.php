@@ -28,7 +28,7 @@ new class extends Component {
             ->with(['inviter', 'team'])
             ->whereRaw('LOWER(email) = ?', [Str::lower(Auth::user()->email)])
             ->whereNull('accepted_at')
-            ->where(fn ($query) => $query
+            ->where(fn (\Illuminate\Contracts\Database\Query\Builder $query) => $query
                 ->whereNull('expires_at')
                 ->orWhere('expires_at', '>=', now()))
             ->latest()

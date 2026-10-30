@@ -163,7 +163,7 @@ test('invitations can no longer be accepted with a GET request', function () {
 });
 
 test('the daily cleanup deletes expired invitations', function () {
-    Date::setTestNow(now()->startOfDay());
+    Date::setTestNow(today());
 
     $luffy = User::factory()->create();
     $expired = TeamInvitation::factory()->for($luffy->currentTeam)->expired()->create();
