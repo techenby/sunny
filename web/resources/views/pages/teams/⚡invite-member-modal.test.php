@@ -9,42 +9,35 @@ use Illuminate\Notifications\AnonymousNotifiable;
 use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
 
-function strawhatCrew(User $captain): Team
-{
-    $crew = Team::factory()->create(['name' => 'Thousand Sunny Crew']);
-    $crew->members()->attach($captain, ['role' => TeamRole::Owner->value]);
+beforeEach(function () {
+    Notification::fake();
 
-    return $crew;
-}
+    $this->nami = User::factory()->create();
+    $this->crew = Team::factory()->create(['name' => 'Thousand Sunny Crew']);
+    $this->crew->members()->attach($this->nami, ['role' => TeamRole::Owner->value]);
+});
 
 test('owners can invite someone to the team', function () {
-    Notification::fake();
-    $nami = User::factory()->create();
-    $crew = strawhatCrew($nami);
-
-    Livewire::actingAs($nami)
-        ->test('pages::teams.invite-member-modal', ['team' => $crew])
+    Livewire::actingAs($this->nami)
+        ->test('pages::teams.invite-member-modal', ['team' => $this->crew])
         ->set('inviteEmail', 'zoro@strawhat.pirates')
         ->call('createInvitation')
         ->assertHasNoErrors();
 
-    expect($crew->invitations()->where('email', 'zoro@strawhat.pirates')->whereNull('accepted_at')->exists())->toBeTrue();
+    expect($this->crew->invitations()->where('email', 'zoro@strawhat.pirates')->whereNull('accepted_at')->exists())->toBeTrue();
     Notification::assertSentTo(new AnonymousNotifiable, TeamInvitationNotification::class);
 });
 
 test('someone who left the team can be invited again', function (string $state, string $oldEmail) {
-    Notification::fake();
-    $nami = User::factory()->create();
-    $crew = strawhatCrew($nami);
-    $old = TeamInvitation::factory()->for($crew)->{$state}()->create(['email' => $oldEmail]);
+    $old = TeamInvitation::factory()->for($this->crew)->{$state}()->create(['email' => $oldEmail]);
 
-    Livewire::actingAs($nami)
-        ->test('pages::teams.invite-member-modal', ['team' => $crew])
+    Livewire::actingAs($this->nami)
+        ->test('pages::teams.invite-member-modal', ['team' => $this->crew])
         ->set('inviteEmail', 'zoro@strawhat.pirates')
         ->call('createInvitation')
         ->assertHasNoErrors();
 
-    $invitations = $crew->invitations()->whereRaw('LOWER(email) = ?', ['zoro@strawhat.pirates'])->get();
+    $invitations = $this->crew->invitations()->whereRaw('LOWER(email) = ?', ['zoro@strawhat.pirates'])->get();
 
     expect($old->fresh())->toBeNull()
         ->and($invitations)->toHaveCount(1)
@@ -57,13 +50,10 @@ test('someone who left the team can be invited again', function (string $state, 
 ]);
 
 test('a pending invitation blocks a second one', function () {
-    Notification::fake();
-    $nami = User::factory()->create();
-    $crew = strawhatCrew($nami);
-    $pending = TeamInvitation::factory()->for($crew)->create(['email' => 'zoro@strawhat.pirates']);
+    $pending = TeamInvitation::factory()->for($this->crew)->create(['email' => 'zoro@strawhat.pirates']);
 
-    Livewire::actingAs($nami)
-        ->test('pages::teams.invite-member-modal', ['team' => $crew])
+    Livewire::actingAs($this->nami)
+        ->test('pages::teams.invite-member-modal', ['team' => $this->crew])
         ->set('inviteEmail', 'zoro@strawhat.pirates')
         ->call('createInvitation')
         ->assertHasErrors('inviteEmail');
