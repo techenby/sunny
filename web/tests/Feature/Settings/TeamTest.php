@@ -260,3 +260,15 @@ test('guests cannot access teams', function () {
     $this->get(route('teams.index'))
         ->assertRedirect(route('login'));
 });
+
+test('personal team is the one the user owns, not one they joined', function () {
+    $luffy = User::factory()->create();
+    $zoro = User::factory()->create();
+    $zoro->teamMemberships()->delete();
+
+    $luffy->personalTeam()->members()->attach($zoro, ['role' => TeamRole::Member->value]);
+    $zorosTeam = Team::factory()->personal()->create();
+    $zorosTeam->members()->attach($zoro, ['role' => TeamRole::Owner->value]);
+
+    expect($zoro->fresh()->personalTeam()->is($zorosTeam))->toBeTrue();
+});

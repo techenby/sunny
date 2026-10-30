@@ -54,8 +54,8 @@ trait HasTeams
 
     public function personalTeam(): ?Team
     {
-        return $this->teams()
-            ->where('is_personal', true)
+        return $this->ownedTeams()
+            ->where('teams.is_personal', true)
             ->first();
     }
 
