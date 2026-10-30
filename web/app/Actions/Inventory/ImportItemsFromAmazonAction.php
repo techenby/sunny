@@ -9,6 +9,7 @@ use App\Models\Item;
 use App\Models\Team;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Spatie\SimpleExcel\SimpleExcelReader;
@@ -77,7 +78,7 @@ class ImportItemsFromAmazonAction
             return $this->stats;
         } finally {
             if ($isTemporaryUpload) {
-                @unlink($filePath);
+                File::delete($filePath);
             }
         }
     }

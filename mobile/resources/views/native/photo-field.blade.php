@@ -1,11 +1,12 @@
 @use('App\Icons\Android')
 @use('App\Icons\Ios')
 
-{{-- Expects $photoPath, $refPrefix, and $alt; the including screen supplies
-     takePhoto/choosePhoto/removePhoto via the CapturesPhoto trait. --}}
+{{-- Expects $photoPath, $refPrefix, and $alt, and optionally $label and
+     $labelClass; the including screen supplies takePhoto/choosePhoto/
+     removePhoto via the CapturesPhoto trait. --}}
 
 <column class="w-full gap-2">
-    <text class="text-sm font-semibold text-theme-on-surface-variant">Photo</text>
+    <text class="{{ $labelClass ?? 'text-sm font-semibold text-theme-on-surface-variant' }}">{{ $label ?? 'Photo' }}</text>
 
     @if ($photoPath)
         <image
@@ -24,27 +25,29 @@
             <text class="text-sm font-semibold text-theme-primary">Remove photo</text>
         </pressable>
     @else
-        <row class="w-full items-center gap-3">
+        <row class="w-full flex-wrap gap-3">
             <pressable
                 ref="{{ $refPrefix }}-photo-camera"
                 a11y-label="Take photo"
-                class="h-12 w-12 items-center justify-center rounded-xl border border-theme-outline bg-theme-surface-variant"
+                class="min-h-12 flex-1 items-center justify-center rounded-xl border border-theme-outline bg-theme-surface px-4"
                 @tap="takePhoto"
             >
-                <native:icon
-                    :ios="Ios::Camera"
-                    :android="Android::PhotoCamera"
-                    :size="24"
-                    class="text-theme-on-surface-variant"
-                />
+                <row class="items-center gap-2">
+                    <native:icon :ios="Ios::Camera" :android="Android::PhotoCamera" :size="20" class="text-theme-on-surface" />
+                    <text font="semibold" class="text-base text-theme-on-surface">Take photo</text>
+                </row>
             </pressable>
             <pressable
                 ref="{{ $refPrefix }}-photo-library"
-                class="h-12 items-center justify-center px-2"
+                a11y-label="Choose from photos"
                 a11y-hint="Opens the photo library"
+                class="min-h-12 flex-1 items-center justify-center rounded-xl border border-theme-outline bg-theme-surface px-4"
                 @tap="choosePhoto"
             >
-                <text class="text-sm font-semibold text-theme-primary">View Library</text>
+                <row class="items-center gap-2">
+                    <native:icon :ios="Ios::Photo" :android="Android::Image" :size="20" class="text-theme-on-surface" />
+                    <text font="semibold" class="text-base text-theme-on-surface">Choose from photos</text>
+                </row>
             </pressable>
         </row>
     @endif

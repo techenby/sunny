@@ -11,24 +11,31 @@ use Saloon\Http\Faking\MockResponse;
 
 beforeEach(fn () => seedSunnyData());
 
-it('opens the create screen from the inventory list', function () {
+it('opens the create screen from the inventory add menu', function () {
     Native::visit('/inventory')
-        ->tap('New item')
+        ->tap('Add one thing')
         ->assertNavigatedTo('/inventory/create')
         ->follow()
         ->assertScreen(CreateInventoryItem::class)
-        ->assertNavTitle('New item');
+        ->assertNavTitle('Add something');
 });
 
-it('renders the form', function () {
+it('renders the form as plain questions', function () {
     Native::visit('/inventory/create')
-        ->assertSee('Name')
-        ->assertSee('Type')
-        ->assertSee('Inside')
-        ->assertSee('Save item')
-        ->assertElement('button_group', fn (array $node): bool => ($node['ref'] ?? null) === 'create-item-type'
-            && ($node['props']['options'] ?? null) === ['Location', 'Bin', 'Item'])
+        ->assertSee('What is it called?')
+        ->assertSee('Where does it go?')
+        ->assertSee('Not in a place yet')
+        ->assertSee('What kind is it?')
+        ->assertSee('Save')
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'create-item-type-item')
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'create-item-type-bin')
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'create-item-type-location')
         ->assertAccessible();
+});
+
+it('names the place it will save to on the button', function () {
+    Native::visit('/inventory/create', data: ['parent' => 7])
+        ->assertSee('Save to Tool chest');
 });
 
 it('offers every item as a destination, grouped by location then bin then item', function () {
@@ -60,9 +67,9 @@ it('offers every item as a destination, grouped by location then bin then item',
 
 it('only builds the destination rows while the picker is open', function () {
     Native::visit('/inventory/create')
-        ->assertMissingElement('list_item', fn (array $node): bool => ($node['ref'] ?? null) === 'create-item-parent-6')
+        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'create-item-parent-6')
         ->tap('create-item-parent')
-        ->assertElement('list_item', fn (array $node): bool => ($node['ref'] ?? null) === 'create-item-parent-6');
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'create-item-parent-6');
 });
 
 it('browses into a location and chooses it', function () {
@@ -73,29 +80,41 @@ it('browses into a location and chooses it', function () {
         ->tap('create-item-parent-6')
         ->assertSet('parentBrowseId', 6)
         ->assertSet('showParentPicker', true)
-        ->tap('create-item-parent-here')
+        ->assertSee('Put it in Garage')
+        ->tap('create-item-parent-choose')
         ->assertSet('name', 'Sleeping bag')
         ->assertSet('parentId', 6)
         ->assertSet('showParentPicker', false)
         ->assertSee('Garage');
 });
 
-it('browses down to a bin, picks something in it, and reopens beside the choice', function () {
+it('opens storage, lists loose things on one line, and only chooses with the button', function () {
     $screen = Native::visit('/inventory/create')
         ->tap('create-item-parent')
         ->tap('create-item-parent-6');
 
     expect(array_column($screen->get('parentPickerRows'), 'name'))->toBe(['Tool chest', 'Camping tent']);
 
-    $screen->tap('create-item-parent-7')
-        ->tap('create-item-parent-9')
-        ->assertSet('parentId', 9)
-        ->assertSee('in Garage › Tool chest')
-        ->tap('create-item-parent')
+    $screen->assertSee('Also here: Camping tent')
+        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'create-item-parent-10')
+        ->tap('create-item-parent-7')
         ->assertSet('parentBrowseId', 7)
-        ->tap('create-item-parent-up')
+        ->assertSet('parentId', null)
+        ->assertSee('Here: Cordless drill, Tape measure')
+        ->tap('create-item-parent-choose')
+        ->assertSet('parentId', 7)
+        ->assertSee('in Garage');
+});
+
+it('reopens beside the choice and walks back up with the breadcrumbs', function () {
+    Native::visit('/inventory/create')
+        ->set('parentId', 7)
+        ->tap('create-item-parent')
         ->assertSet('parentBrowseId', 6)
-        ->tap('create-item-parent-up')
+        ->tap('create-item-parent-7')
+        ->tap('create-item-parent-crumb-6')
+        ->assertSet('parentBrowseId', 6)
+        ->tap('create-item-parent-crumb-home')
         ->assertSet('parentBrowseId', null);
 });
 
@@ -103,8 +122,9 @@ it('moves the item back to the top level', function () {
     Native::visit('/inventory/create')
         ->set('parentId', 7)
         ->tap('create-item-parent')
-        ->tap('create-item-parent-up')
-        ->tap('create-item-parent-top-level')
+        ->tap('create-item-parent-crumb-home')
+        ->assertSee('Don’t put it in a place yet')
+        ->tap('create-item-parent-choose')
         ->assertSet('parentId', null);
 });
 
@@ -116,13 +136,13 @@ it('searches destinations at any depth and shows where each match lives', functi
     expect(array_map(fn (array $choice): array => [$choice['name'], $choice['path']], $screen->get('parentPickerRows')))
         ->toBe([['Tool chest', 'Garage'], ['Kitchen', null]]);
 
-    $screen->assertSee('Bin · in Garage')
-        ->assertMissingElement('list_item', fn (array $node): bool => ($node['ref'] ?? null) === 'create-item-parent-top-level')
+    $screen->assertSee('In Garage')
+        ->assertMissingElement('button', fn (array $node): bool => ($node['ref'] ?? null) === 'create-item-parent-choose')
         ->tap('create-item-parent-7')
         ->assertSet('parentId', 7)
         ->tap('create-item-parent')
         ->set('parentSearch', 'sleeping bag')
-        ->assertSee('Nothing matches “sleeping bag”');
+        ->assertSee('Nothing called “sleeping bag”');
 });
 
 it('closes the destination picker when dismissed without changing the choice', function () {
@@ -133,19 +153,29 @@ it('closes the destination picker when dismissed without changing the choice', f
         ->assertSet('parentId', null);
 });
 
-it('resolves the chosen type from the selector index', function () {
+it('calls the top level Home when adding a place', function () {
     Native::visit('/inventory/create')
-        ->assertSet('type', ItemType::Location)
-        ->changeTab('create-item-type', 2)
-        ->assertSet('typeIndex', 2)
-        ->assertSet('type', ItemType::Item);
+        ->tap('create-item-type-location')
+        ->assertDontSee('Not in a place yet')
+        ->tap('create-item-parent')
+        ->assertSee('Put it with the places in your home');
 });
 
-it('shows the camera control as a platform icon next to the library link', function (string $platform, string $iconName) {
+it('starts as a thing and switches kind with a tap', function () {
+    Native::visit('/inventory/create')
+        ->assertSet('type', ItemType::Item)
+        ->tap('create-item-type-location')
+        ->assertSet('type', ItemType::Location)
+        ->tap('create-item-type-bin')
+        ->assertSet('type', ItemType::Bin);
+});
+
+it('labels the camera and library buttons', function (string $platform, string $iconName) {
     Native::visit('/inventory/create', platform: $platform)
         ->assertElement('icon', fn (array $node): bool => ($node['props']['name'] ?? null) === $iconName)
         ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'create-item-photo-camera')
-        ->assertSee('View Library');
+        ->assertSee('Take photo')
+        ->assertSee('Choose from photos');
 })->with([
     'ios' => ['ios', 'camera'],
     'android' => ['android', 'photo_camera'],
@@ -212,8 +242,9 @@ it('gives every tappable control at least a 48dp touch target', function () {
 
         if (in_array($type, ['button', 'pressable'], true)) {
             // Buttons without an explicit height fall back to the renderer's
-            // size metrics: only `lg` clears 48dp (sm is 32, md is 36).
-            $height = $node['layout']['height'] ?? null;
+            // size metrics: only `lg` clears 48dp (sm is 32, md is 36). A
+            // minimum height counts too, so controls can grow with Dynamic Type.
+            $height = $node['layout']['height'] ?? $node['layout']['min_height'] ?? null;
             $tallEnough = $height === null
                 ? ($node['props']['size'] ?? null) === 'lg'
                 : $height >= 48;
@@ -284,7 +315,7 @@ it('refuses to save metadata with duplicate keys', function () {
         ])
         ->tap('create-item-submit')
         ->assertNoNavigation()
-        ->assertSee('Metadata keys must be unique.');
+        ->assertSee('Each detail needs a different name.');
 });
 
 it('refuses to save a metadata key with no value', function () {
@@ -293,7 +324,7 @@ it('refuses to save a metadata key with no value', function () {
         ->set('metadata', [['key' => 'size', 'value' => '']])
         ->tap('create-item-submit')
         ->assertNoNavigation()
-        ->assertSee('Give every metadata field a value.');
+        ->assertSee('Fill in every detail, or remove the empty ones.');
 });
 
 it('refuses to save an item without a name', function () {
@@ -301,7 +332,7 @@ it('refuses to save an item without a name', function () {
         ->input('create-item-name', '   ')
         ->tap('create-item-submit')
         ->assertNoNavigation()
-        ->assertSee('Give the item a name.');
+        ->assertSee('Give it a name.');
 });
 
 it('keeps the new item queued on the phone when Sunny rejects the session', function () {

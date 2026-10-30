@@ -17,9 +17,18 @@ enum ItemType: string
     public function label(): string
     {
         return match ($this) {
-            self::Location => 'Location',
-            self::Bin => 'Bin',
-            self::Item => 'Item',
+            self::Location => 'Place',
+            self::Bin => 'Storage',
+            self::Item => 'Thing',
+        };
+    }
+
+    public function description(): string
+    {
+        return match ($this) {
+            self::Location => 'A room, like Garage or Shed',
+            self::Bin => 'Holds things, like a shelf or box',
+            self::Item => 'Anything you want to find later',
         };
     }
 

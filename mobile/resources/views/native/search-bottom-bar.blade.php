@@ -1,16 +1,15 @@
 @use('App\Icons\Android')
 @use('App\Icons\Ios')
 
-{{-- A search field with a create button beside it, pinned above the
-     keyboard. Expects $refPrefix, $placeholder, $search, $createLabel and
-     $createUrl, and optionally $scanLabel and $scanMenu for a scan button
-     that opens a menu of scan actions;
-     typing calls the including screen's updateSearch(). The top bar's
-     native search can't hold extra buttons, so this replaces it. --}}
+{{-- A search field pinned above the keyboard, with an optional create
+     button beside it. Expects $refPrefix, $placeholder and $search, and
+     optionally $createLabel and $createUrl; typing calls the including
+     screen's updateSearch(). The top bar's native search can't hold extra
+     buttons, so this replaces it. --}}
 
 <native:bottom-bar>
     <row class="w-full items-center gap-3 px-4 pb-2">
-        <row class="h-12 flex-1 items-center gap-2 rounded-full px-4 glass android:bg-theme-surface">
+        <row class="min-h-12 flex-1 items-center gap-2 rounded-full px-4 glass android:bg-theme-surface">
             <native:icon :ios="Ios::Magnifyingglass" :android="Android::Search" :size="18" class="text-theme-on-surface-variant" />
             <bare-text-input
                 ref="{{ $refPrefix }}-search"
@@ -23,23 +22,15 @@
                 @change="updateSearch"
             />
         </row>
-        @isset($scanMenu)
+        @isset($createUrl)
             <pressable
-                ref="{{ $refPrefix }}-scan"
-                a11y-label="{{ $scanLabel }}"
+                ref="{{ $refPrefix }}-create"
+                a11y-label="{{ $createLabel }}"
                 class="h-12 w-12 items-center justify-center rounded-full glass android:bg-theme-surface"
-                :menu="$scanMenu"
+                @navigate($createUrl)
             >
-                <native:icon :ios="Ios::Viewfinder" :android="Android::CenterFocusStrong" :size="22" class="text-theme-on-surface" />
+                <native:icon :ios="Ios::Plus" :android="Android::Add" :size="22" class="text-theme-on-surface" />
             </pressable>
         @endisset
-        <pressable
-            ref="{{ $refPrefix }}-create"
-            a11y-label="{{ $createLabel }}"
-            class="h-12 w-12 items-center justify-center rounded-full glass android:bg-theme-surface"
-            @navigate($createUrl)
-        >
-            <native:icon :ios="Ios::Plus" :android="Android::Add" :size="22" class="text-theme-on-surface" />
-        </pressable>
     </row>
 </native:bottom-bar>

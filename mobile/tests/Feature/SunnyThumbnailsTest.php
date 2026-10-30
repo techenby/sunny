@@ -43,11 +43,9 @@ it('keeps a downloaded thumbnail on the phone and shows it in lists', function (
     Http::assertSentCount(2);
 
     Native::visit('/inventory')
-        ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === 'Kitchen'
-            && ($node['props']['leading_value'] ?? null) === $itemThumb)
+        ->assertElement('image', fn (array $node): bool => ($node['props']['src'] ?? null) === $itemThumb)
         ->input('updateSearch', 'kitchen')
-        ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === 'Kitchen'
-            && ($node['props']['leading_value'] ?? null) === $itemThumb);
+        ->assertElement('image', fn (array $node): bool => ($node['props']['src'] ?? null) === $itemThumb);
     Native::visit('/recipes')
         ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === 'Soup'
             && ($node['props']['leading_value'] ?? null) === Recipe::find(42)->thumb_path);
@@ -87,8 +85,7 @@ it('falls back to the full photo and retries when a thumbnail fails to download'
 
     expect(Item::find(10)->thumb_path)->toBeNull();
     Native::visit('/inventory')
-        ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === 'Kitchen'
-            && ($node['props']['leading_value'] ?? null) === 'https://cdn.sunny.example/kitchen.jpg?signature=full');
+        ->assertElement('image', fn (array $node): bool => ($node['props']['src'] ?? null) === 'https://cdn.sunny.example/kitchen.jpg?signature=full');
 
     ($this->sync)('https://cdn.sunny.example/thumbs/kitchen-a1.jpg?signature=two');
 
@@ -109,6 +106,5 @@ it('shows a newly chosen photo until Sunny has made its thumbnail', function ():
         ->and($item->thumb_path)->toBeNull()
         ->and($item->photo_url)->toStartWith(SunnyOutbox::photoDirectory());
     Native::visit('/inventory')
-        ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === 'Kitchen'
-            && ($node['props']['leading_value'] ?? null) === $item->photo_url);
+        ->assertElement('image', fn (array $node): bool => ($node['props']['src'] ?? null) === $item->photo_url);
 });

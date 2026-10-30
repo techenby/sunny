@@ -170,4 +170,5 @@
     'selectedParent' => $this->selectedParent,
     'browsedParent' => $this->browsedParent,
     'parentPickerRows' => $this->parentPickerRows,
+    'parentTrail' => $this->parentTrail,
 ])

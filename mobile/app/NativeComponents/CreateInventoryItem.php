@@ -16,11 +16,11 @@ class CreateInventoryItem extends NativeComponent
     public function mount(): void
     {
         $this->initializeTeam();
+        $this->chooseType(ItemType::Item->value);
 
         $parent = $this->parentChoice((int) $this->data('parent'));
         if ($parent !== null) {
             $this->parentId = $parent['id'];
-            $this->typeIndex = (int) array_search(ItemType::Item, ItemType::cases(), strict: true);
         }
     }
 

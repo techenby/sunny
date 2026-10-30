@@ -3,6 +3,7 @@
 namespace App\NativeComponents;
 
 use App\Concerns\ChecksSunnySync;
+use App\Concerns\ChoosesInventoryParent;
 use App\Concerns\ShowsQueuedChange;
 use App\Enums\ItemType;
 use App\Http\Integrations\Sunny\SunnyOutbox;
@@ -21,6 +22,10 @@ use Native\Mobile\Facades\Dialog;
 class InventoryItemDetail extends NativeComponent
 {
     use ChecksSunnySync;
+    use ChoosesInventoryParent {
+        selectParent as protected chooseParent;
+        selectTopLevel as protected chooseTopLevel;
+    }
     use ShowsQueuedChange;
 
     public string $error = '';
@@ -73,16 +78,48 @@ class InventoryItemDetail extends NativeComponent
         return $this->item === null ? [] : Inventory::childrenOf($this->item['id']);
     }
 
+    #[Computed]
+    public function teamId(): ?int
+    {
+        return $this->item['team_id'] ?? null;
+    }
+
     /**
      * @return list<NavAction>
      */
-    public function actionMenu(): array
+    public function addMenu(): array
     {
         return [
-            NavAction::make('item-add-child')->label('Add item here')->icon(ios: Ios::Plus->value, android: Android::Add->value)->press('addChild'),
-            NavAction::make('item-qr-code')->label('QR Code')->icon(ios: Ios::Qrcode->value, android: Android::QrCode2->value)->press('showQrCode'),
-            NavAction::make('item-scan-children')->label('Bulk add here')->icon(ios: Ios::CameraViewfinder->value, android: Android::DocumentScanner->value)->press('scanChildren'),
+            NavAction::make('item-add-child')->label('Add one thing')->icon(ios: Ios::Plus->value, android: Android::Add->value)->press('addChild'),
+            NavAction::make('item-scan-children')->label('Bulk add')->icon(ios: Ios::CameraViewfinder->value, android: Android::DocumentScanner->value)->press('scanChildren'),
         ];
+    }
+
+    public function startMove(): void
+    {
+        if ($this->item === null) {
+            return;
+        }
+
+        $this->parentId = $this->parentChoice($this->item['parent_id']) === null ? null : $this->item['parent_id'];
+        $this->openParentPicker();
+    }
+
+    public function selectParent(int $id): void
+    {
+        $this->chooseParent($id);
+        $this->moveItem();
+    }
+
+    public function selectTopLevel(): void
+    {
+        $this->chooseTopLevel();
+        $this->moveItem();
+    }
+
+    public function editPhoto(): void
+    {
+        $this->navigate('/inventory/'.$this->item['id'].'/edit');
     }
 
     public function addChild(): void
@@ -135,10 +172,10 @@ class InventoryItemDetail extends NativeComponent
         $message = '“'.$this->item['name'].'” will be deleted for everyone on your team.';
 
         if ($count > 0) {
-            $message .= ' '.trans_choice('The :count item inside it will move to the top level.|The :count items inside it will move to the top level.', $count);
+            $message .= ' '.trans_choice('The :count thing inside it will move to “Not in a place yet”.|The :count things inside it will move to “Not in a place yet”.', $count);
         }
 
-        Dialog::alert('Delete item?', $message, [
+        Dialog::alert('Delete '.$this->item['name'].'?', $message, [
             ['label' => 'Cancel', 'style' => 'cancel'],
             ['label' => 'Delete', 'style' => 'destructive'],
         ])->id('delete-item')->show();
@@ -172,6 +209,36 @@ class InventoryItemDetail extends NativeComponent
         $this->back();
     }
 
+    protected function moveItem(): void
+    {
+        if ($this->item === null || $this->parentId === $this->item['parent_id']) {
+            return;
+        }
+
+        try {
+            app(SunnyOutbox::class)->queue('items', $this->item['team_id'], [
+                'name' => $this->item['name'],
+                'type' => $this->item['type']->value,
+                'parent_id' => $this->parentId,
+                'metadata' => $this->item['metadata'],
+            ], $this->item['id']);
+        } catch (ValidationException $exception) {
+            $this->error = collect($exception->errors())->flatten()->first() ?? 'Unable to move it on this phone. Try again.';
+
+            return;
+        }
+
+        app(SunnySyncCoordinator::class)->dispatch();
+        $this->error = '';
+        $this->refreshLocalSyncedData();
+
+        Dialog::toast(match (true) {
+            $this->parent !== null => 'Moved to '.$this->parent['name'],
+            $this->item['type'] === ItemType::Location => 'Now one of the places in your home',
+            default => 'Moved to “Not in a place yet”',
+        });
+    }
+
     #[On('sunny-sync-complete')]
     public function onSyncComplete(string $status): void
     {
@@ -182,7 +249,7 @@ class InventoryItemDetail extends NativeComponent
 
     protected function refreshLocalSyncedData(): void
     {
-        unset($this->item, $this->parent, $this->path, $this->children, $this->queuedChange);
+        unset($this->item, $this->parent, $this->path, $this->children, $this->queuedChange, $this->parentChoices, $this->selectedParent, $this->browsedParent, $this->parentPickerRows, $this->parentTrail);
     }
 
     /**
@@ -199,6 +266,18 @@ class InventoryItemDetail extends NativeComponent
         if (in_array($id, array_column($this->path, 'id'), true)) {
             $this->navigate('/inventory/'.$id, ['from' => $this->item['id']]);
         }
+    }
+
+    /**
+     * @return list<int>
+     */
+    protected function unselectableParentIds(): array
+    {
+        if ($this->item === null) {
+            return [];
+        }
+
+        return [$this->item['id'], ...Inventory::descendantIdsOf($this->item['id'])];
     }
 
     protected function queuedResource(): string

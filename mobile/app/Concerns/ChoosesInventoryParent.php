@@ -80,6 +80,23 @@ trait ChoosesInventoryParent
     }
 
     /**
+     * @return list<array{id: int, parent_id: int|null, name: string, type: ItemType, depth: int, path: string|null, children_count: int}>
+     */
+    #[Computed]
+    public function parentTrail(): array
+    {
+        $trail = [];
+        $choice = $this->browsedParent;
+
+        while ($choice !== null && count($trail) < 50) {
+            array_unshift($trail, $choice);
+            $choice = $this->parentChoice($choice['parent_id']);
+        }
+
+        return $trail;
+    }
+
+    /**
      * Open the picker on the container holding the current choice, so its
      * neighbours are one tap away.
      */
@@ -105,6 +122,11 @@ trait ChoosesInventoryParent
     public function browseUp(): void
     {
         $this->parentBrowseId = $this->browsedParent['parent_id'] ?? null;
+    }
+
+    public function browseTop(): void
+    {
+        $this->parentBrowseId = null;
     }
 
     public function selectParent(int $id): void

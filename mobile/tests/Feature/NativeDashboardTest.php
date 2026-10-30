@@ -39,7 +39,7 @@ it('renders the dashboard', function () {
 it('summarizes the active team recipes and inventory', function () {
     Native::visit('/dashboard')
         ->assertSet('summary', ['recipes' => 6, 'items' => 9, 'locations' => 3, 'bins' => 3])
-        ->assertSee('3 locations · 3 bins');
+        ->assertSee('3 places · 3 storage spots');
 });
 
 it('asks for confirmation before logging out', function () {
@@ -82,9 +82,9 @@ it('lists the most recently added or updated items', function () {
 
     Native::visit('/dashboard')
         ->assertSet('recentItems', [
-            ['id' => 3, 'name' => 'Canned tomatoes', 'type' => ItemType::Item, 'supporting' => 'Item · Updated 17 hours ago', 'photo' => null, 'url' => '/inventory/3'],
-            ['id' => 13, 'name' => 'String lights', 'type' => ItemType::Item, 'supporting' => 'Item · Updated 3 days ago', 'photo' => 'https://sunny.example/lights.jpg', 'url' => '/inventory/13'],
-            ['id' => 8, 'name' => 'Cordless drill', 'type' => ItemType::Item, 'supporting' => 'Item · Updated 1 week ago', 'photo' => null, 'url' => '/inventory/8'],
+            ['id' => 3, 'name' => 'Canned tomatoes', 'type' => ItemType::Item, 'supporting' => 'Thing · Updated 17 hours ago', 'photo' => null, 'url' => '/inventory/3'],
+            ['id' => 13, 'name' => 'String lights', 'type' => ItemType::Item, 'supporting' => 'Thing · Updated 3 days ago', 'photo' => 'https://sunny.example/lights.jpg', 'url' => '/inventory/13'],
+            ['id' => 8, 'name' => 'Cordless drill', 'type' => ItemType::Item, 'supporting' => 'Thing · Updated 1 week ago', 'photo' => null, 'url' => '/inventory/8'],
         ]);
 });
 

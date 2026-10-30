@@ -19,7 +19,7 @@ trait ManagesInventoryItemForm
 
     public string $name = '';
 
-    /** Index into {@see ItemType::cases()} — bound to the type selector. */
+    /** Index into {@see ItemType::cases()}. */
     public int $typeIndex = 0;
 
     /**
@@ -50,21 +50,23 @@ trait ManagesInventoryItemForm
     }
 
     /**
-     * The labels for the type selector, in enum order so the bound index
-     * lines up with {@see ItemType::cases()}.
-     *
-     * @return list<string>
+     * @return list<ItemType>
      */
     #[Computed]
-    public function typeOptions(): array
+    public function typeChoices(): array
     {
-        return array_map(fn (ItemType $type): string => $type->label(), ItemType::cases());
+        return [ItemType::Item, ItemType::Bin, ItemType::Location];
     }
 
     #[Computed]
     public function type(): ItemType
     {
         return ItemType::cases()[$this->typeIndex] ?? ItemType::Item;
+    }
+
+    public function chooseType(string $type): void
+    {
+        $this->typeIndex = (int) array_search(ItemType::from($type), ItemType::cases(), strict: true);
     }
 
     public function addMetadata(): void
@@ -120,7 +122,7 @@ trait ManagesInventoryItemForm
     protected function validationError(): string
     {
         if (trim($this->name) === '') {
-            return 'Give the item a name.';
+            return 'Give it a name.';
         }
 
         if (mb_strlen(trim($this->name)) > 255) {
@@ -135,14 +137,14 @@ trait ManagesInventoryItemForm
             ->filter();
 
         if ($keys->duplicates()->isNotEmpty()) {
-            return 'Metadata keys must be unique.';
+            return 'Each detail needs a different name.';
         }
 
         $missingValue = collect($this->metadata)
             ->contains(fn (array $pair): bool => trim($pair['key']) !== '' && trim($pair['value']) === '');
 
         if ($missingValue) {
-            return 'Give every metadata field a value.';
+            return 'Fill in every detail, or remove the empty ones.';
         }
 
         return '';
