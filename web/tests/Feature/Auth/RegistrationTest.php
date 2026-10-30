@@ -1,11 +1,23 @@
 <?php
 
+use App\Models\TeamInvitation;
 use App\Models\User;
 
 test('registration screen can be rendered', function () {
     $response = $this->get(route('register'));
 
     $response->assertOk();
+});
+
+test('registration screen shows the team from a pending invitation', function () {
+    $luffy = User::factory()->create();
+    $invitation = TeamInvitation::factory()->for($luffy->currentTeam)->create();
+
+    $this->get(route('register', ['invitation' => $invitation->code]))
+        ->assertOk()
+        ->assertSeeHtml('data-test="team-invitation-alert"')
+        ->assertSee($luffy->currentTeam->name)
+        ->assertSee(route('login', ['invitation' => $invitation->code]));
 });
 
 test('new users can register', function () {

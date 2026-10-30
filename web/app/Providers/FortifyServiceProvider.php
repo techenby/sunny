@@ -12,6 +12,7 @@ use App\Http\Responses\PasskeyLoginResponse;
 use App\Http\Responses\RegisterResponse;
 use App\Http\Responses\TwoFactorLoginResponse;
 use App\Http\Responses\VerifyEmailResponse;
+use App\Models\TeamInvitation;
 use App\Models\User;
 use App\Support\TwoFactorChallenge;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -54,10 +55,12 @@ class FortifyServiceProvider extends ServiceProvider
 
     private function configureViews(): void
     {
-        Fortify::loginView(function () {
+        Fortify::loginView(function (Request $request) {
             Head::title('Log in');
 
-            return view('pages::auth.login');
+            return view('pages::auth.login', [
+                'teamInvitation' => $this->teamInvitation($request),
+            ]);
         });
         Fortify::verifyEmailView(function () {
             Head::title('Verify email');
@@ -74,10 +77,12 @@ class FortifyServiceProvider extends ServiceProvider
 
             return view('pages::auth.confirm-password');
         });
-        Fortify::registerView(function () {
+        Fortify::registerView(function (Request $request) {
             Head::title('Register');
 
-            return view('pages::auth.register');
+            return view('pages::auth.register', [
+                'teamInvitation' => $this->teamInvitation($request),
+            ]);
         });
         Fortify::resetPasswordView(function () {
             Head::title('Reset password');
@@ -116,5 +121,33 @@ class FortifyServiceProvider extends ServiceProvider
                 ($credentialId ?: $request->session()->getId()) . '|' . $request->ip(),
             );
         });
+    }
+
+    /** @return array{code: string, teamName: string}|null */
+    private function teamInvitation(Request $request): ?array
+    {
+        $invitationCode = $request->query('invitation');
+
+        if (! is_string($invitationCode)) {
+            return null;
+        }
+
+        $invitation = TeamInvitation::query()
+            ->with('team')
+            ->where('code', $invitationCode)
+            ->whereNull('accepted_at')
+            ->where(fn ($query) => $query
+                ->whereNull('expires_at')
+                ->orWhere('expires_at', '>=', now()))
+            ->first();
+
+        if (! $invitation) {
+            return null;
+        }
+
+        return [
+            'code' => $invitation->code,
+            'teamName' => $invitation->team->name,
+        ];
     }
 }

@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\TeamInvitation;
 use App\Models\User;
 use Carbon\CarbonInterval;
 use Illuminate\Support\Facades\DB;
@@ -13,6 +14,29 @@ test('login screen can be rendered', function () {
     $response->assertOk()
         ->assertSee('<title>Log in - ' . config('app.name') . '</title>', false);
 });
+
+test('login screen shows the team from a pending invitation', function () {
+    $luffy = User::factory()->create();
+    $invitation = TeamInvitation::factory()->for($luffy->currentTeam)->create();
+
+    $this->get(route('login', ['invitation' => $invitation->code]))
+        ->assertOk()
+        ->assertSeeHtml('data-test="team-invitation-alert"')
+        ->assertSee($luffy->currentTeam->name)
+        ->assertSee(route('register', ['invitation' => $invitation->code]));
+});
+
+test('login screen ignores expired or unknown invitations', function (?string $code) {
+    $luffy = User::factory()->create();
+    $invitation = TeamInvitation::factory()->for($luffy->currentTeam)->expired()->create();
+
+    $this->get(route('login', ['invitation' => $code ?? $invitation->code]))
+        ->assertOk()
+        ->assertDontSeeHtml('data-test="team-invitation-alert"');
+})->with([
+    'expired' => [null],
+    'unknown' => ['not-a-real-code'],
+]);
 
 test('users can authenticate using the login screen', function () {
     $user = User::factory()->create();

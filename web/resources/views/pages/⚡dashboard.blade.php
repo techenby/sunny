@@ -23,6 +23,8 @@ new class extends Component
 ?>
 
 <div class="flex flex-col gap-6">
+    <livewire:pages::teams.pending-invitations-modal />
+
     <div>
         <flux:heading size="xl">{{ $this->greeting }}</flux:heading>
         <flux:text class="mt-1">{{ auth()->user()->currentTeam->today()->format('l, F j') }}</flux:text>
