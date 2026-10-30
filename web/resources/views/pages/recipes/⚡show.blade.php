@@ -7,6 +7,7 @@ use App\Models\Recipe;
 use App\Models\Team;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
+use Laravel\Head\Facades\Head;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
@@ -69,6 +70,13 @@ new class extends Component {
         }
 
         $this->recipe->refresh();
+    }
+
+    public function render()
+    {
+        Head::title($this->recipe->name);
+
+        return $this->view();
     }
 }; ?>
 

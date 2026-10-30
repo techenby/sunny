@@ -1,2 +1,5 @@
 User-agent: *
 Disallow:
+
+Sitemap: https://sunnyhome.app/sitemap.xml
+Sitemap: https://sunnyhome.app/docs/sitemap.xml

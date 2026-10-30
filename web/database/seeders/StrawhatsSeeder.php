@@ -29,18 +29,21 @@ class StrawhatsSeeder extends Seeder
             ->count(10)
             ->hasAttached($strawhats)
             ->sequence(
-                ['name' => 'Monkey D. Luffy', 'email' => 'luffy@strawhat.pirates', 'current_team_id' => $strawhats->id],
-                ['name' => 'Roronoa Zoro', 'email' => 'zoro@strawhat.pirates', 'current_team_id' => $strawhats->id],
-                ['name' => 'Nami', 'email' => 'nami@strawhat.pirates', 'current_team_id' => $strawhats->id],
-                ['name' => 'Usopp', 'email' => 'usopp@strawhat.pirates', 'current_team_id' => $strawhats->id],
-                ['name' => 'Sanji', 'email' => 'sanji@strawhat.pirates', 'current_team_id' => $strawhats->id],
-                ['name' => 'Tony Tony Chopper', 'email' => 'chopper@strawhat.pirates', 'current_team_id' => $strawhats->id],
-                ['name' => 'Nico Robin', 'email' => 'robin@strawhat.pirates', 'current_team_id' => $strawhats->id],
-                ['name' => 'Franky', 'email' => 'franky@strawhat.pirates', 'current_team_id' => $strawhats->id],
-                ['name' => 'Brook', 'email' => 'brook@strawhat.pirates', 'current_team_id' => $strawhats->id],
-                ['name' => 'Jinbe', 'email' => 'jinbe@strawhat.pirates', 'current_team_id' => $strawhats->id],
+                ['name' => 'Monkey D. Luffy', 'email' => 'luffy@strawhat.pirates'],
+                ['name' => 'Roronoa Zoro', 'email' => 'zoro@strawhat.pirates'],
+                ['name' => 'Nami', 'email' => 'nami@strawhat.pirates'],
+                ['name' => 'Usopp', 'email' => 'usopp@strawhat.pirates'],
+                ['name' => 'Sanji', 'email' => 'sanji@strawhat.pirates'],
+                ['name' => 'Tony Tony Chopper', 'email' => 'chopper@strawhat.pirates'],
+                ['name' => 'Nico Robin', 'email' => 'robin@strawhat.pirates'],
+                ['name' => 'Franky', 'email' => 'franky@strawhat.pirates'],
+                ['name' => 'Brook', 'email' => 'brook@strawhat.pirates'],
+                ['name' => 'Jinbe', 'email' => 'jinbe@strawhat.pirates'],
             )
             ->create();
+
+        // The user factory switches each user to their personal team, so switch the crew back.
+        $crew->each->switchTeam($strawhats);
 
         $locations = Item::factory()->for($strawhats)
             ->count(15)

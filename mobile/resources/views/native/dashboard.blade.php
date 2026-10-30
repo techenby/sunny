@@ -22,7 +22,7 @@
         />
         <native:top-bar-action
             id="scan-items"
-            label="Scan items"
+            label="Bulk add"
             :ios-icon="Ios::CameraViewfinder"
             :android-icon="Android::DocumentScanner"
             url="/inventory/scan"

@@ -64,7 +64,7 @@ diff --git a/resources/ios/NativeUITextInputCore.swift b/resources/ios/NativeUIT
 index bedcece..80c139e 100644
 --- a/resources/ios/NativeUITextInputCore.swift
 +++ b/resources/ios/NativeUITextInputCore.swift
-@@ -20,6 +20,9 @@ struct NativeUITextInputCore: View {
+@@ -22,6 +22,9 @@ struct NativeUITextInputCore: View {
      let textSize: CGFloat
      let contentColor: Color
      let tintColor: Color
@@ -74,7 +74,7 @@ index bedcece..80c139e 100644
  
      /// Whether this variant has room to draw the `revealable` eye INSIDE the
      /// field. The chrome variants (outlined, filled) pass true; the chromeless
-@@ -285,6 +288,11 @@ struct NativeUITextInputCore: View {
+@@ -320,6 +323,11 @@ struct NativeUITextInputCore: View {
              selEnd = end
              scheduleSelectionEmit(text: text, cb: onSelectionCb, debounceMs: selDebounceMs)
          }
@@ -84,5 +84,5 @@ index bedcece..80c139e 100644
 +            }
 +        }
          .onChange(of: isFocused) { _, focused in
-             // On blur, flush any pending change — covers both `blur` mode
-             // (never dispatched mid-typing) and `debounce` mode (in-flight
+             // Lets interactive taps elsewhere honor this field's
+             // keep-focus-on-submit, and gives press dispatch a

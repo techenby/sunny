@@ -1,4 +1,4 @@
-<x-layouts::guest :title="__('Privacy Policy')">
+<x-layouts::guest>
     <div class="max-w-3xl">
         <flux:heading level="1" size="xl">Privacy Policy</flux:heading>
         <flux:text class="mt-2">Last updated October 9, 2026</flux:text>

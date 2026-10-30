@@ -174,7 +174,7 @@ class Inventory extends NativeComponent
     {
         return [
             NavAction::make('add-one')->label('Add one thing')->icon(ios: Ios::Plus->value, android: Android::Add->value)->press('addOne'),
-            NavAction::make('add-several')->label('Photograph several things')->icon(ios: Ios::CameraViewfinder->value, android: Android::DocumentScanner->value)->press('scanItems'),
+            NavAction::make('add-several')->label('Bulk add')->icon(ios: Ios::CameraViewfinder->value, android: Android::DocumentScanner->value)->press('scanItems'),
         ];
     }
 

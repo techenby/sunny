@@ -216,7 +216,7 @@ it('lets a plain item hold other items, like insoles in shoes', function () {
     Native::visit('/inventory/8')
         ->assertElement('pressable', function (array $node): bool {
             return ($node['ref'] ?? null) === 'item-add'
-                && array_column(array_column($node['children'], 'props'), 'label') === ['Add one thing', 'Photograph several things'];
+                && array_column(array_column($node['children'], 'props'), 'label') === ['Add one thing', 'Bulk add'];
         })
         ->tap('Add one thing')
         ->assertNavigatedTo('/inventory/create')
@@ -251,7 +251,7 @@ it('puts a labeled add button and a scan button inside search in the bottom bar'
         })
         ->assertElement('pressable', function (array $node): bool {
             return ($node['ref'] ?? null) === 'inventory-add'
-                && array_column(array_column($node['children'], 'props'), 'label') === ['Add one thing', 'Photograph several things'];
+                && array_column(array_column($node['children'], 'props'), 'label') === ['Add one thing', 'Bulk add'];
         })
         ->assertAccessible();
 });

@@ -105,7 +105,7 @@
                                 <span class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-(--theme-primary)/15 text-(--theme-primary)">
                                     <flux:icon.qr-code />
                                 </span>
-                                <p class="flex-1 text-base font-medium text-(--theme-primary)">Scan items here</p>
+                                <p class="flex-1 text-base font-medium text-(--theme-primary)">Bulk add here</p>
                             </div>
                         </div>
                     </div>

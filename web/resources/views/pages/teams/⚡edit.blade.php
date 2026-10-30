@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Laravel\Head\Facades\Head;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
@@ -125,7 +126,9 @@ new class extends Component
             ? __('Edit :name', ['name' => $teamName])
             : __('View :name', ['name' => $teamName]);
 
-        return $this->view()->title($title);
+        Head::title($title);
+
+        return $this->view();
     }
 
     #[Computed]

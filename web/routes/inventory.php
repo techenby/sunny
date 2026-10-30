@@ -8,8 +8,8 @@ Route::prefix('{current_team}/inventory')
     ->middleware(['auth', 'verified', EnsureTeamMembership::class])
     ->name('inventory')
     ->group(function (): void {
-        Route::livewire('/', 'pages::inventory.index')->name('.index')->middleware('can:viewAny,App\Models\Item');
-        Route::livewire('{item}', 'pages::inventory.show')->name('.show')->middleware('can:view,item')->withTrashed();
+        Route::livewire('/', 'pages::inventory.index')->name('.index')->middleware('can:viewAny,App\Models\Item')->withHead(title: 'Inventory');
+        Route::livewire('{item}', 'pages::inventory.show')->name('.show')->middleware('can:view,item')->withTrashed()->withHead(title: 'Inventory: Item');
     });
 
 Route::get('i/{item}', OpenItemLinkController::class)

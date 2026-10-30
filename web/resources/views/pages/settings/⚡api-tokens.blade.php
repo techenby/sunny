@@ -8,10 +8,9 @@ use Illuminate\Validation\Rule;
 use Laravel\Passport\Passport;
 use Laravel\Passport\Token;
 use Livewire\Attributes\Computed;
-use Livewire\Attributes\Title;
 use Livewire\Component;
 
-new #[Title('API tokens settings')] class extends Component {
+new class extends Component {
     public string $name = '';
 
     public string $expiration = TokenLifetime::NinetyDays->value;

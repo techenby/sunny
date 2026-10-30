@@ -1,5 +1,5 @@
 {
-    "_hash": "346e95f98f0452b0f8ab17c0bcc0d96e594785b69753ad40c6d28a40151d8b97",
+    "_hash": "6a264fbf1fc6b1cfab31a8009487e1529017e02768f17654e2243d03ea7b2160",
     "patches": {
         "nativephp/mobile-camera": [
             {
@@ -30,7 +30,7 @@
                 "package": "nativephp/mobile-ui",
                 "description": "iOS: focus outlined/filled text inputs when their padded box is tapped (upstream issue #19 in our scratchpad)",
                 "url": "patches/nativephp-mobile-ui-text-input-tap-to-focus.patch",
-                "sha256": "96027bfb40913de5031675e1f4517ffba915a059ef125c66ab962b02fa3eb4cf",
+                "sha256": "4146788653714e0e1d63812c0d7ff1affc77be10824ac31234316239b6ae945a",
                 "depth": 1,
                 "extra": {
                     "provenance": "root"

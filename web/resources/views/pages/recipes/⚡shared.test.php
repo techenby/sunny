@@ -12,6 +12,23 @@ test('shared recipe is viewable without authentication', function () {
         ->assertSee('Test Recipe');
 });
 
+test('shared recipe uses the recipe name as the page title', function () {
+    $recipe = Recipe::factory()->shared()->create(['name' => 'Test Recipe']);
+
+    $this->get(route('recipes.shared', $recipe->share_token))
+        ->assertOk()
+        ->assertSee('<title>Test Recipe - ' . config('app.name') . '</title>', false)
+        ->assertSee('<meta property="og:description" content="A recipe shared with you on Sunny.', false);
+});
+
+test('shared recipes are hidden from search engines', function () {
+    $recipe = Recipe::factory()->shared()->create();
+
+    $this->get(route('recipes.shared', $recipe->share_token))
+        ->assertOk()
+        ->assertSee('<meta name="robots" content="noindex, nofollow">', false);
+});
+
 test('invalid share token returns 404', function () {
     $this->get(route('recipes.shared', 'nonexistent-token'))
         ->assertNotFound();
