@@ -16,7 +16,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
-use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable(['name', 'slug', 'is_personal', 'address', 'timezone', 'week_start', 'appearance', 'rotation', 'screensaver_after', 'return_home_after', 'night_starts_at', 'night_ends_at'])]
@@ -56,7 +55,7 @@ class Team extends Model
             ->first();
     }
 
-    /** @return BelongsToMany<User, $this, Pivot> */
+    /** @return BelongsToMany<User, $this, Membership, 'pivot'> */
     public function members(): BelongsToMany
     {
         return $this->belongsToMany(User::class, Membership::class, 'team_id', 'user_id')

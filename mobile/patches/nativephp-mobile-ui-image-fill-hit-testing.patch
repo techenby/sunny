@@ -1,13 +1,13 @@
 diff --git a/resources/ios/NativeUISimpleRenderers.swift b/resources/ios/NativeUISimpleRenderers.swift
 --- a/resources/ios/NativeUISimpleRenderers.swift
 +++ b/resources/ios/NativeUISimpleRenderers.swift
-@@ -140,6 +140,9 @@
-             Color.clear
-                 .overlay(imageContent(src: src, contentMode: contentMode, tintArgb: tintArgb, cornerRadius: cornerRadius))
+@@ -185,6 +185,9 @@
+             // frame's size and centers the image in it.
+             imageContent(src: src, fit: fit, tintArgb: tintArgb, cornerRadius: cornerRadius)
                  .clipped()
 +                // `.clipped()` crops the drawing but not hit-testing, so the
 +                // overflowing image still swallows taps meant for siblings.
 +                .contentShape(Rectangle())
                  .modifier(ImageAltModifier(alt: alt))
-         } else {
-             // Fit (default / object-contain / scale-down / none): the image
+         }
+     }

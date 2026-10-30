@@ -38,10 +38,6 @@ Route::prefix('{current_team}')
         Route::livewire('dashboard', 'pages::dashboard')->name('dashboard')->withHead(title: 'Dashboard');
     });
 
-Route::middleware(['auth'])->group(function () {
-    Route::livewire('invitations/{invitation}/accept', 'pages::teams.accept-invitation')->name('invitations.accept')->withHead(title: 'Teams');
-});
-
 require __DIR__ . '/admin.php';
 require __DIR__ . '/inventory.php';
 require __DIR__ . '/kiosk.php';

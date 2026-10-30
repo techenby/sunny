@@ -39,7 +39,7 @@
         "nativephp/mobile-scanner": "^1.1",
         "nativephp/mobile-secure-storage": "^1.0",
         "nativephp/mobile-share": "^1.0",
-        "nativephp/mobile-ui": "^0.8",
+        "nativephp/mobile-ui": "^0.9",
         "saloonphp/laravel-plugin": "^5.0",
         "saloonphp/saloon": "^4.3",
         "sunny/item-scanner": "@dev"
@@ -116,6 +116,10 @@
                 {
                     "description": "iOS: keep the tab bar on pushed screens so it doesn't pop back in after a swipe back",
                     "url": "patches/nativephp-mobile-keep-tab-bar-on-pushed-screens.patch"
+                },
+                {
+                    "description": "Android: follow symlinks when zipping the app bundle so symlinked path-repo plugins (sunny/item-scanner) ship in vendor",
+                    "url": "patches/nativephp-mobile-android-bundle-follow-symlinks.patch"
                 }
             ],
             "nativephp/mobile-ui": [

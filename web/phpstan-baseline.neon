@@ -1,0 +1,2383 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Access to an undefined property Sabre\\VObject\\Component\\VEvent\:\:\$DTSTART\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Actions/Calendars/FetchCalendarEvents.php
+
+		-
+			message: '#^Access to an undefined property Sabre\\VObject\\Component\\VEvent\:\:\$LOCATION\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Actions/Calendars/FetchCalendarEvents.php
+
+		-
+			message: '#^Access to an undefined property Sabre\\VObject\\Component\\VEvent\:\:\$SUMMARY\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Actions/Calendars/FetchCalendarEvents.php
+
+		-
+			message: '#^Call to an undefined method Sabre\\VObject\\Document\:\:expand\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Actions/Calendars/FetchCalendarEvents.php
+
+		-
+			message: '#^Method App\\Actions\\Calendars\\FetchCalendarEvents\:\:endDate\(\) has parameter \$event with no value type specified in iterable type Sabre\\VObject\\Component\\VEvent\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Actions/Calendars/FetchCalendarEvents.php
+
+		-
+			message: '#^Method App\\Actions\\Calendars\\FetchCalendarEvents\:\:eventData\(\) has parameter \$event with no value type specified in iterable type Sabre\\VObject\\Component\\VEvent\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Actions/Calendars/FetchCalendarEvents.php
+
+		-
+			message: '#^Method App\\Actions\\Calendars\\FetchCalendarEvents\:\:responseStatus\(\) has parameter \$event with no value type specified in iterable type Sabre\\VObject\\Component\\VEvent\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Actions/Calendars/FetchCalendarEvents.php
+
+		-
+			message: '#^Method App\\Actions\\Calendars\\FetchCalendarEvents\:\:teamMemberEmails\(\) should return Illuminate\\Support\\Collection\<int, string\> but returns Illuminate\\Support\\Collection\<int, lowercase\-string&non\-falsy\-string\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Actions/Calendars/FetchCalendarEvents.php
+
+		-
+			message: '#^Unable to resolve the template type TKey in call to function collect$#'
+			identifier: argument.templateType
+			count: 1
+			path: app/Actions/Calendars/FetchCalendarEvents.php
+
+		-
+			message: '#^Unable to resolve the template type TValue in call to function collect$#'
+			identifier: argument.templateType
+			count: 1
+			path: app/Actions/Calendars/FetchCalendarEvents.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>timezone" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Actions/Calendars/FetchCalendarEvents.php
+
+		-
+			message: '#^Parameter \#1 \$photoPath of method App\\Actions\\Photos\\CreateThumbnail\:\:handle\(\) expects string, string\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Actions/Inventory/CreateItem.php
+
+		-
+			message: '#^Method App\\Actions\\Inventory\\GenerateItemQrCode\:\:handle\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Actions/Inventory/GenerateItemQrCode.php
+
+		-
+			message: '#^Method App\\Actions\\Inventory\\ImportItemsFromAmazonAction\:\:rejectConsumables\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Actions/Inventory/ImportItemsFromAmazonAction.php
+
+		-
+			message: '#^Method App\\Actions\\Inventory\\ImportItemsFromAmazonAction\:\:rejectConsumables\(\) has parameter \$collection with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Actions/Inventory/ImportItemsFromAmazonAction.php
+
+		-
+			message: '#^Method App\\Actions\\Inventory\\ImportItemsFromAmazonAction\:\:rejectGifts\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Actions/Inventory/ImportItemsFromAmazonAction.php
+
+		-
+			message: '#^Method App\\Actions\\Inventory\\ImportItemsFromAmazonAction\:\:rejectGifts\(\) has parameter \$collection with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Actions/Inventory/ImportItemsFromAmazonAction.php
+
+		-
+			message: '#^Method App\\Actions\\Inventory\\ImportItemsFromAmazonAction\:\:rejectOutsideDates\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Actions/Inventory/ImportItemsFromAmazonAction.php
+
+		-
+			message: '#^Method App\\Actions\\Inventory\\ImportItemsFromAmazonAction\:\:rejectOutsideDates\(\) has parameter \$collection with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Actions/Inventory/ImportItemsFromAmazonAction.php
+
+		-
+			message: '#^Method App\\Actions\\Inventory\\ImportItemsFromAmazonAction\:\:rejectOutsideDates\(\) has parameter \$endDate with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Actions/Inventory/ImportItemsFromAmazonAction.php
+
+		-
+			message: '#^Method App\\Actions\\Inventory\\ImportItemsFromAmazonAction\:\:rejectOutsideDates\(\) has parameter \$startDate with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Actions/Inventory/ImportItemsFromAmazonAction.php
+
+		-
+			message: '#^Property App\\Actions\\Inventory\\ImportItemsFromAmazonAction\:\:\$stats has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Actions/Inventory/ImportItemsFromAmazonAction.php
+
+		-
+			message: '#^Parameter \#1 \$photoPath of method App\\Actions\\Photos\\CreateThumbnail\:\:handle\(\) expects string, string\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Actions/Inventory/UpdateItem.php
+
+		-
+			message: '#^Negated boolean expression is always true\.$#'
+			identifier: booleanNot.alwaysTrue
+			count: 2
+			path: app/Actions/Kiosk/FetchWeather.php
+
+		-
+			message: '#^Offset ''lat'' on string\|null on left side of \?\? does not exist\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Actions/Kiosk/FetchWeather.php
+
+		-
+			message: '#^Offset ''long'' on string\|null on left side of \?\? does not exist\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Actions/Kiosk/FetchWeather.php
+
+		-
+			message: '#^Result of \|\| is always true\.$#'
+			identifier: booleanOr.alwaysTrue
+			count: 1
+			path: app/Actions/Kiosk/FetchWeather.php
+
+		-
+			message: '#^Unreachable statement \- code above always terminates\.$#'
+			identifier: deadCode.unreachable
+			count: 1
+			path: app/Actions/Kiosk/FetchWeather.php
+
+		-
+			message: '#^Parameter \#1 \$file of function exif_read_data expects resource\|string, resource\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Actions/Photos/CreateThumbnail.php
+
+		-
+			message: '#^Parameter \#1 \$stream of function fclose expects resource, resource\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Actions/Photos/CreateThumbnail.php
+
+		-
+			message: '#^Parameter \#1 \$stream of function fwrite expects resource, resource\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Actions/Photos/CreateThumbnail.php
+
+		-
+			message: '#^Parameter \#1 \$stream of function rewind expects resource, resource\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Actions/Photos/CreateThumbnail.php
+
+		-
+			message: '#^Parameter \#1 \$photoPath of method App\\Actions\\Photos\\CreateThumbnail\:\:handle\(\) expects string, string\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Actions/Recipes/CreateRecipe.php
+
+		-
+			message: '#^Call to function array_is_list\(\) with array\<string, mixed\> will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: app/Actions/Recipes/ImportRecipeFromUrl.php
+
+		-
+			message: '#^Method App\\Actions\\Recipes\\ImportRecipeFromUrl\:\:formatIngredients\(\) has parameter \$ingredients with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Actions/Recipes/ImportRecipeFromUrl.php
+
+		-
+			message: '#^Method App\\Actions\\Recipes\\ImportRecipeFromUrl\:\:formatInstructions\(\) has parameter \$instructions with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Actions/Recipes/ImportRecipeFromUrl.php
+
+		-
+			message: '#^Method App\\Actions\\Recipes\\ImportRecipeFromUrl\:\:handle\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Actions/Recipes/ImportRecipeFromUrl.php
+
+		-
+			message: '#^Unable to resolve the template type TKey in call to function collect$#'
+			identifier: argument.templateType
+			count: 1
+			path: app/Actions/Recipes/ImportRecipeFromUrl.php
+
+		-
+			message: '#^Unable to resolve the template type TValue in call to function collect$#'
+			identifier: argument.templateType
+			count: 1
+			path: app/Actions/Recipes/ImportRecipeFromUrl.php
+
+		-
+			message: '#^Parameter \#1 \$photoPath of method App\\Actions\\Photos\\CreateThumbnail\:\:handle\(\) expects string, string\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Actions/Recipes/UpdateRecipe.php
+
+		-
+			message: '#^Cannot call method getSortOrder\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Actions/Routines/GenerateRoutineOccurrences.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between string and App\\Enums\\TimeOfDay\:\:Morning will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: app/Console/Commands/CreateDemoHouseholdCommand.php
+
+		-
+			message: '#^Unreachable statement \- code above always terminates\.$#'
+			identifier: deadCode.unreachable
+			count: 1
+			path: app/Console/Commands/CreateDemoHouseholdCommand.php
+
+		-
+			message: '#^Unable to resolve the template type TKey in call to function collect$#'
+			identifier: argument.templateType
+			count: 2
+			path: app/Console/Commands/SyncCloudCostsCommand.php
+
+		-
+			message: '#^Unable to resolve the template type TValue in call to function collect$#'
+			identifier: argument.templateType
+			count: 2
+			path: app/Console/Commands/SyncCloudCostsCommand.php
+
+		-
+			message: '#^Call to function abort_unless\(\) with arguments true, 400 and ''Only token…'' will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 2
+			path: app/Http/Controllers/Api/TokenController.php
+
+		-
+			message: '#^Instanceof between Laravel\\Sanctum\\PersonalAccessToken and Laravel\\Sanctum\\PersonalAccessToken will always evaluate to true\.$#'
+			identifier: instanceof.alwaysTrue
+			count: 2
+			path: app/Http/Controllers/Api/TokenController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Api\\TokenController\:\:store\(\) should return Illuminate\\Http\\JsonResponse but returns Symfony\\Component\\HttpFoundation\\Response\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Http/Controllers/Api/TokenController.php
+
+		-
+			message: '#^Unable to resolve the template type TKey in call to function collect$#'
+			identifier: argument.templateType
+			count: 1
+			path: app/Http/Controllers/AppLinkAssociationController.php
+
+		-
+			message: '#^Unable to resolve the template type TValue in call to function collect$#'
+			identifier: argument.templateType
+			count: 1
+			path: app/Http/Controllers/AppLinkAssociationController.php
+
+		-
+			message: '#^Call to an undefined method \(object\|string\)\:\:members\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Requests/Api/StoreChecklistRequest.php
+
+		-
+			message: '#^Access to an undefined property \(object\|string\)\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Requests/Api/StoreItemRequest.php
+
+		-
+			message: '#^Access to an undefined property \(object\|string\)\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Requests/Api/StoreRecipeRequest.php
+
+		-
+			message: '#^Call to an undefined method \(object\|string\)\:\:members\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Requests/Api/StoreRoutineRequest.php
+
+		-
+			message: '#^Call to an undefined method \(object\|string\)\:\:members\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Requests/Api/UpdateChecklistRequest.php
+
+		-
+			message: '#^Access to an undefined property \(object\|string\)\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Requests/Api/UpdateItemRequest.php
+
+		-
+			message: '#^Access to an undefined property \(object\|string\)\:\:\$routine\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Requests/Api/UpdateRoutineOccurrenceStepRequest.php
+
+		-
+			message: '#^Call to an undefined method \(object\|string\)\:\:members\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Requests/Api/UpdateRoutineRequest.php
+
+		-
+			message: '#^Method App\\Http\\Resources\\ChecklistItemResource\:\:toArray\(\) should return array\<string, mixed\> but returns array\|Illuminate\\Contracts\\Support\\Arrayable\|JsonSerializable\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Http/Resources/ChecklistItemResource.php
+
+		-
+			message: '#^Method App\\Http\\Resources\\ChecklistResource\:\:toArray\(\) should return array\<string, mixed\> but returns array\|Illuminate\\Contracts\\Support\\Arrayable\|JsonSerializable\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Http/Resources/ChecklistResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ItemResource\:\:\$photo_path\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ItemResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ItemResource\:\:\$thumb_path\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ItemResource.php
+
+		-
+			message: '#^Parameter \#1 \$array of static method Illuminate\\Support\\Arr\:\:except\(\) expects array, array\|Illuminate\\Contracts\\Support\\Arrayable\|JsonSerializable given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Resources/ItemResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RecipeResource\:\:\$photo_path\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RecipeResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RecipeResource\:\:\$thumb_path\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RecipeResource.php
+
+		-
+			message: '#^Parameter \#1 \$array of static method Illuminate\\Support\\Arr\:\:except\(\) expects array, array\|Illuminate\\Contracts\\Support\\Arrayable\|JsonSerializable given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Resources/RecipeResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RoutineOccurrenceResource\:\:\$created_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RoutineOccurrenceResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RoutineOccurrenceResource\:\:\$due_on\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RoutineOccurrenceResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RoutineOccurrenceResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RoutineOccurrenceResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RoutineOccurrenceResource\:\:\$routine_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RoutineOccurrenceResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RoutineOccurrenceResource\:\:\$steps\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RoutineOccurrenceResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RoutineOccurrenceResource\:\:\$updated_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RoutineOccurrenceResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RoutineOccurrenceStepResource\:\:\$completed_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RoutineOccurrenceStepResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RoutineOccurrenceStepResource\:\:\$completed_by\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RoutineOccurrenceStepResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RoutineOccurrenceStepResource\:\:\$created_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RoutineOccurrenceStepResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RoutineOccurrenceStepResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RoutineOccurrenceStepResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RoutineOccurrenceStepResource\:\:\$routine_occurrence_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RoutineOccurrenceStepResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RoutineOccurrenceStepResource\:\:\$routine_step_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RoutineOccurrenceStepResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RoutineOccurrenceStepResource\:\:\$step\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/RoutineOccurrenceStepResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RoutineOccurrenceStepResource\:\:\$updated_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RoutineOccurrenceStepResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\RoutineResource\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RoutineResource.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Resources\\RoutineResource\:\:scheduleSummary\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Resources/RoutineResource.php
+
+		-
+			message: '#^Parameter \#1 \$array of static method Illuminate\\Support\\Arr\:\:except\(\) expects array, array\|Illuminate\\Contracts\\Support\\Arrayable\|JsonSerializable given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Resources/RoutineResource.php
+
+		-
+			message: '#^Method App\\Http\\Resources\\RoutineStepResource\:\:toArray\(\) should return array\<string, mixed\> but returns array\|Illuminate\\Contracts\\Support\\Arrayable\|JsonSerializable\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Http/Resources/RoutineStepResource.php
+
+		-
+			message: '#^Method App\\Http\\Resources\\TeamResource\:\:toArray\(\) should return array\<string, mixed\> but returns array\|Illuminate\\Contracts\\Support\\Arrayable\|JsonSerializable\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Http/Resources/TeamResource.php
+
+		-
+			message: '#^Method App\\Livewire\\Forms\\Inventory\\ImportItemsForm\:\:process\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Forms/Inventory/ImportItemsForm.php
+
+		-
+			message: '#^Method App\\Livewire\\Forms\\Inventory\\ImportItemsForm\:\:process\(\) has parameter \$parentId with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Livewire/Forms/Inventory/ImportItemsForm.php
+
+		-
+			message: '#^Property App\\Livewire\\Forms\\Inventory\\ImportItemsForm\:\:\$file has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Forms/Inventory/ImportItemsForm.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Livewire/Forms/Inventory/ItemForm.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,string\>\:\:map\(\) expects callable\(string, 0\)\: array\{key\: string, value\: string\}, Closure\(string, string\)\: array\{key\: string, value\: string\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Livewire/Forms/Inventory/ItemForm.php
+
+		-
+			message: '#^Parameter \#1 \$value of function collect expects Illuminate\\Contracts\\Support\\Arrayable\<\*NEVER\*, \*NEVER\*\>\|iterable\<\*NEVER\*, \*NEVER\*\>\|null, array\{\}\|string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Livewire/Forms/Inventory/ItemForm.php
+
+		-
+			message: '#^Unable to resolve the template type TKey in call to function collect$#'
+			identifier: argument.templateType
+			count: 1
+			path: app/Livewire/Forms/Inventory/ItemForm.php
+
+		-
+			message: '#^Unable to resolve the template type TValue in call to function collect$#'
+			identifier: argument.templateType
+			count: 1
+			path: app/Livewire/Forms/Inventory/ItemForm.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Livewire/Forms/Kiosk/CalendarFeedForm.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Livewire/Forms/Kiosk/SettingsForm.php
+
+		-
+			message: '#^Method App\\Livewire\\Forms\\Kiosk\\SettingsForm\:\:load\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Forms/Kiosk/SettingsForm.php
+
+		-
+			message: '#^Method App\\Livewire\\Forms\\Kiosk\\SettingsForm\:\:save\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Forms/Kiosk/SettingsForm.php
+
+		-
+			message: '#^Property App\\Livewire\\Forms\\Kiosk\\SettingsForm\:\:\$address \(array\) does not accept array\|string\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Livewire/Forms/Kiosk/SettingsForm.php
+
+		-
+			message: '#^Property App\\Livewire\\Forms\\Kiosk\\SettingsForm\:\:\$address type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Livewire/Forms/Kiosk/SettingsForm.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Livewire/Forms/Lists/ChecklistForm.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 2
+			path: app/Livewire/Forms/Routines/RoutineForm.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Livewire/Forms/Routines/RoutineForm.php
+
+		-
+			message: '#^Trait App\\Livewire\\Traits\\WithKioskTeam is used zero times and is not analysed\.$#'
+			identifier: trait.unused
+			count: 1
+			path: app/Livewire/Traits/WithKioskTeam.php
+
+		-
+			message: '#^Trait App\\Livewire\\Traits\\WithSearching is used zero times and is not analysed\.$#'
+			identifier: trait.unused
+			count: 1
+			path: app/Livewire/Traits/WithSearching.php
+
+		-
+			message: '#^Trait App\\Livewire\\Traits\\WithSorting is used zero times and is not analysed\.$#'
+			identifier: trait.unused
+			count: 1
+			path: app/Livewire/Traits/WithSorting.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Prompts/MorningCheckIn.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Prompts/PlanMeals.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Calendar/CreateCalendarFeed.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Calendar\\CreateCalendarFeed\:\:schema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Calendar/CreateCalendarFeed.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Calendar/DeleteCalendarFeed.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Calendar\\DeleteCalendarFeed\:\:schema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\IntegerType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Calendar/DeleteCalendarFeed.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Calendar/GetCalendarEvents.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Calendar\\GetCalendarEvents\:\:outputSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\ArrayType\|Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Calendar/GetCalendarEvents.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Calendar\\GetCalendarEvents\:\:schema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Calendar/GetCalendarEvents.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Calendar/ListCalendarFeeds.php
+
+		-
+			message: '#^Cannot access property \$name on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Mcp/Tools/Calendar/ListCalendarFeeds.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Mcp/Tools/Calendar/ListCalendarFeeds.php
+
+		-
+			message: '#^Cannot call method toIso8601String\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Mcp/Tools/Calendar/ListCalendarFeeds.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Calendar\\ListCalendarFeeds\:\:outputSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\ArrayType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Calendar/ListCalendarFeeds.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Calendar/UpdateCalendarFeed.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Calendar\\UpdateCalendarFeed\:\:schema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Calendar/UpdateCalendarFeed.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Inventory/CreateItem.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Mcp/Tools/Inventory/CreateItem.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Inventory\\CreateItem\:\:schema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\ObjectType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Inventory/CreateItem.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Inventory/DeleteItem.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Inventory\\DeleteItem\:\:schema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\IntegerType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Inventory/DeleteItem.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Inventory/DuplicateItem.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Mcp/Tools/Inventory/DuplicateItem.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Inventory\\DuplicateItem\:\:outputSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\ArrayType\|Illuminate\\JsonSchema\\Types\\IntegerType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Inventory/DuplicateItem.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Inventory\\DuplicateItem\:\:schema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\IntegerType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Inventory/DuplicateItem.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\Item\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Mcp/Tools/Inventory/DuplicateItem.php
+
+		-
+			message: '#^Return type of call to method Illuminate\\Support\\Collection\<int,App\\Models\\Item\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: method.unresolvableReturnType
+			count: 1
+			path: app/Mcp/Tools/Inventory/DuplicateItem.php
+
+		-
+			message: '#^Return type of call to method Illuminate\\Support\\Collection\<int,array\<string, mixed\>\>\:\:all\(\) contains unresolvable type\.$#'
+			identifier: method.unresolvableReturnType
+			count: 1
+			path: app/Mcp/Tools/Inventory/DuplicateItem.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Inventory/GetItem.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Mcp/Tools/Inventory/GetItem.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Inventory\\GetItem\:\:outputSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\ArrayType\|Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\ObjectType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Inventory/GetItem.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Inventory\\GetItem\:\:schema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\IntegerType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Inventory/GetItem.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Inventory/MoveItemToTeam.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$current_team_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Inventory/MoveItemToTeam.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$teams\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Inventory/MoveItemToTeam.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Mcp/Tools/Inventory/MoveItemToTeam.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Inventory\\MoveItemToTeam\:\:outputSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\ObjectType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Inventory/MoveItemToTeam.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Inventory\\MoveItemToTeam\:\:schema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\IntegerType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Inventory/MoveItemToTeam.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Inventory/RestoreItem.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Inventory\\RestoreItem\:\:outputSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Inventory/RestoreItem.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Inventory\\RestoreItem\:\:schema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\IntegerType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Inventory/RestoreItem.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Inventory/SearchItems.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Mcp/Tools/Inventory/SearchItems.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Inventory\\SearchItems\:\:meaningfulTerms\(\) should return list\<string\> but returns array\<int, string\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Inventory/SearchItems.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Inventory\\SearchItems\:\:outputSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\ArrayType\|Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Inventory/SearchItems.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Inventory\\SearchItems\:\:schema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\BooleanType\|Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Inventory/SearchItems.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Item\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Mcp/Tools/Inventory/SearchItems.php
+
+		-
+			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Item\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: method.unresolvableReturnType
+			count: 1
+			path: app/Mcp/Tools/Inventory/SearchItems.php
+
+		-
+			message: '#^Return type of call to method Illuminate\\Support\\Collection\<int,array\<string, mixed\>\>\:\:all\(\) contains unresolvable type\.$#'
+			identifier: method.unresolvableReturnType
+			count: 1
+			path: app/Mcp/Tools/Inventory/SearchItems.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Inventory/UpdateItem.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Mcp/Tools/Inventory/UpdateItem.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Inventory\\UpdateItem\:\:schema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\ObjectType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Inventory/UpdateItem.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Checklist\:\:\$completed_items_count\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Lists/AddChecklistItems.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Lists/AddChecklistItems.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Mcp/Tools/Lists/AddChecklistItems.php
+
+		-
+			message: '#^Cannot call method toIso8601String\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Mcp/Tools/Lists/AddChecklistItems.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Lists\\AddChecklistItems\:\:checklistCounts\(\) should return array\<string, mixed\> but returns array\<int\|string, \(Closure\)\|string\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Lists/AddChecklistItems.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Lists\\AddChecklistItems\:\:outputSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\ArrayType\|Illuminate\\JsonSchema\\Types\\IntegerType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Lists/AddChecklistItems.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Lists\\AddChecklistItems\:\:schema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\ArrayType\|Illuminate\\JsonSchema\\Types\\IntegerType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Lists/AddChecklistItems.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Lists/ClearCompletedChecklistItems.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Lists\\ClearCompletedChecklistItems\:\:schema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\IntegerType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Lists/ClearCompletedChecklistItems.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Checklist\:\:\$completed_items_count\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Lists/CreateChecklist.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Lists/CreateChecklist.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Mcp/Tools/Lists/CreateChecklist.php
+
+		-
+			message: '#^Cannot call method toIso8601String\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Mcp/Tools/Lists/CreateChecklist.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Lists\\CreateChecklist\:\:checklistCounts\(\) should return array\<string, mixed\> but returns array\<int\|string, \(Closure\)\|string\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Lists/CreateChecklist.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Lists\\CreateChecklist\:\:outputSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\Type\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Lists/CreateChecklist.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Lists\\CreateChecklist\:\:schema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\ArrayType\|Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Lists/CreateChecklist.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Lists/DeleteChecklist.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Lists\\DeleteChecklist\:\:schema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\IntegerType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Lists/DeleteChecklist.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Checklist\:\:\$completed_items_count\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Lists/GetChecklist.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Lists/GetChecklist.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Mcp/Tools/Lists/GetChecklist.php
+
+		-
+			message: '#^Cannot call method toIso8601String\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Mcp/Tools/Lists/GetChecklist.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Lists\\GetChecklist\:\:checklistCounts\(\) should return array\<string, mixed\> but returns array\<int\|string, \(Closure\)\|string\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Lists/GetChecklist.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Lists\\GetChecklist\:\:outputSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\Type\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Lists/GetChecklist.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Lists\\GetChecklist\:\:schema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\IntegerType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Lists/GetChecklist.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Checklist\:\:\$completed_items_count\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Lists/ListChecklists.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Lists/ListChecklists.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Mcp/Tools/Lists/ListChecklists.php
+
+		-
+			message: '#^Cannot call method toIso8601String\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Mcp/Tools/Lists/ListChecklists.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Lists\\ListChecklists\:\:checklistCounts\(\) should return array\<string, mixed\> but returns array\<int\|string, \(Closure\)\|string\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Lists/ListChecklists.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Lists\\ListChecklists\:\:outputSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\ArrayType\|Illuminate\\JsonSchema\\Types\\IntegerType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Lists/ListChecklists.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Lists\\ListChecklists\:\:schema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Lists/ListChecklists.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Lists/RemoveChecklistItem.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Lists\\RemoveChecklistItem\:\:schema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\IntegerType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Lists/RemoveChecklistItem.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Checklist\:\:\$completed_items_count\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Lists/ResetChecklist.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Lists/ResetChecklist.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Mcp/Tools/Lists/ResetChecklist.php
+
+		-
+			message: '#^Cannot call method toIso8601String\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Mcp/Tools/Lists/ResetChecklist.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Lists\\ResetChecklist\:\:checklistCounts\(\) should return array\<string, mixed\> but returns array\<int\|string, \(Closure\)\|string\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Lists/ResetChecklist.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Lists\\ResetChecklist\:\:outputSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\Type\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Lists/ResetChecklist.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Lists\\ResetChecklist\:\:schema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\IntegerType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Lists/ResetChecklist.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Checklist\:\:\$completed_items_count\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Lists/UpdateChecklist.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Lists/UpdateChecklist.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Mcp/Tools/Lists/UpdateChecklist.php
+
+		-
+			message: '#^Cannot call method toIso8601String\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Mcp/Tools/Lists/UpdateChecklist.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Lists\\UpdateChecklist\:\:checklistCounts\(\) should return array\<string, mixed\> but returns array\<int\|string, \(Closure\)\|string\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Lists/UpdateChecklist.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Lists\\UpdateChecklist\:\:outputSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\Type\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Lists/UpdateChecklist.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Lists\\UpdateChecklist\:\:schema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Lists/UpdateChecklist.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Checklist\:\:\$completed_items_count\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Lists/UpdateChecklistItem.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Lists/UpdateChecklistItem.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Mcp/Tools/Lists/UpdateChecklistItem.php
+
+		-
+			message: '#^Cannot call method toIso8601String\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Mcp/Tools/Lists/UpdateChecklistItem.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Lists\\UpdateChecklistItem\:\:checklistCounts\(\) should return array\<string, mixed\> but returns array\<int\|string, \(Closure\)\|string\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Lists/UpdateChecklistItem.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Lists\\UpdateChecklistItem\:\:outputSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\Type\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Lists/UpdateChecklistItem.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Lists\\UpdateChecklistItem\:\:schema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\BooleanType\|Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Lists/UpdateChecklistItem.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Recipes/CopyRecipeToTeam.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$current_team_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Recipes/CopyRecipeToTeam.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$teams\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Recipes/CopyRecipeToTeam.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Recipes\\CopyRecipeToTeam\:\:outputSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\ObjectType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Recipes/CopyRecipeToTeam.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Recipes\\CopyRecipeToTeam\:\:schema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\IntegerType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Recipes/CopyRecipeToTeam.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Recipes/CreateRecipe.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Recipes\\CreateRecipe\:\:schema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\ArrayType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Recipes/CreateRecipe.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int\<0, max\>,string\|false\>\:\:map\(\) expects callable\(string\|false, int\<0, max\>\)\: string, Closure\(string\)\: string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Mcp/Tools/Recipes/CreateRecipe.php
+
+		-
+			message: '#^Parameter \#1 \$text of static method Laravel\\Mcp\\Response\:\:text\(\) expects string, string\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Mcp/Tools/Recipes/CreateRecipe.php
+
+		-
+			message: '#^Parameter \#1 \$value of function collect expects Illuminate\\Contracts\\Support\\Arrayable\<int\<0, max\>, string\>\|iterable\<int\<0, max\>, string\>\|null, list\<string\>\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Mcp/Tools/Recipes/CreateRecipe.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Recipes/DeleteRecipe.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Recipes\\DeleteRecipe\:\:schema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\IntegerType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Recipes/DeleteRecipe.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Recipes/GetRecipe.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Recipes\\GetRecipe\:\:outputSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\ArrayType\|Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Recipes/GetRecipe.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Recipes\\GetRecipe\:\:schema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Recipes/GetRecipe.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Recipes/ImportRecipeFromUrl.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Recipes\\ImportRecipeFromUrl\:\:schema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Recipes/ImportRecipeFromUrl.php
+
+		-
+			message: '#^Parameter \#1 \$text of static method Laravel\\Mcp\\Response\:\:text\(\) expects string, string\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Mcp/Tools/Recipes/ImportRecipeFromUrl.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Recipes/RemixRecipe.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Recipes\\RemixRecipe\:\:outputSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Recipes/RemixRecipe.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Recipes\\RemixRecipe\:\:schema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\IntegerType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Recipes/RemixRecipe.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Recipes/SearchRecipes.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Recipes\\SearchRecipes\:\:outputSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\ArrayType\|Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Recipes/SearchRecipes.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Recipes\\SearchRecipes\:\:schema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Recipes/SearchRecipes.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Recipes/UpdateRecipe.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Recipes\\UpdateRecipe\:\:schema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\ArrayType\|Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Recipes/UpdateRecipe.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int\<0, max\>,string\|false\>\:\:map\(\) expects callable\(string\|false, int\<0, max\>\)\: string, Closure\(string\)\: string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Mcp/Tools/Recipes/UpdateRecipe.php
+
+		-
+			message: '#^Parameter \#1 \$text of static method Laravel\\Mcp\\Response\:\:text\(\) expects string, string\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Mcp/Tools/Recipes/UpdateRecipe.php
+
+		-
+			message: '#^Parameter \#1 \$value of function collect expects Illuminate\\Contracts\\Support\\Arrayable\<int\<0, max\>, string\>\|iterable\<int\<0, max\>, string\>\|null, list\<string\>\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Mcp/Tools/Recipes/UpdateRecipe.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Recipes/UpdateRecipeSharing.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Recipes\\UpdateRecipeSharing\:\:outputSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\BooleanType\|Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Recipes/UpdateRecipeSharing.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Recipes\\UpdateRecipeSharing\:\:schema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\BooleanType\|Illuminate\\JsonSchema\\Types\\IntegerType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Recipes/UpdateRecipeSharing.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Routines/AddRoutineSteps.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 2
+			path: app/Mcp/Tools/Routines/AddRoutineSteps.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Mcp/Tools/Routines/AddRoutineSteps.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Routines\\AddRoutineSteps\:\:outputSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\ArrayType\|Illuminate\\JsonSchema\\Types\\IntegerType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Routines/AddRoutineSteps.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Routines\\AddRoutineSteps\:\:routineSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\ArrayType\|Illuminate\\JsonSchema\\Types\\BooleanType\|Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Routines/AddRoutineSteps.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Routines\\AddRoutineSteps\:\:routineWithStepsSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\|Illuminate\\JsonSchema\\Types\\ArrayType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Routines/AddRoutineSteps.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Routines\\AddRoutineSteps\:\:schema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\ArrayType\|Illuminate\\JsonSchema\\Types\\IntegerType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Routines/AddRoutineSteps.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Routines\\AddRoutineSteps\:\:stepSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Routines/AddRoutineSteps.php
+
+		-
+			message: '#^Parameter \#1 \$properties of method Illuminate\\Contracts\\JsonSchema\\JsonSchema\:\:object\(\) expects array\<string, Illuminate\\JsonSchema\\Types\\Type\>\|\(Closure\(Illuminate\\Contracts\\JsonSchema\\JsonSchema\)\: array\<string, Illuminate\\JsonSchema\\Types\\Type\>\), array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Mcp/Tools/Routines/AddRoutineSteps.php
+
+		-
+			message: '#^Unable to resolve the template type TKey in call to function collect$#'
+			identifier: argument.templateType
+			count: 1
+			path: app/Mcp/Tools/Routines/AddRoutineSteps.php
+
+		-
+			message: '#^Unable to resolve the template type TValue in call to function collect$#'
+			identifier: argument.templateType
+			count: 1
+			path: app/Mcp/Tools/Routines/AddRoutineSteps.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\RoutineOccurrence\:\:\$due_on\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Routines/CompleteRoutineStep.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\RoutineOccurrenceStep\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\RoutineOccurrenceStep\>\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Routines/CompleteRoutineStep.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\RoutineOccurrenceStep\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\RoutineOccurrenceStep\>\:\:\$occurrence\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Routines/CompleteRoutineStep.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Routines/CompleteRoutineStep.php
+
+		-
+			message: '#^Call to an undefined method App\\Models\\RoutineOccurrenceStep\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\RoutineOccurrenceStep\>\:\:complete\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Mcp/Tools/Routines/CompleteRoutineStep.php
+
+		-
+			message: '#^Call to an undefined method App\\Models\\RoutineOccurrenceStep\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\RoutineOccurrenceStep\>\:\:isCompleted\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Mcp/Tools/Routines/CompleteRoutineStep.php
+
+		-
+			message: '#^Call to an undefined method App\\Models\\RoutineOccurrenceStep\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\RoutineOccurrenceStep\>\:\:uncomplete\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Mcp/Tools/Routines/CompleteRoutineStep.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Mcp/Tools/Routines/CompleteRoutineStep.php
+
+		-
+			message: '#^Cannot call method setTimezone\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Mcp/Tools/Routines/CompleteRoutineStep.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Routines\\CompleteRoutineStep\:\:occurrenceSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\ArrayType\|Illuminate\\JsonSchema\\Types\\BooleanType\|Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Routines/CompleteRoutineStep.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Routines\\CompleteRoutineStep\:\:occurrenceStepSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\BooleanType\|Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Routines/CompleteRoutineStep.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Routines\\CompleteRoutineStep\:\:outputSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\ObjectType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Routines/CompleteRoutineStep.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Routines\\CompleteRoutineStep\:\:schema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\BooleanType\|Illuminate\\JsonSchema\\Types\\IntegerType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Routines/CompleteRoutineStep.php
+
+		-
+			message: '#^Parameter \#1 \$properties of method Illuminate\\Contracts\\JsonSchema\\JsonSchema\:\:object\(\) expects array\<string, Illuminate\\JsonSchema\\Types\\Type\>\|\(Closure\(Illuminate\\Contracts\\JsonSchema\\JsonSchema\)\: array\<string, Illuminate\\JsonSchema\\Types\\Type\>\), array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Mcp/Tools/Routines/CompleteRoutineStep.php
+
+		-
+			message: '#^Unable to resolve the template type TKey in call to function collect$#'
+			identifier: argument.templateType
+			count: 1
+			path: app/Mcp/Tools/Routines/CompleteRoutineStep.php
+
+		-
+			message: '#^Unable to resolve the template type TValue in call to function collect$#'
+			identifier: argument.templateType
+			count: 1
+			path: app/Mcp/Tools/Routines/CompleteRoutineStep.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Routines/CreateRoutine.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 2
+			path: app/Mcp/Tools/Routines/CreateRoutine.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Mcp/Tools/Routines/CreateRoutine.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Routines\\CreateRoutine\:\:routineSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\ArrayType\|Illuminate\\JsonSchema\\Types\\BooleanType\|Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Routines/CreateRoutine.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Routines\\CreateRoutine\:\:routineWithStepsSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\|Illuminate\\JsonSchema\\Types\\ArrayType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Routines/CreateRoutine.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Routines\\CreateRoutine\:\:schema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\ArrayType\|Illuminate\\JsonSchema\\Types\\BooleanType\|Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Routines/CreateRoutine.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Routines\\CreateRoutine\:\:stepSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Routines/CreateRoutine.php
+
+		-
+			message: '#^Parameter \#1 \$properties of method Illuminate\\Contracts\\JsonSchema\\JsonSchema\:\:object\(\) expects array\<string, Illuminate\\JsonSchema\\Types\\Type\>\|\(Closure\(Illuminate\\Contracts\\JsonSchema\\JsonSchema\)\: array\<string, Illuminate\\JsonSchema\\Types\\Type\>\), array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Mcp/Tools/Routines/CreateRoutine.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Routines/DeleteRoutine.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Routines\\DeleteRoutine\:\:schema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\IntegerType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Routines/DeleteRoutine.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Routines/GetRoutine.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 2
+			path: app/Mcp/Tools/Routines/GetRoutine.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Mcp/Tools/Routines/GetRoutine.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Routines\\GetRoutine\:\:routineSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\ArrayType\|Illuminate\\JsonSchema\\Types\\BooleanType\|Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Routines/GetRoutine.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Routines\\GetRoutine\:\:routineWithStepsSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\|Illuminate\\JsonSchema\\Types\\ArrayType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Routines/GetRoutine.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Routines\\GetRoutine\:\:schema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\IntegerType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Routines/GetRoutine.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Routines\\GetRoutine\:\:stepSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Routines/GetRoutine.php
+
+		-
+			message: '#^Parameter \#1 \$properties of method Illuminate\\Contracts\\JsonSchema\\JsonSchema\:\:object\(\) expects array\<string, Illuminate\\JsonSchema\\Types\\Type\>\|\(Closure\(Illuminate\\Contracts\\JsonSchema\\JsonSchema\)\: array\<string, Illuminate\\JsonSchema\\Types\\Type\>\), array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Mcp/Tools/Routines/GetRoutine.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\RoutineOccurrence\:\:\$due_on\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Routines/GetRoutineBoard.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Routines/GetRoutineBoard.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Mcp/Tools/Routines/GetRoutineBoard.php
+
+		-
+			message: '#^Cannot call method setTimezone\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Mcp/Tools/Routines/GetRoutineBoard.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Routines\\GetRoutineBoard\:\:occurrenceSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\ArrayType\|Illuminate\\JsonSchema\\Types\\BooleanType\|Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Routines/GetRoutineBoard.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Routines\\GetRoutineBoard\:\:occurrenceStepSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\BooleanType\|Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Routines/GetRoutineBoard.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Routines\\GetRoutineBoard\:\:outputSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\ArrayType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Routines/GetRoutineBoard.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Routines\\GetRoutineBoard\:\:schema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Routines/GetRoutineBoard.php
+
+		-
+			message: '#^Parameter \#1 \$properties of method Illuminate\\Contracts\\JsonSchema\\JsonSchema\:\:object\(\) expects array\<string, Illuminate\\JsonSchema\\Types\\Type\>\|\(Closure\(Illuminate\\Contracts\\JsonSchema\\JsonSchema\)\: array\<string, Illuminate\\JsonSchema\\Types\\Type\>\), array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Mcp/Tools/Routines/GetRoutineBoard.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Routines/ListRoutines.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 2
+			path: app/Mcp/Tools/Routines/ListRoutines.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Mcp/Tools/Routines/ListRoutines.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Routines\\ListRoutines\:\:outputSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\ArrayType\|Illuminate\\JsonSchema\\Types\\IntegerType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Routines/ListRoutines.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Routines\\ListRoutines\:\:routineSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\ArrayType\|Illuminate\\JsonSchema\\Types\\BooleanType\|Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Routines/ListRoutines.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Routines\\ListRoutines\:\:routineWithStepsSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\|Illuminate\\JsonSchema\\Types\\ArrayType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Routines/ListRoutines.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Routines\\ListRoutines\:\:stepSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Routines/ListRoutines.php
+
+		-
+			message: '#^Parameter \#1 \$properties of method Illuminate\\Contracts\\JsonSchema\\JsonSchema\:\:object\(\) expects array\<string, Illuminate\\JsonSchema\\Types\\Type\>\|\(Closure\(Illuminate\\Contracts\\JsonSchema\\JsonSchema\)\: array\<string, Illuminate\\JsonSchema\\Types\\Type\>\), array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Mcp/Tools/Routines/ListRoutines.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Routines/RemoveRoutineStep.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Routines\\RemoveRoutineStep\:\:schema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\IntegerType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Routines/RemoveRoutineStep.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Routines/ReorderRoutineSteps.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 2
+			path: app/Mcp/Tools/Routines/ReorderRoutineSteps.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Mcp/Tools/Routines/ReorderRoutineSteps.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Routines\\ReorderRoutineSteps\:\:outputSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\ArrayType\|Illuminate\\JsonSchema\\Types\\IntegerType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Routines/ReorderRoutineSteps.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Routines\\ReorderRoutineSteps\:\:routineSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\ArrayType\|Illuminate\\JsonSchema\\Types\\BooleanType\|Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Routines/ReorderRoutineSteps.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Routines\\ReorderRoutineSteps\:\:routineWithStepsSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\|Illuminate\\JsonSchema\\Types\\ArrayType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Routines/ReorderRoutineSteps.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Routines\\ReorderRoutineSteps\:\:schema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\ArrayType\|Illuminate\\JsonSchema\\Types\\IntegerType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Routines/ReorderRoutineSteps.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Routines\\ReorderRoutineSteps\:\:stepSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Routines/ReorderRoutineSteps.php
+
+		-
+			message: '#^Parameter \#1 \$properties of method Illuminate\\Contracts\\JsonSchema\\JsonSchema\:\:object\(\) expects array\<string, Illuminate\\JsonSchema\\Types\\Type\>\|\(Closure\(Illuminate\\Contracts\\JsonSchema\\JsonSchema\)\: array\<string, Illuminate\\JsonSchema\\Types\\Type\>\), array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Mcp/Tools/Routines/ReorderRoutineSteps.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Routines/UpdateRoutine.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 2
+			path: app/Mcp/Tools/Routines/UpdateRoutine.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Mcp/Tools/Routines/UpdateRoutine.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Routines\\UpdateRoutine\:\:routineSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\ArrayType\|Illuminate\\JsonSchema\\Types\\BooleanType\|Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Routines/UpdateRoutine.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Routines\\UpdateRoutine\:\:routineWithStepsSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\|Illuminate\\JsonSchema\\Types\\ArrayType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Routines/UpdateRoutine.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Routines\\UpdateRoutine\:\:schema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\ArrayType\|Illuminate\\JsonSchema\\Types\\BooleanType\|Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Routines/UpdateRoutine.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Routines\\UpdateRoutine\:\:stepSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Routines/UpdateRoutine.php
+
+		-
+			message: '#^Parameter \#1 \$properties of method Illuminate\\Contracts\\JsonSchema\\JsonSchema\:\:object\(\) expects array\<string, Illuminate\\JsonSchema\\Types\\Type\>\|\(Closure\(Illuminate\\Contracts\\JsonSchema\\JsonSchema\)\: array\<string, Illuminate\\JsonSchema\\Types\\Type\>\), array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Mcp/Tools/Routines/UpdateRoutine.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Routines/UpdateRoutineStep.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 2
+			path: app/Mcp/Tools/Routines/UpdateRoutineStep.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Mcp/Tools/Routines/UpdateRoutineStep.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Routines\\UpdateRoutineStep\:\:routineSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\ArrayType\|Illuminate\\JsonSchema\\Types\\BooleanType\|Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Routines/UpdateRoutineStep.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Routines\\UpdateRoutineStep\:\:routineWithStepsSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\|Illuminate\\JsonSchema\\Types\\ArrayType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Routines/UpdateRoutineStep.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Routines\\UpdateRoutineStep\:\:schema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Routines/UpdateRoutineStep.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Routines\\UpdateRoutineStep\:\:stepSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Routines/UpdateRoutineStep.php
+
+		-
+			message: '#^Parameter \#1 \$properties of method Illuminate\\Contracts\\JsonSchema\\JsonSchema\:\:object\(\) expects array\<string, Illuminate\\JsonSchema\\Types\\Type\>\|\(Closure\(Illuminate\\Contracts\\JsonSchema\\JsonSchema\)\: array\<string, Illuminate\\JsonSchema\\Types\\Type\>\), array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Mcp/Tools/Routines/UpdateRoutineStep.php
+
+		-
+			message: '#^Offset string on string in isset\(\) does not exist\.$#'
+			identifier: isset.offset
+			count: 1
+			path: app/Mcp/Tools/Teams/Concerns/FormatsTeams.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Teams/ForgetKioskDevice.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Teams\\ForgetKioskDevice\:\:schema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\IntegerType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Teams/ForgetKioskDevice.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Teams/GetTeamSettings.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Mcp/Tools/Teams/GetTeamSettings.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Teams\\GetTeamSettings\:\:teamSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\BooleanType\|Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Teams/GetTeamSettings.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Teams\\GetTeamSettings\:\:teamSettingsSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\ObjectType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Teams/GetTeamSettings.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Teams/ListKioskDevices.php
+
+		-
+			message: '#^Cannot call method toIso8601String\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 2
+			path: app/Mcp/Tools/Teams/ListKioskDevices.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Teams\\ListKioskDevices\:\:outputSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\ArrayType\|Illuminate\\JsonSchema\\Types\\IntegerType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Teams/ListKioskDevices.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\KioskDevice\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Mcp/Tools/Teams/ListKioskDevices.php
+
+		-
+			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\KioskDevice\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: method.unresolvableReturnType
+			count: 1
+			path: app/Mcp/Tools/Teams/ListKioskDevices.php
+
+		-
+			message: '#^Return type of call to method Illuminate\\Support\\Collection\<int,array\<string, mixed\>\>\:\:all\(\) contains unresolvable type\.$#'
+			identifier: method.unresolvableReturnType
+			count: 1
+			path: app/Mcp/Tools/Teams/ListKioskDevices.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Team\:\:\$pivot\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Teams/ListTeams.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$current_team_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Teams/ListTeams.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Mcp/Tools/Teams/ListTeams.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Teams\\ListTeams\:\:outputSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\ArrayType\|Illuminate\\JsonSchema\\Types\\IntegerType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Teams/ListTeams.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Teams\\ListTeams\:\:teamSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\BooleanType\|Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Teams/ListTeams.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Teams\\ListTeams\:\:teamSettingsSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\ObjectType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Teams/ListTeams.php
+
+		-
+			message: '#^Parameter \#1 \$properties of method Illuminate\\Contracts\\JsonSchema\\JsonSchema\:\:object\(\) expects array\<string, Illuminate\\JsonSchema\\Types\\Type\>\|\(Closure\(Illuminate\\Contracts\\JsonSchema\\JsonSchema\)\: array\<string, Illuminate\\JsonSchema\\Types\\Type\>\), array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Mcp/Tools/Teams/ListTeams.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Mcp/Tools/Teams/SwitchTeam.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Teams\\SwitchTeam\:\:schema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\IntegerType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Teams/SwitchTeam.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Teams\\SwitchTeam\:\:teamSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\BooleanType\|Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Teams/SwitchTeam.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Teams\\SwitchTeam\:\:teamSettingsSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\ObjectType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Teams/SwitchTeam.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Teams/UpdateTeam.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Mcp/Tools/Teams/UpdateTeam.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Teams\\UpdateTeam\:\:schema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Teams/UpdateTeam.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Teams\\UpdateTeam\:\:teamSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\BooleanType\|Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Teams/UpdateTeam.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Teams\\UpdateTeam\:\:teamSettingsSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\ObjectType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Teams/UpdateTeam.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$currentTeam\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/Teams/UpdateTeamSettings.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Mcp/Tools/Teams/UpdateTeamSettings.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Teams\\UpdateTeamSettings\:\:schema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\ObjectType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Teams/UpdateTeamSettings.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Teams\\UpdateTeamSettings\:\:teamSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\BooleanType\|Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Teams/UpdateTeamSettings.php
+
+		-
+			message: '#^Method App\\Mcp\\Tools\\Teams\\UpdateTeamSettings\:\:teamSettingsSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\IntegerType\|Illuminate\\JsonSchema\\Types\\ObjectType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Mcp/Tools/Teams/UpdateTeamSettings.php
+
+		-
+			message: '#^Method App\\Models\\CalendarFeed\:\:fetched\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Models/CalendarFeed.php
+
+		-
+			message: '#^Property App\\Models\\ChecklistItem\:\:\$position \(int\<0, max\>\) does not accept int\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Models/ChecklistItem.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Item\:\:\$photo_url\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Item.php
+
+		-
+			message: '#^Method App\\Models\\Item\:\:photoUrl\(\) return type with generic class Illuminate\\Database\\Eloquent\\Casts\\Attribute does not specify its types\: TGet, TSet$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Item.php
+
+		-
+			message: '#^Method App\\Models\\Item\:\:thumbUrl\(\) return type with generic class Illuminate\\Database\\Eloquent\\Casts\\Attribute does not specify its types\: TGet, TSet$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Item.php
+
+		-
+			message: '#^Method App\\Models\\Item\:\:truncatedName\(\) return type with generic class Illuminate\\Database\\Eloquent\\Casts\\Attribute does not specify its types\: TGet, TSet$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Item.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Recipe\:\:\$photo_url\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Recipe.php
+
+		-
+			message: '#^Method App\\Models\\Recipe\:\:photoUrl\(\) return type with generic class Illuminate\\Database\\Eloquent\\Casts\\Attribute does not specify its types\: TGet, TSet$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Recipe.php
+
+		-
+			message: '#^Method App\\Models\\Recipe\:\:thumbUrl\(\) return type with generic class Illuminate\\Database\\Eloquent\\Casts\\Attribute does not specify its types\: TGet, TSet$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Recipe.php
+
+		-
+			message: '#^Parameter \#3 \$subject of function str_replace expects array\<string\>\|string, string\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Models/Recipe.php
+
+		-
+			message: '#^Cannot call method startOfDay\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Models/Routine.php
+
+		-
+			message: '#^Match arm comparison between string and App\\Enums\\RoutineFrequency\:\:Daily is always false\.$#'
+			identifier: match.alwaysFalse
+			count: 2
+			path: app/Models/Routine.php
+
+		-
+			message: '#^Match arm comparison between string and App\\Enums\\RoutineFrequency\:\:Monthly is always false\.$#'
+			identifier: match.alwaysFalse
+			count: 2
+			path: app/Models/Routine.php
+
+		-
+			message: '#^Match arm comparison between string and App\\Enums\\RoutineFrequency\:\:Weekly is always false\.$#'
+			identifier: match.alwaysFalse
+			count: 2
+			path: app/Models/Routine.php
+
+		-
+			message: '#^Match expression does not handle remaining value\: string$#'
+			identifier: match.unhandled
+			count: 2
+			path: app/Models/Routine.php
+
+		-
+			message: '#^Parameter \#2 \$array of function array_map expects array, array\|string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Models/Routine.php
+
+		-
+			message: '#^Method App\\Models\\RoutineOccurrence\:\:dueOn\(\) return type with generic class Illuminate\\Database\\Eloquent\\Casts\\Attribute does not specify its types\: TGet, TSet$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/RoutineOccurrence.php
+
+		-
+			message: '#^Property App\\Models\\RoutineStep\:\:\$position \(int\<0, max\>\) does not accept int\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Models/RoutineStep.php
+
+		-
+			message: '#^Parameter \#1 \$view of static method Laravel\\Passport\\Passport\:\:authorizationView\(\) expects \(Closure\(array\<string, mixed\>\)\: Symfony\\Component\\HttpFoundation\\Response\)\|string, Closure\(array\)\: Illuminate\\View\\View given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Providers/AppServiceProvider.php
+
+		-
+			message: '#^Method App\\Support\\KioskTeam\:\:device\(\) should return App\\Models\\KioskDevice\|null but returns App\\Models\\KioskDevice\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\KioskDevice\>\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Support/KioskTeam.php
+
+		-
+			message: '#^Method App\\Support\\KioskTeam\:\:resolve\(\) should return App\\Models\\Team but returns object\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Support/KioskTeam.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>team" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Support/KioskTeam.php
+
+		-
+			message: '#^Parameter \#1 \$array \(array\{0\?\: array\{label\: ''GitHub'', url\: non\-falsy\-string\|true, external\: true\}\}\) of array_values is already a list, call has no effect\.$#'
+			identifier: arrayValues.list
+			count: 1
+			path: config/laradocs.php
+
+		-
+			message: '#^Parameter \#2 \$string of function explode expects string, bool\|string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: config/sanctum.php
+
+		-
+			message: '#^Method Database\\Factories\\RecipeFactory\:\:withTags\(\) has parameter \$tags with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: database/factories/RecipeFactory.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Schema\\Blueprint\:\:dropColumns\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: database/migrations/2026_05_14_211119_add_timezone_to_teams_table.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Schema\\Blueprint\:\:dropColumns\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: database/migrations/2026_06_10_011653_add_appearance_and_rotation_to_teams_table.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Schema\\Blueprint\:\:dropColumns\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: database/migrations/2026_10_09_155529_add_idle_settings_to_teams_table.php
+
+		-
+			message: '#^Method Database\\Seeders\\StrawhatsSeeder\:\:routine\(\) has parameter \$schedule with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: database/seeders/StrawhatsSeeder.php
+
+		-
+			message: '#^Call to an undefined static method Laravel\\Head\\Facades\\Schema\:\:webApplication\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: routes/web.php

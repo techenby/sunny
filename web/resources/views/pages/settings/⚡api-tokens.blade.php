@@ -104,7 +104,7 @@ new class extends Component {
 <section class="w-full">
     @include('pages.settings.heading')
 
-    <flux:heading class="sr-only">{{ __('API tokens settings') }}</flux:heading>
+    <flux:heading level="2" class="sr-only">{{ __('API tokens settings') }}</flux:heading>
 
     <x-pages::settings.layout :heading="__('API tokens')" :subheading="__('Connect AI assistants to Sunny, and create tokens for the HTTP API')">
         <form wire:submit="createToken" class="my-6 flex w-full items-end gap-2">

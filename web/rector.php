@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Rector\Config\RectorConfig;
 use Rector\TypeDeclaration\Rector\StmtsAwareInterface\DeclareStrictTypesRector;
+use RectorLaravel\Rector\Class_\AddHasFactoryToModelsRector;
 use RectorLaravel\Rector\Empty_\EmptyToBlankAndFilledFuncRector;
 use RectorLaravel\Rector\StaticCall\MinutesToSecondsInCacheRector;
 use RectorLaravel\Set\LaravelSetList;
@@ -36,4 +37,7 @@ return RectorConfig::configure()
         DeclareStrictTypesRector::class,
         EmptyToBlankAndFilledFuncRector::class,
         MinutesToSecondsInCacheRector::class,
+    ])
+    ->withSkip([
+        AddHasFactoryToModelsRector::class => [__DIR__ . '/app/Models/Membership.php'],
     ]);
