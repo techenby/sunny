@@ -15,7 +15,7 @@
         "dedoc/scramble": "^0.13.14",
         "laravel/chisel": "^0.1.0",
         "laravel/fortify": "^1.37.2",
-        "laravel/framework": "^13.7",
+        "laravel/framework": "^13.17",
         "laravel/head": "^0.2.2",
         "laravel/mcp": "^1.1.1",
         "laravel/nightwatch": "^1.24",
@@ -73,7 +73,7 @@
         ],
         "dev": [
             "Composer\\Config::disableProcessTimeout",
-            "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1 --timeout=0\" \"php artisan pail --timeout=0\" \"npm run dev\" --names=server,queue,logs,vite --kill-others"
+            "@php artisan dev"
         ],
         "lint": [
             "rector",
