@@ -245,7 +245,7 @@ class StrawhatsSeeder extends Seeder
         ]);
 
         $routine->steps()->createMany(
-            array_map(fn (string $step): array => ['name' => $step], $steps),
+            array_map(fn (string $step, int $index): array => ['name' => $step, 'position' => $index + 1], $steps, array_keys($steps)),
         );
     }
 
@@ -314,7 +314,7 @@ class StrawhatsSeeder extends Seeder
         ]);
 
         foreach ($items as $index => $item) {
-            $created = $checklist->items()->create(['name' => $item]);
+            $created = $checklist->items()->create(['name' => $item, 'position' => $index + 1]);
 
             if ($index < $completed) {
                 $created->complete($completedBy);

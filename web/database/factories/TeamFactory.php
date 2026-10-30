@@ -19,6 +19,7 @@ class TeamFactory extends Factory
     {
         return [
             'name' => fake()->unique()->company(),
+            'slug' => fn (array $attributes) => Team::generateUniqueTeamSlug($attributes['name']),
             'is_personal' => false,
             'timezone' => 'America/Chicago',
             'week_start' => Carbon::SUNDAY,

@@ -213,3 +213,9 @@ test('includes todays routines even when syncing incrementally', function () {
         ->assertOk()
         ->assertJsonCount(2, 'routine_occurrences');
 });
+
+test('guests get a JSON 401 from the API even without a JSON accept header', function () {
+    $this->get(route('api.sync'))
+        ->assertUnauthorized()
+        ->assertJson(['message' => 'Unauthenticated.']);
+});
