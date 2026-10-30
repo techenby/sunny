@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Inventory;
 
+use Illuminate\Support\Facades\File;
 use App\Enums\ItemType;
 use App\Models\Item;
 use App\Models\Team;
@@ -77,7 +78,7 @@ class ImportItemsFromAmazonAction
             return $this->stats;
         } finally {
             if ($isTemporaryUpload) {
-                @unlink($filePath);
+                File::delete($filePath);
             }
         }
     }
