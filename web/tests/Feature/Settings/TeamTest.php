@@ -260,3 +260,64 @@ test('guests cannot access teams', function () {
     $this->get(route('teams.index'))
         ->assertRedirect(route('login'));
 });
+
+test('personal team is the one the user owns, not one they joined', function () {
+    $luffy = User::factory()->create();
+    $zoro = User::factory()->create();
+    $zoro->teamMemberships()->delete();
+
+    $luffy->personalTeam()->members()->attach($zoro, ['role' => TeamRole::Member->value]);
+    $zorosTeam = Team::factory()->personal()->create();
+    $zorosTeam->members()->attach($zoro, ['role' => TeamRole::Owner->value]);
+
+    expect($zoro->fresh()->personalTeam()->is($zorosTeam))->toBeTrue();
+});
+
+test('members can leave a team they joined', function () {
+    $luffy = User::factory()->create();
+    $zoro = User::factory()->create();
+    $team = Team::factory()->create();
+    $team->members()->attach($luffy, ['role' => TeamRole::Owner->value]);
+    $team->members()->attach($zoro, ['role' => TeamRole::Member->value]);
+
+    Livewire::actingAs($zoro)
+        ->test('pages::teams.index')
+        ->assertSeeHtml('data-test="team-leave-button"')
+        ->call('leaveTeam', $team->id)
+        ->assertHasNoErrors()
+        ->assertRedirect(route('teams.index'));
+
+    expect($zoro->fresh()->belongsToTeam($team))->toBeFalse();
+});
+
+test('leaving the current team switches to the alphabetically first remaining team', function () {
+    $luffy = User::factory()->create();
+    $zoro = User::factory()->create(['name' => 'Zoro']);
+    $zuluTeam = Team::factory()->create(['name' => 'Zulu Team']);
+    $zuluTeam->members()->attach($luffy, ['role' => TeamRole::Owner->value]);
+    $zuluTeam->members()->attach($zoro, ['role' => TeamRole::Member->value]);
+    $alphaTeam = Team::factory()->create(['name' => 'Alpha Team']);
+    $alphaTeam->members()->attach($zoro, ['role' => TeamRole::Member->value]);
+    $zoro->update(['current_team_id' => $zuluTeam->id]);
+
+    Livewire::actingAs($zoro)
+        ->test('pages::teams.index')
+        ->call('leaveTeam', $zuluTeam->id);
+
+    expect($zoro->fresh()->current_team_id)->toBe($alphaTeam->id);
+});
+
+test('users cannot leave personal teams, teams they own, or teams they are not in', function (string $teamFor) {
+    $zoro = User::factory()->create();
+    $team = match ($teamFor) {
+        'personal' => $zoro->personalTeam(),
+        'owned' => tap(Team::factory()->create(), fn (Team $team) => $team->members()->attach($zoro, ['role' => TeamRole::Owner->value])),
+        'stranger' => Team::factory()->create(),
+    };
+
+    Livewire::actingAs($zoro)
+        ->test('pages::teams.index')
+        ->assertDontSeeHtml('data-test="team-leave-button"')
+        ->call('leaveTeam', $team->id)
+        ->assertForbidden();
+})->with(['personal', 'owned', 'stranger']);

@@ -106,3 +106,12 @@ test('correct password must be provided to update password', function () {
         ->call('updatePassword')
         ->assertHasErrors(['current_password']);
 });
+
+test('passkey endpoints are advertised through the well-known URL', function () {
+    $this->getJson('/.well-known/passkey-endpoints')
+        ->assertOk()
+        ->assertExactJson([
+            'enroll' => route('security.edit'),
+            'manage' => route('security.edit'),
+        ]);
+});

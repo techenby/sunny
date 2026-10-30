@@ -30,6 +30,13 @@ class TeamPolicy
         return $user->hasTeamPermission($team, TeamPermission::UpdateTeam);
     }
 
+    public function leave(User $user, Team $team): bool
+    {
+        return ! $team->is_personal
+            && $user->belongsToTeam($team)
+            && ! $user->ownsTeam($team);
+    }
+
     public function addMember(User $user, Team $team): bool
     {
         return $user->hasTeamPermission($team, TeamPermission::AddMember);

@@ -6,8 +6,10 @@ use App\Notifications\Teams\TeamInvitation as TeamInvitationNotification;
 use App\Rules\UniqueTeamInvitation;
 use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
@@ -33,12 +35,18 @@ new class extends Component {
             'inviteRole' => ['required', 'string', Rule::enum(TeamRole::class)],
         ]);
 
-        $invitation = $this->team->invitations()->create([
-            'email' => $validated['inviteEmail'],
-            'role' => TeamRole::from($validated['inviteRole']),
-            'invited_by' => Auth::id(),
-            'expires_at' => now()->addDays(3),
-        ]);
+        $invitation = DB::transaction(function () use ($validated) {
+            $this->team->invitations()
+                ->whereRaw('LOWER(email) = ?', [Str::lower($validated['inviteEmail'])])
+                ->delete();
+
+            return $this->team->invitations()->create([
+                'email' => $validated['inviteEmail'],
+                'role' => TeamRole::from($validated['inviteRole']),
+                'invited_by' => Auth::id(),
+                'expires_at' => now()->addDays(3),
+            ]);
+        });
 
         Notification::route('mail', $invitation->email)
             ->notify(new TeamInvitationNotification($invitation));

@@ -22,6 +22,7 @@ class TeamName implements ValidationRule
         }
     }
 
+    /** @return array<int, string> */
     protected function reservedNames(): array
     {
         return once(fn () => collect($this->routesPrefixes())
@@ -358,9 +359,10 @@ class TeamName implements ValidationRule
             ->unique()
             ->sort()
             ->values()
-            ->toArray());
+            ->all());
     }
 
+    /** @return array<int, string> */
     protected function routesPrefixes(): array
     {
         return collect(Route::getRoutes()->getRoutes())

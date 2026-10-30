@@ -22,9 +22,12 @@ trait RedirectsToCurrentTeam
     protected function currentTeam(Request $request): Team
     {
         $user = $request->user();
-        $team = $user?->currentTeam ?? $user?->personalTeam();
 
-        abort_unless($team, 403);
+        abort_if(! $user, 403);
+
+        $team = $user->currentTeam ?? $user->personalTeam();
+
+        abort_if(! $team, 403);
 
         return $team;
     }
