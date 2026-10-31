@@ -120,6 +120,16 @@
                 {
                     "description": "Android: follow symlinks when zipping the app bundle so symlinked path-repo plugins (sunny/item-scanner) ship in vendor",
                     "url": "patches/nativephp-mobile-android-bundle-follow-symlinks.patch"
+                },
+                {
+                    "description": "Android: make the persistent boot wait for a cold-path background task runtime so an overdue task firing at launch doesn't crash PHP startup (upstream issue #5 in our scratchpad)",
+                    "url": "patches/nativephp-mobile-android-persistent-boot-waits-for-ephemeral.patch"
+                }
+            ],
+            "nativephp/mobile-scanner": [
+                {
+                    "description": "Android: depend on Guava so ScannerActivity compiles once mobile-ui's emoji picker pulls Guava in at runtime only",
+                    "url": "patches/nativephp-mobile-scanner-android-guava.patch"
                 }
             ],
             "nativephp/mobile-ui": [
