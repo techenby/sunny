@@ -1,5 +1,5 @@
 {
-    "_hash": "a96bbe771ed6c074b67b1d5c3abf2f360dab38bf3b71c80ef14359bf2deee144",
+    "_hash": "0461483048b7494661c660842b455929dc7532f76064bda0dc6c4fe3d5d6b1f6",
     "patches": {
         "nativephp/mobile-camera": [
             {
@@ -29,6 +29,18 @@
                 "description": "Android: follow symlinks when zipping the app bundle so symlinked path-repo plugins (sunny/item-scanner) ship in vendor",
                 "url": "patches/nativephp-mobile-android-bundle-follow-symlinks.patch",
                 "sha256": "2efbce7f952fd104123a7224267009622e48df42d2ab7c88a27ef4d3724a2580",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
+            }
+        ],
+        "nativephp/mobile-scanner": [
+            {
+                "package": "nativephp/mobile-scanner",
+                "description": "Android: depend on Guava so ScannerActivity compiles once mobile-ui's emoji picker pulls Guava in at runtime only",
+                "url": "patches/nativephp-mobile-scanner-android-guava.patch",
+                "sha256": "58983f2f387d43770dee49751e902a1e4230c6dbc08fc2d7214ccc6c3cb782e4",
                 "depth": 1,
                 "extra": {
                     "provenance": "root"

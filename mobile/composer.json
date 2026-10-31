@@ -122,6 +122,12 @@
                     "url": "patches/nativephp-mobile-android-bundle-follow-symlinks.patch"
                 }
             ],
+            "nativephp/mobile-scanner": [
+                {
+                    "description": "Android: depend on Guava so ScannerActivity compiles once mobile-ui's emoji picker pulls Guava in at runtime only",
+                    "url": "patches/nativephp-mobile-scanner-android-guava.patch"
+                }
+            ],
             "nativephp/mobile-ui": [
                 {
                     "description": "iOS: focus outlined/filled text inputs when their padded box is tapped (upstream issue #19 in our scratchpad)",
