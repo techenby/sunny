@@ -1,0 +1,491 @@
+diff --git a/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeRootStackRenderer.kt b/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeRootStackRenderer.kt
+index bb6dbd9..a1ecebf 100644
+--- a/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeRootStackRenderer.kt
++++ b/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeRootStackRenderer.kt
+@@ -40,6 +40,7 @@ import androidx.compose.material3.Text
+ import androidx.compose.material3.TextButton
+ import androidx.compose.material3.TopAppBar
+ import androidx.compose.material3.TopAppBarDefaults
++import androidx.compose.material3.TopAppBarScrollBehavior
+ import androidx.compose.animation.core.animate
+ import androidx.compose.runtime.Composable
+ import androidx.compose.runtime.CompositionLocalProvider
+@@ -425,30 +426,7 @@ fun NativeRootStackRenderer(node: NativeUINode, modifier: Modifier = Modifier) {
+             } else {
+                 levelPaddings[uri] ?: padding
+             }
+-            // Expose the bar's collapse state to scrolling content. Only when
+-            // the bar actually reacts to scroll — a pinned bar stays put, and
+-            // handing content a controller that silently does nothing would be
+-            // worse than handing it null.
+-            val chromeScrollController = remember(scrollBehavior, barReactsToScroll) {
+-                if (!barReactsToScroll) {
+-                    null
+-                } else {
+-                    object : ChromeScrollController {
+-                        override suspend fun collapse() {
+-                            val state = scrollBehavior.state
+-                            val target = state.heightOffsetLimit
+-                            if (target >= 0f || state.heightOffset <= target) {
+-                                return
+-                            }
+-                            animate(
+-                                initialValue = state.heightOffset,
+-                                targetValue = target,
+-                                animationSpec = tween(durationMillis = 250),
+-                            ) { value, _ -> state.heightOffset = value }
+-                        }
+-                    }
+-                }
+-            }
++            val chromeScrollController = rememberChromeScrollController(scrollBehavior, barReactsToScroll)
+ 
+             CompositionLocalProvider(LocalChromeScrollController provides chromeScrollController) {
+                 val levelNode = coordinator.rootNodeCache[uri]?.also { levelNodes[uri] = it } ?: levelNodes[uri]
+@@ -491,6 +469,38 @@ interface ChromeScrollController {
+ /** Null when the screen has no collapsible chrome (pinned bar, or no bar). */
+ val LocalChromeScrollController = compositionLocalOf<ChromeScrollController?> { null }
+ 
++/**
++ * Exposes the bar's collapse state to scrolling content. Only when the bar
++ * actually reacts to scroll — a pinned bar stays put, and handing content a
++ * controller that silently does nothing would be worse than handing it null.
++ * Shared by the stack and tabs renderers.
++ */
++@OptIn(ExperimentalMaterial3Api::class)
++@Composable
++internal fun rememberChromeScrollController(
++    scrollBehavior: TopAppBarScrollBehavior,
++    barReactsToScroll: Boolean,
++): ChromeScrollController? = remember(scrollBehavior, barReactsToScroll) {
++    if (!barReactsToScroll) {
++        null
++    } else {
++        object : ChromeScrollController {
++            override suspend fun collapse() {
++                val state = scrollBehavior.state
++                val target = state.heightOffsetLimit
++                if (target >= 0f || state.heightOffset <= target) {
++                    return
++                }
++                animate(
++                    initialValue = state.heightOffset,
++                    targetValue = target,
++                    animationSpec = tween(durationMillis = 250),
++                ) { value, _ -> state.heightOffset = value }
++            }
++        }
++    }
++}
++
+ /**
+  * Renders a single trailing toolbar action — plain IconButton when no
+  * sub-items, DropdownMenu when `NavAction::items()` produced
+diff --git a/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeRootTabsRenderer.kt b/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeRootTabsRenderer.kt
+index af81845..7a92dc1 100644
+--- a/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeRootTabsRenderer.kt
++++ b/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeRootTabsRenderer.kt
+@@ -31,6 +31,7 @@ import androidx.compose.material3.BadgedBox
+ import androidx.compose.material3.ExperimentalMaterial3Api
+ import androidx.compose.material3.HorizontalDivider
+ import androidx.compose.material3.IconButton
++import androidx.compose.material3.LargeTopAppBar
+ import androidx.compose.material3.MaterialTheme
+ import androidx.compose.material3.NavigationBar
+ import androidx.compose.material3.NavigationBarDefaults
+@@ -42,7 +43,9 @@ import androidx.compose.material3.Surface
+ import androidx.compose.material3.Text
+ import androidx.compose.material3.TopAppBar
+ import androidx.compose.material3.TopAppBarDefaults
++import androidx.compose.material3.TopAppBarState
+ import androidx.compose.runtime.Composable
++import androidx.compose.runtime.CompositionLocalProvider
+ import androidx.compose.runtime.DisposableEffect
+ import androidx.compose.runtime.LaunchedEffect
+ import androidx.compose.runtime.getValue
+@@ -55,6 +58,7 @@ import androidx.compose.ui.Modifier
+ import androidx.compose.ui.draw.scale
+ import androidx.compose.ui.graphics.Color
+ import androidx.compose.ui.graphics.SolidColor
++import androidx.compose.ui.input.nestedscroll.nestedScroll
+ import androidx.compose.ui.platform.LocalLayoutDirection
+ import androidx.compose.ui.text.TextStyle
+ import androidx.compose.ui.text.font.FontWeight
+@@ -190,6 +194,27 @@ fun NativeRootTabsRenderer(node: NativeUINode, modifier: Modifier = Modifier) {
+     val hasNavBar = navBack || navTitle.isNotEmpty() || titleNode != null || hasNavActions
+     val reservesNavigationBarSlot = NativeRootHostRegistry.reservesNavigationBarSlot(node)
+ 
++    // `nav_display_mode` / `nav_scroll_behavior` map the same way the stack
++    // renderer maps `display_mode` / `scroll_behavior`: `large` gets
++    // Material's `LargeTopAppBar`, and an unset scroll behavior collapses
++    // large titles and pins everything else.
++    val useLargeTitle = node.props.getString("nav_display_mode", "") == "large" &&
++        (navTitle.isNotEmpty() || navSubtitle.isNotEmpty())
++    val scrollMode = node.props.getString("nav_scroll_behavior", "")
++        .ifEmpty { if (useLargeTitle) "collapse" else "pinned" }
++    // Each screen starts with its bar expanded, so a large title collapsed
++    // on one tab doesn't arrive collapsed on the next.
++    val topAppBarState = remember(activeTabIdx, currentUri) {
++        TopAppBarState(-Float.MAX_VALUE, 0f, 0f)
++    }
++    val scrollBehavior = when (scrollMode) {
++        "enterAlways" -> TopAppBarDefaults.enterAlwaysScrollBehavior(topAppBarState)
++        "pinned"      -> TopAppBarDefaults.pinnedScrollBehavior(topAppBarState)
++        else          -> TopAppBarDefaults.exitUntilCollapsedScrollBehavior(topAppBarState)
++    }
++    val barReactsToScroll = hasNavBar && !hideNavBar && scrollMode != "pinned"
++    val chromeScrollController = rememberChromeScrollController(scrollBehavior, barReactsToScroll)
++
+     // Per-layout / per-bar chrome fonts, resolved through the plugin seam.
+     // `font_name` = the tab bar's font; `nav_font_name` = the folded nav
+     // bar's font (falls back to the tab bar's). Null → inherit the ambient
+@@ -318,52 +343,71 @@ fun NativeRootTabsRenderer(node: NativeUINode, modifier: Modifier = Modifier) {
+         },
+         topBar = {
+             if (hasNavBar && !hideNavBar && !isOnSearchTab) {
+-                TopAppBar(
+-                    title = {
+-                        if (titleNode != null) {
+-                            Row(verticalAlignment = Alignment.CenterVertically) {
+-                                titleNode.children.forEach { child -> NodeView(node = child) }
+-                            }
+-                        } else if (navSubtitle.isNotEmpty()) {
+-                            Column {
+-                                Text(navTitle, fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.titleMedium, fontFamily = navChromeFontFamily)
+-                                Text(navSubtitle, style = MaterialTheme.typography.labelSmall, fontFamily = navChromeFontFamily)
+-                            }
+-                        } else {
+-                            Text(navTitle, fontWeight = FontWeight.SemiBold, fontFamily = navChromeFontFamily)
++                val titleContent: @Composable () -> Unit = {
++                    if (titleNode != null) {
++                        Row(verticalAlignment = Alignment.CenterVertically) {
++                            titleNode.children.forEach { child -> NodeView(node = child) }
+                         }
+-                    },
+-                    navigationIcon = {
+-                        if (navBack) {
+-                            IconButton(onClick = { NativeElementBridge.sendSystemBackEvent() }) {
+-                                // Font glyphs don't auto-mirror like AutoMirrored ImageVectors; flip for RTL.
+-                                val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+-                                MaterialIcon(
+-                                    name = "arrow_back",
+-                                    contentDescription = "Back",
+-                                    modifier = if (rtl) Modifier.scale(scaleX = -1f, scaleY = 1f) else Modifier
+-                                )
++                    } else if (navSubtitle.isNotEmpty()) {
++                        Column {
++                            // Large mode lets the bar drive the headline title
++                            // style, like the stack renderer.
++                            if (useLargeTitle) {
++                                Text(navTitle, fontWeight = FontWeight.SemiBold, fontFamily = navChromeFontFamily)
++                            } else {
++                                Text(navTitle, fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.titleMedium, fontFamily = navChromeFontFamily)
+                             }
+-                        } else if (reservesNavigationBarSlot) {
+-                            Spacer(modifier = Modifier.width(48.dp))
++                            Text(navSubtitle, style = MaterialTheme.typography.labelSmall, fontFamily = navChromeFontFamily)
+                         }
+-                    },
+-                    actions = {
+-                        actions.forEach { action -> TopBarActionView(action) }
+-                    },
+-                    colors = if (navBgArgb != 0) {
+-                        val bg = argbToComposeColor(navBgArgb)
+-                        val fg = if (navTextArgb != 0) argbToComposeColor(navTextArgb) else Color.White
+-                        TopAppBarDefaults.topAppBarColors(
+-                            containerColor = bg,
+-                            titleContentColor = fg,
+-                            navigationIconContentColor = fg,
+-                            actionIconContentColor = fg
+-                        )
+                     } else {
+-                        TopAppBarDefaults.topAppBarColors()
++                        Text(navTitle, fontWeight = FontWeight.SemiBold, fontFamily = navChromeFontFamily)
+                     }
+-                )
++                }
++                val navIconContent: @Composable () -> Unit = {
++                    if (navBack) {
++                        IconButton(onClick = { NativeElementBridge.sendSystemBackEvent() }) {
++                            // Font glyphs don't auto-mirror like AutoMirrored ImageVectors; flip for RTL.
++                            val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
++                            MaterialIcon(
++                                name = "arrow_back",
++                                contentDescription = "Back",
++                                modifier = if (rtl) Modifier.scale(scaleX = -1f, scaleY = 1f) else Modifier
++                            )
++                        }
++                    } else if (reservesNavigationBarSlot) {
++                        Spacer(modifier = Modifier.width(48.dp))
++                    }
++                }
++                val barColors = if (navBgArgb != 0) {
++                    val bg = argbToComposeColor(navBgArgb)
++                    val fg = if (navTextArgb != 0) argbToComposeColor(navTextArgb) else Color.White
++                    TopAppBarDefaults.topAppBarColors(
++                        containerColor = bg,
++                        scrolledContainerColor = bg,
++                        titleContentColor = fg,
++                        navigationIconContentColor = fg,
++                        actionIconContentColor = fg
++                    )
++                } else {
++                    TopAppBarDefaults.topAppBarColors()
++                }
++                if (useLargeTitle) {
++                    LargeTopAppBar(
++                        title = titleContent,
++                        navigationIcon = navIconContent,
++                        actions = { actions.forEach { action -> TopBarActionView(action) } },
++                        colors = barColors,
++                        scrollBehavior = scrollBehavior,
++                    )
++                } else {
++                    TopAppBar(
++                        title = titleContent,
++                        navigationIcon = navIconContent,
++                        actions = { actions.forEach { action -> TopBarActionView(action) } },
++                        colors = barColors,
++                        scrollBehavior = scrollBehavior,
++                    )
++                }
+             }
+         },
+         bottomBar = bottomBar@{
+@@ -549,21 +593,35 @@ fun NativeRootTabsRenderer(node: NativeUINode, modifier: Modifier = Modifier) {
+             } else {
+                 paneNodes[key] ?: Pair(screenContent, bottomBarNode)
+             }
+-            Box(modifier = Modifier.fillMaxSize().screenBackground(paneScreen).padding(screenPadding)) {
+-                if (paneBottomBar != null) {
+-                    // Screen content fills the space above the pinned bar; the
+-                    // bar sits at the bottom. Root `imePadding` shrinks this
+-                    // column when the keyboard opens so the bar rides above it.
+-                    Column(modifier = Modifier.fillMaxSize()) {
+-                        Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+-                            if (paneScreen != null) NodeView(node = paneScreen)
++            // The bar's nested-scroll connection wraps the screen content
++            // directly, inside AnimatedContent, for the same reason as the
++            // stack renderer: outside it, the list's scroll deltas never reach
++            // the bar. Only the entering pane drives the bar.
++            val drivesBar = barReactsToScroll && key == targetKey
++            val scrollModifier = if (drivesBar) {
++                Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
++            } else {
++                Modifier
++            }
++            CompositionLocalProvider(
++                LocalChromeScrollController provides if (drivesBar) chromeScrollController else null
++            ) {
++                Box(modifier = scrollModifier.fillMaxSize().screenBackground(paneScreen).padding(screenPadding)) {
++                    if (paneBottomBar != null) {
++                        // Screen content fills the space above the pinned bar; the
++                        // bar sits at the bottom. Root `imePadding` shrinks this
++                        // column when the keyboard opens so the bar rides above it.
++                        Column(modifier = Modifier.fillMaxSize()) {
++                            Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
++                                if (paneScreen != null) NodeView(node = paneScreen)
++                            }
++                            paneBottomBar.children.firstOrNull()?.let { NodeView(node = it) }
+                         }
+-                        paneBottomBar.children.firstOrNull()?.let { NodeView(node = it) }
++                    } else if (paneScreen != null) {
++                        NodeView(node = paneScreen)
++                    } else {
++                        Box(modifier = Modifier.fillMaxSize())
+                     }
+-                } else if (paneScreen != null) {
+-                    NodeView(node = paneScreen)
+-                } else {
+-                    Box(modifier = Modifier.fillMaxSize())
+                 }
+             }
+         }
+diff --git a/resources/xcode/NativePHP/NativeRender/NativeRootStackRenderer.swift b/resources/xcode/NativePHP/NativeRender/NativeRootStackRenderer.swift
+index b4bc769..edd3f23 100644
+--- a/resources/xcode/NativePHP/NativeRender/NativeRootStackRenderer.swift
++++ b/resources/xcode/NativePHP/NativeRender/NativeRootStackRenderer.swift
+@@ -137,7 +137,7 @@ struct NativeRootStackRenderer: View {
+ 
+         // Map the PHP-side string to SwiftUI's NavigationBarItem.TitleDisplayMode.
+         //   `large`     — iOS-native big title, left-aligned, collapses on scroll
+-        //   `automatic` — iOS picks (large at root, inline after a push)
++        //   `automatic` — iOS picks (large at root; a push inherits the previous mode)
+         //   else        — small centered title (previous default)
+         let titleDisplayMode: NavigationBarItem.TitleDisplayMode = {
+             // A custom title view lives in the centered `.principal` slot,
+@@ -493,7 +493,9 @@ private struct StackBottomBarInsetModifier: ViewModifier {
+ /// `.visible` and get their band back. Pre-18 still needs the pair
+ /// unconditionally — without it the color is applied to a hidden bar and
+ /// never shows.
+-private struct StackBarBackgroundModifier: ViewModifier {
++///
++/// Module-internal so the tabs renderer can use it for large-title bars.
++struct StackBarBackgroundModifier: ViewModifier {
+     let argb: Int
+     let inline: Bool
+ 
+diff --git a/resources/xcode/NativePHP/NativeRender/NativeRootTabsRenderer.swift b/resources/xcode/NativePHP/NativeRender/NativeRootTabsRenderer.swift
+index 89b8342..a9dc52e 100644
+--- a/resources/xcode/NativePHP/NativeRender/NativeRootTabsRenderer.swift
++++ b/resources/xcode/NativePHP/NativeRender/NativeRootTabsRenderer.swift
+@@ -299,6 +299,7 @@ struct NativeRootTabsRenderer: View {
+                         coordinator: coord,
+                         hasNavBar: hasNavBar,
+                         fallbackTitle: navTitleText,
++                        fallbackDisplayMode: node.props.getString("nav_display_mode", default: "inline"),
+                         fallbackShowBack: navBack,
+                         fallbackTextArgb: navTextArgb,
+                         fallbackBgArgb: navBgArgb,
+@@ -519,6 +520,7 @@ private struct PerTabContent: View {
+     @ObservedObject var coordinator: PerTabNavigationCoordinator
+     let hasNavBar: Bool
+     let fallbackTitle: String
++    let fallbackDisplayMode: String
+     let fallbackShowBack: Bool
+     let fallbackTextArgb: Int
+     let fallbackBgArgb: Int
+@@ -561,16 +563,18 @@ private struct PerTabContent: View {
+             // the rendered path; this branch never reaches it, so it takes
+             // the window background itself rather than flashing the
+             // TabView's container on the first tap of a fresh tab.
++            let titleDisplayMode = tabsTitleDisplayMode(fallbackDisplayMode, hasTitleView: false)
+             Color.clear
+                 .navigationTitle(fallbackTitle)
+-                .navigationBarTitleDisplayMode(.inline)
++                .navigationBarTitleDisplayMode(titleDisplayMode)
+                 .modifier(TabsToolbarModifier(
+                     showBack: fallbackShowBack && isRoot,
+                     title: fallbackTitle,
+                     titleNode: nil,
+                     actions: [],
+                     textArgb: fallbackTextArgb,
+-                    bgArgb: fallbackBgArgb
++                    bgArgb: fallbackBgArgb,
++                    inline: titleDisplayMode == .inline
+                 ))
+                 .modifier(WindowBackgroundModifier())
+         }
+@@ -639,6 +643,10 @@ private struct PerTabContent: View {
+             : root.props.getString("nav_search_placeholder", default: "")
+         let searchOnQueryCb = Int(root.props.getCallbackId("nav_search_on_query"))
+         let searchDebounceMs = root.props.getInt("nav_search_debounce_ms", default: 300)
++        let titleDisplayMode = tabsTitleDisplayMode(
++            root.props.getString("nav_display_mode", default: fallbackDisplayMode),
++            hasTitleView: titleNode != nil
++        )
+ 
+         levelContent(for: root, screenContent: screenContent)
+             // Always set the string title, even when a titleView lockup owns
+@@ -647,21 +655,26 @@ private struct PerTabContent: View {
+             // accessibility label this level from `navigationTitle` —
+             // blanking it renders those entries as empty glass pills.
+             .navigationTitle(title)
+-            .navigationBarTitleDisplayMode(.inline)
++            .navigationBarTitleDisplayMode(titleDisplayMode)
+             .modifier(TabsToolbarModifier(
+                 showBack: manualBack,
+                 title: title,
+                 titleNode: titleNode,
+                 actions: actions,
+                 textArgb: textArgb,
+-                bgArgb: bgArgb
++                bgArgb: bgArgb,
++                inline: titleDisplayMode == .inline
+             ))
+             .modifier(HideNavBarModifier(hidden: hideNavBar))
+             .modifier(SearchableNavBarModifier(
+                 placeholder: searchPlaceholder,
+                 callbackId: searchOnQueryCb,
+                 nodeId: root.id,
+-                debounceMs: searchDebounceMs
++                debounceMs: searchDebounceMs,
++                // Same mapping as the stack renderer.
++                alwaysVisible: ["collapse", "pinned"].contains(
++                    root.props.getString("nav_scroll_behavior", default: "")
++                )
+             ))
+             // Hide the parent TabView's tab bar on any pushed level
+             // FIRST — matches Apple's iMessage / Music / Mail pattern
+@@ -723,6 +736,7 @@ private struct TabsToolbarModifier: ViewModifier {
+     let actions: [NativeUINode]
+     let textArgb: Int
+     let bgArgb: Int
++    let inline: Bool
+ 
+     func body(content: Content) -> some View {
+         let textColor: Color = textArgb != 0 ? Color(argb: textArgb) : .primary
+@@ -773,10 +787,36 @@ private struct TabsToolbarModifier: ViewModifier {
+                 }
+             }
+             .toolbarColorScheme(toolbarScheme, for: .navigationBar)
+-            .modifier(ExplicitBarBackgroundModifier(
+-                argb: bgArgb,
+-                placement: .navigationBar
+-            ))
++            .modifier(TabsNavBarBackgroundModifier(argb: bgArgb, inline: inline))
++    }
++}
++
++/// Inline bars keep the tabs renderer's existing background treatment.
++/// Large and automatic bars use the stack renderer's, which doesn't force
++/// the bar background visible: under Liquid Glass that drops the large
++/// title row (see `StackBarBackgroundModifier`).
++private struct TabsNavBarBackgroundModifier: ViewModifier {
++    let argb: Int
++    let inline: Bool
++
++    func body(content: Content) -> some View {
++        if inline {
++            content.modifier(ExplicitBarBackgroundModifier(argb: argb, placement: .navigationBar))
++        } else {
++            content.modifier(StackBarBackgroundModifier(argb: argb, inline: false))
++        }
++    }
++}
++
++/// Maps the folded `nav_display_mode` prop the same way the stack renderer
++/// maps `display_mode`. A custom title view lives in the centered
++/// `.principal` slot, which only reads right inline.
++private func tabsTitleDisplayMode(_ mode: String, hasTitleView: Bool) -> NavigationBarItem.TitleDisplayMode {
++    if hasTitleView { return .inline }
++    switch mode {
++    case "large":     return .large
++    case "automatic": return .automatic
++    default:          return .inline
+     }
+ }
+ 
+diff --git a/src/Edge/Elements/NativeRootTabs.php b/src/Edge/Elements/NativeRootTabs.php
+index deca5a2..65a0c5f 100644
+--- a/src/Edge/Elements/NativeRootTabs.php
++++ b/src/Edge/Elements/NativeRootTabs.php
+@@ -100,6 +100,12 @@ class NativeRootTabs extends Element
+         if (isset($attrs['navElevation'])) {
+             $this->props['nav_elevation'] = (int) $attrs['navElevation'];
+         }
++        if (isset($attrs['navDisplayMode'])) {
++            $this->props['nav_display_mode'] = $attrs['navDisplayMode'];
++        }
++        if (isset($attrs['navScrollBehavior'])) {
++            $this->props['nav_scroll_behavior'] = $attrs['navScrollBehavior'];
++        }
+ 
+         // The URI of the active tab's screen. The iOS bridge keys its
+         // per-URI tree diff off this so tab-switch publishes reuse
+diff --git a/src/Edge/Layouts/Builders/NavBar.php b/src/Edge/Layouts/Builders/NavBar.php
+index 8392856..832f32c 100644
+--- a/src/Edge/Layouts/Builders/NavBar.php
++++ b/src/Edge/Layouts/Builders/NavBar.php
+@@ -251,8 +251,9 @@ class NavBar
+     /**
+      * Title display mode. `large` gives the iOS-native large-title-on-top,
+      * left-aligned, collapses to inline when content scrolls beneath.
+-     * `inline` is the small centered title. `automatic` lets iOS pick
+-     * (large at the root of a stack, inline after a push).
++     * `inline` is the small centered title. `automatic` lets iOS pick:
++     * large at the root of a stack, and a pushed screen inherits the
++     * mode of the screen it was pushed from. Android draws the small bar.
+      *
+      *   ->displayMode('large')   // big left-aligned hero title
+      *   ->displayMode('inline')  // current default
