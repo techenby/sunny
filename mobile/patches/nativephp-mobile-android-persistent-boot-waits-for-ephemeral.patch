@@ -1,0 +1,54 @@
+diff --git a/resources/androidstudio/app/src/main/cpp/php_bridge.c b/resources/androidstudio/app/src/main/cpp/php_bridge.c
+--- a/resources/androidstudio/app/src/main/cpp/php_bridge.c
++++ b/resources/androidstudio/app/src/main/cpp/php_bridge.c
+@@ -673,18 +673,42 @@
+     }
+     zend_string_release(name);
+ }
++
++// The boot gate only stops ephemeral from racing a persistent boot that has
++// already started. WorkManager can run an overdue task the moment the process
++// starts, so ephemeral can read NEVER_STARTED and take the cold path just
++// before persistent opens the gate — or still be running that cold-path
++// runtime when persistent arrives. Either way two php_embed_init() calls
++// overlap and tsrm startup SIGSEGVs. Persistent takes g_ephemeral_mutex until
++// the gate is open, and waits out any live cold-path runtime first.
++static void lock_ephemeral_for_persistent_boot(void) {
++    int logged = 0;
+ 
++    pthread_mutex_lock(&g_ephemeral_mutex);
++    while (ephemeral_initialized && ephemeral_cold_booted) {
++        if (!logged) {
++            LOGI("persistent_boot: waiting for cold-path ephemeral runtime to shut down");
++            logged = 1;
++        }
++        pthread_mutex_unlock(&g_ephemeral_mutex);
++        usleep(20000);
++        pthread_mutex_lock(&g_ephemeral_mutex);
++    }
++}
++
+ /**
+  * Boot the persistent PHP interpreter once.
+  * Initializes php_embed, registers native functions, and executes the
+  * persistent bootstrap script (which boots Laravel and stores the kernel).
+  */
+ JNIEXPORT jint JNICALL native_persistent_boot(JNIEnv *env, jobject thiz, jstring jBootstrapPath) {
++    lock_ephemeral_for_persistent_boot();
+     pthread_mutex_lock(&g_php_request_mutex);
+ 
+     if (persistent_initialized) {
+         LOGI("persistent_boot: already initialized, skipping");
+         pthread_mutex_unlock(&g_php_request_mutex);
++        pthread_mutex_unlock(&g_ephemeral_mutex);
+         return 0;
+     }
+ 
+@@ -702,6 +726,7 @@
+     // Open the boot gate so any concurrent ephemeral_embed_init call blocks
+     // instead of racing into a second php_embed_init().
+     set_persistent_boot_state(PERSISTENT_BOOT_IN_PROGRESS);
++    pthread_mutex_unlock(&g_ephemeral_mutex);
+ 
+     setup_embed_module();
+     if (php_embed_init(0, NULL) != SUCCESS) {

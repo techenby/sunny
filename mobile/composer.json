@@ -122,8 +122,18 @@
                     "url": "patches/nativephp-mobile-android-bundle-follow-symlinks.patch"
                 },
                 {
+                    "description": "Android: make the persistent boot wait for a cold-path background task runtime so an overdue task firing at launch doesn't crash PHP startup (NativePHP/mobile-air#646)",
+                    "url": "patches/nativephp-mobile-android-persistent-boot-waits-for-ephemeral.patch"
+                },
+                {
                     "description": "iOS + Android: honor display-mode and scroll-behavior on tab screens so they get large titles (NativePHP/mobile-air#633)",
                     "url": "patches/nativephp-mobile-tabs-display-mode.patch"
+                }
+            ],
+            "nativephp/mobile-scanner": [
+                {
+                    "description": "Android: depend on Guava so ScannerActivity compiles once mobile-ui's emoji picker pulls Guava in at runtime only",
+                    "url": "patches/nativephp-mobile-scanner-android-guava.patch"
                 }
             ],
             "nativephp/mobile-ui": [

@@ -1,5 +1,5 @@
 {
-    "_hash": "f44993f1efb72fd63a76c7388b4fbe7fe73061bf6ff512daba9d1de26b4a5986",
+    "_hash": "22c24bd160524179ae60daba6b305069d46a4961546eb5b964841dcb5b029580",
     "patches": {
         "nativephp/mobile-camera": [
             {
@@ -36,9 +36,31 @@
             },
             {
                 "package": "nativephp/mobile",
+                "description": "Android: make the persistent boot wait for a cold-path background task runtime so an overdue task firing at launch doesn't crash PHP startup (NativePHP/mobile-air#646)",
+                "url": "patches/nativephp-mobile-android-persistent-boot-waits-for-ephemeral.patch",
+                "sha256": "fbfd0019925352c94dfc1a57b22ae87629498cb5ee866493da0180da6120d305",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
+            },
+            {
+                "package": "nativephp/mobile",
                 "description": "iOS + Android: honor display-mode and scroll-behavior on tab screens so they get large titles (NativePHP/mobile-air#633)",
                 "url": "patches/nativephp-mobile-tabs-display-mode.patch",
                 "sha256": "d00ceef7d1b3206765f2506a4ee8b6734a3f74ba9116f79f5e900f384b5bd5ab",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
+            }
+        ],
+        "nativephp/mobile-scanner": [
+            {
+                "package": "nativephp/mobile-scanner",
+                "description": "Android: depend on Guava so ScannerActivity compiles once mobile-ui's emoji picker pulls Guava in at runtime only",
+                "url": "patches/nativephp-mobile-scanner-android-guava.patch",
+                "sha256": "58983f2f387d43770dee49751e902a1e4230c6dbc08fc2d7214ccc6c3cb782e4",
                 "depth": 1,
                 "extra": {
                     "provenance": "root"
