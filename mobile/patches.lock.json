@@ -1,5 +1,5 @@
 {
-    "_hash": "a96bbe771ed6c074b67b1d5c3abf2f360dab38bf3b71c80ef14359bf2deee144",
+    "_hash": "f44993f1efb72fd63a76c7388b4fbe7fe73061bf6ff512daba9d1de26b4a5986",
     "patches": {
         "nativephp/mobile-camera": [
             {
@@ -29,6 +29,16 @@
                 "description": "Android: follow symlinks when zipping the app bundle so symlinked path-repo plugins (sunny/item-scanner) ship in vendor",
                 "url": "patches/nativephp-mobile-android-bundle-follow-symlinks.patch",
                 "sha256": "2efbce7f952fd104123a7224267009622e48df42d2ab7c88a27ef4d3724a2580",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
+            },
+            {
+                "package": "nativephp/mobile",
+                "description": "iOS + Android: honor display-mode and scroll-behavior on tab screens so they get large titles (NativePHP/mobile-air#633)",
+                "url": "patches/nativephp-mobile-tabs-display-mode.patch",
+                "sha256": "d00ceef7d1b3206765f2506a4ee8b6734a3f74ba9116f79f5e900f384b5bd5ab",
                 "depth": 1,
                 "extra": {
                     "provenance": "root"

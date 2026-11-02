@@ -120,6 +120,10 @@
                 {
                     "description": "Android: follow symlinks when zipping the app bundle so symlinked path-repo plugins (sunny/item-scanner) ship in vendor",
                     "url": "patches/nativephp-mobile-android-bundle-follow-symlinks.patch"
+                },
+                {
+                    "description": "iOS + Android: honor display-mode and scroll-behavior on tab screens so they get large titles (NativePHP/mobile-air#633)",
+                    "url": "patches/nativephp-mobile-tabs-display-mode.patch"
                 }
             ],
             "nativephp/mobile-ui": [
