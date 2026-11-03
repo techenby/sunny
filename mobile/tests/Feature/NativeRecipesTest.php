@@ -174,10 +174,12 @@ it('omits the photo when the recipe has none', function () {
     Native::visit('/recipes/1')->assertMissingElement('image');
 });
 
-it('keeps a recipe’s edit action above the tab bar', function () {
+it('puts a recipe’s edit action in the top bar', function () {
     seedSunnyData();
 
     Native::visit('/recipes/1')
-        ->assertElement('bottom_bar', fn (array $node): bool => str_contains(json_encode($node), '"ref":"edit-recipe"'))
-        ->assertMissingElement('top_bar_action');
+        ->assertElement('top_bar_action', fn (array $node): bool => ($node['ref'] ?? null) === 'edit-recipe')
+        ->assertMissingElement('bottom_bar')
+        ->tap('edit-recipe')
+        ->assertNavigatedTo('/recipes/1/edit');
 });

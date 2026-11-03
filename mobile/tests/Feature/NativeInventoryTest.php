@@ -202,9 +202,11 @@ it('stops walking descendants when the synced data contains a parent cycle', fun
     expect(Inventory::descendantIdsOf(6))->toEqualCanonicalizing([7, 8, 9, 10]);
 });
 
-it('puts labeled edit and print buttons above the tab bar and delete at the end of the page', function () {
+it('puts edit and print actions in the top bar and delete at the end of the page', function () {
     Native::visit('/inventory/7')
-        ->assertElement('bottom_bar', fn (array $node): bool => array_column($node['children'][0]['children'], 'ref') === ['edit-item', 'item-print-label'])
+        ->assertElement('top_bar_action', fn (array $node): bool => ($node['ref'] ?? null) === 'edit-item')
+        ->assertElement('top_bar_action', fn (array $node): bool => ($node['ref'] ?? null) === 'item-print-label')
+        ->assertMissingElement('bottom_bar')
         ->assertMissingElement('top_bar_action', fn (array $node): bool => ($node['ref'] ?? null) === 'delete-item')
         ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'delete-item')
         ->assertSee('Delete Tool chest')

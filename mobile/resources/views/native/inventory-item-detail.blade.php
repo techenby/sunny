@@ -6,36 +6,28 @@
 
 @php($item = $this->item)
 
-<native:top-bar :title="$item['name'] ?? 'Item'" display-mode="large" back />
+<native:top-bar :title="$item['name'] ?? 'Item'" display-mode="large" back>
+    @if ($item)
+        <native:top-bar-action
+            ref="edit-item"
+            id="edit-item"
+            label="Edit"
+            :ios-icon="Ios::Pencil"
+            :android-icon="Android::Edit"
+            @navigate('/inventory/'.$item['id'].'/edit')
+        />
+        <native:top-bar-action
+            ref="item-print-label"
+            id="item-print-label"
+            label="Print label"
+            :ios-icon="Ios::Qrcode"
+            :android-icon="Android::QrCode2"
+            @tap="showQrCode"
+        />
+    @endif
+</native:top-bar>
 
 @if ($item)
-    <native:bottom-bar>
-        <row class="w-full items-center gap-3 px-4 pb-2">
-            <pressable
-                ref="edit-item"
-                a11y-label="Edit"
-                class="min-h-12 flex-1 items-center justify-center rounded-full px-4 glass android:bg-theme-surface"
-                @navigate('/inventory/'.$item['id'].'/edit')
-            >
-                <row class="items-center gap-2">
-                    <native:icon :ios="Ios::Pencil" :android="Android::Edit" :size="18" class="text-theme-on-surface" />
-                    <text font="semibold" class="text-lg text-theme-on-surface">Edit</text>
-                </row>
-            </pressable>
-            <pressable
-                ref="item-print-label"
-                a11y-label="Print label"
-                class="min-h-12 flex-1 items-center justify-center rounded-full px-4 glass android:bg-theme-surface"
-                @tap="showQrCode"
-            >
-                <row class="items-center gap-2">
-                    <native:icon :ios="Ios::Qrcode" :android="Android::QrCode2" :size="18" class="text-theme-on-surface" />
-                    <text font="semibold" class="text-lg text-theme-on-surface">Print label</text>
-                </row>
-            </pressable>
-        </row>
-    </native:bottom-bar>
-
     <scroll-view ref="item-detail" fill class="bg-theme-background">
         <column class="w-full gap-7 px-4 pt-2 pb-8">
             <column class="w-full gap-3">
