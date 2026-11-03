@@ -1,6 +1,6 @@
 @php($routine = $this->routine)
 
-<native:top-bar :title="$routine ? 'Edit '.$routine['name'] : 'Edit routine'" back />
+<native:top-bar title="Edit routine" back />
 
 @if ($routine)
     @include('native.routine-form', [
@@ -11,9 +11,5 @@
         'weekdayRows' => $this->weekdayRows,
     ])
 @else
-    <column ref="edit-routine-missing" fill center class="bg-theme-background ios:bg-theme-grouped-background px-6">
-        <text class="text-center text-base text-theme-on-surface-variant">
-            This routine could not be found.
-        </text>
-    </column>
+    <x-ui.not-found ref="edit-routine-missing" thing="routine" class="ios:bg-theme-grouped-background" />
 @endif

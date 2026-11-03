@@ -2,7 +2,7 @@
 @use('App\Icons\Ios')
 @use('App\Ui\Card')
 
-<native:top-bar title="Routines" display-mode="large" :back="false">
+<native:top-bar title="Today" display-mode="large" :back="false">
     <native:top-bar-action
         ref="all-routines"
         id="all-routines"

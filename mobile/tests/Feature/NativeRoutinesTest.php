@@ -24,7 +24,7 @@ function routineStepResponse(int $id, ?string $completedAt): MockResponse
 
 it('lists today’s routines by time of day with their progress', function (): void {
     $screen = Native::visit('/today')
-        ->assertNavTitle('Routines')
+        ->assertNavTitle('Today')
         ->assertSee(now()->format('l, F j'))
         ->assertSee('Get ready')
         ->assertSee('Morning · Household')

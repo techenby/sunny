@@ -175,7 +175,7 @@ it('labels the camera and library buttons', function (string $platform, string $
         ->assertElement('icon', fn (array $node): bool => ($node['props']['name'] ?? null) === $iconName)
         ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'create-item-photo-camera')
         ->assertSee('Take photo')
-        ->assertSee('Choose from photos');
+        ->assertSee('Choose photo');
 })->with([
     'ios' => ['ios', 'camera'],
     'android' => ['android', 'photo_camera'],

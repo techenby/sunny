@@ -29,10 +29,10 @@ it('shares the QR code image for printing', function () {
         ->assertSharedFile(storage_path('app/qr-codes/cordless-drill-8.png'));
 });
 
-it('shares from the top bar', function () {
+it('keeps sharing in the button below the code instead of the top bar', function () {
     Native::visit('/inventory/8/qr-code')
-        ->tap('share-qr-code')
-        ->assertSharedFile(storage_path('app/qr-codes/cordless-drill-8.png'));
+        ->assertMissingElement('top_bar_action')
+        ->assertElement('button', fn (array $node): bool => ($node['ref'] ?? null) === 'item-qr-code-share');
 });
 
 it('copies the item name', function () {
@@ -70,6 +70,6 @@ it('does not share before asked', function () {
 
 it('explains when the item is missing', function () {
     Native::visit('/inventory/999/qr-code')
-        ->assertSee('This item could not be found.')
+        ->assertSee('Item not found')
         ->assertDontSee('Share for printing');
 });

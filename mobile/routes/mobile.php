@@ -18,6 +18,7 @@ use App\NativeComponents\ListDetail;
 use App\NativeComponents\Lists;
 use App\NativeComponents\Login;
 use App\NativeComponents\OpenItemLink;
+use App\NativeComponents\Preferences;
 use App\NativeComponents\RecipeDetail;
 use App\NativeComponents\Recipes;
 use App\NativeComponents\Register;
@@ -32,6 +33,7 @@ Route::native('/login', Login::class);
 Route::native('/register', Register::class);
 Route::nativeGroup(TabsLayout::class, function () {
     Route::native('/dashboard', Dashboard::class);
+    Route::native('/preferences', Preferences::class);
     Route::native('/today', Today::class);
     Route::native('/routines', Routines::class);
     Route::native('/routines/create', CreateRoutine::class);

@@ -170,7 +170,7 @@ it('deletes a list and its items once confirmed', function () {
 });
 
 it('shows a missing list', function () {
-    Native::visit('/lists/99')->assertSee('This list could not be found.');
+    Native::visit('/lists/99')->assertSee('List not found');
 });
 
 it('opens the create screen from the overview', function () {

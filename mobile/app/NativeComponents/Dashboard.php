@@ -5,7 +5,6 @@ namespace App\NativeComponents;
 use App\Actions\DestroySession;
 use App\Concerns\ChecksSunnySync;
 use App\Enums\ItemType;
-use App\Http\Integrations\Sunny\SunnyAuth;
 use App\Http\Integrations\Sunny\SunnyStore;
 use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Http\Integrations\Sunny\SunnyTeam;
@@ -19,7 +18,6 @@ use JsonException;
 use Native\Mobile\Attributes\Computed;
 use Native\Mobile\Attributes\On;
 use Native\Mobile\Edge\NativeComponent;
-use Native\Mobile\Events\Alert\ButtonPressed;
 use Native\Mobile\Facades\Dialog;
 use RuntimeException;
 use Saloon\Exceptions\Request\FatalRequestException;
@@ -31,10 +29,6 @@ class Dashboard extends NativeComponent
     use ChecksSunnySync;
 
     public string $syncError = '';
-
-    public string $activeTeamName = '';
-
-    public bool $showTeamPicker = false;
 
     public function mount(): void
     {
@@ -54,25 +48,6 @@ class Dashboard extends NativeComponent
     public function teamOptions(): array
     {
         return app(SunnyTeam::class)->choices();
-    }
-
-    public function openTeamPicker(): void
-    {
-        $this->showTeamPicker = count($this->teamOptions) > 1;
-    }
-
-    public function closeTeamPicker(): void
-    {
-        $this->showTeamPicker = false;
-    }
-
-    public function selectTeam(int $id): void
-    {
-        if (array_key_exists($id, app(SunnyTeam::class)->choices())) {
-            app(SunnyTeam::class)->select($id);
-        }
-        $this->showTeamPicker = false;
-        $this->refreshLocalData();
     }
 
     public function sync(): void
@@ -119,12 +94,6 @@ class Dashboard extends NativeComponent
         ];
     }
 
-    #[Computed]
-    public function teamInitial(): string
-    {
-        return mb_strtoupper(mb_substr($this->activeTeamName, 0, 1));
-    }
-
     /**
      * @return list<array{id: int, name: string, supporting: string, photo: string|null, url: string}>
      */
@@ -160,37 +129,6 @@ class Dashboard extends NativeComponent
             ->all();
     }
 
-    public function confirmLogOut(): void
-    {
-        Dialog::alert('Log out?', 'Recipes, inventory, and routines downloaded to this device will be removed.', [
-            ['label' => 'Cancel', 'style' => 'cancel'],
-            ['label' => 'Log out', 'style' => 'destructive'],
-        ])->id('log-out')->show();
-    }
-
-    #[On(ButtonPressed::class)]
-    public function onAlertButtonPressed(string $label, ?string $id = null): void
-    {
-        if ($id === 'log-out' && $label === 'Log out') {
-            $this->logOut();
-        }
-    }
-
-    public function logOut(): void
-    {
-        try {
-            app(SunnyAuth::class)->logout();
-        } catch (RequestException|FatalRequestException) {
-            Dialog::toast('Signed out on this device. Sunny could not revoke the remote session.');
-        } catch (RuntimeException) {
-            Dialog::toast('Unable to clear your saved login. Unlock your device and try again.');
-
-            return;
-        }
-
-        $this->replace('/');
-    }
-
     public function render(): View
     {
         return view('native.dashboard');
@@ -198,9 +136,7 @@ class Dashboard extends NativeComponent
 
     private function refreshLocalData(): void
     {
-        $teams = app(SunnyTeam::class);
-        $this->activeTeamName = $teams->choices()[$teams->current()?->id] ?? '';
-        unset($this->recentRecipes, $this->recentItems, $this->teamOptions, $this->summary, $this->teamInitial);
+        unset($this->recentRecipes, $this->recentItems, $this->teamOptions, $this->summary);
     }
 
     protected function refreshLocalSyncedData(): void

@@ -39,14 +39,14 @@
             </pressable>
             <pressable
                 ref="{{ $refPrefix }}-photo-library"
-                a11y-label="Choose from photos"
+                a11y-label="Choose photo"
                 a11y-hint="Opens the photo library"
                 class="min-h-12 flex-1 items-center justify-center rounded-xl border border-theme-outline bg-theme-surface px-4"
                 @tap="choosePhoto"
             >
                 <row class="items-center gap-2">
                     <native:icon :ios="Ios::Photo" :android="Android::Image" :size="20" class="text-theme-on-surface" />
-                    <text font="semibold" class="text-base text-theme-on-surface">Choose from photos</text>
+                    <text font="semibold" class="text-base text-theme-on-surface">Choose photo</text>
                 </row>
             </pressable>
         </row>

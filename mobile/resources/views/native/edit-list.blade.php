@@ -1,6 +1,6 @@
 @php($checklist = $this->checklist)
 
-<native:top-bar :title="$checklist ? 'Edit '.$checklist['name'] : 'Edit list'" back />
+<native:top-bar title="Edit list" back />
 
 @if ($checklist)
     @include('native.list-form', [
@@ -9,9 +9,5 @@
         'typeOptions' => $this->typeOptions,
     ])
 @else
-    <column ref="edit-list-missing" fill center class="bg-theme-background ios:bg-theme-grouped-background px-6">
-        <text class="text-center text-base text-theme-on-surface-variant">
-            This list could not be found.
-        </text>
-    </column>
+    <x-ui.not-found ref="edit-list-missing" thing="list" class="ios:bg-theme-grouped-background" />
 @endif

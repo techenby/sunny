@@ -5,7 +5,7 @@
 
 @php($recipe = $this->recipe)
 
-<native:top-bar :title="$recipe['name'] ?? 'Recipe'" back />
+<native:top-bar :title="$recipe ? '' : 'Recipe'" back />
 
 @if ($recipe)
     @include('native.action-bottom-bar', ['actions' => [
@@ -202,9 +202,5 @@
         </column>
     </scroll-view>
 @else
-    <column ref="recipe-missing" fill center class="bg-theme-background px-6">
-        <text class="text-center text-base text-theme-on-surface-variant">
-            This recipe could not be found.
-        </text>
-    </column>
+    <x-ui.not-found ref="recipe-missing" thing="recipe" />
 @endif

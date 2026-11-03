@@ -270,7 +270,7 @@ it('keeps queued changes when a download lands before they are sent', function (
 it('uses the active team and filters parents by team', function (): void {
     Team::create(['id' => 2, 'name' => 'Work', 'slug' => 'work', 'server' => SunnyStore::server()]);
     Item::create(['id' => 99, 'team_id' => 2, 'name' => 'Work bin', 'type' => 'bin', 'server' => SunnyStore::server()]);
-    Native::visit('/dashboard')->tap('active-team')->tap('team-2');
+    Native::visit('/preferences')->tap('team-2');
     $screen = Native::visit('/inventory/create')->assertSet('teamId', 2);
     expect(array_column($screen->get('parentChoices'), 'name'))->toBe(['Work bin']);
 });

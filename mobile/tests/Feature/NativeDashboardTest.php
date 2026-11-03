@@ -5,12 +5,11 @@ use App\Models\Item;
 use App\Models\Recipe;
 use App\NativeComponents\CreateInventoryItem;
 use App\NativeComponents\CreateRecipe;
-use App\NativeComponents\Home;
 use App\NativeComponents\Inventory;
 use App\NativeComponents\InventoryItemDetail;
+use App\NativeComponents\Preferences;
 use App\NativeComponents\RecipeDetail;
 use App\NativeComponents\Recipes;
-use Native\Mobile\Events\Alert\ButtonPressed;
 use Native\Mobile\Testing\Native;
 
 beforeEach(function () {
@@ -26,12 +25,12 @@ beforeEach(fn () => seedSunnyData());
 it('renders the dashboard', function () {
     Native::visit('/dashboard')
         ->assertNavTitle('Summary')
-        ->assertSee('Family')
-        ->assertSet('activeTeamName', 'Family')
         ->assertSee('Recent recipes')
         ->assertSee('Recent items')
-        ->assertElement('top_bar_action', fn (array $node): bool => ($node['props']['id'] ?? null) === 'log-out'
-            && ($node['props']['label'] ?? null) === 'Log out')
+        ->assertDontSee('Active team')
+        ->assertElement('top_bar_action', fn (array $node): bool => ($node['props']['id'] ?? null) === 'preferences'
+            && ($node['props']['label'] ?? null) === 'Preferences')
+        ->assertMissingElement('top_bar_action', fn (array $node): bool => ($node['props']['id'] ?? null) === 'log-out')
         ->assertElement('refreshable', fn (array $node): bool => isset($node['props']['on_refresh']))
         ->assertAccessible();
 });
@@ -42,27 +41,20 @@ it('summarizes the active team recipes and inventory', function () {
         ->assertSee('3 places · 3 storage spots');
 });
 
-it('asks for confirmation before logging out', function () {
+it('opens preferences from the top bar', function () {
     Native::visit('/dashboard')
-        ->tap('Log out')
-        ->assertNativeCalled('Dialog.Alert', fn (array $params): bool => $params['id'] === 'log-out')
-        ->assertNoNavigation();
-});
-
-it('returns to the home screen when logging out is confirmed', function () {
-    Native::visit('/dashboard')
-        ->tap('Log out')
-        ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Log out', 'id' => 'log-out'])
-        ->assertReplacedWith('/')
+        ->tap('preferences')
+        ->assertNavigatedTo('/preferences')
         ->follow()
-        ->assertScreen(Home::class);
+        ->assertScreen(Preferences::class);
 });
 
-it('stays on the dashboard when logging out is cancelled', function () {
+it('keeps the add menu above the tab bar', function () {
     Native::visit('/dashboard')
-        ->tap('Log out')
-        ->emitNative(ButtonPressed::class, ['index' => 0, 'label' => 'Cancel', 'id' => 'log-out'])
-        ->assertNoNavigation();
+        ->assertElement('bottom_bar', fn (array $node): bool => str_contains(json_encode($node), '"ref":"dashboard-add"'))
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'dashboard-add'
+            && ($node['props']['has_menu'] ?? false) === true
+            && ($node['props']['a11y_label'] ?? null) === 'Add');
 });
 
 it('lists the most recently added or updated recipes', function () {

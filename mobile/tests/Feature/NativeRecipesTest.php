@@ -62,7 +62,7 @@ it('opens a recipe from the list', function () {
 
 it('shows a recipe the way the web app does', function () {
     Native::visit('/recipes/1')
-        ->assertNavTitle('Buttermilk Pancakes')
+        ->assertElement('native_root_tabs', fn (array $node): bool => ($node['props']['nav_title'] ?? '') === '')
         ->assertElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'recipe-name'
             && ($node['props']['text'] ?? null) === 'Buttermilk Pancakes')
         ->assertElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'recipe-description'
@@ -157,7 +157,7 @@ it('links a remix and its original recipe', function () {
 it('explains when a recipe does not exist', function () {
     Native::visit('/recipes/999')
         ->assertNavTitle('Recipe')
-        ->assertSee('This recipe could not be found.')
+        ->assertSee('Recipe not found')
         ->assertMissingElement('scroll_view');
 });
 
