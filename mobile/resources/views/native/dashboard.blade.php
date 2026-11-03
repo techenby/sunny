@@ -110,7 +110,7 @@
                             ref="dashboard-recipes-{{ $recipe['id'] }}"
                             @navigate($recipe['url'])
                             :a11y-label="$recipe['name']"
-                            class="{{ Card::classes() }} w-full h-[210]"
+                            class="{{ Card::classes() }} min-h-[210] w-full"
                         >
                             <stack class="w-full h-[130]">
                                 <column class="w-full h-full items-center justify-center bg-theme-primary/15">
@@ -122,7 +122,7 @@
                             </stack>
                             <column class="w-full gap-0.5 px-3 py-2">
                                 <x-ui.heading max-lines="2">{{ $recipe['name'] }}</x-ui.heading>
-                                <x-ui.text size="sm" max-lines="1">{{ $recipe['supporting'] }}</x-ui.text>
+                                <x-ui.text size="sm" max-lines="2">{{ $recipe['supporting'] }}</x-ui.text>
                             </column>
                         </pressable>
                     @endforeach

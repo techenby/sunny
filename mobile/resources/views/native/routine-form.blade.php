@@ -17,25 +17,21 @@
                 native:model.blur="name"
             />
 
-            <column class="w-full gap-2">
-                <text class="text-sm font-semibold text-theme-on-surface-variant">Time of day</text>
-                <button-group
-                    ref="{{ $formRef }}-time-of-day"
-                    :options="$timeOfDayOptions"
-                    a11y-label="Time of day"
-                    native:model="timeOfDayIndex"
-                />
-            </column>
+            @include('native.option-list', [
+                'ref' => $formRef.'-time-of-day',
+                'label' => 'Time of day',
+                'options' => $timeOfDayOptions,
+                'selected' => $timeOfDayIndex,
+                'action' => 'chooseTimeOfDay',
+            ])
 
-            <column class="w-full gap-2">
-                <text class="text-sm font-semibold text-theme-on-surface-variant">Repeats</text>
-                <button-group
-                    ref="{{ $formRef }}-frequency"
-                    :options="$frequencyOptions"
-                    a11y-label="Repeats"
-                    native:model="frequencyIndex"
-                />
-            </column>
+            @include('native.option-list', [
+                'ref' => $formRef.'-frequency',
+                'label' => 'Repeats',
+                'options' => $frequencyOptions,
+                'selected' => $frequencyIndex,
+                'action' => 'chooseFrequency',
+            ])
 
             @if ($frequency === RoutineFrequency::Weekly)
                 <column class="w-full gap-2">

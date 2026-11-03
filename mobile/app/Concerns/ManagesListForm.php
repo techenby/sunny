@@ -34,6 +34,13 @@ trait ManagesListForm
         return array_map(fn (ChecklistType $type): string => $type->label(), ChecklistType::cases());
     }
 
+    public function chooseType(int $index): void
+    {
+        if (array_key_exists($index, ChecklistType::cases())) {
+            $this->typeIndex = $index;
+        }
+    }
+
     protected function listPayload(): array
     {
         return [

@@ -14,15 +14,13 @@
                 native:model.blur="name"
             />
 
-            <column class="w-full gap-2">
-                <text class="text-sm font-semibold text-theme-on-surface-variant">Type</text>
-                <button-group
-                    ref="{{ $formRef }}-type"
-                    :options="$typeOptions"
-                    a11y-label="List type"
-                    native:model="typeIndex"
-                />
-            </column>
+            @include('native.option-list', [
+                'ref' => $formRef.'-type',
+                'label' => 'Type',
+                'options' => $typeOptions,
+                'selected' => $typeIndex,
+                'action' => 'chooseType',
+            ])
         </column>
 
         @if ($error !== '')

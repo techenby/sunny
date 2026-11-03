@@ -142,11 +142,26 @@ it('opens the create screen from every routine', function () {
         ->assertAccessible();
 });
 
+it('offers time of day and repeats as vertical option lists', function () {
+    Native::visit('/routines/create')
+        ->assertMissingElement('button_group')
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'create-routine-time-of-day-0'
+            && ($node['props']['a11y_label'] ?? null) === 'Morning, selected')
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'create-routine-time-of-day-3'
+            && ($node['props']['a11y_label'] ?? null) === 'Anytime')
+        ->tap('create-routine-time-of-day-3')
+        ->assertSet('timeOfDayIndex', 3)
+        ->call('chooseTimeOfDay', 9)
+        ->assertSet('timeOfDayIndex', 3)
+        ->call('chooseFrequency', -1)
+        ->assertSet('frequencyIndex', 0);
+});
+
 it('creates a weekly routine on the phone and opens it', function () {
     Native::visit('/routines/create')
         ->input('create-routine-name', ' Gym ')
-        ->set('timeOfDayIndex', 1)
-        ->set('frequencyIndex', 1)
+        ->tap('create-routine-time-of-day-1')
+        ->tap('create-routine-frequency-1')
         ->assertSee('On these days')
         ->toggle('create-routine-weekday-5', true)
         ->toggle('create-routine-weekday-1', true)
