@@ -63,42 +63,48 @@
             </column>
         @endunless
 
-        <row class="w-full gap-3">
+        <column class="w-full gap-3">
             <pressable
                 ref="dashboard-recipes-all"
                 @navigate.replace('/recipes')
                 a11y-label="Recipes"
                 :press-scale="0.97"
-                class="{{ Card::classes() }} flex-1 gap-3 p-4"
+                class="{{ Card::classes() }} w-full p-4"
             >
-                <column class="h-9 w-9 items-center justify-center rounded-full bg-theme-primary">
-                    <icon :ios="Ios::ForkKnife" :android="Android::Restaurant" :size="18" class="text-theme-on-primary" />
-                </column>
-                <column class="gap-0.5">
-                    <text font="accent" class="text-3xl text-theme-on-surface">{{ $this->summary['recipes'] }}</text>
-                    <x-ui.heading>Recipes</x-ui.heading>
-                    <x-ui.text size="sm">Ready to cook</x-ui.text>
-                </column>
+                <row class="w-full items-center gap-4">
+                    <column class="h-9 w-9 items-center justify-center rounded-full bg-theme-primary">
+                        <icon :ios="Ios::ForkKnife" :android="Android::Restaurant" :size="18" class="text-theme-on-primary" />
+                    </column>
+                    <column class="flex-1 gap-0.5">
+                        <text font="accent" class="text-3xl text-theme-on-surface">{{ $this->summary['recipes'] }}</text>
+                        <x-ui.heading>Recipes</x-ui.heading>
+                        <x-ui.text size="sm">Ready to cook</x-ui.text>
+                    </column>
+                    <icon :ios="Ios::ChevronRight" :android="Android::ChevronRight" :size="14" class="text-theme-on-surface-variant" />
+                </row>
             </pressable>
             <pressable
                 ref="dashboard-inventory-all"
                 @navigate.replace('/inventory')
                 a11y-label="Inventory"
                 :press-scale="0.97"
-                class="{{ Card::classes() }} flex-1 gap-3 p-4"
+                class="{{ Card::classes() }} w-full p-4"
             >
-                <column class="h-9 w-9 items-center justify-center rounded-full bg-theme-accent">
-                    <icon :ios="Ios::Archivebox" :android="Android::Inventory2" :size="18" class="text-theme-on-accent" />
-                </column>
-                <column class="gap-0.5">
-                    <text font="accent" class="text-3xl text-theme-on-surface">{{ $this->summary['items'] }}</text>
-                    <x-ui.heading>Items</x-ui.heading>
-                    <x-ui.text size="sm">
-                        {{ $this->summary['locations'] }} {{ Str::plural('place', $this->summary['locations']) }} · {{ $this->summary['bins'] }} {{ Str::plural('storage spot', $this->summary['bins']) }}
-                    </x-ui.text>
-                </column>
+                <row class="w-full items-center gap-4">
+                    <column class="h-9 w-9 items-center justify-center rounded-full bg-theme-accent">
+                        <icon :ios="Ios::Archivebox" :android="Android::Inventory2" :size="18" class="text-theme-on-accent" />
+                    </column>
+                    <column class="flex-1 gap-0.5">
+                        <text font="accent" class="text-3xl text-theme-on-surface">{{ $this->summary['items'] }}</text>
+                        <x-ui.heading>Items</x-ui.heading>
+                        <x-ui.text size="sm">
+                            {{ $this->summary['locations'] }} {{ Str::plural('place', $this->summary['locations']) }} · {{ $this->summary['bins'] }} {{ Str::plural('storage spot', $this->summary['bins']) }}
+                        </x-ui.text>
+                    </column>
+                    <icon :ios="Ios::ChevronRight" :android="Android::ChevronRight" :size="14" class="text-theme-on-surface-variant" />
+                </row>
             </pressable>
-        </row>
+        </column>
 
         <column class="w-full gap-3">
             <x-ui.heading size="lg">Recent recipes</x-ui.heading>

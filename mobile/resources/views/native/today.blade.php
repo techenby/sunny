@@ -27,11 +27,8 @@
                     </column>
                     <column class="flex-1 gap-0.5">
                         <x-ui.heading size="lg">{{ $routine['name'] }}</x-ui.heading>
-                        <x-ui.text size="sm">{{ $routine['timeOfDay']->label() }} · {{ $routine['assignee'] }}</x-ui.text>
+                        <x-ui.text ref="routine-{{ $routine['id'] }}-subtitle" size="sm">{{ $routine['timeOfDay']->label() }} · {{ $routine['assignee'] }}{{ $routine['total'] ? ' · '.$routine['completed'].' of '.$routine['total'] : '' }}</x-ui.text>
                     </column>
-                    @if ($routine['total'])
-                        <text ref="routine-{{ $routine['id'] }}-progress" class="text-sm text-theme-on-surface-variant">{{ $routine['completed'] }} of {{ $routine['total'] }}</text>
-                    @endif
                 </row>
 
                 <column class="{{ Card::classes() }} w-full">

@@ -28,9 +28,7 @@
                     <x-ui.text>in {{ $selectedParent['path'] }}</x-ui.text>
                 @endif
             </column>
-            <column class="min-h-10 justify-center rounded-full bg-theme-surface-variant px-4">
-                <text font="semibold" class="text-base text-theme-on-surface">Change</text>
-            </column>
+            <icon :ios="Ios::ChevronRight" :android="Android::ChevronRight" :size="14" class="text-theme-on-surface-variant" />
         </row>
     </pressable>
 </column>
