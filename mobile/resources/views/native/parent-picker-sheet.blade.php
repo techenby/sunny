@@ -73,31 +73,33 @@
                             </column>
                         @endif
                     @else
-                        <row ref="{{ $refPrefix }}-parent-trail" class="w-full flex-wrap items-center gap-2">
-                            @if ($parentTrail)
+                        @if ($parentTrail)
+                            <scroll-view ref="{{ $refPrefix }}-parent-trail" horizontal :shows-indicators="false" :auto-scroll-to="count($parentTrail)" class="w-full gap-2">
                                 <pressable ref="{{ $refPrefix }}-parent-crumb-home" class="min-h-12 justify-center rounded-full bg-theme-surface-variant px-3" @tap="browseTop">
                                     <row class="items-center gap-1.5">
                                         <icon :ios="Ios::House" :android="Android::Home" :size="14" class="text-theme-on-surface" />
-                                        <text class="text-base text-theme-on-surface">Home</text>
+                                        <text max-lines="1" class="text-base text-theme-on-surface">Home</text>
                                     </row>
                                 </pressable>
                                 @foreach ($parentTrail as $crumb)
-                                    <icon :ios="Ios::ChevronRight" :android="Android::ChevronRight" :size="12" class="text-theme-on-surface-variant" />
-                                    @if ($loop->last)
-                                        <text font="semibold" class="text-base text-theme-on-surface">{{ $crumb['name'] }}</text>
-                                    @else
-                                        <pressable ref="{{ $refPrefix }}-parent-crumb-{{ $crumb['id'] }}" class="min-h-12 justify-center rounded-full bg-theme-surface-variant px-3" @tap="browseParent({{ $crumb['id'] }})">
-                                            <text class="text-base text-theme-on-surface">{{ $crumb['name'] }}</text>
-                                        </pressable>
-                                    @endif
+                                    <row class="min-h-12 items-center gap-2">
+                                        <icon :ios="Ios::ChevronRight" :android="Android::ChevronRight" :size="12" class="text-theme-on-surface-variant" />
+                                        @if ($loop->last)
+                                            <text font="semibold" max-lines="1" class="text-base text-theme-on-surface">{{ $crumb['name'] }}</text>
+                                        @else
+                                            <pressable ref="{{ $refPrefix }}-parent-crumb-{{ $crumb['id'] }}" class="min-h-12 justify-center rounded-full bg-theme-surface-variant px-3" @tap="browseParent({{ $crumb['id'] }})">
+                                                <text max-lines="1" class="text-base text-theme-on-surface">{{ $crumb['name'] }}</text>
+                                            </pressable>
+                                        @endif
+                                    </row>
                                 @endforeach
-                            @else
-                                <row class="items-center gap-1.5">
-                                    <icon :ios="Ios::House" :android="Android::Home" :size="14" class="text-theme-on-surface" />
-                                    <text font="semibold" class="text-base text-theme-on-surface">Home</text>
-                                </row>
-                            @endif
-                        </row>
+                            </scroll-view>
+                        @else
+                            <row ref="{{ $refPrefix }}-parent-trail" class="w-full items-center gap-1.5">
+                                <icon :ios="Ios::House" :android="Android::Home" :size="14" class="text-theme-on-surface" />
+                                <text font="semibold" class="text-base text-theme-on-surface">Home</text>
+                            </row>
+                        @endif
 
                         @if ($openableRows)
                             <column class="w-full gap-2">
@@ -139,7 +141,7 @@
             </scroll-view>
 
             @if ($parentSearch === '')
-                <column class="w-full gap-2 border-t border-theme-outline bg-theme-surface px-4 pt-3 pb-8">
+                <column class="w-full gap-2 px-4 pt-3 pb-8">
                     @if ($browsedParent)
                         <button
                             ref="{{ $refPrefix }}-parent-choose"
