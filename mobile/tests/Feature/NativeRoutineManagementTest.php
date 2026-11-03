@@ -66,7 +66,7 @@ it('shows a routine without steps', function () {
 });
 
 it('shows a missing routine', function () {
-    Native::visit('/routines/99')->assertSee('This routine could not be found.');
+    Native::visit('/routines/99')->assertSee('Routine not found');
 });
 
 it('adds a step to the end of a routine', function () {
@@ -229,5 +229,5 @@ it('fills in a monthly routine’s day when editing', function () {
 });
 
 it('shows a missing routine when editing', function () {
-    Native::visit('/routines/99/edit')->assertSee('This routine could not be found.');
+    Native::visit('/routines/99/edit')->assertSee('Routine not found');
 });

@@ -3,39 +3,39 @@
 @use('App\Icons\Android')
 @use('App\Icons\Ios')
 @use('App\Ui\Card')
+@use('Native\Mobile\Edge\Layouts\Builders\NavAction')
 
 <native:top-bar title="Summary" display-mode="large" :back="false">
-    <native:top-bar-action id="add" label="Add" :ios-icon="Ios::Plus" :android-icon="Android::Add">
-        <native:top-bar-action
-            id="add-recipe"
-            label="New recipe"
-            :ios-icon="Ios::ForkKnife"
-            :android-icon="Android::Restaurant"
-            url="/recipes/create"
-        />
-        <native:top-bar-action
-            id="add-item"
-            label="New item"
-            :ios-icon="Ios::Shippingbox"
-            :android-icon="Android::Inventory2"
-            url="/inventory/create"
-        />
-        <native:top-bar-action
-            id="scan-items"
-            label="Bulk add"
-            :ios-icon="Ios::CameraViewfinder"
-            :android-icon="Android::DocumentScanner"
-            url="/inventory/scan"
-        />
-    </native:top-bar-action>
     <native:top-bar-action
-        id="log-out"
-        label="Log out"
-        :ios-icon="Ios::RectanglePortraitAndArrowRight"
-        :android-icon="Android::Logout"
-        @tap="confirmLogOut"
+        ref="preferences"
+        id="preferences"
+        label="Preferences"
+        :ios-icon="Ios::Gearshape"
+        :android-icon="Android::Settings"
+        @navigate('/preferences')
     />
 </native:top-bar>
+
+@php
+    $addMenu = [
+        NavAction::make('add-recipe')->label('New recipe')->icon(ios: Ios::ForkKnife->value, android: Android::Restaurant->value)->url('/recipes/create'),
+        NavAction::make('add-item')->label('New item')->icon(ios: Ios::Shippingbox->value, android: Android::Inventory2->value)->url('/inventory/create'),
+        NavAction::make('scan-items')->label('Bulk add')->icon(ios: Ios::CameraViewfinder->value, android: Android::DocumentScanner->value)->url('/inventory/scan'),
+    ];
+@endphp
+
+<native:bottom-bar>
+    <row class="w-full items-center justify-end px-4 pb-2">
+        <pressable
+            ref="dashboard-add"
+            a11y-label="Add"
+            :menu="$addMenu"
+            class="h-12 w-12 items-center justify-center rounded-full glass android:bg-theme-surface"
+        >
+            <native:icon :ios="Ios::Plus" :android="Android::Add" :size="22" class="text-theme-on-surface" />
+        </pressable>
+    </row>
+</native:bottom-bar>
 
 <refreshable ref="dashboard" fill class="bg-theme-background" @refresh="sync">
     <column class="w-full gap-6 px-4 pt-2 pb-8">
@@ -56,33 +56,12 @@
             </pressable>
         @endif
 
-        @if ($this->teamOptions)
-            <pressable
-                ref="active-team"
-                @tap="openTeamPicker"
-                :a11y-label="'Active team: '.$activeTeamName"
-                :press-opacity="0.7"
-                class="w-full"
-            >
-                <row class="w-full items-center gap-3">
-                    <column class="h-11 w-11 items-center justify-center rounded-full bg-theme-primary">
-                        <text font="accent" class="text-lg text-theme-on-primary">{{ $this->teamInitial }}</text>
-                    </column>
-                    <column class="flex-1 gap-0.5">
-                        <text class="text-sm text-theme-on-surface-variant">Active team</text>
-                        <text font="semibold" class="text-lg text-theme-on-background">{{ $activeTeamName }}</text>
-                    </column>
-                    @if (count($this->teamOptions) > 1)
-                        <icon :ios="Ios::ChevronUpChevronDown" :android="Android::UnfoldMore" :size="18" class="text-theme-on-surface-variant" />
-                    @endif
-                </row>
-            </pressable>
-        @else
+        @unless ($this->teamOptions)
             <column ref="no-teams" class="{{ Card::classes() }} w-full gap-0.5 px-4 py-3">
                 <x-ui.heading>No teams available</x-ui.heading>
                 <x-ui.text size="sm">Pull down to download your teams.</x-ui.text>
             </column>
-        @endif
+        @endunless
 
         <row class="w-full gap-3">
             <pressable
@@ -210,22 +189,3 @@
         </column>
     </column>
 </refreshable>
-
-<native:bottom-sheet ref="team-picker" :visible="$showTeamPicker" @dismiss="closeTeamPicker" detents="medium">
-    <list fill class="bg-theme-background">
-        <list-section header="Switch team">
-            @foreach ($this->teamOptions as $id => $name)
-                <list-item
-                    ref="team-{{ $id }}"
-                    :headline="$name"
-                    :leadingMonogram="mb_strtoupper(mb_substr($name, 0, 1))"
-                    :leadingMonogramColor="theme('primary')"
-                    :trailingIconIos="$name === $activeTeamName ? Ios::Checkmark : null"
-                    :trailingIconAndroid="$name === $activeTeamName ? Android::Check : null"
-                    :trailingIconColor="theme('primary')"
-                    @tap="selectTeam({{ $id }})"
-                />
-            @endforeach
-        </list-section>
-    </list>
-</native:bottom-sheet>

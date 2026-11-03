@@ -1,6 +1,6 @@
 @php($item = $this->item)
 
-<native:top-bar :title="$item ? 'Edit '.$item['name'] : 'Edit item'" back />
+<native:top-bar title="Edit item" back />
 
 @if ($item)
     @include('native.inventory-item-form', [
@@ -14,9 +14,5 @@
         'parentTrail' => $this->parentTrail,
     ])
 @else
-    <column ref="edit-item-missing" fill center class="bg-theme-background ios:bg-theme-grouped-background px-6">
-        <text class="text-center text-base text-theme-on-surface-variant">
-            This item could not be found.
-        </text>
-    </column>
+    <x-ui.not-found ref="edit-item-missing" thing="item" class="ios:bg-theme-grouped-background" />
 @endif

@@ -17,9 +17,9 @@ it('opens the edit screen from the item', function () {
         ->assertScreen(EditInventoryItem::class);
 });
 
-it('titles the screen with the item being edited', function () {
+it('titles the edit screen without repeating the item name', function () {
     Native::visit('/inventory/8/edit')
-        ->assertNavTitle('Edit Cordless drill');
+        ->assertNavTitle('Edit item');
 });
 
 it('prefills the form from the item', function () {
@@ -82,7 +82,7 @@ it('keeps the item edit queued on the phone when Sunny rejects the session', fun
 it('explains when the item does not exist', function () {
     Native::visit('/inventory/999/edit')
         ->assertNavTitle('Edit item')
-        ->assertSee('This item could not be found.')
+        ->assertSee('Item not found')
         ->assertMissingElement('outlined_text_input');
 });
 

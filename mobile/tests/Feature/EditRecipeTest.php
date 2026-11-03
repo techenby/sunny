@@ -17,9 +17,9 @@ it('opens the edit screen from the recipe', function () {
         ->assertScreen(EditRecipe::class);
 });
 
-it('titles the screen with the recipe being edited', function () {
+it('titles the edit screen without repeating the recipe name', function () {
     Native::visit('/recipes/1/edit')
-        ->assertNavTitle('Edit Buttermilk Pancakes');
+        ->assertNavTitle('Edit recipe');
 });
 
 it('prefills the form from the recipe', function () {
@@ -104,7 +104,7 @@ it('keeps the recipe edit queued on the phone when Sunny rejects the session', f
 it('explains when the recipe does not exist', function () {
     Native::visit('/recipes/999/edit')
         ->assertNavTitle('Edit recipe')
-        ->assertSee('This recipe could not be found.')
+        ->assertSee('Recipe not found')
         ->assertMissingElement('outlined_text_input');
 });
 

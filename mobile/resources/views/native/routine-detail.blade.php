@@ -100,9 +100,5 @@
         </column>
     </scroll-view>
 @else
-    <column ref="routine-missing" fill center class="bg-theme-background px-6">
-        <text class="text-center text-base text-theme-on-surface-variant">
-            This routine could not be found.
-        </text>
-    </column>
+    <x-ui.not-found ref="routine-missing" thing="routine" />
 @endif

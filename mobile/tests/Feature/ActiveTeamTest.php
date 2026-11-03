@@ -23,21 +23,23 @@ beforeEach(function (): void {
 it('switches browsing and recent activity locally and remembers the team', function (): void {
     Saloon::fake([]);
     Native::visit('/dashboard')->assertSee('Buttermilk Pancakes')
-        ->tap('active-team')->assertSet('showTeamPicker', true)
-        ->tap('team-2')->assertSet('showTeamPicker', false)->assertSee('Work lunch')->assertSee('Office')->assertDontSee('Buttermilk Pancakes');
+        ->tap('preferences')->follow()
+        ->tap('team-2')->assertSet('activeTeamId', 2)
+        ->goBack()->assertSee('Work lunch')->assertSee('Office')->assertDontSee('Buttermilk Pancakes');
     Native::visit('/recipes')->assertSee('Work lunch')->assertDontSee('Buttermilk Pancakes');
     Native::visit('/inventory')->assertSee('Office')->assertDontSee('Kitchen');
-    Native::visit('/dashboard')->assertSet('activeTeamName', 'Work');
+    Native::visit('/preferences')->assertSet('activeTeamId', 2);
     expect((new SunnyTeam)->current()->id)->toBe(2);
     expect(Recipes::find(1))->toBeNull()->and(Inventory::find(1))->toBeNull();
-    Native::visit('/recipes/1/edit')->assertSee('This recipe could not be found.');
-    Native::visit('/inventory/1')->assertSee('This item could not be found.');
+    Native::visit('/recipes/1/edit')->assertSee('Recipe not found');
+    Native::visit('/inventory/1')->assertSee('Item not found');
     Saloon::assertNothingSent();
 });
 
-it('only opens the team picker when there is another team to switch to', function (): void {
+it('shows a lone team as the active one', function (): void {
     Team::find(2)->delete();
-    Native::visit('/dashboard')->tap('active-team')->assertSet('showTeamPicker', false);
+    Native::visit('/preferences')->assertSet('activeTeamId', 1)
+        ->assertMissingElement('list_item', fn (array $node): bool => ($node['ref'] ?? null) === 'team-2');
 });
 
 it('creates records in the active team without a form picker', function (string $route, string $ref, string $model): void {
@@ -93,8 +95,8 @@ it('does not silently move an open draft when the active team changes', function
 
 it('distinguishes identically named teams and rejects invalid selections', function (): void {
     Team::find(2)->update(['name' => 'Family']);
-    Native::visit('/dashboard')->assertSee('Family (#2)')
-        ->tap('active-team')->tap('team-2')->assertSet('activeTeamName', 'Family (#2)')
-        ->call('selectTeam', 999)->assertSet('activeTeamName', 'Family (#2)');
+    Native::visit('/preferences')->assertSee('Family (#2)')
+        ->tap('team-2')->assertSet('activeTeamId', 2)
+        ->call('selectTeam', 999)->assertSet('activeTeamId', 2);
     expect(app(SunnyTeam::class)->current()->id)->toBe(2);
 });

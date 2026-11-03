@@ -171,7 +171,7 @@ it('asks to put away top-level storage and things', function () {
 it('explains when an item does not exist', function () {
     Native::visit('/inventory/999')
         ->assertNavTitle('Item')
-        ->assertSee('This item could not be found.')
+        ->assertSee('Item not found')
         ->assertMissingElement('scroll_view');
 });
 

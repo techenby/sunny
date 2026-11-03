@@ -211,9 +211,5 @@
         'parentTrail' => $this->parentTrail,
     ])
 @else
-    <column ref="item-missing" fill center class="bg-theme-background px-6">
-        <text class="text-center text-base text-theme-on-surface-variant">
-            This item could not be found.
-        </text>
-    </column>
+    <x-ui.not-found ref="item-missing" thing="item" />
 @endif

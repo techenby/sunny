@@ -2,18 +2,7 @@
 @use('App\Icons\Ios')
 @use('App\Ui\Card')
 
-<native:top-bar title="QR Code" back>
-    @if ($path)
-        <native:top-bar-action
-            ref="share-qr-code"
-            id="share-qr-code"
-            label="Share"
-            :ios-icon="Ios::SquareAndArrowUp"
-            :android-icon="Android::Share"
-            @tap="share"
-        />
-    @endif
-</native:top-bar>
+<native:top-bar title="QR Code" back />
 
 @if ($path)
     <scroll-view ref="item-qr-code" fill class="bg-theme-background">
@@ -51,9 +40,5 @@
         </column>
     </scroll-view>
 @else
-    <column ref="item-qr-code-missing" fill center class="bg-theme-background px-6">
-        <text class="text-center text-base text-theme-on-surface-variant">
-            This item could not be found.
-        </text>
-    </column>
+    <x-ui.not-found ref="item-qr-code-missing" thing="item" />
 @endif
