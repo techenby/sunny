@@ -59,6 +59,20 @@ trait ManagesRoutineForm
         return array_map(fn (RoutineFrequency $frequency): string => $frequency->label(), RoutineFrequency::cases());
     }
 
+    public function chooseTimeOfDay(int $index): void
+    {
+        if (array_key_exists($index, TimeOfDay::cases())) {
+            $this->timeOfDayIndex = $index;
+        }
+    }
+
+    public function chooseFrequency(int $index): void
+    {
+        if (array_key_exists($index, RoutineFrequency::cases())) {
+            $this->frequencyIndex = $index;
+        }
+    }
+
     /**
      * @return list<array<int, string>>
      */
