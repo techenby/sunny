@@ -106,7 +106,7 @@
                                 :a11y-label="($checked ? 'Checked: ' : '').$ingredient"
                                 class="w-full px-4 py-3"
                             >
-                                <row class="w-full items-center gap-3">
+                                <row class="w-full items-start gap-3">
                                     <icon
                                         :ios="$checked ? Ios::CheckmarkCircleFill : Ios::Circle"
                                         :android="$checked ? Android::CheckCircle : Android::RadioButtonUnchecked"

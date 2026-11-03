@@ -39,7 +39,7 @@
                             :a11y-label="($step['completed'] ? 'Done: ' : '').$step['name']"
                             class="w-full px-4 py-3"
                         >
-                            <row class="w-full items-center gap-3">
+                            <row class="w-full items-start gap-3">
                                 <icon
                                     :ios="$step['completed'] ? Ios::CheckmarkCircleFill : Ios::Circle"
                                     :android="$step['completed'] ? Android::CheckCircle : Android::RadioButtonUnchecked"
