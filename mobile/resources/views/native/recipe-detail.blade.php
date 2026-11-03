@@ -131,7 +131,7 @@
                         @foreach ($this->instructions as $instruction)
                             <row ref="step-{{ $loop->iteration }}" class="w-full items-start gap-3">
                                 <column class="h-7 w-7 items-center justify-center rounded-full bg-theme-primary/15">
-                                    <text font="accent" class="text-sm text-theme-primary">{{ $loop->iteration }}</text>
+                                    <text font="accent" class="text-sm text-theme-primary-text">{{ $loop->iteration }}</text>
                                 </column>
                                 <text class="flex-1 text-base text-theme-on-surface">{{ $instruction }}</text>
                             </row>

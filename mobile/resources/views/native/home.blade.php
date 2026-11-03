@@ -19,7 +19,7 @@
     </row>
 
     <column ref="sunny-introduction" class="w-full flex-1 justify-center">
-        <text font="mono-bold" class="mb-3 text-sm uppercase tracking-widest text-theme-primary">
+        <text font="mono-bold" class="mb-3 text-sm uppercase tracking-widest text-theme-primary-text">
             Welcome home
         </text>
         <text ref="welcome-title" font="accent" class="text-xl leading-tight text-theme-on-background">

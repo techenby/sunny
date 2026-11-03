@@ -22,7 +22,7 @@
             class="h-12 items-start justify-center self-start px-2"
             @tap="removePhoto"
         >
-            <text class="text-sm font-semibold text-theme-primary">Remove photo</text>
+            <text class="text-sm font-semibold text-theme-primary-text">Remove photo</text>
         </pressable>
     @else
         <row class="w-full flex-wrap gap-3">

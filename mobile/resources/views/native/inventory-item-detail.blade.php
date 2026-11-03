@@ -128,7 +128,7 @@
                         </column>
                         <column class="flex-1 gap-0.5">
                             <text font="semibold" class="text-lg text-theme-on-surface">{{ $item['name'] }}</text>
-                            <text font="semibold" class="text-base text-theme-primary">You’re here</text>
+                            <text font="semibold" class="text-base text-theme-primary-text">You’re here</text>
                         </column>
                     </row>
                 </column>
@@ -149,9 +149,9 @@
                     >
                         <row class="w-full items-center gap-4">
                             <column class="h-10 w-10 items-center justify-center rounded-lg bg-theme-primary/15">
-                                <icon :ios="Ios::Plus" :android="Android::Add" :size="20" class="text-theme-primary" />
+                                <icon :ios="Ios::Plus" :android="Android::Add" :size="20" class="text-theme-primary-text" />
                             </column>
-                            <text font="semibold" class="flex-1 text-lg text-theme-primary">{{ $this->children ? 'Add something here' : 'Put something inside' }}</text>
+                            <text font="semibold" class="flex-1 text-lg text-theme-primary-text">{{ $this->children ? 'Add something here' : 'Put something inside' }}</text>
                         </row>
                     </pressable>
                 </column>

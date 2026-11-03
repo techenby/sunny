@@ -117,8 +117,8 @@
                                         @tap="useSuggestion({{ $candidate['id'] }})"
                                     >
                                         <row class="items-center gap-1">
-                                            <icon :ios="Ios::Sparkles" :android="Android::AutoAwesome" :size="14" class="text-theme-primary" />
-                                            <text class="text-sm font-semibold text-theme-primary">Use “{{ $candidate['suggestedName'] }}”</text>
+                                            <icon :ios="Ios::Sparkles" :android="Android::AutoAwesome" :size="14" class="text-theme-primary-text" />
+                                            <text class="text-sm font-semibold text-theme-primary-text">Use “{{ $candidate['suggestedName'] }}”</text>
                                         </row>
                                     </pressable>
                                 @endif
