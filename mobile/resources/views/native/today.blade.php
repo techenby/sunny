@@ -21,7 +21,7 @@
 
         @forelse ($this->routines as $routine)
             <column ref="routine-{{ $routine['id'] }}" class="w-full gap-3">
-                <row class="w-full items-center gap-3">
+                <row class="w-full items-start gap-3">
                     <column class="h-9 w-9 items-center justify-center rounded-full bg-theme-primary">
                         <icon :ios="$routine['timeOfDay']->iosIcon()" :android="$routine['timeOfDay']->androidIcon()" :size="18" class="text-theme-on-primary" />
                     </column>

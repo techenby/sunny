@@ -11,7 +11,7 @@
     class="min-h-12 w-full justify-center px-4 py-2"
     @navigate('/inventory/'.$item['id'], ['from' => $from])
 >
-    <row class="w-full items-center gap-4">
+    <row class="w-full items-start gap-4">
         <x-ui.avatar
             :src="$item['thumb_path'] ?? $item['photo_url'] ?? null"
             :alt="'Photo of '.$item['name']"
@@ -23,6 +23,6 @@
             <x-ui.heading size="lg">{{ $item['name'] }}</x-ui.heading>
             <x-ui.text>{{ $supporting ?? Inventory::summary($item) }}</x-ui.text>
         </column>
-        <icon :ios="Ios::ChevronRight" :android="Android::ChevronRight" :size="14" class="text-theme-on-surface-variant" />
+        <icon :ios="Ios::ChevronRight" :android="Android::ChevronRight" :size="14" class="self-center text-theme-on-surface-variant" />
     </row>
 </pressable>

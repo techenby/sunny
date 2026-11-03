@@ -71,7 +71,7 @@
                 :press-scale="0.97"
                 class="{{ Card::classes() }} w-full p-4"
             >
-                <row class="w-full items-center gap-4">
+                <row class="w-full items-start gap-4">
                     <column class="h-9 w-9 items-center justify-center rounded-full bg-theme-primary">
                         <icon :ios="Ios::ForkKnife" :android="Android::Restaurant" :size="18" class="text-theme-on-primary" />
                     </column>
@@ -80,7 +80,7 @@
                         <x-ui.heading>Recipes</x-ui.heading>
                         <x-ui.text size="sm">Ready to cook</x-ui.text>
                     </column>
-                    <icon :ios="Ios::ChevronRight" :android="Android::ChevronRight" :size="14" class="text-theme-on-surface-variant" />
+                    <icon :ios="Ios::ChevronRight" :android="Android::ChevronRight" :size="14" class="self-center text-theme-on-surface-variant" />
                 </row>
             </pressable>
             <pressable
@@ -90,7 +90,7 @@
                 :press-scale="0.97"
                 class="{{ Card::classes() }} w-full p-4"
             >
-                <row class="w-full items-center gap-4">
+                <row class="w-full items-start gap-4">
                     <column class="h-9 w-9 items-center justify-center rounded-full bg-theme-accent">
                         <icon :ios="Ios::Archivebox" :android="Android::Inventory2" :size="18" class="text-theme-on-accent" />
                     </column>
@@ -101,7 +101,7 @@
                             {{ $this->summary['locations'] }} {{ Str::plural('place', $this->summary['locations']) }} · {{ $this->summary['bins'] }} {{ Str::plural('storage spot', $this->summary['bins']) }}
                         </x-ui.text>
                     </column>
-                    <icon :ios="Ios::ChevronRight" :android="Android::ChevronRight" :size="14" class="text-theme-on-surface-variant" />
+                    <icon :ios="Ios::ChevronRight" :android="Android::ChevronRight" :size="14" class="self-center text-theme-on-surface-variant" />
                 </row>
             </pressable>
         </column>
@@ -159,7 +159,7 @@
                             :press-opacity="0.7"
                             class="w-full px-4 py-3"
                         >
-                            <row class="w-full items-center gap-4">
+                            <row class="w-full items-start gap-4">
                                 <x-ui.avatar
                                     :size="$item['photo'] ? '2xl' : 'md'"
                                     :src="$item['photo']"
@@ -172,7 +172,7 @@
                                     <x-ui.heading max-lines="1">{{ $item['name'] }}</x-ui.heading>
                                     <x-ui.text size="sm" max-lines="1">{{ $item['supporting'] }}</x-ui.text>
                                 </column>
-                                <icon :ios="Ios::ChevronRight" :android="Android::ChevronRight" :size="14" class="text-theme-on-surface-variant" />
+                                <icon :ios="Ios::ChevronRight" :android="Android::ChevronRight" :size="14" class="self-center text-theme-on-surface-variant" />
                             </row>
                         </pressable>
                         @unless ($loop->last)

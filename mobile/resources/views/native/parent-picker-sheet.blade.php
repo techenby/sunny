@@ -53,7 +53,7 @@
                                         class="min-h-12 w-full justify-center px-4 py-2"
                                         @tap="selectParent({{ $choice['id'] }})"
                                     >
-                                        <row class="w-full items-center gap-4">
+                                        <row class="w-full items-start gap-4">
                                             <x-ui.avatar :color="$choice['type']->color()" :ios="$choice['type']->iosIcon()" :android="$choice['type']->androidIcon()" />
                                             <column class="flex-1 gap-0.5">
                                                 <x-ui.heading size="lg">{{ $choice['name'] }}</x-ui.heading>
@@ -114,13 +114,13 @@
                                             class="min-h-12 w-full justify-center px-4 py-2"
                                             @tap="browseParent({{ $choice['id'] }})"
                                         >
-                                            <row class="w-full items-center gap-4">
+                                            <row class="w-full items-start gap-4">
                                                 <x-ui.avatar :color="$choice['type']->color()" :ios="$choice['type']->iosIcon()" :android="$choice['type']->androidIcon()" />
                                                 <column class="flex-1 gap-0.5">
                                                     <x-ui.heading size="lg">{{ $choice['name'] }}</x-ui.heading>
                                                     <x-ui.text>{{ Inventory::summary($choice) }}</x-ui.text>
                                                 </column>
-                                                <icon :ios="Ios::ChevronRight" :android="Android::ChevronRight" :size="14" class="text-theme-on-surface-variant" />
+                                                <icon :ios="Ios::ChevronRight" :android="Android::ChevronRight" :size="14" class="self-center text-theme-on-surface-variant" />
                                             </row>
                                         </pressable>
                                         @unless ($loop->last)
