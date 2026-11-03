@@ -52,8 +52,8 @@
 
     <scroll-view ref="list-detail" fill class="bg-theme-background">
         <column class="w-full gap-4 px-4 pt-2 pb-8">
-            <row class="w-full items-center gap-2">
-                <icon :ios="$checklist['type']->iosIcon()" :android="$checklist['type']->androidIcon()" :size="16" class="text-theme-on-surface-variant" />
+            <row class="w-full items-start gap-2">
+                <icon :ios="$checklist['type']->iosIcon()" :android="$checklist['type']->androidIcon()" :size="16" class="mt-0.5 text-theme-on-surface-variant" />
                 <text ref="list-summary" class="flex-1 text-sm text-theme-on-surface-variant">{{ $this->summary }}</text>
             </row>
 
@@ -73,7 +73,7 @@
                                 :a11y-label="($item['completed'] ? 'Checked: ' : '').$item['name']"
                                 class="flex-1 py-3 pl-4"
                             >
-                                <row class="w-full items-center gap-3">
+                                <row class="w-full items-start gap-3">
                                     <icon
                                         :ios="$item['completed'] ? Ios::CheckmarkCircleFill : Ios::Circle"
                                         :android="$item['completed'] ? Android::CheckCircle : Android::RadioButtonUnchecked"

@@ -106,7 +106,7 @@
                                 :a11y-label="($checked ? 'Checked: ' : '').$ingredient"
                                 class="w-full px-4 py-3"
                             >
-                                <row class="w-full items-center gap-3">
+                                <row class="w-full items-start gap-3">
                                     <icon
                                         :ios="$checked ? Ios::CheckmarkCircleFill : Ios::Circle"
                                         :android="$checked ? Android::CheckCircle : Android::RadioButtonUnchecked"
@@ -183,12 +183,12 @@
                                     :a11y-label="$related['name']"
                                     class="w-full px-4 py-3"
                                 >
-                                    <row class="w-full items-center gap-3">
+                                    <row class="w-full items-start gap-3">
                                         <column class="h-9 w-9 items-center justify-center rounded-full bg-theme-primary">
                                             <icon :ios="Ios::ForkKnife" :android="Android::Restaurant" :size="16" class="text-theme-on-primary" />
                                         </column>
                                         <x-ui.heading class="flex-1">{{ $related['name'] }}</x-ui.heading>
-                                        <icon :ios="Ios::ChevronRight" :android="Android::ChevronRight" :size="14" class="text-theme-on-surface-variant" />
+                                        <icon :ios="Ios::ChevronRight" :android="Android::ChevronRight" :size="14" class="self-center text-theme-on-surface-variant" />
                                     </row>
                                 </pressable>
                                 @unless ($loop->last)

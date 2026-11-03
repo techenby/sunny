@@ -104,7 +104,7 @@
                         <column class="ml-[35] h-[10] w-[2] bg-theme-outline" />
                     @empty
                         @if ($item['type'] === ItemType::Location)
-                            <row ref="item-home" class="w-full items-center gap-4 px-4 py-2">
+                            <row ref="item-home" class="w-full items-start gap-4 px-4 py-2">
                                 <x-ui.avatar :ios="Ios::House" :android="Android::Home" />
                                 <column class="flex-1 gap-0.5">
                                     <x-ui.heading size="lg">Home</x-ui.heading>
@@ -181,7 +181,7 @@
                     class="{{ Card::classes('outline') }} min-h-12 w-full justify-center px-4 py-2"
                     @tap="editPhoto"
                 >
-                    <row class="w-full items-center gap-4">
+                    <row class="w-full items-start gap-4">
                         <x-ui.avatar :ios="Ios::Camera" :android="Android::PhotoCamera" />
                         <column class="flex-1 gap-0.5">
                             <x-ui.heading size="lg">Add a photo</x-ui.heading>

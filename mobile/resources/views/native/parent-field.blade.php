@@ -16,7 +16,7 @@
         class="min-h-12 w-full justify-center rounded-xl border border-theme-outline bg-theme-surface py-2 pr-3 pl-4"
         @tap="openParentPicker"
     >
-        <row class="w-full items-center gap-3">
+        <row class="w-full items-start gap-3">
             @if ($selectedParent)
                 <x-ui.avatar :color="$selectedParent['type']->color()" :ios="$selectedParent['type']->iosIcon()" :android="$selectedParent['type']->androidIcon()" />
             @else
@@ -28,9 +28,7 @@
                     <x-ui.text>in {{ $selectedParent['path'] }}</x-ui.text>
                 @endif
             </column>
-            <column class="min-h-10 justify-center rounded-full bg-theme-surface-variant px-4">
-                <text font="semibold" class="text-base text-theme-on-surface">Change</text>
-            </column>
+            <icon :ios="Ios::ChevronRight" :android="Android::ChevronRight" :size="14" class="self-center text-theme-on-surface-variant" />
         </row>
     </pressable>
 </column>

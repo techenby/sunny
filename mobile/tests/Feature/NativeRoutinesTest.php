@@ -31,8 +31,8 @@ it('lists today’s routines by time of day with their progress', function (): v
         ->assertSee('Bedtime')
         ->assertSee('Evening · Sam')
         ->assertDontSee('Take out trash')
-        ->assertElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-1-progress'
-            && ($node['props']['text'] ?? null) === '1 of 3')
+        ->assertElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-1-subtitle'
+            && ($node['props']['text'] ?? null) === 'Morning · Household · 1 of 3')
         ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-step-11'
             && ($node['props']['a11y_label'] ?? null) === 'Done: Make bed')
         ->assertAccessible();
@@ -62,8 +62,8 @@ it('ticks a step off on the phone, then sends it to Sunny', function (): void {
 
     Native::visit('/today')
         ->tap('routine-step-12')
-        ->assertElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-1-progress'
-            && ($node['props']['text'] ?? null) === '2 of 3');
+        ->assertElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-1-subtitle'
+            && ($node['props']['text'] ?? null) === 'Morning · Household · 2 of 3');
 
     Saloon::assertSent(fn (UpdateRoutineStepRequest $request): bool => $request->resolveEndpoint() === '/teams/family/routine-occurrences/1/steps/12'
         && $request->getMethod() === Method::PATCH
@@ -77,8 +77,8 @@ it('unticks a completed step', function (): void {
 
     Native::visit('/today')
         ->tap('routine-step-11')
-        ->assertElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-1-progress'
-            && ($node['props']['text'] ?? null) === '0 of 3');
+        ->assertElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-1-subtitle'
+            && ($node['props']['text'] ?? null) === 'Morning · Household · 0 of 3');
 
     Saloon::assertSent(fn (UpdateRoutineStepRequest $request): bool => $request->body()->all() === ['completed' => false]);
     expect(RoutineOccurrenceStep::find(11)->completed_at)->toBeNull();

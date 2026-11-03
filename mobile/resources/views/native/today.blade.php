@@ -21,17 +21,14 @@
 
         @forelse ($this->routines as $routine)
             <column ref="routine-{{ $routine['id'] }}" class="w-full gap-3">
-                <row class="w-full items-center gap-3">
+                <row class="w-full items-start gap-3">
                     <column class="h-9 w-9 items-center justify-center rounded-full bg-theme-primary">
                         <icon :ios="$routine['timeOfDay']->iosIcon()" :android="$routine['timeOfDay']->androidIcon()" :size="18" class="text-theme-on-primary" />
                     </column>
                     <column class="flex-1 gap-0.5">
                         <x-ui.heading size="lg">{{ $routine['name'] }}</x-ui.heading>
-                        <x-ui.text size="sm">{{ $routine['timeOfDay']->label() }} · {{ $routine['assignee'] }}</x-ui.text>
+                        <x-ui.text ref="routine-{{ $routine['id'] }}-subtitle" size="sm">{{ $routine['timeOfDay']->label() }} · {{ $routine['assignee'] }}{{ $routine['total'] ? ' · '.$routine['completed'].' of '.$routine['total'] : '' }}</x-ui.text>
                     </column>
-                    @if ($routine['total'])
-                        <text ref="routine-{{ $routine['id'] }}-progress" class="text-sm text-theme-on-surface-variant">{{ $routine['completed'] }} of {{ $routine['total'] }}</text>
-                    @endif
                 </row>
 
                 <column class="{{ Card::classes() }} w-full">
@@ -42,7 +39,7 @@
                             :a11y-label="($step['completed'] ? 'Done: ' : '').$step['name']"
                             class="w-full px-4 py-3"
                         >
-                            <row class="w-full items-center gap-3">
+                            <row class="w-full items-start gap-3">
                                 <icon
                                     :ios="$step['completed'] ? Ios::CheckmarkCircleFill : Ios::Circle"
                                     :android="$step['completed'] ? Android::CheckCircle : Android::RadioButtonUnchecked"

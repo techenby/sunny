@@ -52,8 +52,8 @@
 
     <scroll-view ref="routine-detail" fill class="bg-theme-background">
         <column class="w-full gap-4 px-4 pt-2 pb-8">
-            <row class="w-full items-center gap-2">
-                <icon :ios="$routine['time_of_day']->iosIcon()" :android="$routine['time_of_day']->androidIcon()" :size="16" class="text-theme-on-surface-variant" />
+            <row class="w-full items-start gap-2">
+                <icon :ios="$routine['time_of_day']->iosIcon()" :android="$routine['time_of_day']->androidIcon()" :size="16" class="mt-0.5 text-theme-on-surface-variant" />
                 <text ref="routine-summary" class="flex-1 text-sm text-theme-on-surface-variant">{{ $routine['summary'] }}</text>
             </row>
 
@@ -67,8 +67,8 @@
                 <column class="w-full rounded-xl bg-theme-surface">
                     @foreach ($this->steps as $step)
                         <row ref="routine-step-{{ $step['id'] }}" class="w-full items-center">
-                            <row class="flex-1 items-center gap-3 py-3 pl-4">
-                                <text class="w-6 text-center text-sm text-theme-on-surface-variant">{{ $loop->iteration }}</text>
+                            <row class="flex-1 items-start gap-3 py-3 pl-4">
+                                <text class="w-6 pt-0.5 text-center text-sm text-theme-on-surface-variant">{{ $loop->iteration }}</text>
                                 <column class="flex-1 gap-0.5">
                                     <text class="text-base text-theme-on-surface">{{ $step['name'] }}</text>
                                     @if ($step['error'])
