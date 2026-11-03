@@ -74,15 +74,17 @@
                         @endif
                     @else
                         @if ($parentTrail)
-                            <scroll-view ref="{{ $refPrefix }}-parent-trail" horizontal :shows-indicators="false" :auto-scroll-to="count($parentTrail)" class="w-full gap-2">
-                                <pressable ref="{{ $refPrefix }}-parent-crumb-home" class="min-h-12 justify-center rounded-full bg-theme-surface-variant px-3" @tap="browseTop">
-                                    <row class="items-center gap-1.5">
-                                        <icon :ios="Ios::House" :android="Android::Home" :size="14" class="text-theme-on-surface" />
-                                        <text max-lines="1" class="text-base text-theme-on-surface">Home</text>
-                                    </row>
-                                </pressable>
+                            <scroll-view ref="{{ $refPrefix }}-parent-trail" horizontal :shows-indicators="false" :auto-scroll-to="count($parentTrail)" class="-mx-4 w-full gap-2">
+                                <row class="pl-4">
+                                    <pressable ref="{{ $refPrefix }}-parent-crumb-home" class="min-h-12 justify-center rounded-full bg-theme-surface-variant px-3" @tap="browseTop">
+                                        <row class="items-center gap-1.5">
+                                            <icon :ios="Ios::House" :android="Android::Home" :size="14" class="text-theme-on-surface" />
+                                            <text max-lines="1" class="text-base text-theme-on-surface">Home</text>
+                                        </row>
+                                    </pressable>
+                                </row>
                                 @foreach ($parentTrail as $crumb)
-                                    <row class="min-h-12 items-center gap-2">
+                                    <row class="{{ $loop->last ? 'pr-4' : '' }} min-h-12 items-center gap-2">
                                         <icon :ios="Ios::ChevronRight" :android="Android::ChevronRight" :size="12" class="text-theme-on-surface-variant" />
                                         @if ($loop->last)
                                             <text font="semibold" max-lines="1" class="text-base text-theme-on-surface">{{ $crumb['name'] }}</text>
