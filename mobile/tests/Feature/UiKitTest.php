@@ -42,7 +42,7 @@ it('styles headings like flux headings', function () {
             && $node['props']['color'] === theme('on-surface'))
         ->assertElement('text', fn (array $node): bool => refNode('heading-xl')($node)
             && $node['props']['font_size'] == 24
-            && $node['props']['color'] === theme('primary'))
+            && $node['props']['color'] === theme('primary-text'))
         ->assertElement('text', fn (array $node): bool => refNode('heading-destructive')($node)
             && $node['props']['color'] === theme('destructive'));
 });

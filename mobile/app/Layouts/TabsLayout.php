@@ -14,7 +14,7 @@ class TabsLayout extends NativeLayout
     public function tabBar(NativeComponent $screen): ?TabBar
     {
         return TabBar::make()
-            ->activeColor(theme('primary'))
+            ->activeColor(theme('primary-text'))
             ->add(Tab::link('Summary', '/dashboard', ios: Ios::House, android: Android::Home))
             ->add(Tab::link('Today', '/today', ios: Ios::ChecklistChecked, android: Android::Checklist))
             ->add(Tab::link('Inventory', '/inventory', ios: Ios::Archivebox, android: Android::Inventory2))

@@ -110,8 +110,8 @@
                     @tap="addMetadata"
                 >
                     <row class="items-center gap-2">
-                        <icon :ios="Ios::Plus" :android="Android::Add" :size="16" class="text-theme-primary" />
-                        <text font="semibold" class="text-base text-theme-primary">Add a detail, like color or size</text>
+                        <icon :ios="Ios::Plus" :android="Android::Add" :size="16" class="text-theme-primary-text" />
+                        <text font="semibold" class="text-base text-theme-primary-text">Add a detail, like color or size</text>
                     </row>
                 </pressable>
             </column>

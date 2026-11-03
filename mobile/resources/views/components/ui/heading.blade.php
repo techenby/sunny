@@ -8,7 +8,7 @@
 
 @php
 $classes = collect([
-    $accent ? 'text-theme-primary' : 'text-theme-on-surface',
+    $accent ? 'text-theme-primary-text' : 'text-theme-on-surface',
     match ($size) {
         '2xl' => 'text-4xl',
         'xl' => 'text-2xl',

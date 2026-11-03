@@ -26,7 +26,7 @@
             <column class="w-full gap-3 px-4 pt-4 pb-2">
                 <row class="w-full items-center">
                     <pressable ref="{{ $refPrefix }}-parent-cancel" class="min-h-12 w-20 justify-center" @tap="closeParentPicker">
-                        <text class="text-lg text-theme-primary">Cancel</text>
+                        <text class="text-lg text-theme-primary-text">Cancel</text>
                     </pressable>
                     <text font="semibold" class="flex-1 text-center text-lg text-theme-on-surface">Where does it go?</text>
                     <column class="w-20" />

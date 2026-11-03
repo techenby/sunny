@@ -43,6 +43,7 @@ return [
             // Primary brand color — used for filled buttons, active states, key accents.
             'primary' => '#E85A48',
             'on-primary' => '#FCF7F6',
+            'primary-text' => '#C62C19',
 
             // Secondary / muted action color.
             'secondary' => '#463E3B',
@@ -80,6 +81,7 @@ return [
             // Specify any token here to override the derived value.
             'primary' => '#F87966',
             'on-primary' => '#150A08',
+            'primary-text' => '#F87966',
 
             'secondary' => '#DDD1CE',
             'on-secondary' => '#150A08',

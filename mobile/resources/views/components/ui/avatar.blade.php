@@ -34,9 +34,9 @@ $radius = $circle ? 'rounded-full' : match ($size) {
     default => 'rounded-lg',
 };
 
-$background = $color ? "bg-{$color}-200" : 'bg-theme-surface-variant';
+$background = $color ? "bg-{$color}-200 dark:bg-{$color}-400/25" : 'bg-theme-surface-variant';
 
-$foreground = $color ? "text-{$color}-800" : 'text-theme-on-surface';
+$foreground = $color ? "text-{$color}-800 dark:text-{$color}-300" : 'text-theme-on-surface';
 
 $iconSize = match ($size) {
     '2xl', 'lg' => 32,
