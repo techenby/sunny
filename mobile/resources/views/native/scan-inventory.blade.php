@@ -5,30 +5,17 @@
 
 <native:bottom-bar>
     <column class="w-full gap-3 px-4 pb-2">
-        <row class="w-full flex-wrap gap-3">
-            <pressable
-                ref="scan-take-photos"
-                a11y-label="Take photos"
-                class="min-h-12 min-w-[150] grow items-center justify-center rounded-full px-4 glass android:bg-theme-surface"
-                @tap="takePhotos"
-            >
-                <row class="items-center gap-2">
-                    <native:icon :ios="Ios::CameraFill" :android="Android::PhotoCamera" :size="20" class="text-theme-primary-text" />
-                    <text font="semibold" class="text-base text-theme-primary-text">Take photos</text>
-                </row>
-            </pressable>
-            <pressable
-                ref="scan-choose-photos"
-                a11y-label="Choose photos"
-                class="min-h-12 min-w-[150] grow items-center justify-center rounded-full px-4 glass android:bg-theme-surface"
-                @tap="choosePhotos"
-            >
-                <row class="items-center gap-2">
-                    <native:icon :ios="Ios::Photo" :android="Android::Photo" :size="20" class="text-theme-on-surface" />
-                    <text font="semibold" class="text-base text-theme-on-surface">Choose photos</text>
-                </row>
-            </pressable>
-        </row>
+        <pressable
+            ref="scan-take-photos"
+            a11y-label="Take photos"
+            class="min-h-12 w-full items-center justify-center rounded-full px-4 glass android:bg-theme-surface"
+            @tap="takePhotos"
+        >
+            <row class="items-center gap-2">
+                <native:icon :ios="Ios::CameraFill" :android="Android::PhotoCamera" :size="20" class="text-theme-primary-text" />
+                <text font="semibold" class="text-base text-theme-primary-text">Take photos</text>
+            </row>
+        </pressable>
         <button
             ref="scan-submit"
             variant="primary"
@@ -70,6 +57,19 @@
                 @change="updateBatch"
             />
         @endif
+
+        <pressable
+            ref="scan-choose-photos"
+            a11y-label="Choose photos"
+            a11y-hint="Pick photos you already took"
+            class="min-h-12 w-full items-center justify-center rounded-xl border border-theme-outline bg-theme-surface px-4"
+            @tap="choosePhotos"
+        >
+            <row class="items-center gap-2">
+                <native:icon :ios="Ios::Photo" :android="Android::Photo" :size="20" class="text-theme-on-surface" />
+                <text font="semibold" class="text-base text-theme-on-surface">Choose photos</text>
+            </row>
+        </pressable>
 
         @if ($error !== '')
             <text ref="scan-error" class="text-sm text-theme-destructive">{{ $error }}</text>

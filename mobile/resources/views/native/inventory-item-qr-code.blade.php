@@ -19,10 +19,10 @@
                     <x-ui.heading ref="item-qr-code-name" size="lg" class="text-center">{{ $name }}</x-ui.heading>
                     <x-ui.text ref="item-qr-code-url" size="sm" class="text-center">{{ $url }}</x-ui.text>
                 </column>
-                <row class="w-full flex-wrap gap-3">
+                <column class="w-full gap-3">
                     @include('native.copy-button', ['ref' => 'item-qr-code-copy-name', 'action' => 'copyName', 'label' => 'name', 'copied' => $copied === 'name'])
                     @include('native.copy-button', ['ref' => 'item-qr-code-copy-url', 'action' => 'copyUrl', 'label' => 'link', 'copied' => $copied === 'url'])
-                </row>
+                </column>
                 @if ($error !== '')
                     <text ref="item-qr-code-error" class="text-center text-sm text-theme-destructive">{{ $error }}</text>
                 @endif

@@ -4,7 +4,7 @@
 <pressable
     ref="{{ $ref }}"
     :a11y-label="$copied ? ucfirst($label).' copied' : 'Copy '.$label"
-    class="min-h-12 min-w-[130] grow items-center justify-center rounded-full border border-theme-outline bg-theme-surface px-4"
+    class="min-h-12 w-full items-center justify-center rounded-full border border-theme-outline bg-theme-surface px-4"
     @tap="{{ $action }}"
 >
     <row class="items-center gap-2">
