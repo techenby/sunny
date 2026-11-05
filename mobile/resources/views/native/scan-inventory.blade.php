@@ -1,58 +1,42 @@
 @use('App\Icons\Android')
 @use('App\Icons\Ios')
 
-<native:top-bar title="Bulk add" back>
-    @if ($candidates !== [])
-        <native:top-bar-action
-            ref="scan-start-over"
-            id="scan-start-over"
-            label="Start over"
-            :ios-icon="Ios::Trash"
-            :android-icon="Android::Delete"
-            @tap="confirmStartOver"
-        />
-    @endif
-</native:top-bar>
+<native:top-bar title="Bulk add" back />
 
 <native:bottom-bar>
-    <row class="w-full items-center gap-3 px-4 pb-2">
-        <pressable
-            ref="scan-choose-photos"
-            a11y-label="Choose photos"
-            class="h-12 w-12 items-center justify-center rounded-full glass android:bg-theme-surface"
-            @tap="choosePhotos"
-        >
-            <native:icon :ios="Ios::Photo" :android="Android::Photo" :size="22" class="text-theme-on-surface" />
-        </pressable>
+    <column class="w-full gap-3 px-4 pb-2">
         <pressable
             ref="scan-take-photos"
             a11y-label="Take photos"
-            class="h-12 w-12 items-center justify-center rounded-full bg-theme-primary"
+            class="min-h-12 w-full items-center justify-center rounded-full px-4 glass android:bg-theme-surface"
             @tap="takePhotos"
         >
-            <native:icon :ios="Ios::CameraFill" :android="Android::PhotoCamera" :size="22" class="text-theme-on-primary" />
+            <row class="items-center gap-2">
+                <native:icon :ios="Ios::CameraFill" :android="Android::PhotoCamera" :size="20" class="text-theme-primary-text" />
+                <text font="semibold" class="text-base text-theme-primary-text">Take photos</text>
+            </row>
         </pressable>
         <button
             ref="scan-submit"
             variant="primary"
             font="semibold"
-            class="h-12 flex-1"
+            class="h-12 w-full"
             :disabled="$saving || $candidates === []"
             :loading="$saving"
             @tap="confirmSave"
         >
             {{ $candidates === [] ? 'Add items' : trans_choice('Add :count item|Add :count items', count($candidates)) }}
         </button>
-    </row>
+    </column>
 </native:bottom-bar>
 
 <scroll-view ref="scan-screen" fill class="bg-theme-background ios:bg-theme-grouped-background">
     <column class="w-full gap-6 px-6 pt-2 pb-32">
         <text ref="scan-subtitle" class="text-base text-theme-on-surface-variant">
             @if ($this->canIdentify)
-                Tap the camera and photograph each item in turn. Apple Intelligence names them in the background while you keep shooting.
+                Take a photo of each thing. Sunny suggests a name while you keep going.
             @else
-                Tap the camera and photograph each item in turn, then give each one a name.
+                Take a photo of each thing, then give each one a name.
             @endif
         </text>
 
@@ -73,6 +57,19 @@
                 @change="updateBatch"
             />
         @endif
+
+        <pressable
+            ref="scan-choose-photos"
+            a11y-label="Choose photos"
+            a11y-hint="Pick photos you already took"
+            class="min-h-12 w-full items-center justify-center rounded-xl border border-theme-outline bg-theme-surface px-4"
+            @tap="choosePhotos"
+        >
+            <row class="items-center gap-2">
+                <native:icon :ios="Ios::Photo" :android="Android::Photo" :size="20" class="text-theme-on-surface" />
+                <text font="semibold" class="text-base text-theme-on-surface">Choose photos</text>
+            </row>
+        </pressable>
 
         @if ($error !== '')
             <text ref="scan-error" class="text-sm text-theme-destructive">{{ $error }}</text>
@@ -139,20 +136,12 @@
                                 @endif
                             </column>
                             <pressable
-                                ref="scan-candidate-{{ $candidate['id'] }}-retake"
-                                a11y-label="Retake photo"
-                                class="h-12 w-10 items-center justify-center"
-                                @tap="retakePhoto({{ $candidate['id'] }})"
-                            >
-                                <icon :ios="Ios::Camera" :android="Android::PhotoCamera" :size="18" class="text-theme-on-surface-variant" />
-                            </pressable>
-                            <pressable
-                                ref="scan-candidate-{{ $candidate['id'] }}-remove"
-                                a11y-label="Remove item"
+                                ref="scan-candidate-{{ $candidate['id'] }}-actions"
+                                a11y-label="Retake or remove"
                                 class="h-12 w-12 items-center justify-center"
-                                @tap="removeCandidate({{ $candidate['id'] }})"
+                                :menu="$this->candidateMenu($candidate['id'])"
                             >
-                                <icon :ios="Ios::Trash" :android="Android::Delete" :size="18" class="text-theme-on-surface-variant" />
+                                <icon :ios="Ios::Ellipsis" :android="Android::MoreHoriz" :size="18" class="text-theme-on-surface-variant" />
                             </pressable>
                         </row>
                         @if (! $loop->last)
@@ -161,6 +150,16 @@
                     @endforeach
                 </column>
             </column>
+
+            <pressable
+                ref="scan-start-over"
+                a11y-label="Start over"
+                a11y-hint="Clears these photos and names"
+                class="min-h-12 w-full items-center justify-center"
+                @tap="confirmStartOver"
+            >
+                <text font="semibold" class="text-center text-lg text-theme-destructive">Start over</text>
+            </pressable>
         @endif
     </column>
 </scroll-view>

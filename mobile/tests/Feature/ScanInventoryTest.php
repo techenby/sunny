@@ -76,7 +76,7 @@ it('scans without Apple Intelligence, leaving the naming to the user', function 
     Native::fakeBridge()->respondTo('ItemScanner.Availability', $availability);
 
     $screen = Native::visit('/inventory/scan')
-        ->assertSee('Tap the camera and photograph each item in turn, then give each one a name.')
+        ->assertSee('Take a photo of each thing, then give each one a name.')
         ->assertDontSee('What are you scanning?')
         ->assertDontSee('Let Apple Intelligence guess')
         ->tap('scan-take-photos')
@@ -291,7 +291,9 @@ it('retakes a photo and identifies it again without losing a typed name', functi
     $firstPhoto = $screen->get('candidates')[0]['photoPath'];
 
     $screen->call('renameCandidate', 1, 'Framing hammer')
-        ->tap('scan-candidate-1-retake')
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'scan-candidate-1-actions'
+            && array_column(array_column($node['children'], 'props'), 'label') === ['Retake photo', 'Remove'])
+        ->press('retakePhoto(1)')
         ->assertNativeCalled('ItemScanner.Capture', fn (array $params): bool => $params === ['id' => 'retake-1', 'single' => true])
         ->emitNative(PhotoCaptured::class, ['id' => 'retake-1', 'path' => '/tmp/closer.jpg'])
         ->assertNativeCalled('ItemScanner.Identify', fn (array $params): bool => $params['path'] === '/tmp/closer.jpg');
@@ -309,7 +311,7 @@ it('removes an item and its photo from the list', function () {
     $screen = scanNamedPhotos(['Hammer', 'Level']);
     $hammerPhoto = $screen->get('candidates')[1]['photoPath'];
 
-    $screen->tap('scan-candidate-1-remove')
+    $screen->press('removeCandidate(1)')
         ->assertSee('Add 1 item');
 
     expect(collect($screen->get('candidates'))->pluck('suggestedName')->all())->toBe(['Level'])

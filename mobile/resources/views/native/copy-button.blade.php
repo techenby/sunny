@@ -4,13 +4,16 @@
 <pressable
     ref="{{ $ref }}"
     :a11y-label="$copied ? ucfirst($label).' copied' : 'Copy '.$label"
-    class="h-11 w-11 items-center justify-center"
+    class="min-h-12 w-full items-center justify-center rounded-full border border-theme-outline bg-theme-surface px-4"
     @tap="{{ $action }}"
 >
-    <icon
-        :ios="$copied ? Ios::Checkmark : Ios::DocOnDoc"
-        :android="$copied ? Android::Check : Android::ContentCopy"
-        :size="18"
-        class="text-theme-primary"
-    />
+    <row class="items-center gap-2">
+        <icon
+            :ios="$copied ? Ios::Checkmark : Ios::DocOnDoc"
+            :android="$copied ? Android::Check : Android::ContentCopy"
+            :size="18"
+            class="text-theme-primary-text"
+        />
+        <text font="semibold" class="text-base text-theme-on-surface">{{ $copied ? 'Copied' : 'Copy '.$label }}</text>
+    </row>
 </pressable>

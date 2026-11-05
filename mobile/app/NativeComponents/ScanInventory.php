@@ -10,6 +10,8 @@ use App\Http\Integrations\Sunny\SunnyOutbox;
 use App\Http\Integrations\Sunny\SunnyStore;
 use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Http\Integrations\Sunny\SunnyTeam;
+use App\Icons\Android;
+use App\Icons\Ios;
 use App\Models\ScanDraft;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\File;
@@ -18,6 +20,7 @@ use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
 use Native\Mobile\Attributes\On;
+use Native\Mobile\Edge\Layouts\Builders\NavAction;
 use Native\Mobile\Edge\NativeComponent;
 use Native\Mobile\Events\Alert\ButtonPressed;
 use Native\Mobile\Events\Camera\PhotoTaken;
@@ -101,6 +104,17 @@ class ScanInventory extends NativeComponent
     public function retakePhoto(int $id): void
     {
         $this->capture(self::RETAKE_PREFIX.$id, single: true);
+    }
+
+    /**
+     * @return list<NavAction>
+     */
+    public function candidateMenu(int $id): array
+    {
+        return [
+            NavAction::make('scan-candidate-'.$id.'-retake')->label('Retake photo')->icon(ios: Ios::Camera->value, android: Android::PhotoCamera->value)->press('retakePhoto('.$id.')'),
+            NavAction::make('scan-candidate-'.$id.'-remove')->label('Remove')->icon(ios: Ios::Trash->value, android: Android::Delete->value)->press('removeCandidate('.$id.')')->destructive(),
+        ];
     }
 
     public function choosePhotos(): void
