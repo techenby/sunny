@@ -1,5 +1,5 @@
 {
-    "_hash": "fb921b1f99abbedaa72323dfb4b094b69d6ead64ef26e0b8748d352897c246c5",
+    "_hash": "574af5c5a704543c30515d174e32d4dd4134076d52f0e42e339c403d3d40d371",
     "patches": {
         "nativephp/mobile-camera": [
             {
@@ -90,7 +90,7 @@
             },
             {
                 "package": "nativephp/mobile-ui",
-                "description": "iOS: give a :menu pressable's Menu its a11y-label and a11y-hint, so icon-only menus aren't read as a bare pop up button",
+                "description": "iOS: give a :menu pressable's Menu its a11y-label and a11y-hint, so icon-only menus aren't read as a bare pop up button (upstream NativePHP/mobile-ui#202)",
                 "url": "patches/nativephp-mobile-ui-menu-accessibility-label.patch",
                 "sha256": "fd08506f375af9982f5bf5240028fb772ecf333e171cf4b7c44f6cef19d496bc",
                 "depth": 1,
