@@ -10,11 +10,11 @@
 
 @if ($item)
     <native:bottom-bar>
-        <row class="w-full items-center gap-3 px-4 pb-2">
+        <row class="w-full flex-wrap items-center gap-3 px-4 pb-2">
             <pressable
                 ref="edit-item"
                 a11y-label="Edit"
-                class="min-h-12 flex-1 items-center justify-center rounded-full px-4 glass android:bg-theme-surface"
+                class="min-h-12 min-w-[150] grow items-center justify-center rounded-full px-4 glass android:bg-theme-surface"
                 @navigate('/inventory/'.$item['id'].'/edit')
             >
                 <row class="items-center gap-2">
@@ -25,7 +25,7 @@
             <pressable
                 ref="item-print-label"
                 a11y-label="Print label"
-                class="min-h-12 flex-1 items-center justify-center rounded-full px-4 glass android:bg-theme-surface"
+                class="min-h-12 min-w-[150] grow items-center justify-center rounded-full px-4 glass android:bg-theme-surface"
                 @tap="showQrCode"
             >
                 <row class="items-center gap-2">

@@ -15,19 +15,17 @@
                     class="w-[260] h-[260] rounded-lg"
                     :fit="1"
                 />
-                <column class="w-full items-center gap-2">
-                    <row class="w-full items-center justify-center gap-1">
-                        <x-ui.heading ref="item-qr-code-name" size="lg" class="text-center">{{ $name }}</x-ui.heading>
-                        @include('native.copy-button', ['ref' => 'item-qr-code-copy-name', 'action' => 'copyName', 'label' => 'name', 'copied' => $copied === 'name'])
-                    </row>
-                    <row class="w-full items-center justify-center gap-1">
-                        <x-ui.text ref="item-qr-code-url" size="sm" class="text-center">{{ $url }}</x-ui.text>
-                        @include('native.copy-button', ['ref' => 'item-qr-code-copy-url', 'action' => 'copyUrl', 'label' => 'link', 'copied' => $copied === 'url'])
-                    </row>
-                    @if ($error !== '')
-                        <text ref="item-qr-code-error" class="text-center text-sm text-theme-destructive">{{ $error }}</text>
-                    @endif
+                <column class="w-full items-center gap-1">
+                    <x-ui.heading ref="item-qr-code-name" size="lg" class="text-center">{{ $name }}</x-ui.heading>
+                    <x-ui.text ref="item-qr-code-url" size="sm" class="text-center">{{ $url }}</x-ui.text>
                 </column>
+                <row class="w-full flex-wrap gap-3">
+                    @include('native.copy-button', ['ref' => 'item-qr-code-copy-name', 'action' => 'copyName', 'label' => 'name', 'copied' => $copied === 'name'])
+                    @include('native.copy-button', ['ref' => 'item-qr-code-copy-url', 'action' => 'copyUrl', 'label' => 'link', 'copied' => $copied === 'url'])
+                </row>
+                @if ($error !== '')
+                    <text ref="item-qr-code-error" class="text-center text-sm text-theme-destructive">{{ $error }}</text>
+                @endif
             </column>
 
             <button ref="item-qr-code-share" variant="primary" size="lg" font="semibold" class="w-full" @tap="share">

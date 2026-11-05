@@ -40,10 +40,14 @@ it('copies the item name', function () {
 
     Native::visit('/inventory/8/qr-code')
         ->assertNothingCopied()
+        ->assertSee('Copy name')
+        ->assertSee('Copy link')
         ->tap('item-qr-code-copy-name')
         ->assertCopied('Cordless drill')
         ->assertSet('copied', 'name')
-        ->assertSet('error', '');
+        ->assertSet('error', '')
+        ->assertSee('Copied')
+        ->assertDontSee('Copy name');
 });
 
 it('copies the item link', function () {
