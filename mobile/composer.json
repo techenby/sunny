@@ -144,6 +144,10 @@
                 {
                     "description": "iOS: keep a cover-fit image's overflow from swallowing taps meant for the fields around it",
                     "url": "patches/nativephp-mobile-ui-image-fill-hit-testing.patch"
+                },
+                {
+                    "description": "iOS: give a :menu pressable's Menu its a11y-label and a11y-hint, so icon-only menus aren't read as a bare pop up button",
+                    "url": "patches/nativephp-mobile-ui-menu-accessibility-label.patch"
                 }
             ]
         }

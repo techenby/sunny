@@ -1,5 +1,5 @@
 {
-    "_hash": "22c24bd160524179ae60daba6b305069d46a4961546eb5b964841dcb5b029580",
+    "_hash": "fb921b1f99abbedaa72323dfb4b094b69d6ead64ef26e0b8748d352897c246c5",
     "patches": {
         "nativephp/mobile-camera": [
             {
@@ -83,6 +83,16 @@
                 "description": "iOS: keep a cover-fit image's overflow from swallowing taps meant for the fields around it",
                 "url": "patches/nativephp-mobile-ui-image-fill-hit-testing.patch",
                 "sha256": "fdfc15daa016af53ba4b6816f7498561597364b65a77cedc3bd5ab1e8278b3df",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
+            },
+            {
+                "package": "nativephp/mobile-ui",
+                "description": "iOS: give a :menu pressable's Menu its a11y-label and a11y-hint, so icon-only menus aren't read as a bare pop up button",
+                "url": "patches/nativephp-mobile-ui-menu-accessibility-label.patch",
+                "sha256": "fd08506f375af9982f5bf5240028fb772ecf333e171cf4b7c44f6cef19d496bc",
                 "depth": 1,
                 "extra": {
                     "provenance": "root"
