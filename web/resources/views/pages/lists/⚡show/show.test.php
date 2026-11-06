@@ -140,7 +140,7 @@ describe('crud and actions', function () {
             ->call('addItem')
             ->assertHasNoErrors()
             ->assertSet('newItemUrl', '')
-            ->assertSeeHtml('href="'.e($url).'"');
+            ->assertSeeHtml('href="' . e($url) . '"');
 
         expect($list->items()->sole())
             ->name->toBe('Travel Charger')
