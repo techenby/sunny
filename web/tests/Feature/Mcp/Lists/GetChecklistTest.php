@@ -31,6 +31,7 @@ test('it returns a checklist with its items in position order', function () {
             ->where('items.0', [
                 'id' => $milk->id,
                 'name' => 'Milk',
+                'url' => null,
                 'position' => 1,
                 'completed' => true,
                 'completed_at' => $milk->completed_at->toIso8601String(),
@@ -39,6 +40,7 @@ test('it returns a checklist with its items in position order', function () {
             ->where('items.1', [
                 'id' => $eggs->id,
                 'name' => 'Eggs',
+                'url' => null,
                 'position' => 2,
                 'completed' => false,
                 'completed_at' => null,

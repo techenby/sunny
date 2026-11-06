@@ -91,6 +91,17 @@ it('checks and unchecks an item on the phone and queues it for Sunny', function 
         ->and(PendingWrite::sole()->payload['completed'])->toBeFalse();
 });
 
+it('opens an item’s link in the in-app browser', function () {
+    $bridge = Native::fakeBridge()->respondTo('Browser.OpenInApp', ['success' => true]);
+
+    Native::visit('/lists/1')
+        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'list-item-3-link')
+        ->tap('list-item-1-link');
+
+    $bridge->assertCalled('Browser.OpenInApp', fn (array $params): bool => $params['url'] === 'https://www.example.com/oat-milk');
+    expect(ChecklistItem::find(1)->completed_at)->toBeNull();
+});
+
 it('unchecks an item someone else checked', function () {
     Native::visit('/lists/1')->tap('list-item-2');
 

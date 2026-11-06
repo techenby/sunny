@@ -58,6 +58,7 @@ class SunnySync
         $rules['checklists.*.user_id'] = ['nullable', 'integer'];
         $rules['checklist_items.*.checklist_id'] = ['required', 'integer', 'min:1'];
         $rules['checklist_items.*.position'] = ['nullable', 'integer'];
+        $rules['checklist_items.*.url'] = ['nullable', 'url'];
         $rules['checklist_items.*.completed_at'] = ['nullable', 'date'];
         $rules['checklist_items.*.completed_by'] = ['nullable', 'integer'];
         $rules['routines.*.user_id'] = ['nullable', 'integer'];

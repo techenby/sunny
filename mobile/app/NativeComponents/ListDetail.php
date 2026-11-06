@@ -14,6 +14,7 @@ use Native\Mobile\Attributes\Computed;
 use Native\Mobile\Attributes\On;
 use Native\Mobile\Edge\NativeComponent;
 use Native\Mobile\Events\Alert\ButtonPressed;
+use Native\Mobile\Facades\Browser;
 use Native\Mobile\Facades\Dialog;
 
 class ListDetail extends NativeComponent
@@ -35,7 +36,7 @@ class ListDetail extends NativeComponent
     }
 
     /**
-     * @return list<array{id: int, name: string, completed: bool, error: string|null}>
+     * @return list<array{id: int, name: string, url: string|null, completed: bool, error: string|null}>
      */
     #[Computed]
     public function items(): array
@@ -51,6 +52,7 @@ class ListDetail extends NativeComponent
         return $items->map(fn (array $item): array => [
             'id' => $item['id'],
             'name' => $item['name'],
+            'url' => $item['url'],
             'completed' => $item['completed_at'] !== null,
             'error' => $errors[$item['id']] ?? null,
         ])->all();
@@ -89,6 +91,15 @@ class ListDetail extends NativeComponent
 
         if ($item !== null) {
             $this->change(fn (SunnyOutbox $outbox) => $outbox->queue('checklist_items', $this->checklist['team_id'], ['completed' => ! $item['completed']], $id));
+        }
+    }
+
+    public function openItemLink(int $id): void
+    {
+        $url = collect($this->items)->firstWhere('id', $id)['url'] ?? null;
+
+        if ($url !== null) {
+            Browser::inApp($url);
         }
     }
 

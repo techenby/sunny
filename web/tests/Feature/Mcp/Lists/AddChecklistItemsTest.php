@@ -23,8 +23,8 @@ test('it adds items to the end of a checklist', function () {
             'checklist_id' => $checklist->id,
             'count' => 2,
             'items' => [
-                ['id' => $milk->id, 'name' => 'Milk', 'position' => 2, 'completed' => false, 'completed_at' => null, 'completed_by_name' => null],
-                ['id' => $eggs->id, 'name' => 'Eggs', 'position' => 3, 'completed' => false, 'completed_at' => null, 'completed_by_name' => null],
+                ['id' => $milk->id, 'name' => 'Milk', 'url' => null, 'position' => 2, 'completed' => false, 'completed_at' => null, 'completed_by_name' => null],
+                ['id' => $eggs->id, 'name' => 'Eggs', 'url' => null, 'position' => 3, 'completed' => false, 'completed_at' => null, 'completed_by_name' => null],
             ],
         ]);
 

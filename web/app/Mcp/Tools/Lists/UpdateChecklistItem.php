@@ -6,6 +6,7 @@ namespace App\Mcp\Tools\Lists;
 
 use App\Mcp\Tools\Lists\Concerns\FormatsChecklists;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Gate;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
@@ -15,7 +16,7 @@ use Laravel\Mcp\Server\Tool;
 use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 
 #[IsIdempotent]
-#[Description('Rename a checklist item, or check it off or uncheck it by passing completed as true or false. Only the provided fields are changed. Use the get-checklist tool to find item ids.')]
+#[Description('Rename a checklist item, set or clear its link (url), or check it off or uncheck it by passing completed as true or false. Only the provided fields are changed. Use the get-checklist tool to find item ids.')]
 class UpdateChecklistItem extends Tool
 {
     use FormatsChecklists;
@@ -26,6 +27,7 @@ class UpdateChecklistItem extends Tool
             'checklist_id' => ['required', 'integer'],
             'item_id' => ['required', 'integer'],
             'name' => ['sometimes', 'required', 'string', 'max:255'],
+            'url' => ['sometimes', 'nullable', 'url:http,https', 'max:2048'],
             'completed' => ['sometimes', 'boolean'],
         ], [
             'completed.boolean' => 'The completed field must be true or false.',
@@ -45,13 +47,11 @@ class UpdateChecklistItem extends Tool
 
         Gate::forUser($request->user())->authorize('update', $item);
 
-        if (! isset($validated['name']) && ! isset($validated['completed'])) {
-            return Response::error('Provide a name, completed, or both to update.');
+        if (! isset($validated['name']) && ! array_key_exists('url', $validated) && ! isset($validated['completed'])) {
+            return Response::error('Provide a name, url, or completed to update.');
         }
 
-        if (isset($validated['name'])) {
-            $item->update(['name' => $validated['name']]);
-        }
+        $item->update(Arr::only($validated, ['name', 'url']));
 
         $completed = isset($validated['completed']) ? (bool) $validated['completed'] : null;
 
@@ -75,6 +75,10 @@ class UpdateChecklistItem extends Tool
             'name' => $schema->string()
                 ->max(255)
                 ->description('A new name for the item.'),
+            'url' => $schema->string()
+                ->max(2048)
+                ->nullable()
+                ->description('An http or https link for the item, such as a product page. Pass null to remove the link.'),
             'completed' => $schema->boolean()
                 ->description('True to check the item off, false to mark it incomplete again.'),
         ];

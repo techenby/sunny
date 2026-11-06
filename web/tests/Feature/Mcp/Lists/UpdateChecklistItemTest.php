@@ -20,6 +20,7 @@ test('it completes an item and records who completed it', function () {
         ->assertStructuredContent([
             'id' => $item->id,
             'name' => 'Milk',
+            'url' => null,
             'position' => 1,
             'completed' => true,
             'completed_at' => now()->toIso8601String(),
@@ -83,7 +84,7 @@ test('it requires a field to update', function () {
 
     SunnyServer::actingAs($user)
         ->tool(UpdateChecklistItem::class, ['checklist_id' => $checklist->id, 'item_id' => $item->id])
-        ->assertHasErrors(['Provide a name, completed, or both to update.']);
+        ->assertHasErrors(['Provide a name, url, or completed to update.']);
 });
 
 test('it validates the completed flag', function () {
@@ -118,4 +119,24 @@ test('it does not update items from other teams', function () {
         ->assertHasErrors(['Checklist not found.']);
 
     expect($item->refresh()->isCompleted())->toBeFalse();
+});
+
+test('it sets and clears an item link', function () {
+    $user = User::factory()->create();
+    $checklist = Checklist::factory()->for($user->currentTeam)->create();
+    $item = ChecklistItem::factory()->for($checklist)->create(['name' => 'Travel Charger']);
+    $url = 'https://www.anker.com/products/a140a-100w-4-in-1-global-travel-charger?variant=46551580606614';
+
+    SunnyServer::actingAs($user)
+        ->tool(UpdateChecklistItem::class, ['checklist_id' => $checklist->id, 'item_id' => $item->id, 'url' => $url])
+        ->assertOk()
+        ->assertStructuredContent(fn (AssertableJson $json) => $json->where('url', $url)->where('name', 'Travel Charger')->etc());
+
+    expect($item->fresh()->url)->toBe($url);
+
+    SunnyServer::actingAs($user)
+        ->tool(UpdateChecklistItem::class, ['checklist_id' => $checklist->id, 'item_id' => $item->id, 'url' => null])
+        ->assertOk();
+
+    expect($item->fresh()->url)->toBeNull();
 });

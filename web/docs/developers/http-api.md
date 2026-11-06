@@ -153,7 +153,7 @@ user belongs to.
 | `GET` | `/api/teams/{team}/checklists/{checklist}/items` | List a list's items in order. |
 | `POST` | `/api/teams/{team}/checklists/{checklist}/items` | Add an item to the end of a list. |
 | `GET` | `/api/teams/{team}/checklists/{checklist}/items/{item}` | Read a list item. |
-| `PATCH` | `/api/teams/{team}/checklists/{checklist}/items/{item}` | Rename, check, or uncheck a list item. |
+| `PATCH` | `/api/teams/{team}/checklists/{checklist}/items/{item}` | Rename, link, check, or uncheck a list item. |
 | `DELETE` | `/api/teams/{team}/checklists/{checklist}/items/{item}` | Remove a list item. |
 | `GET` | `/api/teams/{team}/routines` | List the team's routines and their steps. |
 | `POST` | `/api/teams/{team}/routines` | Create a routine. |
@@ -231,7 +231,9 @@ Lists are called checklists in the API. Create one with:
 must be a member of the team; leave it `null` for a list that belongs to the
 whole household.
 
-Add an item with a `name`, and optionally `completed`. Check or uncheck an
+Add an item with a `name`, and optionally a `url` (an `http` or `https` link,
+such as a product page on a wish list) and `completed`. Send `url` on update to
+change the link, or `null` to remove it. Check or uncheck an
 existing item by sending `completed`:
 
 ```json

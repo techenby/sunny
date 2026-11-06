@@ -13,6 +13,8 @@ new class extends Component
 
     public string $newItem = '';
 
+    public string $newItemUrl = '';
+
     /** @return Collection<int, ChecklistItem> */
     #[Computed]
     public function items(): Collection
@@ -25,15 +27,22 @@ new class extends Component
         $this->authorize('update', $this->checklist);
 
         $this->newItem = trim($this->newItem);
+        $this->newItemUrl = trim($this->newItemUrl);
 
         if ($this->newItem === '') {
             return;
         }
 
-        $this->validate(['newItem' => ['string', 'max:255']]);
+        $this->validate([
+            'newItem' => ['string', 'max:255'],
+            'newItemUrl' => ['nullable', 'url:http,https', 'max:2048'],
+        ]);
 
-        $this->checklist->items()->create(['name' => $this->newItem]);
-        $this->newItem = '';
+        $this->checklist->items()->create([
+            'name' => $this->newItem,
+            'url' => $this->newItemUrl ?: null,
+        ]);
+        $this->reset('newItem', 'newItemUrl');
 
         unset($this->items);
     }

@@ -162,7 +162,7 @@ class SunnyStore
         return match ($type) {
             'recipes', 'items' => ['team_id', ...self::editableFields($type), 'photo_url', 'thumb_url', 'created_at', 'updated_at'],
             'checklists' => ['team_id', 'user_id', ...self::editableFields($type), 'created_at', 'updated_at'],
-            'checklist_items' => [...self::editableFields($type), 'position', 'completed_at', 'completed_by', 'created_at', 'updated_at'],
+            'checklist_items' => [...self::editableFields($type), 'url', 'position', 'completed_at', 'completed_by', 'created_at', 'updated_at'],
             'routines' => ['team_id', 'user_id', ...self::editableFields($type), 'starts_on', 'created_at', 'updated_at'],
             'routine_steps' => [...self::editableFields($type), 'position', 'created_at', 'updated_at'],
         };

@@ -24,6 +24,10 @@ does not make it private or prevent another team member from updating it.
 5. Select **Create**.
 6. Add items using the field at the bottom of the list.
 
+On a **Wish List**, you can also paste a link, such as the product page, into
+the **Link (optional)** field when adding an item. Items with a link show a
+button that opens it in a new tab.
+
 Tap an item to check or uncheck it. Sunny records who checked it and shows
 their name beside the completed item. Use the trash button beside an item to
 remove it.

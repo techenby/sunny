@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\ChecklistType;
 use App\Models\Checklist;
 use App\Models\ChecklistItem;
 use App\Models\User;
@@ -84,6 +85,20 @@ describe('form validation', function () {
         expect($list->items())->count()->toBe(0);
     })->with(['', '   ']);
 
+    test('a link that is not an http or https url is rejected', function (string $url) {
+        $user = User::factory()->create();
+        $list = Checklist::factory()->for($user->currentTeam)->create(['type' => ChecklistType::Wishlist]);
+
+        Livewire::actingAs($user)
+            ->test('pages::lists.show', ['checklist' => $list])
+            ->set('newItem', 'Travel Charger')
+            ->set('newItemUrl', $url)
+            ->call('addItem')
+            ->assertHasErrors(['newItemUrl' => 'url']);
+
+        expect($list->items())->count()->toBe(0);
+    })->with(['not a link', 'javascript:alert(1)']);
+
     test('surrounding whitespace is trimmed off an item', function () {
         $user = User::factory()->create();
         $list = Checklist::factory()->for($user->currentTeam)->create();
@@ -111,6 +126,38 @@ describe('crud and actions', function () {
             ->call('addItem');
 
         expect($list->items()->pluck('name')->all())->toBe(['Oat milk', 'Coffee']);
+    });
+
+    test('adds a wish list item with a link and shows it', function () {
+        $user = User::factory()->create();
+        $list = Checklist::factory()->for($user->currentTeam)->create(['type' => ChecklistType::Wishlist]);
+        $url = 'https://www.anker.com/products/a140a-100w-4-in-1-global-travel-charger?variant=46551580606614';
+
+        Livewire::actingAs($user)
+            ->test('pages::lists.show', ['checklist' => $list])
+            ->set('newItem', 'Travel Charger')
+            ->set('newItemUrl', "  {$url}  ")
+            ->call('addItem')
+            ->assertHasNoErrors()
+            ->assertSet('newItemUrl', '')
+            ->assertSeeHtml('href="' . e($url) . '"');
+
+        expect($list->items()->sole())
+            ->name->toBe('Travel Charger')
+            ->url->toBe($url);
+    });
+
+    test('adds an item without a link', function () {
+        $user = User::factory()->create();
+        $list = Checklist::factory()->for($user->currentTeam)->create(['type' => ChecklistType::Wishlist]);
+
+        Livewire::actingAs($user)
+            ->test('pages::lists.show', ['checklist' => $list])
+            ->set('newItem', 'Socks')
+            ->call('addItem')
+            ->assertHasNoErrors();
+
+        expect($list->items()->sole()->url)->toBeNull();
     });
 
     test('toggles an item and records who did it', function () {
