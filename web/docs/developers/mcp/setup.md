@@ -74,6 +74,7 @@ definition:
 | Calendar events | Calendar feeds: list, create, update, delete |
 | Lists: list, get, create, add items, update an item | Lists: update, delete, remove an item, clear completed, reset |
 | Routines: list, the routine board, complete a step | Routines: get, create, update, delete, and step editing |
+| Meal plan: get, set a slot on a date | Meal plan: reset a slot, template, meal slots, ingredients for a date range |
 | Teams: list, switch | Team name, team and kiosk settings, kiosk devices |
 
 `switch-team` changes the user's current team everywhere, including the web

@@ -76,6 +76,8 @@ test('the server lists the everyday tools and the tool catalog', function () {
         'list-routines',
         'get-routine-board',
         'complete-routine-step',
+        'get-meal-plan',
+        'set-meal-plan-slot',
         'list-teams',
         'switch-team',
         'search_tools',
@@ -119,6 +121,11 @@ test('the tool catalog holds every other tool', function () {
             'update-routine-step',
             'reorder-routine-steps',
             'remove-routine-step',
+            'reset-meal-plan-slot',
+            'get-meal-template',
+            'set-meal-template-slot',
+            'update-meal-slots',
+            'get-meal-plan-ingredients',
             'update-team',
             'get-team-settings',
             'update-team-settings',
@@ -166,7 +173,7 @@ test('the test server registers every tool directly', function () {
     $server = new SunnyTestServer(new FakeTransporter);
     $tools = (fn () => $this->tools)->call($server);
 
-    expect($tools)->toHaveCount(50)->each->toBeString();
+    expect($tools)->toHaveCount(57)->each->toBeString();
 });
 
 test('the server lists its prompts', function () {
