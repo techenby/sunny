@@ -55,6 +55,17 @@
                             @endif
                         </button>
 
+                        @if ($item->url)
+                            <flux:button
+                                icon="arrow-top-right-on-square"
+                                variant="ghost"
+                                :href="$item->url"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                :aria-label="__('Open link for :item', ['item' => $item->name])"
+                            />
+                        @endif
+
                         <flux:button
                             icon="trash"
                             variant="ghost"
@@ -66,8 +77,11 @@
             </ul>
         @endif
 
-        <form wire:submit="addItem" class="flex gap-2">
+        <form wire:submit="addItem" class="flex flex-col gap-2 sm:flex-row">
             <flux:input wire:model="newItem" :placeholder="__('Add an item')" />
+            @if ($checklist->type === \App\Enums\ChecklistType::Wishlist)
+                <flux:input wire:model="newItemUrl" type="url" icon="link" :placeholder="__('Link (optional)')" />
+            @endif
             <flux:button type="submit" variant="primary" icon="plus">{{ __('Add') }}</flux:button>
         </form>
     </div>

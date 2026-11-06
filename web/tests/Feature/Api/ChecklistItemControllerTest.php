@@ -43,6 +43,22 @@ test('store adds an item to the end of the checklist', function () {
         ->assertJsonPath('data.completed_at', null);
 });
 
+test('store saves a link and rejects non-web links', function () {
+    $user = User::factory()->create();
+    $checklist = Checklist::factory()->for($user->currentTeam)->create();
+    $url = 'https://www.anker.com/products/a140a-100w-4-in-1-global-travel-charger?variant=46551580606614';
+
+    $this->actingAs($user)
+        ->postJson(route('api.checklists.items.store', [$user->currentTeam, $checklist]), ['name' => 'Travel Charger', 'url' => $url])
+        ->assertCreated()
+        ->assertJsonPath('data.url', $url);
+
+    $this->actingAs($user)
+        ->postJson(route('api.checklists.items.store', [$user->currentTeam, $checklist]), ['name' => 'Bad', 'url' => 'javascript:alert(1)'])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('url');
+});
+
 test('store can add an item that is already completed', function () {
     $user = User::factory()->create();
     $checklist = Checklist::factory()->for($user->currentTeam)->create();

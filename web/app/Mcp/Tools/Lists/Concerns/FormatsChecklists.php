@@ -67,6 +67,7 @@ trait FormatsChecklists
         return [
             'id' => $item->id,
             'name' => $item->name,
+            'url' => $item->url,
             'position' => $item->position,
             'completed' => $item->isCompleted(),
             'completed_at' => $item->completed_at?->toIso8601String(),
@@ -115,6 +116,8 @@ trait FormatsChecklists
         return [
             'id' => $schema->integer()->required(),
             'name' => $schema->string()->required(),
+            'url' => $schema->string()->nullable()->required()
+                ->description('A link for the item, such as a product page on a wish list, or null.'),
             'position' => $schema->integer()->required(),
             'completed' => $schema->boolean()->required(),
             'completed_at' => $schema->string()->nullable()->required(),

@@ -205,6 +205,7 @@ erDiagram
 		integer id PK ""
 		integer checklist_id FK ""
 		varchar name  ""
+		varchar url  "optional link"
 		integer position  ""
 		datetime completed_at  ""
 		integer completed_by FK ""

@@ -22,6 +22,7 @@ class StoreChecklistItemRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
+            'url' => ['nullable', 'url:http,https', 'max:2048'],
             'completed' => ['sometimes', 'boolean'],
             'client_uuid' => ['nullable', 'uuid'],
         ];

@@ -22,6 +22,7 @@ class UpdateChecklistItemRequest extends FormRequest
     {
         return [
             'name' => ['sometimes', 'required', 'string', 'max:255'],
+            'url' => ['sometimes', 'nullable', 'url:http,https', 'max:2048'],
             'completed' => ['sometimes', 'boolean'],
         ];
     }
