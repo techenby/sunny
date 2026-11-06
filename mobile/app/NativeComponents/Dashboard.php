@@ -8,8 +8,6 @@ use App\Enums\ItemType;
 use App\Http\Integrations\Sunny\SunnyStore;
 use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Http\Integrations\Sunny\SunnyTeam;
-use App\Models\Item;
-use App\Models\Recipe;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
@@ -79,22 +77,6 @@ class Dashboard extends NativeComponent
     }
 
     /**
-     * @return array{recipes: int, items: int, locations: int, bins: int}
-     */
-    #[Computed]
-    public function summary(): array
-    {
-        $itemCounts = Item::forActiveTeam()->toBase()->selectRaw('type, count(*) as aggregate')->groupBy('type')->pluck('aggregate', 'type');
-
-        return [
-            'recipes' => Recipe::forActiveTeam()->count(),
-            'items' => (int) ($itemCounts[ItemType::Item->value] ?? 0),
-            'locations' => (int) ($itemCounts[ItemType::Location->value] ?? 0),
-            'bins' => (int) ($itemCounts[ItemType::Bin->value] ?? 0),
-        ];
-    }
-
-    /**
      * @return list<array{id: int, name: string, supporting: string, photo: string|null, url: string}>
      */
     #[Computed]
@@ -136,7 +118,7 @@ class Dashboard extends NativeComponent
 
     private function refreshLocalData(): void
     {
-        unset($this->recentRecipes, $this->recentItems, $this->teamOptions, $this->summary);
+        unset($this->recentRecipes, $this->recentItems, $this->teamOptions);
     }
 
     protected function refreshLocalSyncedData(): void
