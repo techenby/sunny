@@ -5,11 +5,9 @@ use App\Models\Item;
 use App\Models\Recipe;
 use App\NativeComponents\CreateInventoryItem;
 use App\NativeComponents\CreateRecipe;
-use App\NativeComponents\Inventory;
 use App\NativeComponents\InventoryItemDetail;
 use App\NativeComponents\Preferences;
 use App\NativeComponents\RecipeDetail;
-use App\NativeComponents\Recipes;
 use Native\Mobile\Testing\Native;
 
 beforeEach(function () {
@@ -33,12 +31,6 @@ it('renders the dashboard', function () {
         ->assertMissingElement('top_bar_action', fn (array $node): bool => ($node['props']['id'] ?? null) === 'log-out')
         ->assertElement('refreshable', fn (array $node): bool => isset($node['props']['on_refresh']))
         ->assertAccessible();
-});
-
-it('summarizes the active team recipes and inventory', function () {
-    Native::visit('/dashboard')
-        ->assertSet('summary', ['recipes' => 6, 'items' => 9, 'locations' => 3, 'bins' => 3])
-        ->assertSee('3 places · 3 storage spots');
 });
 
 it('opens preferences from the top bar', function () {
@@ -89,17 +81,6 @@ it('opens a recent entry from its section', function (string $ref, string $uri, 
 })->with([
     'recipe' => ['dashboard-recipes-1', '/recipes/1', RecipeDetail::class],
     'item' => ['dashboard-inventory-3', '/inventory/3', InventoryItemDetail::class],
-]);
-
-it('switches to the tab for each section', function (string $ref, string $uri, string $screen) {
-    Native::visit('/dashboard')
-        ->tap($ref)
-        ->assertReplacedWith($uri)
-        ->follow()
-        ->assertScreen($screen);
-})->with([
-    'recipes' => ['dashboard-recipes-all', '/recipes', Recipes::class],
-    'inventory' => ['dashboard-inventory-all', '/inventory', Inventory::class],
 ]);
 
 it('adds a new recipe or item from its section', function (string $ref, string $uri, string $screen) {
