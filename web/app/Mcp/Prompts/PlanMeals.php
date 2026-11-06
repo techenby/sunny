@@ -10,7 +10,7 @@ use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Prompt;
 use Laravel\Mcp\Server\Prompts\Argument;
 
-#[Description("Plan the family's meals for the coming days around the calendar, using the team's recipes, then build a shopping list for the ingredients.")]
+#[Description("Plan the family's dinners for the coming days around the calendar, using the team's recipes, save them to the meal plan, then build a shopping list for the ingredients.")]
 class PlanMeals extends Prompt
 {
     public function handle(Request $request): Response
@@ -33,9 +33,11 @@ class PlanMeals extends Prompt
             "Help me plan dinners for the {$team->name} household for {$days} day(s), from {$from->format('l, F j')} through {$through->format('l, F j, Y')} ({$team->timezone}).",
             '',
             '1. Call get-calendar-events with from "' . $from->toDateString() . "\" and days {$days} to see which evenings are busy. Busy nights need quick meals or leftovers.",
-            '2. Call search-recipes to see what recipes we have (search by tag or ingredient as needed), and get-recipe for the ones you are considering.',
-            '3. Propose a plan: one dinner per day, with a short reason when the calendar shaped the choice. Prefer our own recipes; if you suggest something new, say so. Wait for me to confirm or adjust the plan.',
-            '4. Once I confirm, combine the ingredients into one shopping list, merging duplicates. Call list-checklists with type "shopping": if there is a shopping list, add the items to it with add-checklist-items; otherwise create one with create-checklist. Skip pantry staples like salt, pepper, and oil unless a recipe needs a lot of them.',
+            '2. Call get-meal-plan with from "' . $from->toDateString() . "\" and days {$days} to see what is already planned, including meals from our weekly template, and to find the Dinner meal_slot_id.",
+            '3. Call search-recipes to see what recipes we have (search by tag or ingredient as needed), and get-recipe for the ones you are considering.',
+            '4. Propose a plan: one dinner per day, keeping what is already planned unless it clashes with the calendar, with a short reason when the calendar shaped the choice. Prefer our own recipes; if you suggest something new, say so. Wait for me to confirm or adjust the plan.',
+            '5. Once I confirm, save each dinner with set-meal-plan-slot, using recipe_id for our recipes and name for anything else. This replaces what is in that slot, so include any meals I want to keep.',
+            '6. Call get-meal-plan-ingredients with the same dates and show me the ingredients grouped by recipe. Ask which ones we already have, and skip pantry staples like salt, pepper, and oil unless a recipe needs a lot of them. Then call list-checklists with type "shopping": if there is a shopping list, add the rest with add-checklist-items; otherwise create one with create-checklist.',
         ];
 
         if (filled($validated['preferences'] ?? null)) {

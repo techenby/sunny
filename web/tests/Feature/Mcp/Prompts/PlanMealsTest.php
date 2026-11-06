@@ -18,7 +18,10 @@ test('it plans a week of meals starting today in the team timezone', function ()
         ->assertSee([
             'for 7 day(s), from Tuesday, May 5 through Monday, May 11, 2026 (America/Chicago)',
             'get-calendar-events with from "2026-05-05" and days 7',
+            'get-meal-plan with from "2026-05-05" and days 7',
             'search-recipes',
+            'set-meal-plan-slot',
+            'get-meal-plan-ingredients',
             'add-checklist-items',
             'create-checklist',
         ])

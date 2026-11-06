@@ -107,5 +107,5 @@ new class extends Component {
         @include('pages::recipes.modals.copy-to-team')
     </div>
 
-    @include('pages.recipes.detail')
+    @include('pages.recipes.detail', ['lastMadeOn' => $recipe->lastMadeOn()])
 </div>

@@ -46,8 +46,9 @@ team in Sunny's web app.
 
 Some assistants show these as commands you can pick:
 
-- **plan-meals**: plans dinners around your calendar using your recipes, then
-  adds the ingredients to a shopping list once you approve the plan.
+- **plan-meals**: plans dinners around your calendar using your recipes, saves
+  them to your [meal plan](/docs/users/meal-planning) once you approve, then
+  adds the ingredients you still need to a shopping list.
 - **morning-check-in**: summarizes today's routines, calendar events, and open
   to-dos.
 - **find-item**: finds where something is stored in your inventory.

@@ -30,6 +30,13 @@ use App\Mcp\Tools\Lists\RemoveChecklistItem;
 use App\Mcp\Tools\Lists\ResetChecklist;
 use App\Mcp\Tools\Lists\UpdateChecklist;
 use App\Mcp\Tools\Lists\UpdateChecklistItem;
+use App\Mcp\Tools\MealPlanning\GetMealPlan;
+use App\Mcp\Tools\MealPlanning\GetMealPlanIngredients;
+use App\Mcp\Tools\MealPlanning\GetMealTemplate;
+use App\Mcp\Tools\MealPlanning\ResetMealPlanSlot;
+use App\Mcp\Tools\MealPlanning\SetMealPlanSlot;
+use App\Mcp\Tools\MealPlanning\SetMealTemplateSlot;
+use App\Mcp\Tools\MealPlanning\UpdateMealSlots;
 use App\Mcp\Tools\Recipes\CopyRecipeToTeam;
 use App\Mcp\Tools\Recipes\CreateRecipe;
 use App\Mcp\Tools\Recipes\DeleteRecipe;
@@ -102,6 +109,13 @@ use Laravel\Mcp\Server\Tools\ToolSearch;
     or monthly on a day). Weekdays are integers, 0 = Sunday through 6 = Saturday.
     `get-routine-board` shows a day's occurrences and their steps; tick a step off with
     `complete-routine-step` using its `occurrence_step_id`.
+
+    Meal planning: each day has the team's meal slots (such as Breakfast, Lunch, Dinner),
+    and each slot holds meals that are either a recipe or free text like "Leftovers".
+    Meals come from a weekly template unless a slot was changed on a specific date.
+    `get-meal-plan` shows the plan and `set-meal-plan-slot` changes one slot on one date.
+    Days that have ended are saved as history. For a shopping list, use
+    `get-meal-plan-ingredients`, let the user drop what they have, then `add-checklist-items`.
     MARKDOWN)]
 class SunnyServer extends Server
 {
@@ -128,6 +142,8 @@ class SunnyServer extends Server
         ListRoutines::class,
         GetRoutineBoard::class,
         CompleteRoutineStep::class,
+        GetMealPlan::class,
+        SetMealPlanSlot::class,
         ListTeams::class,
         SwitchTeam::class,
         ToolSearch::class => [
@@ -157,6 +173,11 @@ class SunnyServer extends Server
             UpdateRoutineStep::class,
             ReorderRoutineSteps::class,
             RemoveRoutineStep::class,
+            ResetMealPlanSlot::class,
+            GetMealTemplate::class,
+            SetMealTemplateSlot::class,
+            UpdateMealSlots::class,
+            GetMealPlanIngredients::class,
             UpdateTeam::class,
             GetTeamSettings::class,
             UpdateTeamSettings::class,

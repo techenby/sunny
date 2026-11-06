@@ -13,6 +13,10 @@ Artisan::command('inspire', function () {
 // than a correctness requirement — a missed run costs nothing.
 Schedule::command('routines:generate')->dailyAt('00:15')->withoutOverlapping();
 
+// Teams live in different timezones, so this runs hourly and saves each
+// team's days as they end there. Missed runs are caught up on the next one.
+Schedule::command('meals:save-history')->hourly()->withoutOverlapping();
+
 Schedule::command('sanctum:prune-expired --hours=24')->daily();
 
 Schedule::command('passport:purge --hours=24')->daily();
