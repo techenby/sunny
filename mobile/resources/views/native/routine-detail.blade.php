@@ -67,15 +67,45 @@
                 <column class="w-full rounded-xl bg-theme-surface">
                     @foreach ($this->steps as $step)
                         <row ref="routine-step-{{ $step['id'] }}" class="w-full items-center">
-                            <row class="flex-1 items-start gap-3 py-3 pl-4">
-                                <text class="w-6 pt-0.5 text-center text-sm text-theme-on-surface-variant">{{ $loop->iteration }}</text>
-                                <column class="flex-1 gap-0.5">
-                                    <text class="text-base text-theme-on-surface">{{ $step['name'] }}</text>
-                                    @if ($step['error'])
-                                        <text ref="routine-step-{{ $step['id'] }}-error" class="text-sm text-theme-destructive">Not saved to Sunny. {{ $step['error'] }}</text>
-                                    @endif
-                                </column>
-                            </row>
+                            @if ($editingStepId === $step['id'])
+                                <row class="flex-1 items-center gap-3 py-3 pl-4">
+                                    <text class="w-6 text-center text-sm text-theme-on-surface-variant">{{ $loop->iteration }}</text>
+                                    <bare-text-input
+                                        ref="routine-step-{{ $step['id'] }}-name"
+                                        class="flex-1 text-base"
+                                        a11y-label="Step name"
+                                        autocapitalize="sentences"
+                                        autofocus
+                                        native:model.debounce.300ms="editingName"
+                                        @submit="renameStep"
+                                    />
+                                </row>
+                                <pressable
+                                    ref="routine-step-{{ $step['id'] }}-save"
+                                    a11y-label="Save step"
+                                    class="h-12 w-12 items-center justify-center"
+                                    @tap="renameStep"
+                                >
+                                    <icon :ios="Ios::Checkmark" :android="Android::Check" :size="20" class="text-theme-primary" />
+                                </pressable>
+                            @else
+                                <pressable
+                                    ref="routine-step-{{ $step['id'] }}-edit"
+                                    :a11y-label="'Edit '.$step['name']"
+                                    class="flex-1"
+                                    @tap="editStep({{ $step['id'] }})"
+                                >
+                                    <row class="w-full items-start gap-3 py-3 pl-4">
+                                        <text class="w-6 pt-0.5 text-center text-sm text-theme-on-surface-variant">{{ $loop->iteration }}</text>
+                                        <column class="flex-1 gap-0.5">
+                                            <text class="text-base text-theme-on-surface">{{ $step['name'] }}</text>
+                                            @if ($step['error'])
+                                                <text ref="routine-step-{{ $step['id'] }}-error" class="text-sm text-theme-destructive">Not saved to Sunny. {{ $step['error'] }}</text>
+                                            @endif
+                                        </column>
+                                    </row>
+                                </pressable>
+                            @endif
                             <pressable
                                 ref="routine-step-{{ $step['id'] }}-remove"
                                 :a11y-label="'Remove '.$step['name']"

@@ -89,6 +89,39 @@ it('ignores a blank step and rejects one that is too long', function () {
     expect(PendingWrite::count())->toBe(0);
 });
 
+it('renames a step in place and queues the change', function () {
+    $screen = Native::visit('/routines/2')
+        ->tap('routine-step-22-edit')
+        ->assertSet('editingName', 'Brush teeth')
+        ->submit('routine-step-22-name', '  Floss and brush ')
+        ->assertSee('Floss and brush')
+        ->assertSet('editingStepId', null);
+
+    expect(array_column($screen->get('steps'), 'name'))->toBe(['Pajamas', 'Floss and brush'])
+        ->and(RoutineStep::find(22)->only('routine_id', 'name', 'position'))->toBe(['routine_id' => 2, 'name' => 'Floss and brush', 'position' => 2])
+        ->and(PendingWrite::sole()->only('resource', 'record_id', 'payload'))->toBe(['resource' => 'routine_steps', 'record_id' => 22, 'payload' => ['name' => 'Floss and brush', 'routine_id' => 2]]);
+});
+
+it('keeps a step’s name when the edit is blank, unchanged, or too long', function () {
+    Native::visit('/routines/2')
+        ->tap('routine-step-22-edit')->submit('routine-step-22-name', '   ')->assertSet('editingStepId', null)
+        ->tap('routine-step-22-edit')->submit('routine-step-22-name', 'Brush teeth')->assertSet('editingStepId', null)
+        ->tap('routine-step-22-edit')->submit('routine-step-22-name', str_repeat('a', 256))
+        ->assertSee('The step is too long (255 characters max).')
+        ->assertSet('editingStepId', 22);
+
+    expect(RoutineStep::find(22)->name)->toBe('Brush teeth')->and(PendingWrite::count())->toBe(0);
+});
+
+it('folds a rename into a step that has not reached Sunny yet', function () {
+    Native::visit('/routines/2')
+        ->submit('routine-new-step', 'Story')
+        ->tap('routine-step--1-edit')
+        ->submit('routine-step--1-name', 'Read a story');
+
+    expect(PendingWrite::sole()->only('resource', 'record_id', 'payload'))->toBe(['resource' => 'routine_steps', 'record_id' => -1, 'payload' => ['routine_id' => 2, 'name' => 'Read a story']]);
+});
+
 it('removes a step and queues its deletion', function () {
     $screen = Native::visit('/routines/2')->tap('routine-step-22-remove')->assertDontSee('Brush teeth');
 
