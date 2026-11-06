@@ -27,6 +27,10 @@ class RoutineDetail extends NativeComponent
 
     public string $error = '';
 
+    public ?int $editingStepId = null;
+
+    public string $editingName = '';
+
     /**
      * @return array{id: int, team_id: int, user_id: int|null, name: string, time_of_day: TimeOfDay, frequency: RoutineFrequency, weekdays: list<int>|null, day_of_month: int|null, is_active: bool, summary: string}|null
      */
@@ -65,17 +69,35 @@ class RoutineDetail extends NativeComponent
             return;
         }
 
-        $added = $this->change(function (SunnyOutbox $outbox) use ($name) {
-            Validator::make(['step' => $name], ['step' => ['string', 'max:255']], [
-                'step.max' => 'The step is too long (255 characters max).',
-            ])->validate();
-
-            $outbox->queue('routine_steps', $this->routine['team_id'], ['routine_id' => $this->routine['id'], 'name' => $name]);
-        });
-
-        if ($added) {
+        if ($this->saveStep(['routine_id' => $this->routine['id'], 'name' => $name])) {
             $this->newStep = '';
         }
+    }
+
+    public function editStep(int $id): void
+    {
+        $step = collect($this->steps)->firstWhere('id', $id);
+
+        if ($step !== null) {
+            $this->editingStepId = $id;
+            $this->editingName = $step['name'];
+        }
+    }
+
+    public function renameStep(string $text = ''): void
+    {
+        $name = trim($text !== '' ? $text : $this->editingName);
+        $step = collect($this->steps)->firstWhere('id', $this->editingStepId);
+
+        if ($step === null || $name === '' || $name === $step['name'] || $this->saveStep(['name' => $name], $step['id'])) {
+            $this->cancelEdit();
+        }
+    }
+
+    public function cancelEdit(): void
+    {
+        $this->editingStepId = null;
+        $this->editingName = '';
     }
 
     public function removeStep(int $id): void
@@ -140,6 +162,18 @@ class RoutineDetail extends NativeComponent
     public function render(): View
     {
         return view('native.routine-detail');
+    }
+
+    /** @param array{routine_id?: int, name: string} $payload */
+    private function saveStep(array $payload, ?int $id = null): bool
+    {
+        return $this->change(function (SunnyOutbox $outbox) use ($payload, $id) {
+            Validator::make(['step' => $payload['name']], ['step' => ['string', 'max:255']], [
+                'step.max' => 'The step is too long (255 characters max).',
+            ])->validate();
+
+            $outbox->queue('routine_steps', $this->routine['team_id'], $payload, $id);
+        });
     }
 
     private function change(callable $callback): bool
