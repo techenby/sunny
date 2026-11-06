@@ -88,6 +88,17 @@
                                     </column>
                                 </row>
                             </pressable>
+                            @if ($item['url'])
+                                <pressable
+                                    ref="list-item-{{ $item['id'] }}-link"
+                                    :a11y-label="'Open link for '.$item['name']"
+                                    a11y-hint="Opens the link in the browser"
+                                    class="h-12 w-12 items-center justify-center"
+                                    @tap="openItemLink({{ $item['id'] }})"
+                                >
+                                    <icon :ios="Ios::ArrowUpRight" :android="Android::OpenInNew" :size="18" class="text-theme-primary" />
+                                </pressable>
+                            @endif
                             <pressable
                                 ref="list-item-{{ $item['id'] }}-remove"
                                 :a11y-label="'Remove '.$item['name']"
