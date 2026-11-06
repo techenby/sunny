@@ -24,6 +24,10 @@ class ListDetail extends NativeComponent
 
     public string $newItem = '';
 
+    public ?int $editingItemId = null;
+
+    public string $editingName = '';
+
     public string $error = '';
 
     /**
@@ -101,6 +105,52 @@ class ListDetail extends NativeComponent
         if ($url !== null) {
             Browser::inApp($url);
         }
+    }
+
+    public function editItem(int $id): void
+    {
+        $item = collect($this->items)->firstWhere('id', $id);
+
+        if ($item !== null) {
+            $this->editingItemId = $id;
+            $this->editingName = $item['name'];
+            $this->error = '';
+        }
+    }
+
+    public function saveItem(?string $text = null): void
+    {
+        $item = collect($this->items)->firstWhere('id', $this->editingItemId);
+        $name = trim($text ?? $this->editingName);
+
+        if ($item === null) {
+            $this->cancelEdit();
+
+            return;
+        }
+
+        if ($name === '') {
+            $this->error = 'Give the item a name.';
+
+            return;
+        }
+
+        if (mb_strlen($name) > 255) {
+            $this->error = 'The item is too long (255 characters max).';
+
+            return;
+        }
+
+        if ($name === $item['name'] || $this->change(fn (SunnyOutbox $outbox) => $outbox->queue('checklist_items', $this->checklist['team_id'], ['name' => $name], $item['id']))) {
+            $this->cancelEdit();
+        }
+    }
+
+    public function cancelEdit(): void
+    {
+        $this->editingItemId = null;
+        $this->editingName = '';
+        $this->error = '';
     }
 
     public function removeItem(int $id): void

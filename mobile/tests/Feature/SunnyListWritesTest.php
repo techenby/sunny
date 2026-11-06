@@ -69,6 +69,17 @@ it('checks off an item with a patch that leaves out the list id', function (): v
     expect(ChecklistItem::find(1)->completed_by)->toBe(1)->and(PendingWrite::count())->toBe(0);
 });
 
+it('renames an item with a patch that carries only the new name', function (): void {
+    Saloon::fake([SaveRecordRequest::class => MockResponse::make(['data' => [...ChecklistItem::find(1)->toArray(), 'name' => 'Oat milk']])]);
+
+    Native::visit('/lists/1')->tap('list-item-1-edit')->submit('list-item-1-name', 'Oat milk');
+
+    Saloon::assertSent(fn (SaveRecordRequest $request): bool => $request->resolveEndpoint() === '/teams/family/checklists/1/items/1'
+        && $request->getMethod() === Method::PATCH
+        && $request->body()->all() === ['name' => 'Oat milk']);
+    expect(ChecklistItem::find(1)->name)->toBe('Oat milk')->and(PendingWrite::count())->toBe(0);
+});
+
 it('creates an item already checked off when it was ticked before reaching Sunny', function (): void {
     Saloon::fake([SaveRecordRequest::class => MockResponse::make([], 503)]);
     $outbox = app(SunnyOutbox::class);

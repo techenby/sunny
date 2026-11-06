@@ -136,6 +136,71 @@ it('ignores a blank item and rejects one that is too long', function () {
     expect(PendingWrite::count())->toBe(0);
 });
 
+it('renames an item from the keyboard without changing whether it is checked', function () {
+    $screen = Native::visit('/lists/1')
+        ->tap('list-item-2-edit')
+        ->assertSet('editingName', 'Eggs')
+        ->assertElement('bare_text_input', fn (array $node): bool => ($node['ref'] ?? null) === 'list-item-2-name')
+        ->assertAccessible()
+        ->submit('list-item-2-name', '  Free-range eggs ')
+        ->assertSet('editingItemId', null)
+        ->assertSee('Free-range eggs')
+        ->assertSee('Shopping · 1 of 3 done');
+
+    expect(array_column($screen->get('items'), 'name'))->toBe(['Milk', 'Free-range eggs', 'Bread'])
+        ->and(ChecklistItem::find(2)->completed_at)->not->toBeNull()
+        ->and(PendingWrite::sole()->only('resource', 'record_id', 'payload'))->toBe([
+            'resource' => 'checklist_items', 'record_id' => 2, 'payload' => ['name' => 'Free-range eggs', 'checklist_id' => 1],
+        ]);
+});
+
+it('saves the typed name with the save button', function () {
+    Native::visit('/lists/1')
+        ->tap('list-item-1-edit')
+        ->set('editingName', 'Oat milk')
+        ->tap('list-item-1-save')
+        ->assertSee('Oat milk');
+
+    expect(ChecklistItem::find(1)->name)->toBe('Oat milk');
+});
+
+it('renames an item that has not reached Sunny yet as part of creating it', function () {
+    Native::visit('/lists/1')
+        ->submit('list-new-item', 'Cofee')
+        ->tap('list-item--1-edit')
+        ->submit('list-item--1-name', 'Coffee');
+
+    expect(PendingWrite::sole()->only('record_id', 'payload'))->toBe(['record_id' => -1, 'payload' => ['checklist_id' => 1, 'name' => 'Coffee']])
+        ->and(PendingWrite::sole()->client_uuid)->not->toBeNull();
+});
+
+it('cancels an edit or an unchanged name without queueing anything', function () {
+    Native::visit('/lists/1')
+        ->tap('list-item-1-edit')
+        ->set('editingName', 'Oat milk')
+        ->tap('list-item-1-cancel')
+        ->assertSet('editingItemId', null)
+        ->assertSee('Milk')
+        ->tap('list-item-1-edit')
+        ->submit('list-item-1-name', 'Milk')
+        ->assertSet('editingItemId', null);
+
+    expect(ChecklistItem::find(1)->name)->toBe('Milk')->and(PendingWrite::count())->toBe(0);
+});
+
+it('keeps editing when the new name is blank or too long', function (string $name, string $message) {
+    Native::visit('/lists/1')
+        ->tap('list-item-1-edit')
+        ->submit('list-item-1-name', $name)
+        ->assertSee($message)
+        ->assertSet('editingItemId', 1);
+
+    expect(ChecklistItem::find(1)->name)->toBe('Milk')->and(PendingWrite::count())->toBe(0);
+})->with([
+    'blank' => ['   ', 'Give the item a name.'],
+    'too long' => [str_repeat('a', 256), 'The item is too long (255 characters max).'],
+]);
+
 it('removes an item and queues its deletion', function () {
     $screen = Native::visit('/lists/1')->tap('list-item-3-remove')->assertDontSee('Bread');
 
