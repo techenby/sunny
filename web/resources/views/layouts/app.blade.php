@@ -29,6 +29,10 @@
                     {{ __('Recipes') }}
                 </flux:sidebar.item>
 
+                <flux:sidebar.item icon="cooking-pot" :href="route('meal-plan.index')" :current="request()->routeIs('meal-plan.*')" wire:navigate>
+                    {{ __('Meal Plan') }}
+                </flux:sidebar.item>
+
                 <flux:sidebar.item icon="arrow-path-rounded-square" :href="route('routines.index')" :current="request()->routeIs('routines.*')" wire:navigate>
                     {{ __('Routines') }}
                 </flux:sidebar.item>

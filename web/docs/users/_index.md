@@ -14,6 +14,8 @@ These guides explain how to use Sunny's household features.
   and wish lists up to date.
 - [Recipes](/docs/users/recipes): Build a cookbook, import recipe pages, and
   share recipes by link or with another team.
+- [Meal Planning](/docs/users/meal-planning): Plan meals from a weekly
+  template and add their ingredients to a shopping list.
 - [Inventory](/docs/users/inventory): Organize belongings by location, bin, and
   item, with photos, metadata, and QR codes.
 - [Teams and Households](/docs/users/teams): Switch workspaces, invite people,

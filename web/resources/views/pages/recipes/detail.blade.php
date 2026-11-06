@@ -87,6 +87,13 @@
                         <dd class="mt-1">{{ $recipe->total_time }}</dd>
                     </div>
                 @endif
+
+                @isset($lastMadeOn)
+                    <div>
+                        <dt class="text-sm font-medium text-zinc-500 dark:text-zinc-400">{{ __('Last Made') }}</dt>
+                        <dd class="mt-1">{{ $lastMadeOn->translatedFormat('M j, Y') }}</dd>
+                    </div>
+                @endisset
             </dl>
         </flux:card>
 
