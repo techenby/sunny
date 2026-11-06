@@ -1,7 +1,9 @@
 <?php
 
+use App\Models\MealPlanSlot;
 use App\Models\Recipe;
 use App\Models\Team;
+use Illuminate\Support\Facades\Date;
 
 test('slug is auto-generated from name', function () {
     $recipe = Recipe::create([
@@ -120,4 +122,35 @@ test('disabling sharing removes the share token', function () {
 
     expect($recipe->isShared())->toBeFalse()
         ->and($recipe->share_token)->toBeNull();
+});
+
+test('ingredient lines come from list items, keeping nested items as their own lines', function () {
+    $recipe = Recipe::factory()->make([
+        'ingredients' => '<h3>Sauce</h3><ul><li>2 cups <strong>flour</strong></li><li>Spices<ul><li>1 tsp salt &amp; pepper</li></ul></li><li>  </li></ul>',
+    ]);
+
+    expect($recipe->ingredientLines())->toBe(['2 cups flour', 'Spices', '1 tsp salt & pepper']);
+});
+
+test('ingredient lines fall back to paragraphs and line breaks', function () {
+    $recipe = Recipe::factory()->make(['ingredients' => '<p>1 egg</p><p>2 cups milk<br>Butter</p>']);
+
+    expect($recipe->ingredientLines())->toBe(['1 egg', '2 cups milk', 'Butter']);
+});
+
+test('last made is the latest planned day before today where the team lives', function () {
+    $this->travelTo(Date::parse('2026-11-10 03:00:00', 'UTC')); // Nov 9 in Chicago
+
+    $team = Team::factory()->create(['timezone' => 'America/Chicago']);
+    $recipe = Recipe::factory()->for($team)->create();
+    $dinner = $team->mealSlots()->firstWhere('name', 'Dinner');
+
+    expect($recipe->lastMadeOn())->toBeNull();
+
+    foreach (['2026-11-03', '2026-11-08', '2026-11-09', '2026-11-12'] as $date) {
+        MealPlanSlot::factory()->for($dinner, 'slot')->create(['date' => $date])
+            ->items()->create(['recipe_id' => $recipe->id, 'name' => $recipe->name]);
+    }
+
+    expect($recipe->lastMadeOn()->toDateString())->toBe('2026-11-08');
 });

@@ -47,6 +47,7 @@ erDiagram
 		boolean is_personal  ""
 		varchar timezone  ""
 		integer week_start  ""
+		date meals_saved_through  ""
 		json address  ""
 		varchar appearance  ""
 		integer rotation  ""
@@ -201,6 +202,47 @@ erDiagram
 		datetime updated_at  ""
 	}
 
+	meal_slots {
+		integer id PK ""
+		integer team_id FK ""
+		varchar name  ""
+		integer position  ""
+		datetime deleted_at  ""
+		datetime created_at  ""
+		datetime updated_at  ""
+	}
+
+	meal_template_items {
+		integer id PK ""
+		integer team_id FK ""
+		integer meal_slot_id FK ""
+		integer weekday  "0 = Sunday"
+		integer recipe_id FK ""
+		varchar name  ""
+		integer position  ""
+		datetime created_at  ""
+		datetime updated_at  ""
+	}
+
+	meal_plan_slots {
+		integer id PK ""
+		integer team_id FK ""
+		integer meal_slot_id FK ""
+		date date  "unique per slot"
+		datetime created_at  ""
+		datetime updated_at  ""
+	}
+
+	meal_plan_items {
+		integer id PK ""
+		integer meal_plan_slot_id FK ""
+		integer recipe_id FK ""
+		varchar name  ""
+		integer position  ""
+		datetime created_at  ""
+		datetime updated_at  ""
+	}
+
 	kiosk_devices {
 		integer id PK ""
 		varchar uuid UK ""
@@ -335,6 +377,12 @@ erDiagram
 	routines||--o{routine_occurrences:"generates"
 	routine_steps||--o{routine_occurrence_steps:"instantiated as"
 	routine_occurrences||--o{routine_occurrence_steps:"has steps"
+	teams||--o{meal_slots:"has"
+	meal_slots||--o{meal_template_items:"has template meals"
+	meal_slots||--o{meal_plan_slots:"planned on"
+	meal_plan_slots||--o{meal_plan_items:"has meals"
+	recipes|o--o{meal_template_items:"planned as"
+	recipes|o--o{meal_plan_items:"planned as"
 	users||--o{oauth_auth_codes:"authorized"
 	users||--o{oauth_access_tokens:"authorized"
 	users|o--o{oauth_device_codes:"approved"

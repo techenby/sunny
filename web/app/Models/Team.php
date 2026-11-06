@@ -18,7 +18,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['name', 'slug', 'is_personal', 'address', 'timezone', 'week_start', 'appearance', 'rotation', 'screensaver_after', 'return_home_after', 'night_starts_at', 'night_ends_at'])]
+#[Fillable(['name', 'slug', 'is_personal', 'address', 'timezone', 'week_start', 'meals_saved_through', 'appearance', 'rotation', 'screensaver_after', 'return_home_after', 'night_starts_at', 'night_ends_at'])]
 #[RouteKey('slug')]
 class Team extends Model
 {
@@ -38,6 +38,12 @@ class Team extends Model
         static::updating(function (Team $team) {
             if ($team->isDirty('name')) {
                 $team->slug = static::generateUniqueTeamSlug($team->name, $team->id);
+            }
+        });
+
+        static::created(function (Team $team): void {
+            foreach (MealSlot::DEFAULTS as $position => $name) {
+                $team->mealSlots()->create(['name' => $name, 'position' => $position + 1]);
             }
         });
     }
@@ -104,6 +110,39 @@ class Team extends Model
     public function routineOccurrences(): HasManyThrough
     {
         return $this->hasManyThrough(RoutineOccurrence::class, Routine::class);
+    }
+
+    /** @return HasMany<MealSlot, $this> */
+    public function mealSlots(): HasMany
+    {
+        return $this->hasMany(MealSlot::class)->orderBy('position')->orderBy('id');
+    }
+
+    /** @return HasMany<MealTemplateItem, $this> */
+    public function mealTemplateItems(): HasMany
+    {
+        return $this->hasMany(MealTemplateItem::class);
+    }
+
+    /** @return HasMany<MealPlanSlot, $this> */
+    public function mealPlanSlots(): HasMany
+    {
+        return $this->hasMany(MealPlanSlot::class);
+    }
+
+    /**
+     * The last date whose meals are saved as history, at midnight where the
+     * team lives so it compares cleanly with today(). Earlier dates show only
+     * what was saved; later dates fall back to the weekly template. A team
+     * that has never been saved starts its history on the day it was created.
+     */
+    public function mealsSavedThrough(): CarbonImmutable
+    {
+        if ($this->meals_saved_through) {
+            return CarbonImmutable::parse($this->meals_saved_through, $this->timezone);
+        }
+
+        return CarbonImmutable::parse($this->created_at ?? now())->setTimezone($this->timezone)->startOfDay()->subDay();
     }
 
     /**
