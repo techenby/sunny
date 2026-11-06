@@ -43,6 +43,21 @@ describe('authorization', function () {
 
         expect($other->fresh())->isCompleted()->toBeFalse();
     });
+
+    test('will not edit an item from another list', function () {
+        $user = User::factory()->create();
+        $list = Checklist::factory()->for($user->currentTeam)->create();
+        $other = ChecklistItem::factory()->create(['name' => 'Rum']);
+
+        Livewire::actingAs($user)
+            ->test('pages::lists.show', ['checklist' => $list])
+            ->set('editingItemId', $other->id)
+            ->set('editingName', 'Meat')
+            ->call('updateItem')
+            ->assertNotFound();
+
+        expect($other->fresh()->name)->toBe('Rum');
+    });
 });
 
 describe('form validation', function () {
@@ -110,6 +125,25 @@ describe('form validation', function () {
 
         expect($list->items()->sole()->name)->toBe('Oat milk');
     });
+
+    test('an edited item name is required and at most 255 characters', function (string $name, string $rule) {
+        $user = User::factory()->create();
+        $list = Checklist::factory()->for($user->currentTeam)->create();
+        $item = ChecklistItem::factory()->for($list)->create(['name' => 'Oat milk']);
+
+        Livewire::actingAs($user)
+            ->test('pages::lists.show', ['checklist' => $list])
+            ->call('editItem', $item->id)
+            ->set('editingName', $name)
+            ->call('updateItem')
+            ->assertHasErrors(['editingName' => $rule])
+            ->assertSet('editingItemId', $item->id);
+
+        expect($item->fresh()->name)->toBe('Oat milk');
+    })->with([
+        'blank' => ['   ', 'required'],
+        'too long' => [str_repeat('a', 256), 'max'],
+    ]);
 });
 
 describe('crud and actions', function () {
@@ -172,6 +206,43 @@ describe('crud and actions', function () {
         expect($item->fresh())
             ->isCompleted()->toBeTrue()
             ->completed_by->toBe($user->id);
+    });
+
+    test('renames an item without changing whether it is checked', function () {
+        $user = User::factory()->create();
+        $list = Checklist::factory()->for($user->currentTeam)->create();
+        $item = ChecklistItem::factory()->for($list)->completed()->create(['name' => 'Oat milk']);
+        $untouched = ChecklistItem::factory()->for($list)->create(['name' => 'Coffee']);
+
+        Livewire::actingAs($user)
+            ->test('pages::lists.show', ['checklist' => $list])
+            ->call('editItem', $item->id)
+            ->assertSet('editingName', 'Oat milk')
+            ->set('editingName', '  Almond milk  ')
+            ->call('updateItem')
+            ->assertHasNoErrors()
+            ->assertSet('editingItemId', null)
+            ->assertSee('Almond milk');
+
+        expect($item->fresh())
+            ->name->toBe('Almond milk')
+            ->isCompleted()->toBeTrue();
+        expect($untouched->fresh()->name)->toBe('Coffee');
+    });
+
+    test('cancelling an edit keeps the original name', function () {
+        $user = User::factory()->create();
+        $list = Checklist::factory()->for($user->currentTeam)->create();
+        $item = ChecklistItem::factory()->for($list)->create(['name' => 'Oat milk']);
+
+        Livewire::actingAs($user)
+            ->test('pages::lists.show', ['checklist' => $list])
+            ->call('editItem', $item->id)
+            ->set('editingName', 'Almond milk')
+            ->call('cancelEdit')
+            ->assertSet('editingItemId', null);
+
+        expect($item->fresh()->name)->toBe('Oat milk');
     });
 
     test('removes an item', function () {

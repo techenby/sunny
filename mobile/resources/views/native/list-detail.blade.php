@@ -66,48 +66,86 @@
             @if ($this->items)
                 <column class="w-full rounded-xl bg-theme-surface">
                     @foreach ($this->items as $item)
-                        <row class="w-full items-center">
-                            <pressable
-                                ref="list-item-{{ $item['id'] }}"
-                                @press="toggleItem({{ $item['id'] }})"
-                                :a11y-label="($item['completed'] ? 'Checked: ' : '').$item['name']"
-                                class="flex-1 py-3 pl-4"
-                            >
-                                <row class="w-full items-start gap-3">
-                                    <icon
-                                        :ios="$item['completed'] ? Ios::CheckmarkCircleFill : Ios::Circle"
-                                        :android="$item['completed'] ? Android::CheckCircle : Android::RadioButtonUnchecked"
-                                        :size="22"
-                                        :class="$item['completed'] ? 'text-theme-primary' : 'text-theme-outline'"
-                                    />
-                                    <column class="flex-1 gap-0.5">
-                                        <text :class="$item['completed'] ? 'text-base text-theme-on-surface-variant line-through' : 'text-base text-theme-on-surface'">{{ $item['name'] }}</text>
-                                        @if ($item['error'])
-                                            <text ref="list-item-{{ $item['id'] }}-error" class="text-sm text-theme-destructive">Not saved to Sunny. {{ $item['error'] }}</text>
-                                        @endif
-                                    </column>
-                                </row>
-                            </pressable>
-                            @if ($item['url'])
+                        @if ($editingItemId === $item['id'])
+                            <row class="w-full items-center gap-1 pl-4">
+                                <bare-text-input
+                                    ref="list-item-{{ $item['id'] }}-name"
+                                    class="flex-1 py-3"
+                                    a11y-label="Item name"
+                                    autocapitalize="sentences"
+                                    autofocus
+                                    native:model="editingName"
+                                    @submit="saveItem"
+                                />
                                 <pressable
-                                    ref="list-item-{{ $item['id'] }}-link"
-                                    :a11y-label="'Open link for '.$item['name']"
-                                    a11y-hint="Opens the link in the browser"
+                                    ref="list-item-{{ $item['id'] }}-save"
+                                    a11y-label="Save"
                                     class="h-12 w-12 items-center justify-center"
-                                    @tap="openItemLink({{ $item['id'] }})"
+                                    @tap="saveItem"
                                 >
-                                    <icon :ios="Ios::ArrowUpRight" :android="Android::OpenInNew" :size="18" class="text-theme-primary" />
+                                    <icon :ios="Ios::Checkmark" :android="Android::Check" :size="20" class="text-theme-primary" />
                                 </pressable>
-                            @endif
-                            <pressable
-                                ref="list-item-{{ $item['id'] }}-remove"
-                                :a11y-label="'Remove '.$item['name']"
-                                class="h-12 w-12 items-center justify-center"
-                                @tap="removeItem({{ $item['id'] }})"
-                            >
-                                <icon :ios="Ios::Trash" :android="Android::Delete" :size="18" class="text-theme-on-surface-variant" />
-                            </pressable>
-                        </row>
+                                <pressable
+                                    ref="list-item-{{ $item['id'] }}-cancel"
+                                    a11y-label="Cancel"
+                                    class="h-12 w-12 items-center justify-center"
+                                    @tap="cancelEdit"
+                                >
+                                    <icon :ios="Ios::Xmark" :android="Android::Close" :size="18" class="text-theme-on-surface-variant" />
+                                </pressable>
+                            </row>
+                        @else
+                            <row class="w-full items-center">
+                                <pressable
+                                    ref="list-item-{{ $item['id'] }}"
+                                    @press="toggleItem({{ $item['id'] }})"
+                                    :a11y-label="($item['completed'] ? 'Checked: ' : '').$item['name']"
+                                    class="flex-1 py-3 pl-4"
+                                >
+                                    <row class="w-full items-start gap-3">
+                                        <icon
+                                            :ios="$item['completed'] ? Ios::CheckmarkCircleFill : Ios::Circle"
+                                            :android="$item['completed'] ? Android::CheckCircle : Android::RadioButtonUnchecked"
+                                            :size="22"
+                                            :class="$item['completed'] ? 'text-theme-primary' : 'text-theme-outline'"
+                                        />
+                                        <column class="flex-1 gap-0.5">
+                                            <text :class="$item['completed'] ? 'text-base text-theme-on-surface-variant line-through' : 'text-base text-theme-on-surface'">{{ $item['name'] }}</text>
+                                            @if ($item['error'])
+                                                <text ref="list-item-{{ $item['id'] }}-error" class="text-sm text-theme-destructive">Not saved to Sunny. {{ $item['error'] }}</text>
+                                            @endif
+                                        </column>
+                                    </row>
+                                </pressable>
+                                @if ($item['url'])
+                                    <pressable
+                                        ref="list-item-{{ $item['id'] }}-link"
+                                        :a11y-label="'Open link for '.$item['name']"
+                                        a11y-hint="Opens the link in the browser"
+                                        class="h-12 w-12 items-center justify-center"
+                                        @tap="openItemLink({{ $item['id'] }})"
+                                    >
+                                        <icon :ios="Ios::ArrowUpRight" :android="Android::OpenInNew" :size="18" class="text-theme-primary" />
+                                    </pressable>
+                                @endif
+                                <pressable
+                                    ref="list-item-{{ $item['id'] }}-edit"
+                                    :a11y-label="'Edit '.$item['name']"
+                                    class="h-12 w-10 items-center justify-center"
+                                    @tap="editItem({{ $item['id'] }})"
+                                >
+                                    <icon :ios="Ios::Pencil" :android="Android::Edit" :size="18" class="text-theme-on-surface-variant" />
+                                </pressable>
+                                <pressable
+                                    ref="list-item-{{ $item['id'] }}-remove"
+                                    :a11y-label="'Remove '.$item['name']"
+                                    class="h-12 w-12 items-center justify-center"
+                                    @tap="removeItem({{ $item['id'] }})"
+                                >
+                                    <icon :ios="Ios::Trash" :android="Android::Delete" :size="18" class="text-theme-on-surface-variant" />
+                                </pressable>
+                            </row>
+                        @endif
                         @unless ($loop->last)
                             <divider class="ml-14" />
                         @endunless

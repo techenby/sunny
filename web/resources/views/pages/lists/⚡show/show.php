@@ -15,6 +15,10 @@ new class extends Component
 
     public string $newItemUrl = '';
 
+    public ?int $editingItemId = null;
+
+    public string $editingName = '';
+
     /** @return Collection<int, ChecklistItem> */
     #[Computed]
     public function items(): Collection
@@ -45,6 +49,36 @@ new class extends Component
         $this->reset('newItem', 'newItemUrl');
 
         unset($this->items);
+    }
+
+    public function editItem(int $itemId): void
+    {
+        $this->authorize('update', $this->checklist);
+
+        $this->editingName = $this->item($itemId)->name;
+        $this->editingItemId = $itemId;
+        $this->resetValidation('editingName');
+    }
+
+    public function updateItem(): void
+    {
+        $this->authorize('update', $this->checklist);
+
+        $item = $this->item((int) $this->editingItemId);
+
+        $this->editingName = trim($this->editingName);
+        $this->validate(['editingName' => ['required', 'string', 'max:255']], attributes: ['editingName' => __('item name')]);
+
+        $item->update(['name' => $this->editingName]);
+        $this->cancelEdit();
+
+        unset($this->items);
+    }
+
+    public function cancelEdit(): void
+    {
+        $this->reset('editingItemId', 'editingName');
+        $this->resetValidation('editingName');
     }
 
     public function clearCompleted(): void

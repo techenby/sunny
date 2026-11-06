@@ -29,7 +29,9 @@ the **Link (optional)** field when adding an item. Items with a link show a
 button that opens it in a new tab.
 
 Tap an item to check or uncheck it. Sunny records who checked it and shows
-their name beside the completed item. Use the trash button beside an item to
+their name beside the completed item. Use the pencil button beside an item to
+rename it, then select **Save** or press Enter; press Escape or select
+**Cancel** to keep the original name. Use the trash button beside an item to
 remove it.
 
 Once a list contains completed items, its menu provides two cleanup options:
