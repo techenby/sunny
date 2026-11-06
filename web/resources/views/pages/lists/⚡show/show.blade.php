@@ -30,48 +30,70 @@
             <ul class="space-y-2">
                 @foreach ($this->items as $item)
                     <li wire:key="item-{{ $item->id }}" class="flex items-center gap-2">
-                        <button
-                            type="button"
-                            wire:click="toggle({{ $item->id }})"
-                            class="flex flex-1 items-center gap-3 rounded-lg border border-zinc-200 p-3 text-left transition hover:border-zinc-300 dark:border-zinc-700 dark:hover:border-zinc-600"
-                        >
-                            @if ($item->isCompleted())
-                                <flux:icon name="check-circle" variant="solid" class="size-5 shrink-0 text-(--color-accent)" />
-                            @else
-                                <span class="size-5 shrink-0 rounded-full border-2 border-zinc-300 dark:border-zinc-600"></span>
+                        @if ($editingItemId === $item->id)
+                            <form wire:submit="updateItem" wire:keydown.escape="cancelEdit" class="flex flex-1 items-start gap-2">
+                                <div class="flex-1 space-y-2">
+                                    <flux:input
+                                        wire:model="editingName"
+                                        :aria-label="__('Item name')"
+                                        autofocus
+                                    />
+                                    <flux:error name="editingName" />
+                                </div>
+                                <flux:button type="submit" variant="primary">{{ __('Save') }}</flux:button>
+                                <flux:button variant="ghost" wire:click="cancelEdit">{{ __('Cancel') }}</flux:button>
+                            </form>
+                        @else
+                            <button
+                                type="button"
+                                wire:click="toggle({{ $item->id }})"
+                                class="flex flex-1 items-center gap-3 rounded-lg border border-zinc-200 p-3 text-left transition hover:border-zinc-300 dark:border-zinc-700 dark:hover:border-zinc-600"
+                            >
+                                @if ($item->isCompleted())
+                                    <flux:icon name="check-circle" variant="solid" class="size-5 shrink-0 text-(--color-accent)" />
+                                @else
+                                    <span class="size-5 shrink-0 rounded-full border-2 border-zinc-300 dark:border-zinc-600"></span>
+                                @endif
+
+                                <span @class([
+                                    'flex-1',
+                                    'text-zinc-400 line-through dark:text-zinc-500' => $item->isCompleted(),
+                                ])>
+                                    {{ $item->name }}
+                                </span>
+
+                                @if ($item->isCompleted() && $item->completedBy)
+                                    <flux:text size="sm" variant="subtle" class="shrink-0">
+                                        {{ $item->completedBy->name }}
+                                    </flux:text>
+                                @endif
+                            </button>
+
+                            @if ($item->url)
+                                <flux:button
+                                    icon="arrow-top-right-on-square"
+                                    variant="ghost"
+                                    :href="$item->url"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    :aria-label="__('Open link for :item', ['item' => $item->name])"
+                                />
                             @endif
 
-                            <span @class([
-                                'flex-1',
-                                'text-zinc-400 line-through dark:text-zinc-500' => $item->isCompleted(),
-                            ])>
-                                {{ $item->name }}
-                            </span>
-
-                            @if ($item->isCompleted() && $item->completedBy)
-                                <flux:text size="sm" variant="subtle" class="shrink-0">
-                                    {{ $item->completedBy->name }}
-                                </flux:text>
-                            @endif
-                        </button>
-
-                        @if ($item->url)
                             <flux:button
-                                icon="arrow-top-right-on-square"
+                                icon="pencil-square"
                                 variant="ghost"
-                                :href="$item->url"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                :aria-label="__('Open link for :item', ['item' => $item->name])"
+                                wire:click="editItem({{ $item->id }})"
+                                :aria-label="__('Edit :item', ['item' => $item->name])"
+                            />
+
+                            <flux:button
+                                icon="trash"
+                                variant="ghost"
+                                wire:click="removeItem({{ $item->id }})"
+                                :aria-label="__('Remove :item', ['item' => $item->name])"
                             />
                         @endif
-
-                        <flux:button
-                            icon="trash"
-                            variant="ghost"
-                            wire:click="removeItem({{ $item->id }})"
-                            :aria-label="__('Remove :item', ['item' => $item->name])"
-                        />
                     </li>
                 @endforeach
             </ul>
