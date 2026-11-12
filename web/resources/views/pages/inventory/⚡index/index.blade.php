@@ -16,7 +16,6 @@
             @if ($parentId === null)
             <flux:heading size="xl">{{ __('All of your inventory') }}</flux:heading>
             @else
-            <flux:button wire:click="navigateUp" icon="arrow-left" variant="ghost" />
             <flux:heading size="xl">{{ $breadcrumb->name }}</flux:heading>
             @endif
         </div>

@@ -53,7 +53,7 @@ new class extends Component
         'showTrashed' => false,
     ];
 
-    #[Url]
+    #[Url(history: true)]
     public ?int $parentId = null;
 
     #[Computed]
