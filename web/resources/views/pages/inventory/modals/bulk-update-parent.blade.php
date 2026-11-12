@@ -3,7 +3,7 @@
     <form wire:submit="updateParent" class="space-y-6">
         <div>
             <flux:heading size="lg">{{ trans_choice('Move :count thing|Move :count things', count($selected)) }}</flux:heading>
-            <flux:text class="mt-2">{{ __('Choose the place or storage to put them in.') }}</flux:text>
+            <flux:text class="mt-2">{{ __('Choose what to put them in. They can go inside anything in your inventory.') }}</flux:text>
         </div>
         <flux:select wire:model="bulkParentId" :label="__('Where do they go?')" :placeholder="__('Not in a place yet')" variant="listbox" searchable clearable>
             @foreach ($this->bulkParentOptions as $parentItem)

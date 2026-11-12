@@ -3,7 +3,7 @@
     <form wire:submit="move" class="space-y-6">
         <div>
             <flux:heading size="lg">{{ __('Move :name', ['name' => $item->name]) }}</flux:heading>
-            <flux:text class="mt-2">{{ __('Choose the place or storage to put it in.') }}</flux:text>
+            <flux:text class="mt-2">{{ __('Choose what to put it in. It can go inside anything in your inventory.') }}</flux:text>
         </div>
         <flux:select wire:model="moveParentId" :label="__('Where does it go?')" :placeholder="$item->type === \App\Enums\ItemType::Location ? __('Home') : __('Not in a place yet')" variant="listbox" searchable clearable>
             @foreach ($this->moveOptions as $option)
