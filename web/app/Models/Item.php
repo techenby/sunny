@@ -60,6 +60,21 @@ class Item extends Model
         $this->delete();
     }
 
+    public function deletionWarning(): string
+    {
+        $warning = __('“:name” will be deleted for everyone on your team.', ['name' => $this->name]);
+        $count = $this->children_count ?? $this->children()->count();
+
+        if ($count === 0) {
+            return $warning;
+        }
+
+        return $warning . ' ' . trans_choice(
+            'The :count thing inside it will move to “Not in a place yet”.|The :count things inside it will move to “Not in a place yet”.',
+            $count,
+        );
+    }
+
     /** @return array<string, string> */
     protected function casts(): array
     {

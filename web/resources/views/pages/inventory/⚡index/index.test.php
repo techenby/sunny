@@ -129,6 +129,53 @@ test('rows link to the item page', function () {
         ->assertSeeHtml('href="' . route('inventory.show', ['item' => $garage]) . '"');
 });
 
+describe('grouping at the top level', function () {
+    test('lists places first and loose things under not in a place yet', function () {
+        $user = User::factory()->create();
+        Item::factory()->for($user->currentTeam)->create(['name' => 'Camping Tent']);
+        Item::factory()->for($user->currentTeam)->location()->create(['name' => 'Garage']);
+        Item::factory()->for($user->currentTeam)->bin()->create(['name' => 'Blue Tote']);
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->assertSeeInOrder(['Places in your home', 'Garage', 'Not in a place yet', 'Blue Tote', 'Camping Tent'])
+            ->call('sort', 'name')
+            ->assertSeeInOrder(['Places in your home', 'Garage', 'Not in a place yet', 'Camping Tent', 'Blue Tote']);
+    });
+
+    test('leaves out a heading for a group with nothing in it', function () {
+        $user = User::factory()->create();
+        Item::factory()->for($user->currentTeam)->location()->create(['name' => 'Garage']);
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->assertSee('Places in your home')
+            ->assertDontSee('Open one and choose Move to put it away.');
+    });
+
+    test('does not group inside a place, in search results or when filtering', function () {
+        $user = User::factory()->create();
+        $garage = Item::factory()->for($user->currentTeam)->location()->create(['name' => 'Garage']);
+        Item::factory()->for($user->currentTeam)->location()->childOf($garage)->create(['name' => 'Loft']);
+        Item::factory()->for($user->currentTeam)->childOf($garage)->create(['name' => 'Ladder']);
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->assertSee('Places in your home')
+            ->set('search', 'L')
+            ->assertDontSee('Places in your home')
+            ->set('search', '')
+            ->set('filters.types', ['location'])
+            ->assertDontSee('Places in your home')
+            ->set('filters.types', [])
+            ->set('filters.showTrashed', true)
+            ->assertDontSee('Places in your home')
+            ->set('filters.showTrashed', false)
+            ->call('navigateDown', $garage->id)
+            ->assertDontSee('Places in your home');
+    });
+});
+
 test('can sort items', function () {
     $user = User::factory()->create();
     Item::factory()->count(2)->for($user->currentTeam)->sequence(['name' => 'Bravo'], ['name' => 'Alpha'])->create();

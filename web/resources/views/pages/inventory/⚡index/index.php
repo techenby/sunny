@@ -3,6 +3,7 @@
 use App\Actions\Inventory\DuplicateItem;
 use App\Actions\Inventory\GenerateItemQrCode;
 use App\Actions\Inventory\MoveItemToTeam;
+use App\Enums\ItemType;
 use App\Livewire\Forms\Inventory\ImportItemsForm;
 use App\Livewire\Forms\Inventory\ItemForm;
 use App\Livewire\Traits\WithSearching;
@@ -77,6 +78,14 @@ new class extends Component
         return $breadcrumbs;
     }
 
+    public function isGroupedByPlace(): bool
+    {
+        return $this->parentId === null
+            && blank($this->search)
+            && blank($this->filters['types'] ?? [])
+            && ! ($this->filters['showTrashed'] ?? false);
+    }
+
     #[Computed]
     public function items(): LengthAwarePaginator
     {
@@ -88,6 +97,7 @@ new class extends Component
             ->when(filled($this->filters['types']), fn ($query) => $query->whereIn('type', $this->filters['types']))
             ->when($this->search, fn ($query) => $query->whereRaw('LOWER(name) LIKE ?', ['%' . Str::lower($this->search) . '%']))
             ->when(blank($this->search), fn ($query) => $query->where('parent_id', $this->parentId))
+            ->when($this->isGroupedByPlace(), fn ($query) => $query->orderByRaw('case when type = ? then 0 else 1 end', [ItemType::Location->value]))
             ->orderBy($this->sortBy, $this->sortDirection)
             ->paginate(10);
     }
@@ -155,7 +165,7 @@ new class extends Component
 
         unset($this->items, $this->parentItems, $this->bulkParentOptions);
 
-        Flux::toast(__(':count item(s) updated.', ['count' => $items->count()]));
+        Flux::toast(trans_choice(':count thing moved.|:count things moved.', $items->count()));
     }
 
     public function openDuplicateModal(int $itemId): void
@@ -183,7 +193,7 @@ new class extends Component
 
         unset($this->items, $this->parentItems);
 
-        Flux::toast(__(':count item(s) duplicated.', ['count' => $copies->count()]));
+        Flux::toast(trans_choice(':count copy made.|:count copies made.', $copies->count()));
     }
 
     public function openMoveModal(int $itemId): void
@@ -212,7 +222,7 @@ new class extends Component
 
         unset($this->items);
 
-        Flux::toast(__('Item moved successfully.'));
+        Flux::toast(__('Moved to :team.', ['team' => $team->name]));
     }
 
     public function addMetadata(): void
@@ -223,7 +233,7 @@ new class extends Component
     public function create(): void
     {
         $this->form->reset();
-        $this->form->fill(['parent_id' => $this->parentId]);
+        $this->form->fill(['parent_id' => $this->parentId, 'type' => ItemType::Item->value]);
         $this->modal('item-form')->show();
     }
 
@@ -257,7 +267,7 @@ new class extends Component
 
         unset($this->items, $this->parentItems);
 
-        Flux::toast(__(':count item(s) deleted.', ['count' => $items->count()]));
+        Flux::toast(trans_choice(':count thing deleted.|:count things deleted.', $items->count()));
     }
 
     public function bulkRestore(): void
@@ -280,7 +290,7 @@ new class extends Component
 
         unset($this->items, $this->parentItems);
 
-        Flux::toast(__(':count item(s) restored.', ['count' => $items->count()]));
+        Flux::toast(trans_choice(':count thing brought back.|:count things brought back.', $items->count()));
     }
 
     public function restore(int $id): void

@@ -55,7 +55,7 @@
                                     {{ $routine->is_active ? __('Pause') : __('Resume') }}
                                 </flux:menu.item>
                                 <flux:menu.separator />
-                                <flux:menu.item icon="trash" variant="danger" wire:click="delete({{ $routine->id }})">
+                                <flux:menu.item icon="trash" variant="danger" wire:click="delete({{ $routine->id }})" wire:confirm="{{ __('“:name” will be deleted for everyone on your team.', ['name' => $routine->name]) }}">
                                     {{ __('Delete') }}
                                 </flux:menu.item>
                             </flux:menu>

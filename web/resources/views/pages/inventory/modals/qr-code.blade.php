@@ -2,7 +2,7 @@
 <flux:modal name="qr-code" flyout variant="floating" class="md:w-96">
     <div class="space-y-6">
         <div class="space-y-1">
-            <flux:heading size="lg">{{ __('QR Code') }}</flux:heading>
+            <flux:heading size="lg">{{ __('QR code') }}</flux:heading>
 
             <flux:text>{{ $qrCode['name'] ?? '' }}</flux:text>
             <flux:link :href="$qrCode['url'] ?? ''">{{ $qrCode['url'] ?? '' }}</flux:link>

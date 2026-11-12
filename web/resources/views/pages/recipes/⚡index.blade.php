@@ -144,7 +144,7 @@ new class extends Component {
                                     <flux:menu.item wire:click="openCopyModal({{ $recipe->id }})" icon="arrow-up-tray">{{ __('Copy to Team') }}</flux:menu.item>
                                 @endif
                                 <flux:menu.item :href="route('recipes.edit', $recipe)" icon="pencil" wire:navigate>{{ __('Edit') }}</flux:menu.item>
-                                <flux:menu.item wire:click="delete({{ $recipe->id }})" variant="danger" icon="trash" wire:confirm="{{ __('Are you sure you want to delete this recipe?') }}">{{ __('Delete') }}</flux:menu.item>
+                                <flux:menu.item wire:click="delete({{ $recipe->id }})" variant="danger" icon="trash" wire:confirm="{{ __('“:name” will be deleted for everyone on your team.', ['name' => $recipe->name]) }}">{{ __('Delete') }}</flux:menu.item>
                             </flux:menu>
                         </flux:dropdown>
                     </flux:table.cell>
