@@ -4,19 +4,29 @@
             {{ __('Inventory') }}
         </flux:breadcrumbs.item>
 
-        @foreach ($this->breadcrumbs as $breadcrumb)
-            <flux:breadcrumbs.item wire:click="navigateDown({{ $breadcrumb->id }})" class="cursor-pointer">
-                {{ $breadcrumb->name }}
-            </flux:breadcrumbs.item>
-        @endforeach
+        @if (filled($search))
+            <flux:breadcrumbs.item>{{ __('Search') }}</flux:breadcrumbs.item>
+        @else
+            @foreach ($this->breadcrumbs as $breadcrumb)
+                <flux:breadcrumbs.item wire:click="navigateDown({{ $breadcrumb->id }})" class="cursor-pointer">
+                    {{ $breadcrumb->name }}
+                </flux:breadcrumbs.item>
+            @endforeach
+        @endif
     </flux:breadcrumbs>
 
     <div class="flex items-center justify-between">
         <div class="flex items-center gap-4">
-            @if ($parentId === null)
+            @if (filled($search))
+            <div>
+                <flux:heading size="xl">{{ __('Results for “:search”', ['search' => $search]) }}</flux:heading>
+                <flux:text>{{ __('Looking through all of your inventory.') }}</flux:text>
+            </div>
+            <flux:button wire:click="$set('search', '')" icon="x-mark" size="sm">{{ __('Clear search') }}</flux:button>
+            @elseif ($parentId === null)
             <flux:heading size="xl">{{ __('All of your inventory') }}</flux:heading>
             @else
-            <flux:button wire:click="navigateUp" icon="arrow-left" variant="ghost" />
+            <flux:button wire:click="navigateUp" icon="arrow-left" variant="ghost" :aria-label="__('Back')" />
             <flux:heading size="xl">{{ $breadcrumb->name }}</flux:heading>
             @endif
         </div>
@@ -79,8 +89,12 @@
         <flux:table.columns>
             <flux:table.column class="w-8"><flux:checkbox.all /></flux:table.column>
             <flux:table.column sortable :sorted="$sortBy === 'name'" :direction="$sortDirection" wire:click="sort('name')">{{ __('Name') }}</flux:table.column>
-            <flux:table.column>{{ __('Modified') }}</flux:table.column>
-            <flux:table.column>{{ __('What’s inside') }}</flux:table.column>
+            @if (filled($search))
+                <flux:table.column>{{ __('Where it is') }}</flux:table.column>
+            @else
+                <flux:table.column>{{ __('Modified') }}</flux:table.column>
+                <flux:table.column>{{ __('What’s inside') }}</flux:table.column>
+            @endif
             <flux:table.column></flux:table.column>
         </flux:table.columns>
 
@@ -105,20 +119,39 @@
                         <flux:checkbox :value="$item->id"/>
                     </flux:table.cell>
                     <flux:table.cell>
-                        <div class="flex items-center gap-2">
+                        @if (filled($search))
+                            <div class="flex items-center gap-2">
+                                <flux:link :href="route('inventory.show', ['item' => $item])" wire:navigate inset="top bottom" class="!flex !items-center gap-3">
+                                    <flux:avatar size="xs" :src="$item->thumb_url" :icon="$item->type->getIcon()" :color="$item->type->getIconColor()" icon:variant="outline" />
+                                    <span>{{ $item->truncated_name }}</span>
+                                </flux:link>
+                                @if ($detail = $this->matchedDetail($item))
+                                    <flux:text size="sm">{{ $detail }}</flux:text>
+                                @endif
+                            </div>
+                        @else
                             <flux:link wire:click="navigateDown({{ $item->id }})" as="button" inset="top bottom" class="!flex !items-center gap-3">
                                 <flux:avatar size="xs" :src="$item->thumb_url" :icon="$item->type->getIcon()" :color="$item->type->getIconColor()" icon:variant="outline" />
                                 <span>{{ $item->truncated_name }}</span>
                             </flux:link>
-                            @if (filled($search) && $item->parent)
-                                <flux:text size="sm">{{ __('in :parent', ['parent' => $item->parent->name]) }}</flux:text>
+                        @endif
+                    </flux:table.cell>
+                    @if (filled($search))
+                        <flux:table.cell>
+                            @if ($trail = $this->trails[$item->id] ?? [])
+                                {{ implode(' › ', $trail) }}
+                            @elseif ($isPlace)
+                                {{ __('Home') }}
+                            @else
+                                {{ __('Not in a place yet') }}
                             @endif
-                        </div>
-                    </flux:table.cell>
-                    <flux:table.cell>{{ $item->updated_at->diffForHumans() }}</flux:table.cell>
-                    <flux:table.cell>
-                        {{ $item->children_count > 0 ? trans_choice(':count thing|:count things', $item->children_count) : '—' }}
-                    </flux:table.cell>
+                        </flux:table.cell>
+                    @else
+                        <flux:table.cell>{{ $item->updated_at->diffForHumans() }}</flux:table.cell>
+                        <flux:table.cell>
+                            {{ $item->children_count > 0 ? trans_choice(':count thing|:count things', $item->children_count) : '—' }}
+                        </flux:table.cell>
+                    @endif
                     <flux:table.cell>
                         @if ($filters['showTrashed'] ?? false)
                             <div class="flex items-center gap-1">
@@ -145,7 +178,7 @@
                 </flux:table.row>
             @empty
                 <flux:table.row key="empty-item">
-                    <flux:table.cell colspan="5" class="py-8 text-center">
+                    <flux:table.cell :colspan="filled($search) ? 4 : 5" class="py-8 text-center">
                         @if (filled($search))
                             <flux:heading size="lg">{{ __('Nothing called “:search”', ['search' => $search]) }}</flux:heading>
                             <flux:text class="mt-1">{{ __('Check the spelling, or try a shorter word.') }}</flux:text>
