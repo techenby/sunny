@@ -86,6 +86,20 @@
 
         <flux:table.rows>
             @forelse ($this->items as $item)
+                @php($isPlace = $item->type === App\Enums\ItemType::Location)
+                @if ($this->isGroupedByPlace() && ($loop->first || $isPlace !== $wasPlace))
+                    <flux:table.row :key="$isPlace ? 'group-places' : 'group-unplaced'">
+                        <flux:table.cell colspan="5" class="bg-zinc-50 dark:bg-white/5">
+                            @if ($isPlace)
+                                <flux:heading>{{ __('Places in your home') }}</flux:heading>
+                            @else
+                                <flux:heading>{{ __('Not in a place yet') }}</flux:heading>
+                                <flux:text size="sm">{{ __('Open one and choose Move to put it away.') }}</flux:text>
+                            @endif
+                        </flux:table.cell>
+                    </flux:table.row>
+                @endif
+                @php($wasPlace = $isPlace)
                 <flux:table.row :key="$item->id">
                     <flux:table.cell>
                         <flux:checkbox :value="$item->id"/>

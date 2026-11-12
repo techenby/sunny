@@ -78,6 +78,14 @@ new class extends Component
         return $breadcrumbs;
     }
 
+    public function isGroupedByPlace(): bool
+    {
+        return $this->parentId === null
+            && blank($this->search)
+            && blank($this->filters['types'] ?? [])
+            && ! ($this->filters['showTrashed'] ?? false);
+    }
+
     #[Computed]
     public function items(): LengthAwarePaginator
     {
@@ -89,6 +97,7 @@ new class extends Component
             ->when(filled($this->filters['types']), fn ($query) => $query->whereIn('type', $this->filters['types']))
             ->when($this->search, fn ($query) => $query->whereRaw('LOWER(name) LIKE ?', ['%' . Str::lower($this->search) . '%']))
             ->when(blank($this->search), fn ($query) => $query->where('parent_id', $this->parentId))
+            ->when($this->isGroupedByPlace(), fn ($query) => $query->orderByRaw('case when type = ? then 0 else 1 end', [ItemType::Location->value]))
             ->orderBy($this->sortBy, $this->sortDirection)
             ->paginate(10);
     }
