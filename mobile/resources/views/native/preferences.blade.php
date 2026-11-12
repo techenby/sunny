@@ -21,7 +21,30 @@
         @endforelse
     </list-section>
 
-    <list-section>
+    <list-section header="About">
+        <list-item
+            ref="privacy-policy"
+            headline="Privacy policy"
+            :leadingIconIos="Ios::HandRaised"
+            :leadingIconAndroid="Android::Policy"
+            :trailingIconIos="Ios::ArrowUpRight"
+            :trailingIconAndroid="Android::OpenInNew"
+            a11y-hint="Opens the Sunny website"
+            @tap="openPrivacyPolicy"
+        />
+        <list-item
+            ref="terms"
+            headline="Terms of service"
+            :leadingIconIos="Ios::DocText"
+            :leadingIconAndroid="Android::Description"
+            :trailingIconIos="Ios::ArrowUpRight"
+            :trailingIconAndroid="Android::OpenInNew"
+            a11y-hint="Opens the Sunny website"
+            @tap="openTerms"
+        />
+    </list-section>
+
+    <list-section footer="Deleting your account happens on the Sunny website. Sign in there, then choose Delete account at the bottom of your profile settings.">
         <list-item
             ref="log-out"
             headline="Log out"
@@ -30,6 +53,18 @@
             :leadingIconColor="theme('destructive')"
             :headlineColor="theme('destructive')"
             @tap="confirmLogOut"
+        />
+        <list-item
+            ref="delete-account"
+            headline="Delete account"
+            :leadingIconIos="Ios::PersonCropCircleBadgeMinus"
+            :leadingIconAndroid="Android::PersonRemove"
+            :leadingIconColor="theme('destructive')"
+            :headlineColor="theme('destructive')"
+            :trailingIconIos="Ios::ArrowUpRight"
+            :trailingIconAndroid="Android::OpenInNew"
+            a11y-hint="Opens your profile settings on the Sunny website"
+            @tap="deleteAccount"
         />
     </list-section>
 </list>

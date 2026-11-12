@@ -3,12 +3,14 @@
 namespace App\NativeComponents;
 
 use App\Http\Integrations\Sunny\SunnyAuth;
+use App\Http\Integrations\Sunny\SunnyConnector;
 use App\Http\Integrations\Sunny\SunnyTeam;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
 use Native\Mobile\Attributes\On;
 use Native\Mobile\Edge\NativeComponent;
 use Native\Mobile\Events\Alert\ButtonPressed;
+use Native\Mobile\Facades\Browser;
 use Native\Mobile\Facades\Dialog;
 use RuntimeException;
 use Saloon\Exceptions\Request\FatalRequestException;
@@ -40,6 +42,21 @@ class Preferences extends NativeComponent
         }
     }
 
+    public function openPrivacyPolicy(): void
+    {
+        $this->openSite('/privacy');
+    }
+
+    public function openTerms(): void
+    {
+        $this->openSite('/terms');
+    }
+
+    public function deleteAccount(): void
+    {
+        $this->openSite('/settings/profile');
+    }
+
     public function confirmLogOut(): void
     {
         Dialog::alert('Log out?', 'Recipes, inventory, and routines downloaded to this device will be removed.', [
@@ -69,6 +86,13 @@ class Preferences extends NativeComponent
         }
 
         $this->replace('/');
+    }
+
+    private function openSite(string $path): void
+    {
+        if (! Browser::inApp(app(SunnyConnector::class)->siteUrl().$path)) {
+            Dialog::toast('Unable to open the Sunny website. Please try again.');
+        }
     }
 
     public function render(): View
