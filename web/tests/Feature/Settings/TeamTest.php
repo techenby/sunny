@@ -321,3 +321,56 @@ test('users cannot leave personal teams, teams they own, or teams they are not i
         ->call('leaveTeam', $team->id)
         ->assertForbidden();
 })->with(['personal', 'owned', 'stranger']);
+
+test('an owner can hand a team to another member', function () {
+    $owner = User::factory()->create();
+    $member = User::factory()->create();
+    $team = Team::factory()->create();
+    $team->members()->attach($owner, ['role' => TeamRole::Owner->value]);
+    $team->members()->attach($member, ['role' => TeamRole::Member->value]);
+
+    Livewire::actingAs($owner)
+        ->test('pages::teams.edit', ['team' => $team])
+        ->assertSee('Make owner')
+        ->call('transferOwnership', $member->id)
+        ->assertHasNoErrors();
+
+    expect($member->fresh()->teamRole($team))->toBe(TeamRole::Owner)
+        ->and($owner->fresh()->teamRole($team))->toBe(TeamRole::Admin)
+        ->and($owner->fresh()->deletionBlockedMessage())->toBeNull();
+});
+
+test('only the owner of a shared team can hand it over', function () {
+    $owner = User::factory()->create();
+    $admin = User::factory()->create();
+    $team = Team::factory()->create();
+    $team->members()->attach($owner, ['role' => TeamRole::Owner->value]);
+    $team->members()->attach($admin, ['role' => TeamRole::Admin->value]);
+
+    Livewire::actingAs($admin)
+        ->test('pages::teams.edit', ['team' => $team])
+        ->assertDontSee('Make owner')
+        ->call('transferOwnership', $admin->id)
+        ->assertForbidden();
+
+    Livewire::actingAs($owner)
+        ->test('pages::teams.edit', ['team' => $owner->personalTeam()])
+        ->call('transferOwnership', $admin->id)
+        ->assertForbidden();
+
+    expect($owner->fresh()->teamRole($team))->toBe(TeamRole::Owner);
+});
+
+test('a member cannot be made an owner by changing their role', function () {
+    $owner = User::factory()->create();
+    $member = User::factory()->create();
+    $team = Team::factory()->create();
+    $team->members()->attach($owner, ['role' => TeamRole::Owner->value]);
+    $team->members()->attach($member, ['role' => TeamRole::Member->value]);
+
+    Livewire::actingAs($owner)
+        ->test('pages::teams.edit', ['team' => $team])
+        ->call('updateMember', $member->id, 'owner');
+
+    expect($member->fresh()->teamRole($team))->toBe(TeamRole::Member);
+});

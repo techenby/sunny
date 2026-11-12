@@ -20,7 +20,7 @@ class TrackLastActivity
 
         $user = $request->user();
 
-        if ($user === null || ($request->hasSession() && $request->session()->has('kiosk_device_id'))) {
+        if (! $user?->exists || ($request->hasSession() && $request->session()->has('kiosk_device_id'))) {
             return $response;
         }
 

@@ -4,6 +4,7 @@ namespace App\Http\Integrations\Sunny;
 
 use App\Actions\DestroySession;
 use App\Http\Integrations\Sunny\Requests\CreateTokenRequest;
+use App\Http\Integrations\Sunny\Requests\DeleteAccountRequest;
 use App\Http\Integrations\Sunny\Requests\LogoutRequest;
 use App\Http\Integrations\Sunny\Requests\RefreshTokenRequest;
 use App\Http\Integrations\Sunny\Requests\VerifyTwoFactorRequest;
@@ -82,6 +83,14 @@ class SunnyAuth
         } finally {
             $this->destroySession->handle();
         }
+    }
+
+    public function deleteAccount(#[\SensitiveParameter] string $password): void
+    {
+        $this->authenticatedConnector()->send(new DeleteAccountRequest($password));
+
+        $this->store->startSession(null);
+        $this->destroySession->handle();
     }
 
     private function storeToken(Response $response, bool $clearLocalData = false): void

@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\TeamRole;
 use App\Models\User;
 use Livewire\Livewire;
 
@@ -58,6 +59,22 @@ test('correct password must be provided to delete account', function () {
     Livewire::actingAs($user)
         ->test('pages::settings.delete-user-form')
         ->set('password', 'wrong-password')
+        ->call('deleteUser')
+        ->assertHasErrors(['password']);
+
+    expect($user->fresh())->not->toBeNull();
+});
+
+test('account deletion is blocked while the user owns a team other people use', function () {
+    $user = User::factory()->create();
+    $user->currentTeam->update(['name' => 'Straw Hats']);
+    $user->currentTeam->memberships()->create(['user_id' => User::factory()->create()->id, 'role' => TeamRole::Member]);
+
+    Livewire::actingAs($user)
+        ->test('pages::settings.delete-user-form')
+        ->assertSee('Other people still use Straw Hats')
+        ->assertSee('Manage teams')
+        ->set('password', 'password')
         ->call('deleteUser')
         ->assertHasErrors(['password']);
 

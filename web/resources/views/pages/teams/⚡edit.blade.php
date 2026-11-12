@@ -68,17 +68,42 @@ new class extends Component
         Gate::authorize('updateMember', $this->teamModel);
 
         $validated = Validator::make(['role' => $role], [
-            'role' => ['required', 'string', Rule::enum(TeamRole::class)],
+            'role' => ['required', 'string', Rule::in(array_column(TeamRole::assignable(), 'value'))],
         ])->validate();
 
         $this->teamModel->memberships()
             ->where('user_id', $userId)
+            ->where('role', '!=', TeamRole::Owner)
             ->firstOrFail()
             ->update(['role' => TeamRole::from($validated['role'])]);
 
         $this->populateTeamData();
 
         Flux::toast(variant: 'success', text: __('Member role updated.'));
+    }
+
+    public function transferOwnership(int $userId): void
+    {
+        abort_unless($this->canTransferOwnership, 403);
+
+        DB::transaction(function () use ($userId): void {
+            $this->teamModel->memberships()
+                ->where('user_id', $userId)
+                ->where('role', '!=', TeamRole::Owner)
+                ->firstOrFail()
+                ->update(['role' => TeamRole::Owner]);
+
+            $this->teamModel->memberships()
+                ->where('user_id', Auth::id())
+                ->firstOrFail()
+                ->update(['role' => TeamRole::Admin]);
+        });
+
+        unset($this->permissions, $this->canTransferOwnership);
+
+        $this->populateTeamData();
+
+        Flux::toast(variant: 'success', text: __('Ownership transferred.'));
     }
 
     private function populateTeamData(): void
@@ -130,6 +155,12 @@ new class extends Component
         Head::title($title);
 
         return $this->view();
+    }
+
+    #[Computed]
+    public function canTransferOwnership(): bool
+    {
+        return ! $this->teamModel->is_personal && Auth::user()->ownsTeam($this->teamModel);
     }
 
     #[Computed]
@@ -209,6 +240,17 @@ new class extends Component
                                                     {{ $role['label'] }}
                                                 </flux:menu.item>
                                             @endforeach
+                                            @if ($this->canTransferOwnership)
+                                                <flux:menu.separator />
+                                                <flux:menu.item
+                                                    as="button"
+                                                    type="button"
+                                                    wire:click="transferOwnership({{ $member['id'] }})"
+                                                    wire:confirm="{{ __(':name will become the owner of this team and you will become an admin.', ['name' => $member['name']]) }}"
+                                                >
+                                                    {{ __('Make owner') }}
+                                                </flux:menu.item>
+                                            @endif
                                         </flux:menu>
                                     </flux:dropdown>
                                 @else

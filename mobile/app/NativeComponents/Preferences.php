@@ -52,11 +52,6 @@ class Preferences extends NativeComponent
         $this->openSite('/terms');
     }
 
-    public function deleteAccount(): void
-    {
-        $this->openSite('/settings/profile');
-    }
-
     public function confirmLogOut(): void
     {
         Dialog::alert('Log out?', 'Recipes, inventory, and routines downloaded to this device will be removed.', [

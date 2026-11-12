@@ -44,7 +44,7 @@
         />
     </list-section>
 
-    <list-section footer="Deleting your account happens on the Sunny website. Sign in there, then choose Delete account at the bottom of your profile settings.">
+    <list-section>
         <list-item
             ref="log-out"
             headline="Log out"
@@ -61,10 +61,9 @@
             :leadingIconAndroid="Android::PersonRemove"
             :leadingIconColor="theme('destructive')"
             :headlineColor="theme('destructive')"
-            :trailingIconIos="Ios::ArrowUpRight"
-            :trailingIconAndroid="Android::OpenInNew"
-            a11y-hint="Opens your profile settings on the Sunny website"
-            @tap="deleteAccount"
+            :trailingIconIos="Ios::ChevronRight"
+            :trailingIconAndroid="Android::ChevronRight"
+            @navigate="'/preferences/delete-account'"
         />
     </list-section>
 </list>

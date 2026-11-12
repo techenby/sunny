@@ -17,6 +17,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 #[Fillable(['name', 'slug', 'is_personal', 'address', 'timezone', 'week_start', 'appearance', 'rotation', 'screensaver_after', 'return_home_after', 'night_starts_at', 'night_ends_at'])]
 #[RouteKey('slug')]
@@ -129,14 +131,19 @@ class Team extends Model
 
     public function purge(): void
     {
-        $this->members()->where('current_team_id', $this->id)
-            ->update(['current_team_id' => null]);
+        $photos = collect([$this->items(), $this->recipes()])
+            ->flatMap(fn (HasMany $records) => $records->withTrashed()->get(['photo_path', 'thumb_path']))
+            ->flatMap(fn (Model $record) => [$record->photo_path, $record->thumb_path])
+            ->filter()
+            ->values()
+            ->all();
 
-        $this->members()->detach();
+        DB::transaction(function (): void {
+            $this->memberships()->delete();
+            $this->forceDelete();
+        });
 
-        $this->recipes()->delete();
-
-        $this->delete();
+        Storage::delete($photos);
     }
 
     /** @return array<string, string> */

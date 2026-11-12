@@ -76,7 +76,7 @@ it('stays on preferences when logging out is cancelled', function () {
         ->assertNoNavigation();
 });
 
-it('opens the privacy policy, terms and account deletion on the Sunny website', function (string $ref, string $path) {
+it('opens the privacy policy and terms on the Sunny website', function (string $ref, string $path) {
     $bridge = Native::fakeBridge()->respondTo('SecureStorage.Get', ['value' => ''])->respondTo('Browser.OpenInApp', ['success' => true]);
 
     Native::visit('/preferences')->tap($ref)->assertNoNavigation();
@@ -85,12 +85,11 @@ it('opens the privacy policy, terms and account deletion on the Sunny website', 
 })->with([
     ['privacy-policy', '/privacy'],
     ['terms', '/terms'],
-    ['delete-account', '/settings/profile'],
 ]);
 
-it('explains that deleting an account finishes on the website', function () {
+it('opens the delete account screen', function () {
     Native::visit('/preferences', platform: 'ios')
-        ->assertSee('Delete account')
-        ->assertElement('list_section', fn (array $node): bool => str_contains($node['props']['footer'] ?? '', 'Deleting your account happens on the Sunny website.'))
-        ->assertAccessible();
+        ->assertAccessible()
+        ->tap('delete-account')
+        ->assertNavigatedTo('/preferences/delete-account');
 });
