@@ -2,10 +2,10 @@
 <flux:modal name="move-item" class="md:w-96">
     <form wire:submit="moveToTeam" class="space-y-6">
         <div>
-            <flux:heading size="lg">{{ __('Move to Team') }}</flux:heading>
-            <flux:text class="mt-2">{{ __('Move this item to another team.') }}</flux:text>
+            <flux:heading size="lg">{{ __('Move to another team') }}</flux:heading>
+            <flux:text class="mt-2">{{ __('It will leave this team’s inventory and show up in the team you choose.') }}</flux:text>
         </div>
-        <flux:select wire:model="moveToTeamId" :label="__('Team')" :placeholder="__('Select a team...')">
+        <flux:select wire:model="moveToTeamId" :label="__('Which team?')" :placeholder="__('Select a team...')">
             @foreach ($this->otherTeams as $team)
                 <flux:select.option :value="$team->id">{{ $team->name }}</flux:select.option>
             @endforeach

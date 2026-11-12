@@ -32,6 +32,8 @@ new class extends Component
 
     public ?array $qrCode = null;
 
+    public ?int $moveParentId = null;
+
     #[Computed]
     public function breadcrumbs(): BaseCollection
     {
@@ -55,6 +57,17 @@ new class extends Component
             ->withCount('children')
             ->orderBy('name')
             ->paginate(10);
+    }
+
+    /** @return Collection<int, Item> */
+    #[Computed]
+    public function moveOptions(): Collection
+    {
+        return Auth::user()->currentTeam->items()
+            ->with('parent')
+            ->whereNotIn('id', [$this->item->id, ...$this->item->descendantIds()])
+            ->orderBy('name')
+            ->get();
     }
 
     /** @return Collection<int, Team> */
@@ -111,7 +124,7 @@ new class extends Component
         $this->modal('duplicate-item')->close();
         $this->reset('duplicateCount');
 
-        Flux::toast(__(':count item(s) duplicated.', ['count' => $copies->count()]));
+        Flux::toast(trans_choice(':count copy made.|:count copies made.', $copies->count()));
     }
 
     public function edit(): void
@@ -146,6 +159,35 @@ new class extends Component
         }
     }
 
+    public function startMove(): void
+    {
+        $this->authorize('update', $this->item);
+
+        $this->moveParentId = $this->item->parent_id;
+        $this->modal('move-to-place')->show();
+    }
+
+    public function move(): void
+    {
+        $this->authorize('update', $this->item);
+
+        $this->validate([
+            'moveParentId' => ['nullable', 'integer', Rule::in($this->moveOptions->modelKeys())],
+        ]);
+
+        $this->item->update(['parent_id' => $this->moveParentId]);
+
+        $this->modal('move-to-place')->close();
+        $this->reset('moveParentId');
+        unset($this->breadcrumbs, $this->moveOptions);
+
+        Flux::toast(match (true) {
+            $this->item->parent_id !== null => __('Moved to :place.', ['place' => $this->breadcrumbs->last()->name]),
+            $this->item->type === ItemType::Location => __('Now one of the places in your home.'),
+            default => __('Moved to “Not in a place yet”.'),
+        });
+    }
+
     public function moveToTeam(): void
     {
         $this->validate([
@@ -172,7 +214,7 @@ new class extends Component
         $this->form->save();
         $this->modal('item-form')->close();
         $this->item->refresh();
-        unset($this->breadcrumbs, $this->children, $this->parentItems);
+        unset($this->breadcrumbs, $this->children, $this->parentItems, $this->moveOptions);
     }
 
     public function showQrCode(): void

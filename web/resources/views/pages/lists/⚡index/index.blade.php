@@ -42,7 +42,7 @@
                                 <flux:menu.item icon="pencil" wire:click="edit({{ $list->id }})">{{ __('Edit') }}</flux:menu.item>
                                 <flux:menu.item icon="list-bullet" :href="route('lists.show', $list)" wire:navigate>{{ __('Items') }}</flux:menu.item>
                                 <flux:menu.separator />
-                                <flux:menu.item icon="trash" variant="danger" wire:click="delete({{ $list->id }})">
+                                <flux:menu.item icon="trash" variant="danger" wire:click="delete({{ $list->id }})" wire:confirm="{{ __('“:name” and everything on it will be deleted for everyone on your team.', ['name' => $list->name]) }}">
                                     {{ __('Delete') }}
                                 </flux:menu.item>
                             </flux:menu>

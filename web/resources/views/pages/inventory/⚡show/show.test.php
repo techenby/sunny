@@ -42,14 +42,113 @@ test('cannot view item for different team', function () {
         ->assertForbidden();
 });
 
-test('shows the type and the item it is inside', function () {
+test('shows the kind of thing and the trail of places it is inside', function () {
     $user = User::factory()->create();
     $garage = Item::factory()->for($user->currentTeam)->location()->create(['name' => 'Garage']);
-    $bin = Item::factory()->for($user->currentTeam)->bin()->childOf($garage)->create(['name' => 'Blue Bin']);
+    $shelf = Item::factory()->for($user->currentTeam)->bin()->childOf($garage)->create(['name' => 'Metal Shelf']);
+    $bin = Item::factory()->for($user->currentTeam)->bin()->childOf($shelf)->create(['name' => 'Blue Bin']);
 
     Livewire::actingAs($user)
         ->test('pages::inventory.show', ['item' => $bin])
-        ->assertSeeInOrder(['Blue Bin', 'Bin', 'in', 'Garage']);
+        ->assertSeeInOrder(['Blue Bin', 'Storage', 'Where it is', 'Garage', 'Metal Shelf', 'Blue Bin', 'You’re here'])
+        ->assertSeeHtml('href="' . route('inventory.show', ['item' => $shelf]) . '"');
+});
+
+test('says when something is not in a place yet', function () {
+    $user = User::factory()->create();
+    $item = Item::factory()->for($user->currentTeam)->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::inventory.show', ['item' => $item])
+        ->assertSee('Not in a place yet');
+});
+
+test('shows a top level place as part of the home', function () {
+    $user = User::factory()->create();
+    $garage = Item::factory()->for($user->currentTeam)->location()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::inventory.show', ['item' => $garage])
+        ->assertSee('One of the places in your home')
+        ->assertDontSee('Choose Move to put it away.');
+});
+
+describe('move', function () {
+    test('can move an item into another place', function () {
+        $user = User::factory()->create();
+        $garage = Item::factory()->for($user->currentTeam)->location()->create(['name' => 'Garage']);
+        $item = Item::factory()->for($user->currentTeam)->create(['name' => 'Hammer']);
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.show', ['item' => $item])
+            ->call('startMove')
+            ->assertSet('moveParentId', null)
+            ->set('moveParentId', $garage->id)
+            ->call('move')
+            ->assertHasNoErrors()
+            ->assertSeeInOrder(['Where it is', 'Garage']);
+
+        expect($item->fresh()->parent_id)->toBe($garage->id);
+    });
+
+    test('can take an item out of its place', function () {
+        $user = User::factory()->create();
+        $garage = Item::factory()->for($user->currentTeam)->location()->create();
+        $item = Item::factory()->for($user->currentTeam)->childOf($garage)->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.show', ['item' => $item])
+            ->call('startMove')
+            ->assertSet('moveParentId', $garage->id)
+            ->set('moveParentId', null)
+            ->call('move')
+            ->assertHasNoErrors()
+            ->assertSee('Not in a place yet');
+
+        expect($item->fresh()->parent_id)->toBeNull();
+    });
+
+    test('cannot move an item inside itself or something it contains', function () {
+        $user = User::factory()->create();
+        $bin = Item::factory()->for($user->currentTeam)->bin()->create();
+        $child = Item::factory()->for($user->currentTeam)->bin()->childOf($bin)->create();
+        $grandchild = Item::factory()->for($user->currentTeam)->childOf($child)->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.show', ['item' => $bin])
+            ->set('moveParentId', $bin->id)
+            ->call('move')
+            ->assertHasErrors('moveParentId')
+            ->set('moveParentId', $grandchild->id)
+            ->call('move')
+            ->assertHasErrors('moveParentId');
+
+        expect($bin->fresh()->parent_id)->toBeNull();
+    });
+
+    test('cannot move an item into another team’s place', function () {
+        $user = User::factory()->create();
+        $item = Item::factory()->for($user->currentTeam)->create();
+        $elsewhere = Item::factory()->location()->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.show', ['item' => $item])
+            ->set('moveParentId', $elsewhere->id)
+            ->call('move')
+            ->assertHasErrors('moveParentId');
+
+        expect($item->fresh()->parent_id)->toBeNull();
+    });
+});
+
+test('the delete confirmation names the item and says where its contents go', function () {
+    $user = User::factory()->create();
+    $bin = Item::factory()->for($user->currentTeam)->bin()->create(['name' => 'Tool Chest']);
+    Item::factory()->for($user->currentTeam)->childOf($bin)->count(2)->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::inventory.show', ['item' => $bin])
+        ->assertSee('“Tool Chest” will be deleted for everyone on your team. The 2 things inside it will move to “Not in a place yet”.');
 });
 
 describe('contents', function () {
@@ -61,7 +160,7 @@ describe('contents', function () {
 
         Livewire::actingAs($user)
             ->test('pages::inventory.show', ['item' => $bin])
-            ->assertSee('1 item')
+            ->assertSee('What’s inside (1)')
             ->assertSeeHtml('<span>Extension Cord</span>')
             ->assertDontSeeHtml('<span>Garden Hose</span>');
     });
@@ -72,7 +171,7 @@ describe('contents', function () {
 
         Livewire::actingAs($user)
             ->test('pages::inventory.show', ['item' => $bin])
-            ->assertSee('Nothing in here yet.');
+            ->assertSee('Nothing inside yet.');
     });
 
     test('can add an item inside', function () {
@@ -133,7 +232,7 @@ test('can edit an item', function () {
         ->assertSet('form.name', '')
         ->assertSet('form.parent_id', null)
         ->assertSee('Yamaha Guitar')
-        ->assertSeeInOrder(['in', 'Soft Shell Case']);
+        ->assertSeeInOrder(['Where it is', 'Soft Shell Case']);
 
     expect($item->fresh())
         ->name->toBe('Yamaha Guitar')
