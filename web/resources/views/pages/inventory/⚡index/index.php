@@ -10,6 +10,7 @@ use App\Livewire\Traits\WithSearching;
 use App\Livewire\Traits\WithSorting;
 use App\Models\Item;
 use App\Models\Team;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection as BaseCollection;
@@ -53,7 +54,7 @@ new class extends Component
         'showTrashed' => false,
     ];
 
-    #[Url]
+    #[Url(history: true)]
     public ?int $parentId = null;
 
     #[Computed]
@@ -92,14 +93,55 @@ new class extends Component
         return Auth::user()->currentTeam
             ->items()
             ->withCount('children')
-            ->when($this->search, fn ($query) => $query->with('parent'))
             ->when($this->filters['showTrashed'] ?? false, fn ($query) => $query->onlyTrashed())
             ->when(filled($this->filters['types']), fn ($query) => $query->whereIn('type', $this->filters['types']))
-            ->when($this->search, fn ($query) => $query->whereRaw('LOWER(name) LIKE ?', ['%' . Str::lower($this->search) . '%']))
+            ->when($this->search, fn ($query) => $this->applySearch($query))
             ->when(blank($this->search), fn ($query) => $query->where('parent_id', $this->parentId))
             ->when($this->isGroupedByPlace(), fn ($query) => $query->orderByRaw('case when type = ? then 0 else 1 end', [ItemType::Location->value]))
             ->orderBy($this->sortBy, $this->sortDirection)
             ->paginate(10);
+    }
+
+    /**
+     * The names of everything each search result is inside, outermost first.
+     *
+     * @return array<int, list<string>>
+     */
+    #[Computed]
+    public function trails(): array
+    {
+        if (blank($this->search)) {
+            return [];
+        }
+
+        $items = Auth::user()->currentTeam->items()->toBase()->get(['id', 'name', 'parent_id'])->keyBy('id');
+
+        return $this->items->getCollection()->mapWithKeys(function (Item $item) use ($items): array {
+            $names = [];
+            $ancestor = $items->get($item->parent_id);
+
+            while ($ancestor !== null && count($names) < 50) {
+                array_unshift($names, $ancestor->name);
+                $ancestor = $items->get($ancestor->parent_id);
+            }
+
+            return [$item->id => $names];
+        })->all();
+    }
+
+    public function matchedDetail(Item $item): ?string
+    {
+        if (Str::contains($item->name, $this->search, ignoreCase: true)) {
+            return null;
+        }
+
+        foreach ($item->metadata ?? [] as $key => $value) {
+            if (Str::contains((string) $value, $this->search, ignoreCase: true)) {
+                return ucfirst((string) $key) . ': ' . $value;
+            }
+        }
+
+        return null;
     }
 
     /** @return Collection<int, Team> */
@@ -347,16 +389,6 @@ new class extends Component
         unset($this->items, $this->parentItems, $this->breadcrumbs);
     }
 
-    public function navigateUp(): void
-    {
-        if ($this->parentId) {
-            $parent = Auth::user()->currentTeam->items()->find($this->parentId);
-            $this->parentId = $parent?->parent_id;
-            $this->resetPage();
-            unset($this->items, $this->parentItems, $this->breadcrumbs);
-        }
-    }
-
     public function updatedParentId(): void
     {
         $this->resetPage();
@@ -408,5 +440,24 @@ new class extends Component
         $this->form->save();
         $this->modal('item-form')->close();
         unset($this->items, $this->parentItems);
+    }
+
+    /**
+     * @param  Builder<Item>  $query
+     */
+    protected function applySearch(Builder $query): void
+    {
+        $term = Str::lower($this->search);
+        $anywhere = '%' . $term . '%';
+
+        $detailMatches = $query->getConnection()->getDriverName() === 'pgsql'
+            ? "case when json_typeof(items.metadata) = 'object' then exists (select 1 from json_each_text(items.metadata) as detail where lower(detail.value) like ?) else false end"
+            : 'exists (select 1 from json_each(items.metadata) as detail where lower(detail.value) like ?)';
+
+        $query
+            ->where(fn (Builder $query) => $query
+                ->whereRaw('lower(name) like ?', [$anywhere])
+                ->orWhereRaw($detailMatches, [$anywhere]))
+            ->orderByRaw('case when lower(name) like ? then 0 when lower(name) like ? then 1 else 2 end', [$term . '%', $anywhere]);
     }
 };

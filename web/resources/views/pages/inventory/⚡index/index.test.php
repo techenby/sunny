@@ -108,16 +108,78 @@ test('searches all current team items while viewing a parent', function () {
         ->assertDontSeeHtml('<span>Pink Hammer</span>');
 });
 
-test('search results show the item they are inside', function () {
+test('search results show the full trail of places they are inside', function () {
     $user = User::factory()->create();
     $garage = Item::factory()->for($user->currentTeam)->location()->create(['name' => 'Garage']);
-    Item::factory()->for($user->currentTeam)->childOf($garage)->create(['name' => 'Framing Hammer']);
+    $shelf = Item::factory()->for($user->currentTeam)->bin()->childOf($garage)->create(['name' => 'Metal Shelf']);
+    Item::factory()->for($user->currentTeam)->childOf($shelf)->create(['name' => 'Framing Hammer']);
+    Item::factory()->for($user->currentTeam)->create(['name' => 'Rubber Hammer']);
 
     Livewire::actingAs($user)
         ->test('pages::inventory.index')
-        ->assertDontSee('in Garage')
+        ->assertDontSee('Garage › Metal Shelf')
         ->set('search', 'Hammer')
-        ->assertSee('in Garage');
+        ->assertSee('Garage › Metal Shelf')
+        ->assertSeeInOrder(['Framing Hammer', 'Metal Shelf', 'Rubber Hammer', 'Not in a place yet']);
+});
+
+test('search results open the item page even when they have things inside', function () {
+    $user = User::factory()->create();
+    $garage = Item::factory()->for($user->currentTeam)->location()->create(['name' => 'Garage']);
+    Item::factory()->for($user->currentTeam)->childOf($garage)->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::inventory.index')
+        ->assertDontSeeHtml('href="' . route('inventory.show', ['item' => $garage]) . '" wire:navigate')
+        ->set('search', 'Garage')
+        ->assertSeeHtml('wire:navigate')
+        ->assertDontSeeHtml('wire:click="navigateDown(' . $garage->id . ')"');
+});
+
+test('searching says it looks through everything and can be cleared', function () {
+    $user = User::factory()->create();
+    $garage = Item::factory()->for($user->currentTeam)->location()->create(['name' => 'Garage']);
+    Item::factory()->for($user->currentTeam)->childOf($garage)->create(['name' => 'Ladder']);
+
+    Livewire::actingAs($user)
+        ->test('pages::inventory.index')
+        ->call('navigateDown', $garage->id)
+        ->set('search', 'Lad')
+        ->assertSee('Results for “Lad”')
+        ->assertSee('Looking through all of your inventory.')
+        ->set('search', '')
+        ->assertDontSee('Results for')
+        ->assertSet('parentId', $garage->id);
+});
+
+test('search matches the extra details and shows which one matched', function () {
+    $user = User::factory()->create();
+    Item::factory()->for($user->currentTeam)->create(['name' => 'Cordless Drill', 'metadata' => ['brand' => 'Husky', 'color' => 'Red']]);
+    Item::factory()->for($user->currentTeam)->create(['name' => 'Tape Measure', 'metadata' => ['brand' => 'Stanley']]);
+    Item::factory()->for($user->currentTeam)->create(['name' => 'Garden Hose']);
+
+    Livewire::actingAs($user)
+        ->test('pages::inventory.index')
+        ->set('search', 'husky')
+        ->assertSeeHtml('<span>Cordless Drill</span>')
+        ->assertSee('Brand: Husky')
+        ->assertDontSeeHtml('<span>Tape Measure</span>')
+        ->assertDontSeeHtml('<span>Garden Hose</span>')
+        ->set('search', 'brand')
+        ->assertDontSeeHtml('<span>Cordless Drill</span>');
+});
+
+test('search lists names that start with the search first, then other names, then details', function () {
+    $user = User::factory()->create();
+    Item::factory()->for($user->currentTeam)->create(['name' => 'Apron', 'metadata' => ['note' => 'Hammer loop']]);
+    Item::factory()->for($user->currentTeam)->create(['name' => 'Claw Hammer']);
+    Item::factory()->for($user->currentTeam)->create(['name' => 'Hammer']);
+    Item::factory()->for($user->currentTeam)->create(['name' => 'Hammer Drill']);
+
+    Livewire::actingAs($user)
+        ->test('pages::inventory.index')
+        ->set('search', 'hammer')
+        ->assertSeeInOrder(['<span>Hammer<', '<span>Hammer Drill<', '<span>Claw Hammer<', '<span>Apron<'], false);
 });
 
 test('rows link to the item page', function () {
@@ -187,7 +249,7 @@ test('can sort items', function () {
         ->assertSeeInOrder(['Bravo', 'Alpha']);
 });
 
-describe('can navigate up and down', function () {
+describe('can navigate between levels', function () {
     test('can navigate down into a child item', function () {
         $user = User::factory()->create();
         $parent = Item::factory()->for($user->currentTeam)->location()->create(['name' => 'Bedroom']);
@@ -200,19 +262,6 @@ describe('can navigate up and down', function () {
             ->call('navigateDown', $parent->id)
             ->assertSeeHtml('<span>Closet</span>')
             ->assertSet('parentId', $parent->id);
-    });
-
-    test('can navigate up from a child item', function () {
-        $user = User::factory()->create();
-        $parent = Item::factory()->for($user->currentTeam)->location()->create(['name' => 'Bedroom']);
-        Item::factory()->for($user->currentTeam)->bin()->childOf($parent)->create(['name' => 'Closet']);
-
-        Livewire::actingAs($user)
-            ->test('pages::inventory.index')
-            ->call('navigateDown', $parent->id)
-            ->assertSee('Closet')
-            ->call('navigateUp')
-            ->assertSee('Bedroom');
     });
 
     test('breadcrumbs show full ancestor path', function () {
@@ -280,20 +329,6 @@ describe('can navigate up and down', function () {
             ->call('navigateDown', $parent->id)
             ->assertSet('paginators.page', 1)
             ->assertSeeHtml('<span>Closet</span>');
-    });
-
-    test('navigating up resets to the first page', function () {
-        $user = User::factory()->create();
-        $parent = Item::factory()->for($user->currentTeam)->location()->create(['name' => 'Bedroom']);
-        Item::factory()->for($user->currentTeam)->bin()->childOf($parent)->count(11)->create();
-
-        Livewire::actingAs($user)
-            ->test('pages::inventory.index')
-            ->call('navigateDown', $parent->id)
-            ->call('setPage', 2)
-            ->call('navigateUp')
-            ->assertSet('paginators.page', 1)
-            ->assertSeeHtml('<span>Bedroom</span>');
     });
 
     test('returning to the top level resets to the first page', function () {

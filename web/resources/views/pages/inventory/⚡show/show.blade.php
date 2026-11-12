@@ -17,7 +17,6 @@
 
     <div class="flex flex-wrap items-center justify-between gap-4">
         <div class="flex items-center gap-4">
-            <flux:button :href="route('inventory.index', ['parentId' => $item->parent_id])" icon="arrow-left" variant="ghost" :aria-label="__('Back')" wire:navigate />
             <flux:avatar size="sm" :src="$item->thumb_url" :icon="$item->type->getIcon()" :color="$item->type->getIconColor()" icon:variant="outline" />
             <div>
                 <flux:heading size="xl">{{ $item->name }}</flux:heading>
