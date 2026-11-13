@@ -1,0 +1,64 @@
+diff --git a/resources/xcode/NativePHP/PrivacyInfo.xcprivacy b/resources/xcode/NativePHP/PrivacyInfo.xcprivacy
+new file mode 100644
+index 0000000..8f4ca2a
+--- /dev/null
++++ b/resources/xcode/NativePHP/PrivacyInfo.xcprivacy
+@@ -0,0 +1,58 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
++<plist version="1.0">
++<dict>
++	<key>NSPrivacyTracking</key>
++	<false/>
++	<key>NSPrivacyTrackingDomains</key>
++	<array/>
++	<key>NSPrivacyAccessedAPITypes</key>
++	<array>
++		<!-- PHP and its bundled SQLite, curl and OpenSSL stat() the app's own files; NativeUI reads image modification dates to refresh its cache. -->
++		<dict>
++			<key>NSPrivacyAccessedAPIType</key>
++			<string>NSPrivacyAccessedAPICategoryFileTimestamp</string>
++			<key>NSPrivacyAccessedAPITypeReasons</key>
++			<array>
++				<string>C617.1</string>
++			</array>
++		</dict>
++		<!-- PHP (disk_free_space) and the bundled SQLite (fstatfs) query the volume the app writes its database and files to. -->
++		<dict>
++			<key>NSPrivacyAccessedAPIType</key>
++			<string>NSPrivacyAccessedAPICategoryDiskSpace</string>
++			<key>NSPrivacyAccessedAPITypeReasons</key>
++			<array>
++				<string>E174.1</string>
++			</array>
++		</dict>
++		<!-- Background task configs and the hot reload server's settings, read and written only by this app. -->
++		<dict>
++			<key>NSPrivacyAccessedAPIType</key>
++			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
++			<key>NSPrivacyAccessedAPITypeReasons</key>
++			<array>
++				<string>CA92.1</string>
++			</array>
++		</dict>
++		<!-- Device.getInfo reports ProcessInfo.systemUptime to the app; it never leaves the device. -->
++		<dict>
++			<key>NSPrivacyAccessedAPIType</key>
++			<string>NSPrivacyAccessedAPICategorySystemBootTime</string>
++			<key>NSPrivacyAccessedAPITypeReasons</key>
++			<array>
++				<string>35F9.1</string>
++			</array>
++		</dict>
++		<!-- NativeUI's emoji picker asks for the emoji keyboard among the active input modes to show it. -->
++		<dict>
++			<key>NSPrivacyAccessedAPIType</key>
++			<string>NSPrivacyAccessedAPICategoryActiveKeyboards</string>
++			<key>NSPrivacyAccessedAPITypeReasons</key>
++			<array>
++				<string>54BD.1</string>
++			</array>
++		</dict>
++	</array>
++</dict>
++</plist>

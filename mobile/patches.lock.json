@@ -1,5 +1,5 @@
 {
-    "_hash": "574af5c5a704543c30515d174e32d4dd4134076d52f0e42e339c403d3d40d371",
+    "_hash": "a1d8d3473569c0967c448b04abb91c4322b55ef500a36f334537f3bef7be1fba",
     "patches": {
         "nativephp/mobile-camera": [
             {
@@ -7,6 +7,16 @@
                 "description": "iOS: hand back camera-roll HEIC photos as JPEG so Sunny can make thumbnails and every browser can show them",
                 "url": "patches/nativephp-mobile-camera-pick-compatible-images.patch",
                 "sha256": "67e37b94f196c5dd0ad0d57a03fef6e79f0df905b84efd89317bf1f3813e1ca9",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
+            },
+            {
+                "package": "nativephp/mobile-camera",
+                "description": "iOS: drop the microphone and location permission strings and the location code that needs them, since Sunny never records video or geotags photos",
+                "url": "patches/nativephp-mobile-camera-drop-location-and-microphone.patch",
+                "sha256": "e2129c132685850a183e8a755f62bb919ffeb0707d17e3966d0a5a1cf118e4b5",
                 "depth": 1,
                 "extra": {
                     "provenance": "root"
@@ -49,6 +59,16 @@
                 "description": "iOS + Android: honor display-mode and scroll-behavior on tab screens so they get large titles (NativePHP/mobile-air#633)",
                 "url": "patches/nativephp-mobile-tabs-display-mode.patch",
                 "sha256": "d00ceef7d1b3206765f2506a4ee8b6734a3f74ba9116f79f5e900f384b5bd5ab",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
+            },
+            {
+                "package": "nativephp/mobile",
+                "description": "iOS: ship a PrivacyInfo.xcprivacy declaring the required-reason APIs the PHP runtime, NativePHP and its plugins use",
+                "url": "patches/nativephp-mobile-ios-privacy-manifest.patch",
+                "sha256": "9086d5296045804a9705838ed1e91230bd31d23e852df2cdb3b41eac7048b638",
                 "depth": 1,
                 "extra": {
                     "provenance": "root"
