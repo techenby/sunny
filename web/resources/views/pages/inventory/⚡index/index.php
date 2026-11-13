@@ -54,7 +54,7 @@ new class extends Component
         'showTrashed' => false,
     ];
 
-    #[Url]
+    #[Url(history: true)]
     public ?int $parentId = null;
 
     #[Computed]
@@ -387,16 +387,6 @@ new class extends Component
         $this->parentId = $id;
         $this->resetPage();
         unset($this->items, $this->parentItems, $this->breadcrumbs);
-    }
-
-    public function navigateUp(): void
-    {
-        if ($this->parentId) {
-            $parent = Auth::user()->currentTeam->items()->find($this->parentId);
-            $this->parentId = $parent?->parent_id;
-            $this->resetPage();
-            unset($this->items, $this->parentItems, $this->breadcrumbs);
-        }
     }
 
     public function updatedParentId(): void
