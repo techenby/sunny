@@ -13,8 +13,7 @@ class Register extends NativeComponent
 
     public function register(): void
     {
-        $baseUrl = app(SunnyConnector::class)->resolveBaseUrl();
-        $url = preg_replace('~/api$~', '', $baseUrl).'/register';
+        $url = app(SunnyConnector::class)->siteUrl().'/register';
         $this->error = Browser::open($url) ? '' : 'Unable to open registration. Please try again.';
     }
 

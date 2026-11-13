@@ -21,6 +21,29 @@
         @endforelse
     </list-section>
 
+    <list-section header="About">
+        <list-item
+            ref="privacy-policy"
+            headline="Privacy policy"
+            :leadingIconIos="Ios::HandRaised"
+            :leadingIconAndroid="Android::Policy"
+            :trailingIconIos="Ios::ArrowUpRight"
+            :trailingIconAndroid="Android::OpenInNew"
+            a11y-hint="Opens the Sunny website"
+            @tap="openPrivacyPolicy"
+        />
+        <list-item
+            ref="terms"
+            headline="Terms of service"
+            :leadingIconIos="Ios::DocText"
+            :leadingIconAndroid="Android::Description"
+            :trailingIconIos="Ios::ArrowUpRight"
+            :trailingIconAndroid="Android::OpenInNew"
+            a11y-hint="Opens the Sunny website"
+            @tap="openTerms"
+        />
+    </list-section>
+
     <list-section>
         <list-item
             ref="log-out"
@@ -30,6 +53,17 @@
             :leadingIconColor="theme('destructive')"
             :headlineColor="theme('destructive')"
             @tap="confirmLogOut"
+        />
+        <list-item
+            ref="delete-account"
+            headline="Delete account"
+            :leadingIconIos="Ios::PersonCropCircleBadgeMinus"
+            :leadingIconAndroid="Android::PersonRemove"
+            :leadingIconColor="theme('destructive')"
+            :headlineColor="theme('destructive')"
+            :trailingIconIos="Ios::ChevronRight"
+            :trailingIconAndroid="Android::ChevronRight"
+            @navigate="'/preferences/delete-account'"
         />
     </list-section>
 </list>

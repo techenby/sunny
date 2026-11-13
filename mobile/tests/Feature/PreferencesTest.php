@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Integrations\Sunny\SunnyConnector;
 use App\Http\Integrations\Sunny\SunnyStore;
 use App\Http\Integrations\Sunny\SunnyTeam;
 use App\Models\Recipe;
@@ -73,4 +74,22 @@ it('stays on preferences when logging out is cancelled', function () {
         ->tap('log-out')
         ->emitNative(ButtonPressed::class, ['index' => 0, 'label' => 'Cancel', 'id' => 'log-out'])
         ->assertNoNavigation();
+});
+
+it('opens the privacy policy and terms on the Sunny website', function (string $ref, string $path) {
+    $bridge = Native::fakeBridge()->respondTo('SecureStorage.Get', ['value' => ''])->respondTo('Browser.OpenInApp', ['success' => true]);
+
+    Native::visit('/preferences')->tap($ref)->assertNoNavigation();
+
+    $bridge->assertCalled('Browser.OpenInApp', fn (array $params): bool => $params['url'] === app(SunnyConnector::class)->siteUrl().$path);
+})->with([
+    ['privacy-policy', '/privacy'],
+    ['terms', '/terms'],
+]);
+
+it('opens the delete account screen', function () {
+    Native::visit('/preferences', platform: 'ios')
+        ->assertAccessible()
+        ->tap('delete-account')
+        ->assertNavigatedTo('/preferences/delete-account');
 });

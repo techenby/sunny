@@ -6,6 +6,7 @@ use App\NativeComponents\CreateList;
 use App\NativeComponents\CreateRecipe;
 use App\NativeComponents\CreateRoutine;
 use App\NativeComponents\Dashboard;
+use App\NativeComponents\DeleteAccount;
 use App\NativeComponents\EditInventoryItem;
 use App\NativeComponents\EditList;
 use App\NativeComponents\EditRecipe;
@@ -34,6 +35,7 @@ Route::native('/register', Register::class);
 Route::nativeGroup(TabsLayout::class, function () {
     Route::native('/dashboard', Dashboard::class);
     Route::native('/preferences', Preferences::class);
+    Route::native('/preferences/delete-account', DeleteAccount::class);
     Route::native('/today', Today::class);
     Route::native('/routines', Routines::class);
     Route::native('/routines/create', CreateRoutine::class);

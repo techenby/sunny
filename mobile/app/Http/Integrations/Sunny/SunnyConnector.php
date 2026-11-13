@@ -35,6 +35,11 @@ class SunnyConnector extends Connector
         return rtrim($this->baseUrl, '/');
     }
 
+    public function siteUrl(): string
+    {
+        return preg_replace('~/api$~', '', $this->resolveBaseUrl());
+    }
+
     public function hasRequestFailed(Response $response): ?bool
     {
         return $response->status() >= 300;

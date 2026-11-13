@@ -70,7 +70,7 @@ class OpenItemLink extends NativeComponent
 
     protected static function siteUrl(): string
     {
-        return preg_replace('~/api$~', '', app(SunnyConnector::class)->resolveBaseUrl());
+        return app(SunnyConnector::class)->siteUrl();
     }
 
     public function render(): View
