@@ -131,8 +131,8 @@ class Team extends Model
 
     public function purge(): void
     {
-        $photos = collect([$this->items(), $this->recipes()])
-            ->flatMap(fn (HasMany $records) => $records->withTrashed()->get(['photo_path', 'thumb_path']))
+        $photos = $this->items()->withTrashed()->get(['photo_path', 'thumb_path'])->toBase()
+            ->merge($this->recipes()->withTrashed()->get(['photo_path', 'thumb_path']))
             ->flatMap(fn (Model $record) => [$record->photo_path, $record->thumb_path])
             ->filter()
             ->values()
