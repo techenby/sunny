@@ -110,6 +110,10 @@
                 {
                     "description": "iOS: hand back camera-roll HEIC photos as JPEG so Sunny can make thumbnails and every browser can show them",
                     "url": "patches/nativephp-mobile-camera-pick-compatible-images.patch"
+                },
+                {
+                    "description": "iOS: drop the microphone and location permission strings and the location code that needs them, since Sunny never records video or geotags photos",
+                    "url": "patches/nativephp-mobile-camera-drop-location-and-microphone.patch"
                 }
             ],
             "nativephp/mobile": [
@@ -128,6 +132,10 @@
                 {
                     "description": "iOS + Android: honor display-mode and scroll-behavior on tab screens so they get large titles (NativePHP/mobile-air#633)",
                     "url": "patches/nativephp-mobile-tabs-display-mode.patch"
+                },
+                {
+                    "description": "iOS: ship a PrivacyInfo.xcprivacy declaring the required-reason APIs the PHP runtime, NativePHP and its plugins use",
+                    "url": "patches/nativephp-mobile-ios-privacy-manifest.patch"
                 }
             ],
             "nativephp/mobile-scanner": [

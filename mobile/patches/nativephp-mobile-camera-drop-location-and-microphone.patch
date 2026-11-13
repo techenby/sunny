@@ -1,0 +1,88 @@
+diff --git a/nativephp.json b/nativephp.json
+index 5ba1697..c7e5a6e 100644
+--- a/nativephp.json
++++ b/nativephp.json
+@@ -46,9 +46,7 @@
+         "min_version": "18.2",
+         "info_plist": {
+             "NSCameraUsageDescription": "This app requires camera access to take photos and videos.",
+-            "NSMicrophoneUsageDescription": "This app requires microphone access to record video with audio.",
+-            "NSPhotoLibraryUsageDescription": "This app requires photo library access to select media.",
+-            "NSLocationWhenInUseUsageDescription": "This app uses your location to tag photos with the place they were taken."
++            "NSPhotoLibraryUsageDescription": "This app requires photo library access to select media."
+         },
+         "dependencies": {
+             "swift_packages": [],
+diff --git a/resources/ios/CameraFunctions.swift b/resources/ios/CameraFunctions.swift
+index 4023f5f..aabb30b 100644
+--- a/resources/ios/CameraFunctions.swift
++++ b/resources/ios/CameraFunctions.swift
+@@ -417,60 +417,20 @@ enum CameraMetadata {
+ 
+ // MARK: - Location Provider
+ 
+-/// Lightweight wrapper around CLLocationManager used to tag camera captures with a coordinate.
+-///
+-/// `UIImagePickerController` only embeds GPS into the media metadata when the app holds
+-/// location authorization, so we keep a recent fix on hand and synthesise GPS when needed.
+-/// All access is best-effort: it never blocks capture and never crashes when location is
+-/// unavailable or denied.
+-final class CameraLocationProvider: NSObject, CLLocationManagerDelegate {
++/// Sunny never geotags captures, so this provider is inert: it holds no CLLocationManager,
++/// never asks for location authorization, and has no fix to offer. Keeping Core Location's
++/// authorization APIs out of the binary lets the app ship without NSLocationWhenInUseUsageDescription.
++final class CameraLocationProvider {
+ 
+     static let shared = CameraLocationProvider()
+ 
+-    private let manager = CLLocationManager()
+-
+-    private override init() {
+-        super.init()
+-        manager.delegate = self
+-        manager.desiredAccuracy = kCLLocationAccuracyBest
+-    }
++    private init() {}
+ 
+-    /// Request When-In-Use authorization (no-op if already determined) and begin
+-    /// receiving updates so a recent fix is available by capture time.
+-    func start() {
+-        let status = manager.authorizationStatus
+-        if status == .notDetermined {
+-            manager.requestWhenInUseAuthorization()
+-        }
+-        if status == .authorizedWhenInUse || status == .authorizedAlways || status == .notDetermined {
+-            manager.startUpdatingLocation()
+-        }
+-    }
++    func start() {}
+ 
+-    /// Stop updates to conserve power once a capture flow has finished.
+-    func stop() {
+-        manager.stopUpdatingLocation()
+-    }
++    func stop() {}
+ 
+-    /// The most recent location fix, if one is available and authorization is granted.
+-    var currentLocation: CLLocation? {
+-        let status = manager.authorizationStatus
+-        guard status == .authorizedWhenInUse || status == .authorizedAlways else {
+-            return nil
+-        }
+-        return manager.location
+-    }
+-
+-    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+-        let status = manager.authorizationStatus
+-        if status == .authorizedWhenInUse || status == .authorizedAlways {
+-            manager.startUpdatingLocation()
+-        }
+-    }
+-
+-    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+-        // Best-effort only; ignore failures so capture is never blocked.
+-    }
++    var currentLocation: CLLocation? { nil }
+ }
+ 
+ // MARK: - Video Delegate

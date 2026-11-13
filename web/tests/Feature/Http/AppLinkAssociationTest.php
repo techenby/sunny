@@ -1,15 +1,13 @@
 <?php
 
 test('serves the apple app site association for item links', function () {
-    config(['services.sunny_app.apple_team_id' => 'ABCDE12345']);
-
     $this->get('/.well-known/apple-app-site-association')
         ->assertOk()
         ->assertHeader('Content-Type', 'application/json')
         ->assertExactJson([
             'applinks' => [
                 'details' => [[
-                    'appIDs' => ['ABCDE12345.com.techenby.sunnyhomeapp'],
+                    'appIDs' => ['9R65F2QT3W.com.techenby.sunnyhome'],
                     'components' => [['/' => '/i/*']],
                 ]],
             ],
@@ -25,7 +23,7 @@ test('serves the android asset links', function () {
             'relation' => ['delegate_permission/common.handle_all_urls'],
             'target' => [
                 'namespace' => 'android_app',
-                'package_name' => 'com.techenby.sunnyhomeapp',
+                'package_name' => 'com.techenby.sunnyhome',
                 'sha256_cert_fingerprints' => ['AA:BB:CC'],
             ],
         ]]);
