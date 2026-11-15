@@ -68,11 +68,11 @@
                         @endunless
                     </flux:card>
                 @else
-                    <flux:table :paginate="$this->children">
+                    <flux:table :paginate="$this->children" class="w-full">
                         <flux:table.columns>
                             <flux:table.column>{{ __('Name') }}</flux:table.column>
-                            <flux:table.column>{{ __('Modified') }}</flux:table.column>
-                            <flux:table.column>{{ __('What’s inside') }}</flux:table.column>
+                            <flux:table.column class="w-36">{{ __('Modified') }}</flux:table.column>
+                            <flux:table.column class="w-32">{{ __('What’s inside') }}</flux:table.column>
                         </flux:table.columns>
 
                         <flux:table.rows>
