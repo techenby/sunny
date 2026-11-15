@@ -1,6 +1,6 @@
 <div
     class="mt-6 flex flex-col items-center gap-5"
-    wire:poll.300s.visible
+    x-on:kiosk-refresh.window="showing && $wire.$refresh()"
     x-on:kiosk-screensaver-shown.window="$wire.$refresh()"
 >
     @if ($this->weather)

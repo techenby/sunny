@@ -2,6 +2,7 @@
 
 use App\Actions\Routines\GenerateRoutineOccurrences;
 use App\Models\CalendarFeed;
+use App\Models\Checklist;
 use App\Models\Routine;
 use App\Models\RoutineOccurrenceStep;
 use App\Models\RoutineStep;
@@ -133,4 +134,26 @@ ICS),
         ->assertVisible('[data-kiosk-screensaver]')
         ->waitForText('Soccer practice')
         ->assertScript("/in \\d+ min/.test(document.querySelector('[data-screensaver-next-event]').textContent)");
+});
+
+test('the kiosk refreshes its data when the shared clock rolls over', function () {
+    $team = Team::factory()->create(['screensaver_after' => 0, 'return_home_after' => 0]);
+    $user = User::factory()->memberOf($team)->create();
+    Checklist::factory()->for($team)->create(['name' => 'Groceries']);
+
+    actingAs($user);
+
+    $page = visit(route('kiosk.lists', absolute: false));
+
+    $page->assertNoJavaScriptErrors()
+        ->assertSee('Groceries')
+        ->assertDontSee('Hardware store');
+
+    Checklist::factory()->for($team)->create(['name' => 'Hardware store']);
+
+    $page->wait(1.5)
+        ->assertDontSee('Hardware store')
+        ->script("Alpine.\$data(document.querySelector('[data-kiosk-screensaver]')).refreshSlot -= 1");
+
+    $page->waitForText('Hardware store');
 });

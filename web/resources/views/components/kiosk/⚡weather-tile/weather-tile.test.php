@@ -100,7 +100,7 @@ test('picks up new weather when it polls after the cache expires', function () {
 
     $component = Livewire::actingAs($user)
         ->test('kiosk.weather-tile', ['team' => $team])
-        ->assertSeeHtml('wire:poll.900s')
+        ->assertSeeHtml('x-on:kiosk-refresh.window')
         ->assertSee('63°');
 
     Saloon::fake([OneCall::class => $weather(71.2)]);
