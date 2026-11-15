@@ -4,15 +4,15 @@
             {{ __('Inventory') }}
         </flux:breadcrumbs.item>
 
-        @foreach ($this->breadcrumbs as $breadcrumb)
-            <flux:breadcrumbs.item :href="route('inventory.index', ['parentId' => $breadcrumb->id])" class="cursor-pointer">
-                {{ $breadcrumb->name }}
-            </flux:breadcrumbs.item>
-        @endforeach
+        @if ($this->breadcrumbs->count() > 1)
+            <flux:breadcrumbs.item icon="ellipsis-horizontal" />
+        @endif
 
-        <flux:breadcrumbs.item>
-            {{ $item->name }}
-        </flux:breadcrumbs.item>
+        @if ($parent = $this->breadcrumbs->last())
+            <flux:breadcrumbs.item :href="route('inventory.index', ['parentId' => $parent->id])" class="cursor-pointer">
+                {{ $parent->name }}
+            </flux:breadcrumbs.item>
+        @endif
     </flux:breadcrumbs>
 
     <div class="flex flex-wrap items-center justify-between gap-4">

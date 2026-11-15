@@ -54,6 +54,19 @@ test('shows the kind of thing and the trail of places it is inside', function ()
         ->assertSeeHtml('href="' . route('inventory.show', ['item' => $shelf]) . '"');
 });
 
+test('the breadcrumb shortens to the parent and keeps the full path in Where it is', function () {
+    $user = User::factory()->create();
+    $garage = Item::factory()->for($user->currentTeam)->location()->create(['name' => 'Garage']);
+    $shelf = Item::factory()->for($user->currentTeam)->bin()->childOf($garage)->create(['name' => 'Metal Shelf']);
+    $bin = Item::factory()->for($user->currentTeam)->bin()->childOf($shelf)->create(['name' => 'Blue Bin']);
+
+    Livewire::actingAs($user)
+        ->test('pages::inventory.show', ['item' => $bin])
+        ->assertSeeInOrder(['Inventory', 'Metal Shelf', 'Blue Bin', 'Where it is', 'Garage', 'Metal Shelf'])
+        ->assertSeeHtml('href="' . route('inventory.index', ['parentId' => $shelf->id]) . '"')
+        ->assertDontSeeHtml('href="' . route('inventory.index', ['parentId' => $garage->id]) . '"');
+});
+
 test('says when something is not in a place yet', function () {
     $user = User::factory()->create();
     $item = Item::factory()->for($user->currentTeam)->create();
