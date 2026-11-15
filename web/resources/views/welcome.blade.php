@@ -47,7 +47,7 @@
             </header>
 
             <main>
-                <section class="py-16 sm:py-24">
+                <section class="pt-16 sm:pt-24">
                     <div class="mx-auto grid max-w-7xl items-center gap-x-16 gap-y-12 px-6 lg:grid-cols-2 lg:px-8">
                         <div>
                             <flux:heading level="1" size="2xl" class="max-w-[24ch] tracking-tight text-balance sm:text-6xl">
@@ -73,7 +73,7 @@
                 <section id="features" class="scroll-mt-8 py-16 sm:py-24">
                     <div class="mx-auto max-w-7xl px-6 lg:px-8">
                         <div>
-                            <flux:text class="font-mono font-medium tracking-wide text-accent-content uppercase">{{ __('Everything in one place') }}</flux:text>
+                            <flux:text class="font-medium text-accent-content">{{ __('Everything in one place') }}</flux:text>
                             <flux:heading level="2" size="2xl" class="mt-3 max-w-[35ch] tracking-tight text-balance">
                                 {{ __('One home base for the whole family') }}
                             </flux:heading>
@@ -106,7 +106,7 @@
                 <section id="kiosk" class="scroll-mt-8 bg-zinc-50 py-16 sm:py-24 dark:border-y dark:border-white/10 dark:bg-zinc-900">
                     <div class="mx-auto max-w-7xl px-6 lg:px-8">
                         <div>
-                            <flux:text class="font-mono font-medium tracking-wide text-accent-content uppercase">{{ __('Kiosk') }}</flux:text>
+                            <flux:text class="font-medium text-accent-content">{{ __('Kiosk') }}</flux:text>
                             <flux:heading level="2" size="2xl" class="mt-3 max-w-[35ch] tracking-tight text-balance">
                                 {{ __('Put the day on the wall') }}
                             </flux:heading>
@@ -153,7 +153,7 @@
                     <div class="mx-auto grid max-w-7xl items-center gap-x-16 gap-y-12 px-6 lg:grid-cols-2 lg:px-8">
                         <div>
                             <div class="flex items-center gap-3">
-                                <flux:text class="font-mono font-medium tracking-wide text-accent-content uppercase">{{ __('Mobile app') }}</flux:text>
+                                <flux:text class="font-medium text-accent-content">{{ __('Mobile app') }}</flux:text>
                                 <flux:badge size="sm" color="amber">{{ __('Beta') }}</flux:badge>
                             </div>
                             <flux:heading level="2" size="2xl" class="mt-3 max-w-[35ch] tracking-tight text-balance">
@@ -203,7 +203,7 @@
                         <x-welcome.assistant-preview class="max-lg:order-last" />
 
                         <div>
-                            <flux:text class="font-mono font-medium tracking-wide text-accent-content uppercase">{{ __('AI assistant') }}</flux:text>
+                            <flux:text class="font-medium text-accent-content">{{ __('AI assistant') }}</flux:text>
                             <flux:heading level="2" size="2xl" class="mt-3 max-w-[35ch] tracking-tight text-balance">
                                 {{ __('Ask your assistant to handle it') }}
                             </flux:heading>
@@ -236,7 +236,7 @@
                 <section id="built-by" class="scroll-mt-8 border-t border-zinc-950/5 py-16 sm:py-24 dark:border-white/10">
                     <div class="mx-auto grid max-w-7xl items-center gap-x-16 gap-y-12 px-6 lg:grid-cols-2 lg:px-8">
                         <div>
-                            <flux:text class="font-mono font-medium tracking-wide text-accent-content uppercase">{{ __('Meet the maker') }}</flux:text>
+                            <flux:text class="font-medium text-accent-content">{{ __('Meet the maker') }}</flux:text>
                             <flux:heading level="2" size="2xl" class="mt-3 max-w-[35ch] tracking-tight text-balance">
                                 {{ __('Built by Andy Swick') }}
                             </flux:heading>
