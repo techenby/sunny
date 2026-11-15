@@ -279,12 +279,13 @@ describe('can navigate between levels', function () {
             ->assertSeeInOrder(['Inventory', 'Bedroom', 'Right Closet', 'Game Tote']);
     });
 
-    test('breadcrumbs are empty at root level', function () {
+    test('root level shows the page title without breadcrumbs', function () {
         $user = User::factory()->create();
 
         Livewire::actingAs($user)
             ->test('pages::inventory.index')
-            ->assertSee('All')
+            ->assertSee('Every room, bin and box in your home, and what’s inside.')
+            ->assertDontSeeHtml('data-flux-breadcrumbs')
             ->assertSet('parentId', null);
     });
 

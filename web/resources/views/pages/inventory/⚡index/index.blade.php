@@ -1,4 +1,5 @@
 <div class="space-y-6">
+    @if (filled($search) || $parentId !== null)
     <flux:breadcrumbs>
         <flux:breadcrumbs.item wire:click="$set('parentId', null)" class="cursor-pointer">
             {{ __('Inventory') }}
@@ -14,6 +15,7 @@
             @endforeach
         @endif
     </flux:breadcrumbs>
+    @endif
 
     <div class="flex items-center justify-between">
         <div class="flex items-center gap-4">
@@ -24,7 +26,10 @@
             </div>
             <flux:button wire:click="$set('search', '')" icon="x-mark" size="sm">{{ __('Clear search') }}</flux:button>
             @elseif ($parentId === null)
-            <flux:heading size="xl">{{ __('All of your inventory') }}</flux:heading>
+            <div>
+                <flux:heading size="xl">{{ __('Inventory') }}</flux:heading>
+                <flux:text>{{ __('Every room, bin and box in your home, and what’s inside.') }}</flux:text>
+            </div>
             @else
             <flux:heading size="xl">{{ $breadcrumb->name }}</flux:heading>
             @endif
