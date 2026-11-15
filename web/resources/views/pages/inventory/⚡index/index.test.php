@@ -1159,3 +1159,17 @@ describe('can filter', function () {
             ->assertSeeHtml('<span>Small Box</span>');
     });
 });
+
+test('shows the item photo in place of the type icon', function () {
+    Storage::fake();
+
+    $user = User::factory()->create();
+    Item::factory()->for($user->currentTeam)->create([
+        'name' => 'Guitar',
+        'photo_path' => "teams/{$user->current_team_id}/items/guitar.png",
+    ]);
+
+    Livewire::actingAs($user)
+        ->test('pages::inventory.index')
+        ->assertSeeHtml('guitar.png');
+});

@@ -80,16 +80,25 @@
 
                         <flux:table.rows>
                             @foreach ($this->children as $child)
-                                <flux:table.row :key="$child->id">
+                                <x-ui.table.row :key="$child->id" :href="route('inventory.show', ['item' => $child])">
                                     <flux:table.cell>
-                                        <flux:link :href="route('inventory.show', ['item' => $child])" wire:navigate inset="top bottom" class="!flex !items-center gap-3">
-                                            <flux:avatar size="xs" :src="$child->thumb_url" :icon="$child->type->getIcon()" :color="$child->type->getIconColor()" icon:variant="outline" />
-                                            <span>{{ $child->truncated_name }}</span>
-                                        </flux:link>
+                                        <x-ui.table.name :href="route('inventory.show', ['item' => $child])">
+                                            <x-slot:thumb>
+                                                <x-ui.table.thumb :src="$child->thumb_url" :icon="$child->type->getIcon()" :color="$child->type->getIconColor()" />
+                                            </x-slot:thumb>
+
+                                            {{ $child->truncated_name }}
+                                        </x-ui.table.name>
                                     </flux:table.cell>
                                     <flux:table.cell>{{ $child->updated_at->diffForHumans() }}</flux:table.cell>
-                                    <flux:table.cell>{{ $child->children_count > 0 ? trans_choice(':count thing|:count things', $child->children_count) : '—' }}</flux:table.cell>
-                                </flux:table.row>
+                                    <flux:table.cell>
+                                        @if ($child->children_count > 0)
+                                            {{ trans_choice(':count thing|:count things', $child->children_count) }}
+                                        @else
+                                            <x-ui.table.blank />
+                                        @endif
+                                    </flux:table.cell>
+                                </x-ui.table.row>
                             @endforeach
                         </flux:table.rows>
                     </flux:table>
