@@ -86,9 +86,12 @@
         </flux:text>
 
         @if ($this->pairedDevices->isEmpty())
-            <flux:text class="text-sm italic text-zinc-500 dark:text-zinc-400">
-                {{ __('No paired displays yet.') }}
-            </flux:text>
+            <div class="rounded-lg bg-zinc-50 p-4 dark:bg-white/5">
+                <flux:text class="text-zinc-500 dark:text-zinc-400">{{ __('No paired displays yet.') }}</flux:text>
+                <flux:text class="text-zinc-500 dark:text-zinc-400">
+                    {{ __('Open :url on the tablet, then scan its QR code with your phone.', ['url' => preg_replace('#^https?://#', '', route('kiosk.index'))]) }}
+                </flux:text>
+            </div>
         @else
             <ul class="space-y-2">
                 @foreach ($this->pairedDevices as $device)
