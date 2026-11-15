@@ -79,3 +79,20 @@ test('steps follow the routine order, even after one is completed', function () 
     expect($component->get('occurrences')->first()->steps->map(fn ($step) => $step->step->name)->all())
         ->toBe(['First', 'Second']);
 });
+
+test('it caps the routines shown and says how many more there are', function () {
+    $user = User::factory()->create();
+
+    foreach (range(1, 5) as $number) {
+        $routine = Routine::factory()->for($user->currentTeam)->daily()->household()->create(['name' => "Routine {$number}"]);
+        RoutineStep::factory()->for($routine)->create();
+    }
+
+    $component = Livewire::actingAs($user)->test('dashboard.routines');
+
+    expect($component->get('occurrences'))->toHaveCount(3);
+
+    $component
+        ->assertSee('2 more routines')
+        ->assertSee('Showing 3 of 5 routines');
+});

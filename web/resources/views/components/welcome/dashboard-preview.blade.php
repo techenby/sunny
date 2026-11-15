@@ -23,7 +23,7 @@
     ];
 
     $lists = [
-        ['name' => 'Groceries', 'type' => ChecklistType::Shopping, 'household' => true, 'items' => ['Oat milk', 'Kidney beans', 'Tortillas', 'Cilantro']],
+        ['name' => 'Groceries', 'type' => ChecklistType::Shopping, 'household' => true, 'items' => ['Oat milk', 'Kidney beans', 'Tortillas']],
         ['name' => 'Riley\'s to-dos', 'type' => ChecklistType::Todo, 'household' => false, 'items' => ['Return library books', 'Sign permission slip']],
     ];
 @endphp
@@ -55,19 +55,17 @@
                         <div class="@container">
                             <div class="grid gap-5 @2xl:grid-cols-3">
                                 @foreach ($days as $label => $events)
-                                    <section class="space-y-2">
-                                        <flux:heading size="sm" class="text-zinc-500 dark:text-zinc-400">{{ $label }}</flux:heading>
-
+                                    <x-dashboard.day :$label>
                                         @foreach ($events as $event)
                                             <x-dashboard.event :time="$event['time']" :title="$event['title']" :location="$event['location']" :color="$event['color']" />
                                         @endforeach
-                                    </section>
+                                    </x-dashboard.day>
                                 @endforeach
                             </div>
                         </div>
                     </x-dashboard.card>
 
-                    <div class="grid grid-cols-2 gap-6">
+                    <div class="grid grid-cols-2 items-start gap-6">
                         <x-dashboard.card :heading="__('Today\'s routines')" :action="__('All routines')" href="#">
                             <div class="space-y-5">
                                 @foreach ($routines as $routine)

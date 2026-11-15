@@ -32,12 +32,9 @@ new class extends Component
 
     <livewire:dashboard.events lazy />
 
-    <div class="grid gap-6 lg:grid-cols-2">
+    <div class="grid items-start gap-6 lg:grid-cols-2">
         <livewire:dashboard.routines />
         <livewire:dashboard.lists />
-    </div>
-
-    <div class="grid gap-6 lg:grid-cols-2">
         <livewire:dashboard.recipes />
         <livewire:dashboard.items />
     </div>

@@ -6,6 +6,7 @@ use App\Models\Team;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Blade;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
@@ -31,21 +32,27 @@ new class extends Component
             ->sortBy('starts_at')
             ->values();
 
-        return collect(range(0, self::DAYS - 1))
-            ->map(function (int $offset) use ($events, $today): array {
-                $date = $today->addDays($offset);
+        return collect($this->dayLabels())
+            ->map(fn (string $label, int $offset): array => [
+                'label' => $label,
+                'events' => $events
+                    ->filter(fn (array $event): bool => $event['starts_at']->isSameDay($today->addDays($offset)))
+                    ->values()
+                    ->all(),
+            ])
+            ->all();
+    }
 
-                return [
-                    'label' => match ($offset) {
-                        0 => __('Today'),
-                        1 => __('Tomorrow'),
-                        default => $date->format('l'),
-                    },
-                    'events' => $events
-                        ->filter(fn (array $event): bool => $event['starts_at']->isSameDay($date))
-                        ->values()
-                        ->all(),
-                ];
+    /** @return array<int, string> */
+    public function dayLabels(): array
+    {
+        $today = $this->team()->today();
+
+        return collect(range(0, self::DAYS - 1))
+            ->map(fn (int $offset): string => match ($offset) {
+                0 => __('Today'),
+                1 => __('Tomorrow'),
+                default => $today->addDays($offset)->format('l'),
             })
             ->all();
     }
@@ -66,22 +73,17 @@ new class extends Component
 
     public function placeholder(): string
     {
-        return <<<'HTML'
-            <flux:card body="flush" class="flex flex-col">
-                <flux:card.header>
-                    <flux:card.heading size="lg">{{ __('Coming up') }}</flux:card.heading>
-                </flux:card.header>
-
-                <flux:card.body class="flex-1">
-                    <flux:skeleton.group animate="shimmer" class="space-y-3">
-                        <flux:skeleton.line class="w-1/3" />
-                        <flux:skeleton.line />
-                        <flux:skeleton.line />
-                        <flux:skeleton.line class="w-2/3" />
-                    </flux:skeleton.group>
-                </flux:card.body>
-            </flux:card>
-            HTML;
+        return Blade::render(<<<'BLADE'
+            <x-dashboard.card :heading="__('Coming up')" :action="__('Calendars')" :href="route('kiosk.configure.calendar')">
+                <div class="@container">
+                    <div class="grid gap-5 @2xl:grid-cols-3">
+                        @foreach ($labels as $label)
+                            <x-dashboard.day :$label />
+                        @endforeach
+                    </div>
+                </div>
+            </x-dashboard.card>
+            BLADE, ['labels' => $this->dayLabels()]);
     }
 
     private function team(): Team

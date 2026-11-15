@@ -18,7 +18,10 @@ test('it shows the team\'s most recently added items with where they are', funct
     expect($component->get('items')->pluck('name')->all())
         ->toBe(['Item 1', 'Item 2', 'Item 3', 'Item 4', 'Item 5']);
 
-    $component->assertSee(__('in :parent', ['parent' => 'Garage']))->assertDontSee('Someone else');
+    $component
+        ->assertSee(__('in :parent', ['parent' => 'Garage']))
+        ->assertSee('3 days ago')
+        ->assertDontSee('Someone else');
 });
 
 test('it does not show deleted items', function () {

@@ -1,9 +1,12 @@
 <x-dashboard.card :heading="__('Today\'s routines')" :action="__('All routines')" :href="route('routines.index')">
     @if ($this->occurrences->isEmpty())
-        <div class="py-6 text-center">
-            <flux:icon name="party-popper" class="mx-auto mb-3 size-10 text-zinc-400" />
-            <flux:text>{{ __('Nothing scheduled for you today.') }}</flux:text>
-        </div>
+        <x-dashboard.empty
+            icon="party-popper"
+            :heading="__('No routines today')"
+            :text="__('Nothing scheduled for you today.')"
+            :action="__('Add a routine')"
+            :href="route('routines.index')"
+        />
     @else
         <div class="space-y-5">
             @foreach ($this->occurrences as $occurrence)
@@ -24,6 +27,14 @@
                     @endforeach
                 </x-dashboard.routine>
             @endforeach
+
+            @if ($this->total > $this->occurrences->count())
+                <x-dashboard.more
+                    :href="route('routines.index')"
+                    :label="trans_choice(':count more routine|:count more routines', $this->total - $this->occurrences->count(), ['count' => $this->total - $this->occurrences->count()])"
+                    :note="__('Showing :shown of :total routines', ['shown' => $this->occurrences->count(), 'total' => $this->total])"
+                />
+            @endif
         </div>
     @endif
 </x-dashboard.card>
