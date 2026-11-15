@@ -81,7 +81,7 @@
                                     <flux:table.cell>
                                         <x-ui.table.name :href="route('inventory.show', ['item' => $child])">
                                             <x-slot:thumb>
-                                                <x-ui.table.thumb :src="$child->thumb_url" :icon="$child->type->getIcon()" :color="$child->type->getIconColor()" />
+                                                <x-ui.table.thumb :src="$child->thumb_url" :icon="$child->type->getIcon()" :color="$child->type->getIconColor()" size="base" />
                                             </x-slot:thumb>
 
                                             {{ $child->truncated_name }}

@@ -18,7 +18,7 @@ plain values, such as the costs page or the API tokens list, only needs
 | --- | --- |
 | `<x-ui.table.row>` | A row that opens its record when clicked anywhere. |
 | `<x-ui.table.name>` | The record's name, as the row's real link or button. |
-| `<x-ui.table.thumb>` | A 36px photo or icon tile beside the name. |
+| `<x-ui.table.thumb>` | A 36px or 40px photo or icon tile beside the name. |
 | `<x-ui.table.blank>` | A faint dash for a missing value. |
 | `<x-ui.actions>` | The row's "⋯" menu. Shared with cards and page headers. |
 | `<x-ui.table.money-cell>` | A right-aligned cell that formats cents as dollars. |
@@ -129,13 +129,15 @@ surrounding whitespace. Tests rely on this to find a row by name, for example
 
 ## Thumb
 
-`<x-ui.table.thumb>` is a 36px tile with 8px corners.
+`<x-ui.table.thumb>` is a 36px tile with 8px corners. Inventory uses the 40px
+size, which makes its rows 61px tall.
 
 | Prop | Default | Description |
 | --- | --- | --- |
 | `icon` | required | Heroicon name for the tile when there is no photo. |
 | `src` | `null` | Photo URL. When set, the photo is shown and the icon is not. |
 | `color` | `null` | A Flux color name, such as `amber`. Tints the icon tile. |
+| `size` | `sm` | `sm` is 36px. `base` is 40px. |
 
 It renders one of three things:
 

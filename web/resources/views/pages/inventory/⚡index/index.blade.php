@@ -131,7 +131,7 @@
                             <div class="flex items-center gap-2">
                                 <x-ui.table.name :href="route('inventory.show', ['item' => $item])">
                                     <x-slot:thumb>
-                                        <x-ui.table.thumb :src="$item->thumb_url" :icon="$item->type->getIcon()" :color="$item->type->getIconColor()" />
+                                        <x-ui.table.thumb :src="$item->thumb_url" :icon="$item->type->getIcon()" :color="$item->type->getIconColor()" size="base" />
                                     </x-slot:thumb>
 
                                     {{ $item->truncated_name }}
@@ -143,7 +143,7 @@
                         @else
                             <x-ui.table.name wire:click="navigateDown({{ $item->id }})">
                                 <x-slot:thumb>
-                                    <x-ui.table.thumb :src="$item->thumb_url" :icon="$item->type->getIcon()" :color="$item->type->getIconColor()" />
+                                    <x-ui.table.thumb :src="$item->thumb_url" :icon="$item->type->getIcon()" :color="$item->type->getIconColor()" size="base" />
                                 </x-slot:thumb>
 
                                 {{ $item->truncated_name }}
