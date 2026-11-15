@@ -1,7 +1,15 @@
 <x-layouts::app>
     <div class="relative mb-6 w-full">
-        <flux:heading size="xl" level="1">{{ __('Kiosk Configuration') }}</flux:heading>
-        <flux:subheading size="lg" class="mb-6">{{ __('Preview your kiosk and manage its data sources') }}</flux:subheading>
+        <flux:heading size="xl" level="1">{{ __('Kiosk') }}</flux:heading>
+        <flux:subheading size="lg" class="mb-6">
+            @if (request()->routeIs('kiosk.configure.calendar'))
+                {{ __('Calendar feeds that show up on the kiosk') }}
+            @elseif (request()->routeIs('kiosk.configure.settings'))
+                {{ __('Choose how the kiosk display looks and behaves') }}
+            @else
+                {{ __('See the kiosk at the size of your tablet before you hang it') }}
+            @endif
+        </flux:subheading>
         <flux:separator variant="subtle" />
     </div>
 

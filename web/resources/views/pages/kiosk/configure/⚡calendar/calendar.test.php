@@ -21,6 +21,7 @@ test('renders successfully', function () {
     actingAs($user)
         ->get(route('kiosk.configure.calendar'))
         ->assertOk()
+        ->assertSee('Calendar feeds that show up on the kiosk')
         ->assertSee('Family Calendar');
 
     Livewire::actingAs($user)
