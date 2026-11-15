@@ -33,21 +33,27 @@
 
                         <flux:button
                             icon="chevron-up"
+                            icon:variant="outline"
                             variant="ghost"
+                            class="text-zinc-500! disabled:text-zinc-400! disabled:opacity-100! dark:text-zinc-400! dark:disabled:text-zinc-600!"
                             wire:click="moveUp({{ $step->id }})"
                             :disabled="$loop->first"
                             :aria-label="__('Move up')"
                         />
                         <flux:button
                             icon="chevron-down"
+                            icon:variant="outline"
                             variant="ghost"
+                            class="text-zinc-500! disabled:text-zinc-400! disabled:opacity-100! dark:text-zinc-400! dark:disabled:text-zinc-600!"
                             wire:click="moveDown({{ $step->id }})"
                             :disabled="$loop->last"
                             :aria-label="__('Move down')"
                         />
                         <flux:button
                             icon="trash"
+                            icon:variant="outline"
                             variant="ghost"
+                            class="text-zinc-500! hover:text-red-600! dark:text-zinc-400! dark:hover:text-red-400!"
                             wire:click="removeStep({{ $step->id }})"
                             :aria-label="__('Remove step')"
                         />

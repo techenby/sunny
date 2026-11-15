@@ -68,7 +68,9 @@
                             @if ($item->url)
                                 <flux:button
                                     icon="arrow-top-right-on-square"
+                                    icon:variant="outline"
                                     variant="ghost"
+                                    class="text-zinc-500! disabled:text-zinc-400! disabled:opacity-100! dark:text-zinc-400! dark:disabled:text-zinc-600!"
                                     :href="$item->url"
                                     target="_blank"
                                     rel="noopener noreferrer"
@@ -78,14 +80,18 @@
 
                             <flux:button
                                 icon="pencil-square"
+                                icon:variant="outline"
                                 variant="ghost"
+                                class="text-zinc-500! disabled:text-zinc-400! disabled:opacity-100! dark:text-zinc-400! dark:disabled:text-zinc-600!"
                                 wire:click="editItem({{ $item->id }})"
                                 :aria-label="__('Edit :item', ['item' => $item->name])"
                             />
 
                             <flux:button
                                 icon="trash"
+                                icon:variant="outline"
                                 variant="ghost"
+                                class="text-zinc-500! hover:text-red-600! dark:text-zinc-400! dark:hover:text-red-400!"
                                 wire:click="removeItem({{ $item->id }})"
                                 :aria-label="__('Remove :item', ['item' => $item->name])"
                             />
