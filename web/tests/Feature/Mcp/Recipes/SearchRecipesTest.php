@@ -24,7 +24,7 @@ test('it filters recipes by name or ingredients', function () {
     Recipe::factory()->for($user->currentTeam)->create(['name' => 'Chocolate Cake']);
     Recipe::factory()->for($user->currentTeam)->create([
         'name' => 'Morning Oats',
-        'ingredients' => '<ul><li>2 cups oats</li><li>1 cup chocolate chips</li></ul>',
+        'ingredients' => "2 cups oats\n1 cup chocolate chips",
     ]);
     Recipe::factory()->for($user->currentTeam)->create(['name' => 'Garden Salad']);
 

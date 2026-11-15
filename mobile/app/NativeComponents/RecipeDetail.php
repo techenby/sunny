@@ -24,7 +24,7 @@ class RecipeDetail extends NativeComponent
     public array $checkedIngredients = [];
 
     /**
-     * @return array{id: int, parent_id: int|null, name: string, source: string|null, servings: string|null, prep_time: string|null, cook_time: string|null, total_time: string|null, description: string|null, ingredients: string|null, instructions: string|null, notes: string|null, nutrition: string|null, tags: list<string>|null, created_at: string, updated_at: string}|null
+     * @return array{id: int, parent_id: int|null, name: string, source: string|null, servings: string|null, prep_time: string|null, cook_time: string|null, total_time: string|null, description: string|null, ingredients: list<array<string, mixed>>|null, instructions: list<array<string, mixed>>|null, notes: string|null, nutrition: string|null, tags: list<string>|null, created_at: string, updated_at: string}|null
      */
     #[Computed]
     public function recipe(): ?array
@@ -71,21 +71,34 @@ class RecipeDetail extends NativeComponent
     }
 
     /**
-     * @return list<string>
+     * @return list<array<string, mixed>>
      */
     #[Computed]
     public function ingredients(): array
     {
-        return Recipes::lines($this->recipe['ingredients'] ?? null);
+        return $this->recipe['ingredients'] ?? [];
     }
 
     /**
-     * @return list<string>
+     * @return list<array<string, mixed>>
      */
     #[Computed]
     public function instructions(): array
     {
-        return Recipes::lines($this->recipe['instructions'] ?? null);
+        $number = 0;
+        $rows = [];
+
+        foreach ($this->recipe['instructions'] ?? [] as $row) {
+            $rows[] = [...$row, 'number' => $this->isHeading($row) ? null : ++$number];
+        }
+
+        return $rows;
+    }
+
+    #[Computed]
+    public function ingredientCount(): int
+    {
+        return collect($this->ingredients)->reject(fn (array $row): bool => $this->isHeading($row))->count();
     }
 
     #[Computed]
@@ -94,21 +107,27 @@ class RecipeDetail extends NativeComponent
         return collect($this->ingredients)->keys()->filter(fn (int $index): bool => $this->isChecked($index))->count();
     }
 
+    /** @param  array<string, mixed>  $row */
+    public function isHeading(array $row): bool
+    {
+        return ($row['type'] ?? null) === 'heading';
+    }
+
     public function isChecked(int $index): bool
     {
-        return isset($this->ingredients[$index]) && ($this->checkedIngredients[$index] ?? null) === $this->ingredients[$index];
+        return isset($this->ingredients[$index]) && ($this->checkedIngredients[$index] ?? null) === $this->ingredients[$index]['text'];
     }
 
     public function toggleIngredient(int $index): void
     {
-        if (! isset($this->ingredients[$index])) {
+        if (! isset($this->ingredients[$index]) || $this->isHeading($this->ingredients[$index])) {
             return;
         }
 
         if ($this->isChecked($index)) {
             unset($this->checkedIngredients[$index]);
         } else {
-            $this->checkedIngredients[$index] = $this->ingredients[$index];
+            $this->checkedIngredients[$index] = $this->ingredients[$index]['text'];
         }
 
         unset($this->checkedCount);
@@ -124,7 +143,7 @@ class RecipeDetail extends NativeComponent
 
     protected function refreshLocalSyncedData(): void
     {
-        unset($this->recipe, $this->parent, $this->remixes, $this->details, $this->ingredients, $this->instructions, $this->checkedCount, $this->queuedChange);
+        unset($this->recipe, $this->parent, $this->remixes, $this->details, $this->ingredients, $this->instructions, $this->ingredientCount, $this->checkedCount, $this->queuedChange);
     }
 
     public function openSource(): void

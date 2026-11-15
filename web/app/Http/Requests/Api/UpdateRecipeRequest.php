@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Api;
 
+use App\Rules\RecipeLines;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Gate;
@@ -29,8 +30,8 @@ class UpdateRecipeRequest extends FormRequest
             'cook_time' => ['nullable', 'string', 'max:50'],
             'total_time' => ['nullable', 'string', 'max:50'],
             'description' => ['nullable', 'string'],
-            'ingredients' => ['nullable', 'string'],
-            'instructions' => ['nullable', 'string'],
+            'ingredients' => ['nullable', new RecipeLines],
+            'instructions' => ['nullable', new RecipeLines],
             'notes' => ['nullable', 'string'],
             'nutrition' => ['nullable', 'string'],
             'tags' => ['nullable', 'array', 'list'],

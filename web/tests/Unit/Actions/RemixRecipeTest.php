@@ -8,8 +8,8 @@ test('it creates a remix of the recipe', function () {
         'name' => 'Chocolate Cake',
         'source' => 'https://example.com',
         'servings' => '8',
-        'ingredients' => '<ul><li>flour</li></ul>',
-        'instructions' => '<ol><li>mix</li></ol>',
+        'ingredients' => 'flour',
+        'instructions' => 'mix',
     ]);
 
     $remix = (new RemixRecipe)->handle($recipe);

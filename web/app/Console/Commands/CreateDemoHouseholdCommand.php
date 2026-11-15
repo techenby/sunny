@@ -176,8 +176,6 @@ class CreateDemoHouseholdCommand extends Command
 
             $createRecipe->handle($team, [
                 ...$recipe,
-                'ingredients' => $this->list('ul', $recipe['ingredients']),
-                'instructions' => $this->list('ol', $recipe['instructions']),
                 'photo' => $this->photo("recipes/{$photo}"),
             ]);
         }
@@ -293,12 +291,6 @@ class CreateDemoHouseholdCommand extends Command
                 ->take($occurrence->routine->user?->name === 'Leo Rivera' ? 2 : $occurrence->steps->count())
                 ->each->complete($occurrence->routine->user);
         }
-    }
-
-    /** @param array<int, string> $items */
-    private function list(string $tag, array $items): string
-    {
-        return "<{$tag}>" . collect($items)->map(fn (string $item): string => '<li>' . e($item) . '</li>')->implode('') . "</{$tag}>";
     }
 
     private function photo(string $path): UploadedFile

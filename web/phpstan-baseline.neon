@@ -1315,19 +1315,7 @@ parameters:
 			path: app/Mcp/Tools/Recipes/CreateRecipe.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int\<0, max\>,string\|false\>\:\:map\(\) expects callable\(string\|false, int\<0, max\>\)\: string, Closure\(string\)\: string given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Mcp/Tools/Recipes/CreateRecipe.php
-
-		-
 			message: '#^Parameter \#1 \$text of static method Laravel\\Mcp\\Response\:\:text\(\) expects string, string\|false given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Mcp/Tools/Recipes/CreateRecipe.php
-
-		-
-			message: '#^Parameter \#1 \$value of function collect expects Illuminate\\Contracts\\Support\\Arrayable\<int\<0, max\>, string\>\|iterable\<int\<0, max\>, string\>\|null, list\<string\>\|false given\.$#'
 			identifier: argument.type
 			count: 1
 			path: app/Mcp/Tools/Recipes/CreateRecipe.php
@@ -1429,19 +1417,7 @@ parameters:
 			path: app/Mcp/Tools/Recipes/UpdateRecipe.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int\<0, max\>,string\|false\>\:\:map\(\) expects callable\(string\|false, int\<0, max\>\)\: string, Closure\(string\)\: string given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Mcp/Tools/Recipes/UpdateRecipe.php
-
-		-
 			message: '#^Parameter \#1 \$text of static method Laravel\\Mcp\\Response\:\:text\(\) expects string, string\|false given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Mcp/Tools/Recipes/UpdateRecipe.php
-
-		-
-			message: '#^Parameter \#1 \$value of function collect expects Illuminate\\Contracts\\Support\\Arrayable\<int\<0, max\>, string\>\|iterable\<int\<0, max\>, string\>\|null, list\<string\>\|false given\.$#'
 			identifier: argument.type
 			count: 1
 			path: app/Mcp/Tools/Recipes/UpdateRecipe.php

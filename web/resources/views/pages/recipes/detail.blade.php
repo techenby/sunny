@@ -1,3 +1,5 @@
+@use('App\Support\Recipes\RecipeLines')
+
 <div class="grid gap-6 lg:grid-cols-3">
     <div class="space-y-6 lg:col-span-2">
         @if ($recipe->photo_path)
@@ -21,21 +23,47 @@
         @if ($recipe->ingredients)
             <flux:card>
                 <flux:heading size="lg" class="mb-2">{{ __('Ingredients') }}</flux:heading>
-                <x-prose :content="$recipe->ingredients" />
+                <x-prose>
+                    @foreach (RecipeLines::groups($recipe->ingredients) as $group)
+                        @if ($group['heading'])
+                            <h4>{{ $group['heading'] }}</h4>
+                        @endif
+                        @if ($group['rows'])
+                            <ul>
+                                @foreach ($group['rows'] as $row)
+                                    <li>{{ $row['text'] }}</li>
+                                @endforeach
+                            </ul>
+                        @endif
+                    @endforeach
+                </x-prose>
             </flux:card>
         @endif
 
         @if ($recipe->instructions)
             <flux:card>
                 <flux:heading size="lg" class="mb-2">{{ __('Instructions') }}</flux:heading>
-                <x-prose :content="$recipe->instructions" />
+                <x-prose>
+                    @foreach (RecipeLines::groups($recipe->instructions) as $group)
+                        @if ($group['heading'])
+                            <h4>{{ $group['heading'] }}</h4>
+                        @endif
+                        @if ($group['rows'])
+                            <ol start="{{ $group['start'] }}">
+                                @foreach ($group['rows'] as $row)
+                                    <li>{{ $row['text'] }}</li>
+                                @endforeach
+                            </ol>
+                        @endif
+                    @endforeach
+                </x-prose>
             </flux:card>
         @endif
 
         @if ($recipe->notes)
             <flux:card>
                 <flux:heading size="lg" class="mb-2">{{ __('Notes') }}</flux:heading>
-                <flux:text>{{ $recipe->notes }}</flux:text>
+                <flux:text class="whitespace-pre-line">{{ $recipe->notes }}</flux:text>
             </flux:card>
         @endif
     </div>
