@@ -11,7 +11,8 @@ use Laravel\Head\Facades\Head;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
-new class extends Component {
+new class extends Component
+{
     public Recipe $recipe;
 
     public ?int $copyToTeamId = null;
@@ -104,5 +105,5 @@ new class extends Component {
         @include('pages::recipes.modals.copy-to-team')
     </div>
 
-    @include('pages.recipes.detail')
+    @include('pages.recipes.detail', ['editable' => true])
 </div>

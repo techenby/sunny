@@ -1,12 +1,35 @@
 <div class="grid gap-6 lg:grid-cols-3">
     <div class="space-y-6 lg:col-span-2">
+        @php
+            $editable ??= false;
+            $editUrl = $editable ? route('recipes.edit', $recipe) : null;
+            $emptyTile = 'bg-amber-200 text-amber-800 dark:bg-amber-400/40 dark:text-amber-200';
+        @endphp
+
         @if ($recipe->photo_path)
             <img src="{{ Storage::temporaryUrl($recipe->photo_path, now()->addMinutes(30)) }}" alt="{{ $recipe->name }}" class="w-full rounded-lg object-cover max-h-96" />
+        @elseif ($editable)
+            <a href="{{ $editUrl }}" wire:navigate class="flex h-48 w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-zinc-300 text-zinc-500 transition hover:border-zinc-400 hover:text-zinc-800 dark:border-white/20 dark:text-white/70 dark:hover:border-white/40 dark:hover:text-white">
+                <flux:icon.photo class="size-6" />
+                <span class="text-sm font-medium">{{ __('Upload a photo') }}</span>
+            </a>
         @endif
-        @if ($recipe->description)
+
+        @if ($recipe->description || $editable)
             <flux:card>
                 <flux:heading size="lg" class="mb-2 text-lg!">{{ __('Description') }}</flux:heading>
-                <flux:text size="lg" class="leading-7">{{ $recipe->description }}</flux:text>
+                @if ($recipe->description)
+                    <flux:text size="lg" class="leading-7">{{ $recipe->description }}</flux:text>
+                @else
+                    <x-dashboard.empty
+                        icon="document-text"
+                        :tile="$emptyTile"
+                        :heading="__('No description yet')"
+                        :text="__('Say what makes this one worth cooking.')"
+                        :action="__('Add a description')"
+                        :href="$editUrl"
+                    />
+                @endif
 
                 @if ($recipe->tags)
                     <div class="mt-4 flex flex-wrap gap-2">
@@ -18,17 +41,41 @@
             </flux:card>
         @endif
 
-        @if ($recipe->ingredients)
+        @if ($recipe->ingredients || $editable)
             <flux:card>
                 <flux:heading size="lg" class="mb-2 text-lg!">{{ __('Ingredients') }}</flux:heading>
-                <x-prose :content="$recipe->ingredients" />
+                @if ($recipe->ingredients)
+                    <x-prose :content="$recipe->ingredients" />
+                @else
+                    <x-dashboard.empty
+                        icon="list-bullet"
+                        :tile="$emptyTile"
+                        :heading="__('No ingredients yet')"
+                        :text="__('List what goes in, one ingredient per line.')"
+                        :action="__('Add ingredients')"
+                        :href="$editUrl"
+                    />
+                @endif
             </flux:card>
         @endif
 
-        @if ($recipe->instructions)
+        @if ($recipe->instructions || $editable)
             <flux:card>
                 <flux:heading size="lg" class="mb-2 text-lg!">{{ __('Instructions') }}</flux:heading>
-                <x-prose :content="$recipe->instructions" />
+                @if ($recipe->instructions)
+                    <x-prose :content="$recipe->instructions" />
+                @else
+                    <x-dashboard.empty
+                        icon="numbered-list"
+                        :tile="$emptyTile"
+                        :heading="__('No instructions yet')"
+                        :text="__('Write the steps, or paste them from wherever you found the recipe.')"
+                        :action="__('Add steps')"
+                        :href="$editUrl"
+                    >
+                        <flux:link :href="$editUrl" wire:navigate class="text-sm">{{ __('Paste from text') }}</flux:link>
+                    </x-dashboard.empty>
+                @endif
             </flux:card>
         @endif
 

@@ -29,6 +29,18 @@ test('shared recipes are hidden from search engines', function () {
         ->assertSee('<meta name="robots" content="noindex, nofollow">', false);
 });
 
+test('shared recipe hides empty sections instead of offering to edit them', function () {
+    $recipe = Recipe::factory()->shared()->create();
+
+    $this->get(route('recipes.shared', $recipe->share_token))
+        ->assertOk()
+        ->assertDontSee('Upload a photo')
+        ->assertDontSee('No description yet')
+        ->assertDontSee('No ingredients yet')
+        ->assertDontSee('No instructions yet')
+        ->assertDontSee('Add a description');
+});
+
 test('invalid share token returns 404', function () {
     $this->get(route('recipes.shared', 'nonexistent-token'))
         ->assertNotFound();

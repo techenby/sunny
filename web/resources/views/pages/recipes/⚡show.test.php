@@ -143,6 +143,47 @@ describe('remixes', function () {
     });
 });
 
+describe('empty recipe', function () {
+    test('shows an empty state for each missing section, leading to the edit page', function () {
+        $user = User::factory()->create();
+        $recipe = Recipe::factory()->for($user->currentTeam)->create();
+
+        $this->actingAs($user)
+            ->get(route('recipes.show', $recipe))
+            ->assertOk()
+            ->assertSee('Upload a photo')
+            ->assertSee('No description yet')
+            ->assertSee('Add a description')
+            ->assertSee('No ingredients yet')
+            ->assertSee('Add ingredients')
+            ->assertSee('No instructions yet')
+            ->assertSee('Add steps')
+            ->assertSee('Paste from text')
+            ->assertSee('No remixes yet')
+            ->assertSee('href="' . route('recipes.edit', $recipe) . '"', false);
+    });
+
+    test('hides empty states for sections that have content', function () {
+        Storage::fake();
+
+        $user = User::factory()->create();
+        $recipe = Recipe::factory()->for($user->currentTeam)->create([
+            'photo_path' => "teams/{$user->current_team_id}/recipes/cake.png",
+            'description' => 'A tall chocolate cake',
+            'ingredients' => '<ul><li>Flour</li></ul>',
+            'instructions' => '<ol><li>Bake</li></ol>',
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('recipes.show', $recipe))
+            ->assertOk()
+            ->assertDontSee('Upload a photo')
+            ->assertDontSee('No description yet')
+            ->assertDontSee('No ingredients yet')
+            ->assertDontSee('No instructions yet');
+    });
+});
+
 test('shows tags on recipe', function () {
     $user = User::factory()->create();
     $recipe = Recipe::factory()->for($user->currentTeam)->create([

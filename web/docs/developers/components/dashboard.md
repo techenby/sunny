@@ -63,6 +63,7 @@ a title, one muted line, and an optional accent link.
 | `action` | `null` | Label for the link, such as "Add a recipe". |
 | `href` | `null` | Where the link goes. |
 | `tile` | neutral zinc | Classes for the tile's background and icon color. |
+| slot | empty | Extra actions shown beside `action`, such as a second link. |
 
 ```blade
 <x-dashboard.empty
