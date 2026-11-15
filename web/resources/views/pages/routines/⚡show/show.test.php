@@ -337,3 +337,12 @@ describe('details', function () {
         'a past year' => [400, 'October 11, 2025'],
     ]);
 });
+
+test('breadcrumb links back to the index', function () {
+    $user = User::factory()->create();
+    $routine = Routine::factory()->for($user->currentTeam)->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::routines.show', ['routine' => $routine])
+        ->assertSeeHtml('href="' . route('routines.index') . '"');
+});

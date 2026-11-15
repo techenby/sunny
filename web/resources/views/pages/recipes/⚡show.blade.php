@@ -82,9 +82,13 @@ new class extends Component
 }; ?>
 
 <div class="space-y-6">
+    <flux:breadcrumbs>
+        <flux:breadcrumbs.item :href="route('recipes.index')" wire:navigate class="cursor-pointer">{{ __('Recipes') }}</flux:breadcrumbs.item>
+        <flux:breadcrumbs.item>{{ $recipe->name }}</flux:breadcrumbs.item>
+    </flux:breadcrumbs>
+
     <div class="flex items-center justify-between">
         <div class="flex items-center gap-4">
-            <flux:button :href="route('recipes.index')" icon="arrow-left" variant="ghost" wire:navigate />
             <flux:heading size="xl">{{ $recipe->name }}</flux:heading>
         </div>
         <x-ui.actions size="base">

@@ -1,8 +1,11 @@
 <div class="space-y-6">
+    <flux:breadcrumbs>
+        <flux:breadcrumbs.item :href="route('lists.index')" wire:navigate class="cursor-pointer">{{ __('Lists') }}</flux:breadcrumbs.item>
+        <flux:breadcrumbs.item>{{ $checklist->name }}</flux:breadcrumbs.item>
+    </flux:breadcrumbs>
+
     <div class="flex items-center justify-between gap-4">
         <div class="flex items-center gap-4">
-            <flux:button :href="route('lists.index')" icon="arrow-left" variant="ghost" wire:navigate />
-
             <div>
                 <flux:heading size="xl">{{ $checklist->name }}</flux:heading>
                 <flux:text>

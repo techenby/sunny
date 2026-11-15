@@ -327,3 +327,12 @@ describe('sharing feature', function () {
             ->assertForbidden();
     });
 });
+
+test('breadcrumb links back to the index', function () {
+    $user = User::factory()->create();
+    $recipe = Recipe::factory()->for($user->currentTeam)->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::recipes.show', ['recipe' => $recipe])
+        ->assertSeeHtml('href="' . route('recipes.index') . '"');
+});

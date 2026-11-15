@@ -1,8 +1,11 @@
 <div class="space-y-6">
+    <flux:breadcrumbs>
+        <flux:breadcrumbs.item :href="route('routines.index')" wire:navigate class="cursor-pointer">{{ __('Routines') }}</flux:breadcrumbs.item>
+        <flux:breadcrumbs.item>{{ $routine->name }}</flux:breadcrumbs.item>
+    </flux:breadcrumbs>
+
     <div class="flex flex-wrap items-center justify-between gap-4">
         <div class="flex items-center gap-4">
-            <flux:button :href="route('routines.index')" icon="arrow-left" variant="ghost" wire:navigate />
-
             <div class="flex items-center gap-3">
                 <flux:heading size="xl">{{ $routine->name }}</flux:heading>
 
