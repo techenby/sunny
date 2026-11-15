@@ -104,7 +104,7 @@ final class IngredientParser
     {
         $name = preg_replace('/^of\s+/i', '', trim($name)) ?? $name;
 
-        return preg_replace('/,?\s+to\s+taste$/i', '', $name) ?? $name;
+        return preg_replace('/,?\s+\(?to\s+taste\)?$/i', '', $name) ?? $name;
     }
 
     private static function unit(string $token): ?string

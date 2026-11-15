@@ -29,6 +29,7 @@ test('it parses the amount, unit and name from an ingredient line', function (st
     'unit followed by of' => ['1 pinch of salt', 1.0, null, 'pinch', 'salt'],
     'package size in parentheses' => ['2 (28 oz) cans whole tomatoes', 2.0, null, null, '(28 oz) cans whole tomatoes'],
     'to taste' => ['Salt & pepper to taste', null, null, null, 'Salt & pepper'],
+    'to taste in parentheses' => ['salt & pepper (to taste)', null, null, null, 'salt & pepper'],
     'to taste after a comma' => ['Parmesan, to taste', null, null, null, 'Parmesan'],
     'to taste after an amount' => ['1 tsp salt, to taste', 1.0, null, 'tsp', 'salt'],
     'a pinch' => ['A pinch of cayenne', null, null, 'pinch', 'cayenne'],
