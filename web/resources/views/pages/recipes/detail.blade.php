@@ -63,7 +63,7 @@
         @if ($recipe->notes)
             <flux:card>
                 <flux:heading size="lg" class="mb-2">{{ __('Notes') }}</flux:heading>
-                <flux:text>{{ $recipe->notes }}</flux:text>
+                <flux:text class="whitespace-pre-line">{{ $recipe->notes }}</flux:text>
             </flux:card>
         @endif
     </div>
