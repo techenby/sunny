@@ -6,6 +6,18 @@
         </flux:modal.trigger>
     </div>
 
+    @if ($this->failingSummary)
+        <flux:callout variant="warning" icon="exclamation-triangle">
+            <flux:callout.heading>{{ $this->failingSummary }}</flux:callout.heading>
+            <flux:callout.text>
+                @if ($this->sharedFailingError)
+                    {{ $this->sharedFailingError }}
+                @endif
+                {{ __('Check that each URL is correct and the calendar is still shared. For Google Calendar, copy a fresh "Secret address in iCal format" from the calendar settings and update the URL here.') }}
+            </flux:callout.text>
+        </flux:callout>
+    @endif
+
     <div class="space-y-2">
         @forelse ($this->feeds as $feed)
             <flux:card size="sm" wire:key="calendar-feed-{{ $feed->id }}">
@@ -21,6 +33,10 @@
                         </flux:heading>
 
                         <flux:text variant="subtle" class="truncate max-w-64" title="{{ $feed->url }}">{{ $feed->url }}</flux:text>
+
+                        @if ($feed->isFailing())
+                            <flux:text variant="subtle" class="text-xs">{{ __('Last failed :time', ['time' => $feed->last_failed_at->diffForHumans()]) }}</flux:text>
+                        @endif
                     </div>
 
                     <div class="flex shrink-0 items-center gap-1">
@@ -33,15 +49,6 @@
                         </flux:tooltip>
                     </div>
                 </div>
-
-                @if ($feed->isFailing())
-                    <flux:callout variant="warning" icon="exclamation-triangle" class="mt-2">
-                        <flux:callout.heading>{{ $feed->last_error }}</flux:callout.heading>
-                        <flux:callout.text>
-                            {{ __('Last failed :time. Check that the URL is correct and the calendar is still shared. For Google Calendar, copy a fresh "Secret address in iCal format" from the calendar settings and update the URL here.', ['time' => $feed->last_failed_at->diffForHumans()]) }}
-                        </flux:callout.text>
-                    </flux:callout>
-                @endif
             </flux:card>
         @empty
             <div class="rounded-lg border border-dashed border-zinc-300 p-4 text-sm text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
