@@ -2,7 +2,7 @@
     <div class="flex items-center justify-between">
         <flux:heading size="lg">{{ __('Calendar feeds') }}</flux:heading>
         <flux:modal.trigger name="feed-form">
-            <flux:button variant="primary" size="sm">{{ __('Add Calendar Feed') }}</flux:button>
+            <flux:button variant="primary" icon="plus">{{ __('Add feed') }}</flux:button>
         </flux:modal.trigger>
     </div>
 
@@ -41,11 +41,28 @@
 
                     <div class="flex shrink-0 items-center gap-1">
                         <flux:tooltip :content="__('Edit feed')">
-                            <flux:button type="button" variant="ghost" size="sm" icon="pencil" wire:click="edit({{ $feed->id }})" />
+                            <flux:button
+                                type="button"
+                                icon="pencil-square"
+                                icon:variant="outline"
+                                variant="ghost"
+                                class="text-zinc-500! disabled:text-zinc-400! disabled:opacity-100! dark:text-zinc-400! dark:disabled:text-zinc-600!"
+                                wire:click="edit({{ $feed->id }})"
+                                :aria-label="__('Edit :feed', ['feed' => $feed->name])"
+                            />
                         </flux:tooltip>
 
                         <flux:tooltip :content="__('Remove feed')">
-                            <flux:button type="button" variant="ghost" size="sm" icon="trash" wire:click="delete({{ $feed->id }})" wire:confirm="{{ __('Remove this calendar feed?') }}" />
+                            <flux:button
+                                type="button"
+                                icon="trash"
+                                icon:variant="outline"
+                                variant="ghost"
+                                class="text-zinc-500! hover:text-red-600! dark:text-zinc-400! dark:hover:text-red-400!"
+                                wire:click="delete({{ $feed->id }})"
+                                wire:confirm="{{ __('Remove this calendar feed?') }}"
+                                :aria-label="__('Remove :feed', ['feed' => $feed->name])"
+                            />
                         </flux:tooltip>
                     </div>
                 </div>
