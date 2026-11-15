@@ -172,7 +172,7 @@
                                 <flux:button wire:click="forceDelete({{ $item->id }})" wire:confirm="{{ __('“:name” will be deleted forever for everyone on your team. You won’t be able to bring it back.', ['name' => $item->name]) }}" variant="danger" size="sm" icon="trash">{{ __('Delete forever') }}</flux:button>
                             </div>
                         @else
-                            <x-ui.table.actions :label="__('Actions for :name', ['name' => $item->name])">
+                            <x-ui.actions :label="__('Actions for :name', ['name' => $item->name])">
                                 <flux:menu.item :href="route('inventory.show', ['item' => $item])" icon="eye" wire:navigate>{{ __('View') }}</flux:menu.item>
                                 <flux:menu.item wire:click="edit({{ $item->id }})" icon="pencil">{{ __('Edit') }}</flux:menu.item>
                                 <flux:menu.item wire:click="showQrCode({{ $item->id }})" icon="qr-code">{{ __('QR code') }}</flux:menu.item>
@@ -181,7 +181,7 @@
                                         <flux:menu.item wire:click="openMoveModal({{ $item->id }})" icon="arrow-up-tray">{{ __('Move to another team') }}</flux:menu.item>
                                 @endif
                                 <flux:menu.item wire:click="delete({{ $item->id }})" variant="danger" icon="trash" wire:confirm="{{ $item->deletionWarning() }}">{{ __('Delete') }}</flux:menu.item>
-                            </x-ui.table.actions>
+                            </x-ui.actions>
                         @endif
                     </flux:table.cell>
                 </x-ui.table.row>

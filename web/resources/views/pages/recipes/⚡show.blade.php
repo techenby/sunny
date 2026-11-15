@@ -86,22 +86,19 @@ new class extends Component {
             <flux:button :href="route('recipes.index')" icon="arrow-left" variant="ghost" wire:navigate />
             <flux:heading size="xl">{{ $recipe->name }}</flux:heading>
         </div>
-        <flux:dropdown align="end">
-            <flux:button icon="ellipsis-vertical" variant="ghost" />
-            <flux:menu>
-                <flux:modal.trigger name="share-recipe">
-                    <flux:menu.item icon="share">{{ __('Share') }}</flux:menu.item>
+        <x-ui.actions size="base">
+            <flux:modal.trigger name="share-recipe">
+                <flux:menu.item icon="share">{{ __('Share') }}</flux:menu.item>
+            </flux:modal.trigger>
+            <flux:menu.item icon="document-duplicate" wire:click="remix">{{ __('Remix') }}</flux:menu.item>
+            @if ($this->otherTeams->isNotEmpty())
+                <flux:modal.trigger name="copy-recipe">
+                    <flux:menu.item icon="arrow-up-tray">{{ __('Copy to Team') }}</flux:menu.item>
                 </flux:modal.trigger>
-                <flux:menu.item icon="document-duplicate" wire:click="remix">{{ __('Remix') }}</flux:menu.item>
-                @if ($this->otherTeams->isNotEmpty())
-                    <flux:modal.trigger name="copy-recipe">
-                        <flux:menu.item icon="arrow-up-tray">{{ __('Copy to Team') }}</flux:menu.item>
-                    </flux:modal.trigger>
-                @endif
-                <flux:menu.item icon="pencil" :href="route('recipes.edit', $recipe)" wire:navigate>{{ __('Edit') }}</flux:menu.item>
-                <flux:menu.item wire:click="delete" variant="danger" icon="trash" wire:confirm="{{ __('“:name” will be deleted for everyone on your team.', ['name' => $recipe->name]) }}">{{ __('Delete') }}</flux:menu.item>
-            </flux:menu>
-        </flux:dropdown>
+            @endif
+            <flux:menu.item icon="pencil" :href="route('recipes.edit', $recipe)" wire:navigate>{{ __('Edit') }}</flux:menu.item>
+            <flux:menu.item wire:click="delete" variant="danger" icon="trash" wire:confirm="{{ __('“:name” will be deleted for everyone on your team.', ['name' => $recipe->name]) }}">{{ __('Delete') }}</flux:menu.item>
+        </x-ui.actions>
 
         @include('pages::recipes.modals.share-recipe')
         @include('pages::recipes.modals.copy-to-team')

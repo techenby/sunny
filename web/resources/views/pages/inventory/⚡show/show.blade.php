@@ -31,19 +31,16 @@
         <div class="flex flex-wrap items-center gap-2">
             <flux:button wire:click="edit" icon="pencil">{{ __('Edit') }}</flux:button>
             <flux:button wire:click="showQrCode" icon="qr-code">{{ __('QR code') }}</flux:button>
-            <flux:dropdown align="end">
-                <flux:button icon="ellipsis-vertical" variant="ghost" :aria-label="__('More actions')" />
-                <flux:menu>
-                    <flux:modal.trigger name="duplicate-item">
-                        <flux:menu.item icon="square-2-stack">{{ __('Make copies') }}</flux:menu.item>
+            <x-ui.actions size="base">
+                <flux:modal.trigger name="duplicate-item">
+                    <flux:menu.item icon="square-2-stack">{{ __('Make copies') }}</flux:menu.item>
+                </flux:modal.trigger>
+                @if ($this->otherTeams->isNotEmpty())
+                    <flux:modal.trigger name="move-item">
+                        <flux:menu.item icon="arrow-up-tray">{{ __('Move to another team') }}</flux:menu.item>
                     </flux:modal.trigger>
-                    @if ($this->otherTeams->isNotEmpty())
-                        <flux:modal.trigger name="move-item">
-                            <flux:menu.item icon="arrow-up-tray">{{ __('Move to another team') }}</flux:menu.item>
-                        </flux:modal.trigger>
-                    @endif
-                </flux:menu>
-            </flux:dropdown>
+                @endif
+            </x-ui.actions>
         </div>
     </div>
 

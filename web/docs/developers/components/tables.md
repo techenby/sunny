@@ -8,7 +8,7 @@ order: 7
 
 List tables in SunnyHome are Flux tables with a small set of shared Blade
 components on top. They live in `resources/views/components/ui/table` and are
-used as `<x-ui.table.*>`. The Recipes list and both Inventory tables use them.
+used as `<x-ui.table.*>`, along with the general `<x-ui.actions>` menu. The Recipes list and both Inventory tables use them.
 
 Use them when each row stands for one record that a person can open. A table of
 plain values, such as the costs page or the API tokens list, only needs
@@ -20,7 +20,7 @@ plain values, such as the costs page or the API tokens list, only needs
 | `<x-ui.table.name>` | The record's name, as the row's real link or button. |
 | `<x-ui.table.thumb>` | A 36px photo or icon tile beside the name. |
 | `<x-ui.table.blank>` | A faint dash for a missing value. |
-| `<x-ui.table.actions>` | The row's "⋯" menu. |
+| `<x-ui.actions>` | The row's "⋯" menu. Shared with cards and page headers. |
 | `<x-ui.table.money-cell>` | A right-aligned cell that formats cents as dollars. |
 
 ## A complete row
@@ -53,9 +53,9 @@ plain values, such as the costs page or the API tokens list, only needs
                     @endif
                 </flux:table.cell>
                 <flux:table.cell align="end">
-                    <x-ui.table.actions :label="__('Actions for :name', ['name' => $recipe->name])">
+                    <x-ui.actions :label="__('Actions for :name', ['name' => $recipe->name])">
                         <flux:menu.item :href="route('recipes.edit', $recipe)" icon="pencil" wire:navigate>{{ __('Edit') }}</flux:menu.item>
-                    </x-ui.table.actions>
+                    </x-ui.actions>
                 </flux:table.cell>
             </x-ui.table.row>
         @endforeach
@@ -154,14 +154,25 @@ empty values stay quiet in every table.
 
 ## Actions
 
-`<x-ui.table.actions>` is a dropdown with a ghost "⋯" button, 32px square,
-aligned to the end of the row. Its slot holds the `<flux:menu.item>` entries.
+`<x-ui.actions>` is the "⋯" menu: a dropdown with a ghost button, aligned to
+the end. It lives in `resources/views/components/ui/actions.blade.php` and is
+not specific to tables. List and routine cards and the recipe, list, and
+inventory page headers use it too. Its slot holds the `<flux:menu.item>`
+entries.
 
 | Prop | Default | Description |
 | --- | --- | --- |
-| `label` | `Actions` | The button's accessible name. Include the record's name, such as "Actions for Banana Bread". |
+| `label` | `More actions` | The button's accessible name. For a row or card, include the record's name, such as "Actions for Banana Bread". |
+| `size` | `sm` | The Flux button size. The default is 32px square, for rows and cards. Use `base` in a page header, beside full-size buttons. |
 
-Put it in a cell with `align="end"`, in a column with `class="w-12"`.
+In a table, put it in a cell with `align="end"`, in a column with
+`class="w-12"`.
+
+```blade
+<x-ui.actions size="base">
+    <flux:menu.item icon="arrow-path" wire:click="resetList">{{ __('Uncheck all') }}</flux:menu.item>
+</x-ui.actions>
+```
 
 ## Money cell
 

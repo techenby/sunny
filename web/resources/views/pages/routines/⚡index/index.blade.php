@@ -42,24 +42,20 @@
                             </div>
                         </div>
 
-                        <flux:dropdown>
-                            <flux:button icon="ellipsis-horizontal" variant="ghost" size="sm" />
-
-                            <flux:menu>
-                                <flux:menu.item icon="pencil" wire:click="edit({{ $routine->id }})">{{ __('Edit') }}</flux:menu.item>
-                                <flux:menu.item icon="list-bullet" :href="route('routines.show', $routine)" wire:navigate>{{ __('Steps') }}</flux:menu.item>
-                                <flux:menu.item
-                                    :icon="$routine->is_active ? 'pause' : 'play'"
-                                    wire:click="toggleActive({{ $routine->id }})"
-                                >
-                                    {{ $routine->is_active ? __('Pause') : __('Resume') }}
-                                </flux:menu.item>
-                                <flux:menu.separator />
-                                <flux:menu.item icon="trash" variant="danger" wire:click="delete({{ $routine->id }})" wire:confirm="{{ __('“:name” will be deleted for everyone on your team.', ['name' => $routine->name]) }}">
-                                    {{ __('Delete') }}
-                                </flux:menu.item>
-                            </flux:menu>
-                        </flux:dropdown>
+                        <x-ui.actions :label="__('Actions for :name', ['name' => $routine->name])">
+                            <flux:menu.item icon="pencil" wire:click="edit({{ $routine->id }})">{{ __('Edit') }}</flux:menu.item>
+                            <flux:menu.item icon="list-bullet" :href="route('routines.show', $routine)" wire:navigate>{{ __('Steps') }}</flux:menu.item>
+                            <flux:menu.item
+                                :icon="$routine->is_active ? 'pause' : 'play'"
+                                wire:click="toggleActive({{ $routine->id }})"
+                            >
+                                {{ $routine->is_active ? __('Pause') : __('Resume') }}
+                            </flux:menu.item>
+                            <flux:menu.separator />
+                            <flux:menu.item icon="trash" variant="danger" wire:click="delete({{ $routine->id }})" wire:confirm="{{ __('“:name” will be deleted for everyone on your team.', ['name' => $routine->name]) }}">
+                                {{ __('Delete') }}
+                            </flux:menu.item>
+                        </x-ui.actions>
                     </div>
 
                     <div class="flex flex-wrap items-center gap-2">

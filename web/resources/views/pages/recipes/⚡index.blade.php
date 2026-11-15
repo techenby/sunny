@@ -150,7 +150,7 @@ new class extends Component
                         </flux:table.cell>
                     @endif
                     <flux:table.cell align="end">
-                        <x-ui.table.actions :label="__('Actions for :name', ['name' => $recipe->name])">
+                        <x-ui.actions :label="__('Actions for :name', ['name' => $recipe->name])">
                             <flux:menu.item :href="route('recipes.show', $recipe)" icon="eye" wire:navigate>{{ __('View') }}</flux:menu.item>
                             <flux:menu.item wire:click="remix({{ $recipe->id }})" icon="document-duplicate">{{ __('Remix') }}</flux:menu.item>
                             @if ($this->otherTeams->isNotEmpty())
@@ -158,7 +158,7 @@ new class extends Component
                             @endif
                             <flux:menu.item :href="route('recipes.edit', $recipe)" icon="pencil" wire:navigate>{{ __('Edit') }}</flux:menu.item>
                             <flux:menu.item wire:click="delete({{ $recipe->id }})" variant="danger" icon="trash" wire:confirm="{{ __('“:name” will be deleted for everyone on your team.', ['name' => $recipe->name]) }}">{{ __('Delete') }}</flux:menu.item>
-                        </x-ui.table.actions>
+                        </x-ui.actions>
                     </flux:table.cell>
                 </x-ui.table.row>
             @empty

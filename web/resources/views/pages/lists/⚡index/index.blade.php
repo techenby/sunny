@@ -35,18 +35,14 @@
                             </div>
                         </div>
 
-                        <flux:dropdown>
-                            <flux:button icon="ellipsis-horizontal" variant="ghost" size="sm" />
-
-                            <flux:menu>
-                                <flux:menu.item icon="pencil" wire:click="edit({{ $list->id }})">{{ __('Edit') }}</flux:menu.item>
-                                <flux:menu.item icon="list-bullet" :href="route('lists.show', $list)" wire:navigate>{{ __('Items') }}</flux:menu.item>
-                                <flux:menu.separator />
-                                <flux:menu.item icon="trash" variant="danger" wire:click="delete({{ $list->id }})" wire:confirm="{{ __('“:name” and everything on it will be deleted for everyone on your team.', ['name' => $list->name]) }}">
-                                    {{ __('Delete') }}
-                                </flux:menu.item>
-                            </flux:menu>
-                        </flux:dropdown>
+                        <x-ui.actions :label="__('Actions for :name', ['name' => $list->name])">
+                            <flux:menu.item icon="pencil" wire:click="edit({{ $list->id }})">{{ __('Edit') }}</flux:menu.item>
+                            <flux:menu.item icon="list-bullet" :href="route('lists.show', $list)" wire:navigate>{{ __('Items') }}</flux:menu.item>
+                            <flux:menu.separator />
+                            <flux:menu.item icon="trash" variant="danger" wire:click="delete({{ $list->id }})" wire:confirm="{{ __('“:name” and everything on it will be deleted for everyone on your team.', ['name' => $list->name]) }}">
+                                {{ __('Delete') }}
+                            </flux:menu.item>
+                        </x-ui.actions>
                     </div>
 
                     <div class="flex flex-wrap items-center gap-2">

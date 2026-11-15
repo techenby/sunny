@@ -12,14 +12,10 @@
         </div>
 
         @if ($this->items->contains(fn ($item) => $item->isCompleted()))
-            <flux:dropdown>
-                <flux:button icon="ellipsis-horizontal" variant="ghost" />
-
-                <flux:menu>
-                    <flux:menu.item icon="arrow-path" wire:click="resetList">{{ __('Uncheck all') }}</flux:menu.item>
-                    <flux:menu.item icon="trash" variant="danger" wire:click="clearCompleted">{{ __('Clear completed') }}</flux:menu.item>
-                </flux:menu>
-            </flux:dropdown>
+            <x-ui.actions size="base">
+                <flux:menu.item icon="arrow-path" wire:click="resetList">{{ __('Uncheck all') }}</flux:menu.item>
+                <flux:menu.item icon="trash" variant="danger" wire:click="clearCompleted">{{ __('Clear completed') }}</flux:menu.item>
+            </x-ui.actions>
         @endif
     </div>
 
