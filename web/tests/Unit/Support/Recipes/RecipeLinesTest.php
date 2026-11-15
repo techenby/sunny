@@ -67,5 +67,11 @@ test('it converts editor html into lines', function (string $html, array $lines)
     'nested lists become sections' => ['<ol><li><strong>Make the sauce</strong><ol><li>Simmer.</li><li>Blend.</li></ol></li><li>Serve.</li></ol>', ['# Make the sauce', 'Simmer.', 'Blend.', 'Serve.']],
     'fully bold list items are headings' => ['<ul><li><strong>Wet</strong></li><li>1 cup cider</li></ul>', ['# Wet', '1 cup cider']],
     'inline formatting is dropped' => ['<ol><li>Bake at <strong>375°F</strong> for <a href="#">8 minutes</a>.</li></ol>', ['Bake at 375°F for 8 minutes.']],
+    'lines separated by breaks' => ['<div>4 lbs potatoes<br>1 c. sour cream<br><br>½ tsp. paprika</div>', ['4 lbs potatoes', '1 c. sour cream', '½ tsp. paprika']],
+    'bold lines between breaks are headings' => ['<div>1 tbs yeast<br><br><strong>Glaze<br></strong>½ tsp vanilla</div>', ['1 tbs yeast', '# Glaze', '½ tsp vanilla']],
+    'inline formatting stays on one line between breaks' => ['<div>Fold in banana, <strong><em>or</em></strong> grated carrots<br>Bake.</div>', ['Fold in banana, or grated carrots', 'Bake.']],
+    'a bold block before a list is a heading' => ['<div><strong>Batter</strong></div><ol><li>Preheat oven to 400</li></ol><div><br><strong>Topping</strong></div><ol><li>Mix.</li></ol>', ['# Batter', 'Preheat oven to 400', '# Topping', 'Mix.']],
+    'a step with sub-steps becomes a section' => ['<ol><li>Select your brisket.<ol><li>Buy a whole brisket.</li></ol></li></ol>', ['# Select your brisket.', 'Buy a whole brisket.']],
+    'a long bold line is not a heading' => ['<ul><li><strong>IMPORTANT: This recipe is not an easy one, and requires a lot of mental preparation. Read all notes.</strong></li></ul>', ['IMPORTANT: This recipe is not an easy one, and requires a lot of mental preparation. Read all notes.']],
     'paragraphs without a list' => ['<p>Mix.</p><p></p><p>Bake.</p>', ['Mix.', 'Bake.']],
 ]);

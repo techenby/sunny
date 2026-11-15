@@ -4,11 +4,6 @@ declare(strict_types=1);
 
 namespace App\Support\Recipes;
 
-use DOMDocument;
-use DOMElement;
-use DOMNode;
-use DOMText;
-
 final class RecipeLines
 {
     /** @return list<array<string, mixed>>|null */
@@ -77,16 +72,7 @@ final class RecipeLines
     /** @return list<string> */
     public static function fromHtml(string $html): array
     {
-        $document = new DOMDocument;
-        $document->loadHTML(
-            '<?xml encoding="UTF-8"><div>' . $html . '</div>',
-            LIBXML_NOERROR | LIBXML_NOWARNING | LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD,
-        );
-
-        $lines = [];
-        self::walk($document, $lines);
-
-        return $lines;
+        return (new HtmlLines)->convert($html);
     }
 
     /** @return list<array{type: string, text: string}> */
@@ -133,85 +119,5 @@ final class RecipeLines
         }
 
         return trim(preg_replace('/[\s\x{00A0}]+/u', ' ', (string) $text) ?? '');
-    }
-
-    /** @param  list<string>  $lines */
-    private static function walk(DOMNode $node, array &$lines): void
-    {
-        foreach ($node->childNodes as $child) {
-            if ($child instanceof DOMText) {
-                foreach (preg_split('/\R/u', $child->textContent) ?: [] as $line) {
-                    self::push($lines, $line);
-                }
-
-                continue;
-            }
-
-            if (! $child instanceof DOMElement) {
-                continue;
-            }
-
-            $tag = strtolower($child->nodeName);
-
-            match (true) {
-                in_array($tag, ['ul', 'ol', 'div', 'section', 'blockquote'], true) => self::walk($child, $lines),
-                in_array($tag, ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'strong', 'b'], true) => self::push($lines, $child->textContent, heading: true),
-                $tag === 'li' => self::listItem($child, $lines),
-                $tag === 'p' => self::push($lines, $child->textContent, heading: self::isBold($child)),
-                default => self::push($lines, $child->textContent),
-            };
-        }
-    }
-
-    /** @param  list<string>  $lines */
-    private static function listItem(DOMElement $item, array &$lines): void
-    {
-        $own = $item->cloneNode(true);
-        $nested = [];
-
-        if (! $own instanceof DOMElement) {
-            return;
-        }
-
-        foreach (['ul', 'ol'] as $tag) {
-            foreach (iterator_to_array($own->getElementsByTagName($tag)) as $list) {
-                $list->parentNode?->removeChild($list);
-            }
-        }
-
-        foreach ($item->childNodes as $child) {
-            if ($child instanceof DOMElement && in_array(strtolower($child->nodeName), ['ul', 'ol'], true)) {
-                $nested[] = $child;
-            }
-        }
-
-        self::push($lines, $own->textContent, heading: $nested !== [] || self::isBold($own));
-
-        foreach ($nested as $list) {
-            self::walk($list, $lines);
-        }
-    }
-
-    private static function isBold(DOMElement $element): bool
-    {
-        $bold = '';
-
-        foreach (['strong', 'b'] as $tag) {
-            foreach ($element->getElementsByTagName($tag) as $node) {
-                $bold .= $node->textContent;
-            }
-        }
-
-        return self::clean($bold) !== '' && self::clean($bold) === self::clean($element->textContent);
-    }
-
-    /** @param  list<string>  $lines */
-    private static function push(array &$lines, string $text, bool $heading = false): void
-    {
-        $text = self::clean($text);
-
-        if ($text !== '') {
-            $lines[] = $heading ? "# {$text}" : $text;
-        }
     }
 }
