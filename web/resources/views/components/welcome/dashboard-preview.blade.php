@@ -33,7 +33,7 @@
         <x-welcome.screen width="1000" height="660">
             <div class="flex h-full bg-white text-zinc-950 dark:bg-zinc-800 dark:text-white">
                 <div class="flex w-64 shrink-0 flex-col gap-4 border-e border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-900">
-                    <flux:sidebar.brand href="#" :logo="asset('icon.svg')" name="Sunny Home" />
+                    <flux:sidebar.brand href="#" :logo="asset('icon.svg')" name="SunnyHome" />
 
                     <flux:sidebar.nav>
                         <flux:sidebar.item icon="home" href="#" current>{{ __('Dashboard') }}</flux:sidebar.item>

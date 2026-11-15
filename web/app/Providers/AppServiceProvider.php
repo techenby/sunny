@@ -41,7 +41,7 @@ class AppServiceProvider extends ServiceProvider
             ->description(__('Recipes, lists, routines, calendars, and everything in storage, shared with your whole family. On the web, on your phone, and on the wall.'))
             ->canonical()
             ->og(type: OgType::Website, siteName: config('app.name'))
-            ->ogImage(asset('images/og-image.png'), alt: __('Sunny Home: your household, organized'), width: 1200, height: 630, type: ImageType::Png)
+            ->ogImage(asset('images/og-image.png'), alt: __('SunnyHome: your household, organized'), width: 1200, height: 630, type: ImageType::Png)
             ->twitter(card: TwitterCard::SummaryWithLargeImage)
             ->icon('/favicons/favicon-96x96.png', type: ImageType::Png, sizes: '96x96')
             ->favicon('/favicons/favicon.svg', type: ImageType::Svg)

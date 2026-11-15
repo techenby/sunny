@@ -1,12 +1,12 @@
 ---
 title: HTTP API
-description: Authenticate with Sanctum and work with Sunny's recipe, inventory, list, routine, and sync endpoints.
+description: Authenticate with Sanctum and work with SunnyHome's recipe, inventory, list, routine, and sync endpoints.
 order: 3
 ---
 
 # HTTP API
 
-Sunny exposes a Sanctum-protected JSON API under `/api`. It currently supports
+SunnyHome exposes a Sanctum-protected JSON API under `/api`. It currently supports
 inventory items, recipes, lists, routines, user details, and multi-team synchronization.
 
 ## Create a token
@@ -117,7 +117,7 @@ Item, recipe, list, and routine endpoints are scoped to a team in the URL:
 `/api/teams/{team}/...`, where `{team}` is the team's `slug` (returned by
 `GET /api/sync`). The user must belong to that team.
 
-The API never changes the user's current team in Sunny, so a client can work
+The API never changes the user's current team in SunnyHome, so a client can work
 with several teams at once and switching teams is purely a client-side choice.
 A record requested under a team it doesn't belong to returns `404`.
 
@@ -242,7 +242,7 @@ existing item by sending `completed`:
 }
 ```
 
-Sunny records when the item was checked and by whom in `completed_at` and
+SunnyHome records when the item was checked and by whom in `completed_at` and
 `completed_by`. Checking an item that is already checked, or unchecking one
 that isn't, leaves it unchanged, so a client can safely send the same change
 again.
@@ -251,7 +251,7 @@ again.
 
 Item, recipe, list, list item, routine, and routine step creates accept an
 optional `client_uuid`. If
-a request with the same `client_uuid` has already created a record, Sunny
+a request with the same `client_uuid` has already created a record, SunnyHome
 returns that record with `200` instead of creating another, so an offline
 client can retry a create without making duplicates.
 
@@ -273,7 +273,7 @@ Create a routine with:
 `frequency` must be `daily`, `weekly`, or `monthly`. A weekly routine needs
 `weekdays`, from `0` (Sunday) to `6` (Saturday); a monthly routine needs a
 `day_of_month` from `1` to `31`, and runs on the last day of shorter months.
-Sunny clears whichever of the two the frequency doesn't use. `starts_on`
+SunnyHome clears whichever of the two the frequency doesn't use. `starts_on`
 (`YYYY-MM-DD`) defaults to today in the team's timezone, and `is_active`
 defaults to `true`; pausing a routine stops it appearing from today onward.
 `user_id` is optional and must be a member of the team; leave it `null` for a
@@ -335,4 +335,4 @@ Expect standard Laravel JSON errors:
 - `422` when validation fails.
 - `429` when too many token or two-factor requests are made.
 
-Sanctum tokens don't work with Sunny's [MCP server](/docs/developers/mcp/setup), which only accepts OAuth.
+Sanctum tokens don't work with SunnyHome's [MCP server](/docs/developers/mcp/setup), which only accepts OAuth.

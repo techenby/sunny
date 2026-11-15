@@ -9,7 +9,7 @@
                 <flux:sidebar.brand
                     href="#"
                     :logo="asset('icon.svg')"
-                    name="Sunny Home"
+                    name="SunnyHome"
                 />
                 <flux:sidebar.collapse class="in-data-flux-sidebar-on-desktop:not-in-data-flux-sidebar-collapsed-desktop:-mr-2" />
             </flux:sidebar.header>

@@ -1,12 +1,12 @@
 ---
 title: Architecture and Operations
-description: Understand Sunny's request surfaces, team scoping, background work, and integrations.
+description: Understand SunnyHome's request surfaces, team scoping, background work, and integrations.
 order: 2
 ---
 
 # Architecture and Operations
 
-Sunny keeps business rules in reusable actions so the Livewire interface, HTTP
+SunnyHome keeps business rules in reusable actions so the Livewire interface, HTTP
 API, and MCP server can share the same behavior.
 
 ```mermaid

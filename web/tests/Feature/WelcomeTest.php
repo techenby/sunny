@@ -12,7 +12,7 @@ test('displays the landing page for guests', function () {
         ->assertSee('Your household, organized')
         ->assertSeeInOrder(['id="features"', 'id="kiosk"', 'id="mobile"', 'id="assistant"', 'id="built-by"'], false)
         ->assertDontSee('Soon')
-        ->assertSee('Sunny Home')
+        ->assertSee('SunnyHome')
         ->assertSee('Built by Andy Swick')
         ->assertSee('https://github.com/techenby/sunny')
         ->assertSee(route('privacy'))
@@ -34,8 +34,8 @@ test('includes a description and preview image for link previews', function () {
 test('describes the app with structured data', function () {
     $this->get('/')
         ->assertOk()
-        ->assertSee('"@type":"WebSite","name":"Sunny Home"', false)
-        ->assertSee('"@type":"WebApplication","name":"Sunny Home"', false)
+        ->assertSee('"@type":"WebSite","name":"SunnyHome"', false)
+        ->assertSee('"@type":"WebApplication","name":"SunnyHome"', false)
         ->assertSee('"offers":{"@type":"Offer","price":0,"priceCurrency":"USD"}', false);
 });
 

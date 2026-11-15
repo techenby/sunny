@@ -24,7 +24,7 @@ recipe menu to fill in or change the other fields.
 ## Import from a website
 
 On the Add Recipe or Edit Recipe screen, paste a recipe URL into **Source** and
-select the import button at the end of the field. Sunny fills the fields it can
+select the import button at the end of the field. SunnyHome fills the fields it can
 read from the page.
 
 > [!IMPORTANT]
@@ -56,7 +56,7 @@ Open a recipe to see its complete details. Its menu provides these actions:
 3. Copy the generated link and send it to the person who needs it.
 
 Anyone with the link can view the recipe without joining your team. A signed-in
-Sunny user can select **Add to My Team** to save a copy in their current
+SunnyHome user can select **Add to My Team** to save a copy in their current
 cookbook.
 
 Turn **Public Link** off when the link should stop working.
