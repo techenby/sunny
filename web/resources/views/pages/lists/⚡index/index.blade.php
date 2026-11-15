@@ -1,7 +1,7 @@
 <div class="space-y-6">
     <div class="flex items-center justify-between">
         <flux:heading size="xl">{{ __('Lists') }}</flux:heading>
-        <flux:button variant="primary" wire:click="create">{{ __('Add List') }}</flux:button>
+        <flux:button variant="primary" icon="plus" wire:click="create">{{ __('Add list') }}</flux:button>
     </div>
 
     <flux:text>
