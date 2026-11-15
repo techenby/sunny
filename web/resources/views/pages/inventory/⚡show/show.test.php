@@ -151,6 +151,21 @@ test('the delete confirmation names the item and says where its contents go', fu
         ->assertSee('“Tool Chest” will be deleted for everyone on your team. The 2 things inside it will move to “Not in a place yet”.');
 });
 
+test('a deleted item does not offer delete again', function () {
+    $user = User::factory()->create();
+    $item = Item::factory()->for($user->currentTeam)->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::inventory.show', ['item' => $item])
+        ->assertSeeHtml('wire:click="delete"');
+
+    $item->delete();
+
+    Livewire::actingAs($user)
+        ->test('pages::inventory.show', ['item' => $item->fresh()])
+        ->assertDontSeeHtml('wire:click="delete"');
+});
+
 describe('contents', function () {
     test('lists the items inside', function () {
         $user = User::factory()->create();

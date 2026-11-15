@@ -40,6 +40,10 @@
                         <flux:menu.item icon="arrow-up-tray">{{ __('Move to another team') }}</flux:menu.item>
                     </flux:modal.trigger>
                 @endif
+                @unless ($item->trashed())
+                    <flux:menu.separator />
+                    <flux:menu.item wire:click="delete" wire:confirm="{{ $item->deletionWarning() }}" variant="danger" icon="trash">{{ __('Delete') }}</flux:menu.item>
+                @endunless
             </x-ui.actions>
         </div>
     </div>
@@ -64,7 +68,7 @@
                     <flux:card class="text-center">
                         <flux:text>{{ __('Nothing inside yet.') }}</flux:text>
                         @unless ($item->trashed())
-                            <flux:button wire:click="create" icon="plus" variant="primary" size="sm" class="mt-3">{{ __('Put something inside') }}</flux:button>
+                            <flux:button wire:click="create" icon="plus" variant="primary" class="mt-3">{{ __('Put something inside') }}</flux:button>
                         @endunless
                     </flux:card>
                 @else
@@ -165,12 +169,6 @@
             @endif
         </div>
     </div>
-
-    @unless ($item->trashed())
-    <div class="flex justify-center">
-        <flux:button wire:click="delete" wire:confirm="{{ $item->deletionWarning() }}" variant="subtle" icon="trash" class="!text-red-600 dark:!text-red-400">{{ __('Delete :name', ['name' => $item->name]) }}</flux:button>
-    </div>
-    @endunless
 
     @include('pages.inventory.modals.item-form')
     @include('pages.inventory.modals.qr-code')
