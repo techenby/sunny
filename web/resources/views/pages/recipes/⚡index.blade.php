@@ -26,7 +26,7 @@ new class extends Component {
     public function recipes(): LengthAwarePaginator
     {
         return Auth::user()->currentTeam->recipes()
-            ->when($this->search, fn ($query) => $query->where('name', 'like', '%' . $this->search . '%'))
+            ->when($this->search, fn ($query) => $query->whereLike('name', '%' . $this->search . '%'))
             ->orderBy($this->sortBy, $this->sortDirection)
             ->paginate(10);
     }

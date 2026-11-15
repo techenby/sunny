@@ -36,6 +36,23 @@ test('it filters recipes by name or ingredients', function () {
         ->assertDontSee('Garden Salad');
 });
 
+test('it ignores letter case when filtering by name or ingredients', function () {
+    $user = User::factory()->create();
+    Recipe::factory()->for($user->currentTeam)->create(['name' => 'Chocolate Cake']);
+    Recipe::factory()->for($user->currentTeam)->create([
+        'name' => 'Morning Oats',
+        'ingredients' => '<ul><li>1 cup Chocolate chips</li></ul>',
+    ]);
+    Recipe::factory()->for($user->currentTeam)->create(['name' => 'Garden Salad']);
+
+    SunnyServer::actingAs($user)
+        ->tool(SearchRecipes::class, ['query' => 'cHOCOLATE'])
+        ->assertOk()
+        ->assertSee('Chocolate Cake')
+        ->assertSee('Morning Oats')
+        ->assertDontSee('Garden Salad');
+});
+
 test('it filters recipes by tag', function () {
     $user = User::factory()->create();
     Recipe::factory()->for($user->currentTeam)->withTags(['Dinner'])->create(['name' => 'Pot Roast']);

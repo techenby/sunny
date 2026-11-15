@@ -31,8 +31,8 @@ class SearchRecipes extends Tool
         $recipes = $request->user()->currentTeam->recipes()
             ->when($validated['query'] ?? null, function ($builder, string $query) {
                 $builder->where(function ($builder) use ($query) {
-                    $builder->where('name', 'like', "%{$query}%")
-                        ->orWhere('ingredients', 'like', "%{$query}%");
+                    $builder->whereLike('name', "%{$query}%")
+                        ->orWhereLike('ingredients', "%{$query}%");
                 });
             })
             ->when($validated['tag'] ?? null, fn ($builder, string $tag) => $builder->whereJsonContains('tags', $tag))
