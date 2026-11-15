@@ -18,13 +18,13 @@ does not make it private or prevent another team member from updating it.
 
 1. Open **Lists** from the main sidebar.
 2. Select **Add List**.
-3. Enter a name and choose **To-do**, **Shopping**, or **Wish List**. The type
+3. Enter a name and choose **To-do**, **Shopping**, or **Wish list**. The type
    supplies a recognizable label and icon; all three work the same way.
 4. Set **Belongs to** to the whole **Household** or to a specific team member.
 5. Select **Create**.
 6. Add items using the field at the bottom of the list.
 
-On a **Wish List**, you can also paste a link, such as the product page, into
+On a **Wish list**, you can also paste a link, such as the product page, into
 the **Link (optional)** field when adding an item. Items with a link show a
 button that opens it in a new tab.
 

@@ -18,7 +18,7 @@ it('lists the team’s lists alphabetically with their progress', function () {
         ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === 'Groceries'
             && ($node['props']['supporting'] ?? null) === 'Shopping · 1 of 3 done')
         ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === 'Birthday ideas'
-            && ($node['props']['supporting'] ?? null) === 'Wish List · No items')
+            && ($node['props']['supporting'] ?? null) === 'Wish list · No items')
         ->assertAccessible();
 
     $headlines = [];
@@ -258,7 +258,7 @@ it('opens the create screen from the overview', function () {
         ->assertNavTitle('New list')
         ->assertSee('Name')
         ->assertSee('Type')
-        ->assertSet('typeOptions', ['To-do', 'Shopping', 'Wish List'])
+        ->assertSet('typeOptions', ['To-do', 'Shopping', 'Wish list'])
         ->assertAccessible();
 });
 
