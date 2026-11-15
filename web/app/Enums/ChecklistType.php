@@ -33,7 +33,7 @@ enum ChecklistType: string
         return match ($this) {
             self::Todo => __('To-do'),
             self::Shopping => __('Shopping'),
-            self::Wishlist => __('Wish List'),
+            self::Wishlist => __('Wish list'),
         };
     }
 }
