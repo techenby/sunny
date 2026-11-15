@@ -4,6 +4,7 @@ use App\Mcp\Servers\SunnyServer;
 use App\Mcp\Tools\Recipes\CreateRecipe;
 use App\Models\Recipe;
 use App\Models\User;
+use Illuminate\Support\Arr;
 
 test('it creates a recipe for the current team', function () {
     $user = User::factory()->create();
@@ -28,23 +29,28 @@ test('it creates a recipe for the current team', function () {
     expect(Recipe::sole()->tags)->toBe(['Dessert']);
 });
 
-test('it wraps plain text ingredients and instructions in html lists', function () {
+test('it stores plain text ingredients and instructions as rows', function () {
     $user = User::factory()->create();
 
     SunnyServer::actingAs($user)
         ->tool(CreateRecipe::class, [
             'name' => 'Simple Bread',
-            'ingredients' => "- 2 cups flour\n- 1 cup water\n\n- 1 tsp salt",
+            'ingredients' => "# Dough\n- 2 cups flour\n- 1 cup water\n\n- 1 tsp salt",
             'instructions' => "1. Mix everything.\n2. Bake at 450F.",
         ])
         ->assertOk();
 
-    expect(Recipe::sole())
-        ->ingredients->toBe('<ul><li>2 cups flour</li><li>1 cup water</li><li>1 tsp salt</li></ul>')
-        ->instructions->toBe('<ol><li>Mix everything.</li><li>Bake at 450F.</li></ol>');
+    $recipe = Recipe::sole();
+
+    expect(array_map(fn (array $row): array => Arr::only($row, ['type', 'text']), $recipe->ingredients))->toBe([
+        ['type' => 'heading', 'text' => 'Dough'],
+        ['type' => 'item', 'text' => '2 cups flour'],
+        ['type' => 'item', 'text' => '1 cup water'],
+        ['type' => 'item', 'text' => '1 tsp salt'],
+    ])->and(array_column($recipe->instructions, 'text'))->toBe(['Mix everything.', 'Bake at 450F.']);
 });
 
-test('it leaves html ingredients and instructions untouched', function () {
+test('it converts html ingredients and instructions to rows', function () {
     $user = User::factory()->create();
 
     SunnyServer::actingAs($user)
@@ -55,9 +61,10 @@ test('it leaves html ingredients and instructions untouched', function () {
         ])
         ->assertOk();
 
-    expect(Recipe::sole())
-        ->ingredients->toBe('<ul><li>2 cups flour</li></ul>')
-        ->instructions->toBe('<ol><li>Mix and bake.</li></ol>');
+    $recipe = Recipe::sole();
+
+    expect(array_column($recipe->ingredients, 'text'))->toBe(['2 cups flour'])
+        ->and(array_column($recipe->instructions, 'text'))->toBe(['Mix and bake.']);
 });
 
 test('it requires a name', function () {

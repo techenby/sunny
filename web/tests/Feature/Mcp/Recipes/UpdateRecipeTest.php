@@ -25,7 +25,7 @@ test('it updates a recipe on the current team', function () {
     ]);
 });
 
-test('it wraps plain text ingredients and instructions in html lists', function () {
+test('it stores plain text ingredients and instructions as rows', function () {
     $user = User::factory()->create();
     $recipe = Recipe::factory()->for($user->currentTeam)->create();
 
@@ -37,9 +37,8 @@ test('it wraps plain text ingredients and instructions in html lists', function 
         ])
         ->assertOk();
 
-    expect($recipe->fresh())
-        ->ingredients->toBe('<ul><li>2 cups flour</li><li>1 cup water</li></ul>')
-        ->instructions->toBe('<ol><li>Mix everything.</li><li>Bake at 450F.</li></ol>');
+    expect(array_column($recipe->fresh()->ingredients, 'text'))->toBe(['2 cups flour', '1 cup water'])
+        ->and(array_column($recipe->fresh()->instructions, 'text'))->toBe(['Mix everything.', 'Bake at 450F.']);
 });
 
 test('it requires an id', function () {

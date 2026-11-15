@@ -7,6 +7,7 @@ namespace App\Livewire\Forms\Recipes;
 use App\Actions\Recipes\CreateRecipe;
 use App\Actions\Recipes\UpdateRecipe;
 use App\Models\Recipe;
+use App\Support\Recipes\RecipeLines;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
@@ -61,8 +62,8 @@ class RecipeForm extends Form
             'cook_time' => $recipe->cook_time,
             'total_time' => $recipe->total_time,
             'description' => $recipe->description,
-            'ingredients' => $recipe->ingredients,
-            'instructions' => $recipe->instructions,
+            'ingredients' => RecipeLines::text($recipe->ingredients),
+            'instructions' => RecipeLines::text($recipe->instructions),
             'notes' => $recipe->notes,
             'nutrition' => $recipe->nutrition,
             'parent_id' => $recipe->parent_id,

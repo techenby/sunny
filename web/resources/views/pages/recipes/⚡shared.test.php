@@ -47,8 +47,8 @@ test('authenticated user can add shared recipe to their team', function () {
     $recipe = Recipe::factory()->shared()->create([
         'name' => 'Grandma Cookies',
         'description' => 'Delicious cookies',
-        'ingredients' => '<ul><li>Flour</li></ul>',
-        'instructions' => '<ol><li>Mix</li></ol>',
+        'ingredients' => 'Flour',
+        'instructions' => 'Mix',
     ]);
 
     $user = User::factory()->create();

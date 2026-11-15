@@ -15,8 +15,8 @@ test('it creates a recipe for the given team', function () {
         'cook_time' => '45m',
         'total_time' => '1h',
         'description' => 'A rich chocolate cake.',
-        'ingredients' => '<ul><li>2 cups flour</li></ul>',
-        'instructions' => '<ol><li>Mix ingredients.</li></ol>',
+        'ingredients' => '2 cups flour',
+        'instructions' => 'Mix ingredients.',
         'notes' => 'Best served warm.',
         'nutrition' => 'Calories: 350',
     ]);
@@ -31,8 +31,8 @@ test('it creates a recipe for the given team', function () {
         ->cook_time->toBe('45m')
         ->total_time->toBe('1h')
         ->description->toBe('A rich chocolate cake.')
-        ->ingredients->toBe('<ul><li>2 cups flour</li></ul>')
-        ->instructions->toBe('<ol><li>Mix ingredients.</li></ol>')
+        ->ingredients->toBe([['type' => 'item', 'text' => '2 cups flour', 'quantity' => 2.0, 'quantity_max' => null, 'unit' => 'cup', 'name' => 'flour']])
+        ->instructions->toBe([['type' => 'step', 'text' => 'Mix ingredients.', 'timers' => []]])
         ->notes->toBe('Best served warm.')
         ->nutrition->toBe('Calories: 350');
 

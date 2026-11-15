@@ -14,7 +14,7 @@ use Laravel\Mcp\Server\Tool;
 use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 
 #[IsReadOnly]
-#[Description('Fetch the full details of a single recipe from the current team by id or slug, including its ingredients and instructions as HTML lists, source, notes, and nutrition information.')]
+#[Description('Fetch the full details of a single recipe from the current team by id or slug, including its ingredients and instructions as ordered lists of rows, source, notes, and nutrition information.')]
 class GetRecipe extends Tool
 {
     public function handle(Request $request): Response|ResponseFactory
@@ -71,10 +71,10 @@ class GetRecipe extends Tool
             'name' => $schema->string()->required(),
             'slug' => $schema->string()->required(),
             'description' => $schema->string()->nullable()->required(),
-            'ingredients' => $schema->string()->nullable()->required()
-                ->description('HTML <ul> list of ingredients.'),
-            'instructions' => $schema->string()->nullable()->required()
-                ->description('HTML <ol> list of steps.'),
+            'ingredients' => $schema->array()->items($schema->object())->nullable()->required()
+                ->description('Ingredient rows in order. Each has a type ("item" or "heading") and text; items also have a parsed quantity, quantity_max, unit, and name, which are null when the line has no leading amount.'),
+            'instructions' => $schema->array()->items($schema->object())->nullable()->required()
+                ->description('Instruction rows in order. Each has a type ("step" or "heading") and text; steps also have timers, a list of durations in seconds found in the text.'),
             'servings' => $schema->string()->nullable()->required(),
             'prep_time' => $schema->string()->nullable()->required(),
             'cook_time' => $schema->string()->nullable()->required(),

@@ -10,8 +10,8 @@ test('it returns a recipe by id', function () {
     $user = User::factory()->create();
     $recipe = Recipe::factory()->for($user->currentTeam)->create([
         'name' => 'Chocolate Cake',
-        'ingredients' => '<ul><li>2 cups flour</li></ul>',
-        'instructions' => '<ol><li>Mix and bake.</li></ol>',
+        'ingredients' => '2 cups flour',
+        'instructions' => 'Mix, then bake for 30 minutes.',
         'notes' => 'Best served warm.',
         'nutrition' => 'Calories: 350 kcal',
     ]);
@@ -22,8 +22,8 @@ test('it returns a recipe by id', function () {
         ->assertStructuredContent(fn (AssertableJson $json) => $json
             ->where('id', $recipe->id)
             ->where('name', 'Chocolate Cake')
-            ->where('ingredients', '<ul><li>2 cups flour</li></ul>')
-            ->where('instructions', '<ol><li>Mix and bake.</li></ol>')
+            ->where('ingredients', [['type' => 'item', 'text' => '2 cups flour', 'quantity' => 2, 'quantity_max' => null, 'unit' => 'cup', 'name' => 'flour']])
+            ->where('instructions', [['type' => 'step', 'text' => 'Mix, then bake for 30 minutes.', 'timers' => [['seconds' => 1800]]]])
             ->where('notes', 'Best served warm.')
             ->where('nutrition', 'Calories: 350 kcal')
             ->etc());

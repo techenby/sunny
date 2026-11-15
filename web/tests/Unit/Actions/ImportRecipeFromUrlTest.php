@@ -39,8 +39,8 @@ test('parses direct Recipe JSON-LD', function () {
         ->cook_time->toBe('45m')
         ->total_time->toBe('1h')
         ->description->toBe('A rich chocolate cake.')
-        ->ingredients->toBe('<ul><li>2 cups flour</li><li>1 cup sugar</li><li>3 eggs</li></ul>')
-        ->instructions->toBe('<ol><li>Mix dry ingredients.</li><li>Add wet ingredients.</li><li>Bake at 350F for 45 minutes.</li></ol>')
+        ->ingredients->toBe("2 cups flour\n1 cup sugar\n3 eggs")
+        ->instructions->toBe("Mix dry ingredients.\nAdd wet ingredients.\nBake at 350F for 45 minutes.")
         ->nutrition->toContain('Calories: 350 kcal')
         ->nutrition->toContain('Fat: 12g')
         ->nutrition->toContain('Protein: 5g');
@@ -118,7 +118,7 @@ test('handles string instructions', function () {
 
     $result = (new ImportRecipeFromUrl)->handle('https://example.com/simple');
 
-    expect($result['instructions'])->toBe('<ol><li>Step one.</li><li>Step two.</li><li>Step three.</li></ol>');
+    expect($result['instructions'])->toBe("Step one.\nStep two.\nStep three.");
 });
 
 test('handles array recipeYield', function () {
@@ -166,10 +166,7 @@ test('handles HowToSection nested instructions', function () {
     $result = (new ImportRecipeFromUrl)->handle('https://example.com/applesauce');
 
     expect($result['instructions'])
-        ->toContain('<strong>Make Applesauce</strong>')
-        ->toContain('<strong>To Can Applesauce</strong>')
-        ->toContain('<li>Peel and chop apples.</li>')
-        ->toContain('<li>Sterilize jars.</li>');
+        ->toBe("# Make Applesauce\nPeel and chop apples.\nSimmer with water.\n# To Can Applesauce\nSterilize jars.\nProcess in boiling water.");
 });
 
 test('uses recipe url from schema when available', function () {

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Mcp\Tools\Recipes;
 
 use App\Actions\Recipes\UpdateRecipe as UpdateRecipeAction;
-use App\Mcp\Tools\Recipes\Concerns\NormalizesRecipeLists;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Gate;
@@ -16,11 +15,9 @@ use Laravel\Mcp\Server\Tool;
 use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 
 #[IsIdempotent]
-#[Description('Update an existing recipe on the current team. Only the provided fields are changed. The ingredients and instructions fields accept either plain text (one item per line) or HTML lists; plain text is automatically wrapped in <ul>/<ol> lists.')]
+#[Description('Update an existing recipe on the current team. Only the provided fields are changed. The ingredients and instructions fields take plain text with one entry per line. Start a line with "# " to make it a section heading.')]
 class UpdateRecipe extends Tool
 {
-    use NormalizesRecipeLists;
-
     public function handle(Request $request, UpdateRecipeAction $action): Response
     {
         $validated = $request->validate([
@@ -49,7 +46,7 @@ class UpdateRecipe extends Tool
 
         $recipe = $action->handle(
             $recipe,
-            $this->normalizeRecipeLists(Arr::except($validated, ['id'])),
+            Arr::except($validated, ['id']),
         );
 
         return Response::text(json_encode($recipe->only([
@@ -71,9 +68,9 @@ class UpdateRecipe extends Tool
             'description' => $schema->string()
                 ->description('A short description of the recipe.'),
             'ingredients' => $schema->string()
-                ->description('The ingredients, as plain text with one ingredient per line or as an HTML <ul> list.'),
+                ->description('The ingredients, as plain text with one ingredient per line. Start a line with "# " for a section heading.'),
             'instructions' => $schema->string()
-                ->description('The instructions, as plain text with one step per line or as an HTML <ol> list.'),
+                ->description('The instructions, as plain text with one step per line. Start a line with "# " for a section heading.'),
             'servings' => $schema->string()
                 ->description('How many servings the recipe yields, e.g. "4" or "8 servings".'),
             'prep_time' => $schema->string()

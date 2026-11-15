@@ -84,9 +84,9 @@ use Laravel\Mcp\Server\Tools\ToolSearch;
     also changes the current team in the user's Sunny web app. Only the move/copy
     tools write to another team, and only to teams the user belongs to.
 
-    Recipes: `ingredients` and `instructions` are stored as HTML (`<ul>`/`<ol>` lists).
-    Plain text passed to the create/update tools is automatically wrapped into lists,
-    one item per line.
+    Recipes: `ingredients` and `instructions` are stored as ordered rows. Pass plain text
+    to the create/update tools, one entry per line; a line starting with `# ` becomes a
+    section heading. Quantities, units, and step timers are parsed from the text.
 
     Inventory: items form a hierarchy via `parent_id`. An item's `type` is one of
     `location`, `bin`, or `item` (e.g. a shelf location contains bins, bins contain items).
