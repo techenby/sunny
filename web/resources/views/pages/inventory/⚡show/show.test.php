@@ -189,6 +189,31 @@ describe('contents', function () {
             ->assertSee('Nothing inside yet.');
     });
 
+    test('a thing with nothing inside offers a quiet way to put something inside', function () {
+        $user = User::factory()->create();
+        $thing = Item::factory()->for($user->currentTeam)->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.show', ['item' => $thing])
+            ->assertSee('Does this hold other things?')
+            ->assertDontSee('Nothing inside yet.')
+            ->assertDontSee('What’s inside')
+            ->call('create')
+            ->assertSet('form.parent_id', $thing->id);
+    });
+
+    test('a thing with something inside lists it', function () {
+        $user = User::factory()->create();
+        $thing = Item::factory()->for($user->currentTeam)->create();
+        Item::factory()->for($user->currentTeam)->childOf($thing)->create(['name' => 'Spare Strings']);
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.show', ['item' => $thing])
+            ->assertSee('What’s inside (1)')
+            ->assertSeeHtml('<span>Spare Strings</span>')
+            ->assertDontSee('Does this hold other things?');
+    });
+
     test('can add an item inside', function () {
         $user = User::factory()->create();
         $bin = Item::factory()->for($user->currentTeam)->bin()->create(['name' => 'Blue Bin']);

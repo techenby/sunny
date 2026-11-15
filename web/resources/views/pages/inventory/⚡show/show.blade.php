@@ -54,6 +54,14 @@
                 <img src="{{ $item->photo_url }}" alt="{{ __('Photo of :name', ['name' => $item->name]) }}" class="w-full rounded-lg object-cover max-h-96" />
             @endif
 
+            @if ($item->type === \App\Enums\ItemType::Item && $this->children->isEmpty())
+                @unless ($item->trashed())
+                    <flux:text>
+                        {{ __('Does this hold other things?') }}
+                        <flux:link as="button" variant="ghost" wire:click="create">{{ __('Put something inside') }}</flux:link>
+                    </flux:text>
+                @endunless
+            @else
             <div class="space-y-3">
                 <div class="flex items-center justify-between gap-2">
                     <flux:heading size="lg">
@@ -105,6 +113,7 @@
                     </flux:table>
                 @endif
             </div>
+            @endif
         </div>
 
         <div class="space-y-6">
