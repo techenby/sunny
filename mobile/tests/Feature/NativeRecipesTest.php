@@ -95,7 +95,7 @@ it('stops counting a ticked ingredient once a sync changes that line', function 
         ->tap('ingredient-5')
         ->assertSee('2 of 6');
 
-    Recipe::find(1)->update(['ingredients' => '<ul><li>2 cups flour</li><li>1 cup oat milk</li></ul>']);
+    Recipe::find(1)->update(['ingredients' => "2 cups flour\n1 cup oat milk"]);
 
     $screen->emitNative('sunny-sync-complete', ['status' => 'finished'])
         ->assertDontSee('of 2')
@@ -112,12 +112,21 @@ it('skips blank recipe fields', function () {
         ->assertMissingElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'recipe-description');
 });
 
-it('splits paragraph-formatted ingredients into rows', function () {
-    Native::visit('/recipes/5')
-        ->assertSee('1 cup rolled oats')
-        ->assertSee('1 tbsp chia seeds')
-        ->assertElement('row', fn (array $node): bool => ($node['ref'] ?? null) === 'step-1')
-        ->assertSee('Stir everything together in a jar, cover, and refrigerate overnight.');
+it('shows headings between ingredients and steps without counting them', function () {
+    Recipe::find(1)->update([
+        'ingredients' => "# Dry\n2 cups flour\n# Wet\n2 eggs",
+        'instructions' => "Preheat the griddle.\n# Batter\nWhisk everything together.",
+    ]);
+
+    Native::visit('/recipes/1')
+        ->assertSee('Dry')
+        ->assertSee('Wet')
+        ->assertSee('Batter')
+        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'ingredient-0')
+        ->tap('ingredient-1')
+        ->assertSee('1 of 2')
+        ->assertElement('row', fn (array $node): bool => ($node['ref'] ?? null) === 'step-2')
+        ->assertMissingElement('row', fn (array $node): bool => ($node['ref'] ?? null) === 'step-3');
 });
 
 it('offers to add ingredients and steps when a recipe has none', function () {
