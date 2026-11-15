@@ -57,7 +57,7 @@ test('remix shows parent recipe', function () {
     $this->actingAs($user)
         ->get(route('recipes.show', $remix))
         ->assertOk()
-        ->assertSee('Remixed From')
+        ->assertSee('Remixed from')
         ->assertSee('Original Recipe');
 });
 
