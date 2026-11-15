@@ -73,6 +73,76 @@ test('parent shows remixes', function () {
         ->assertSee('Remixed Recipe');
 });
 
+describe('remixes', function () {
+    test('labels each remix with its team, what changed and when', function () {
+        $this->freezeTime();
+
+        $user = User::factory()->create();
+        $original = Recipe::factory()->for($user->currentTeam)->create([
+            'ingredients' => '<ul><li>Flour</li></ul>',
+            'servings' => '4',
+        ]);
+        Recipe::factory()->remixOf($original)->create([
+            'name' => 'Gluten Free Cake',
+            'ingredients' => '<ul><li>Rice flour</li></ul>',
+            'servings' => '6',
+            'created_at' => now()->subDays(2),
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('recipes.show', $original))
+            ->assertOk()
+            ->assertSee('Gluten Free Cake')
+            ->assertSee($user->currentTeam->name)
+            ->assertSee('Changed ingredients and servings')
+            ->assertSee('2 days ago');
+    });
+
+    test('says when a remix has no changes', function () {
+        $user = User::factory()->create();
+        $original = Recipe::factory()->for($user->currentTeam)->create(['ingredients' => '<ul><li>Flour</li></ul>']);
+        Recipe::factory()->remixOf($original)->create(['ingredients' => '<ul><li>Flour</li></ul>']);
+
+        $this->actingAs($user)
+            ->get(route('recipes.show', $original))
+            ->assertOk()
+            ->assertSee('No changes yet');
+    });
+
+    test('shows an empty state when there are no remixes', function () {
+        $user = User::factory()->create();
+        $recipe = Recipe::factory()->for($user->currentTeam)->create();
+
+        $this->actingAs($user)
+            ->get(route('recipes.show', $recipe))
+            ->assertOk()
+            ->assertSee('No remixes yet');
+    });
+
+    test('never lists the recipe itself', function () {
+        $user = User::factory()->create();
+        $recipe = Recipe::factory()->for($user->currentTeam)->create(['name' => 'Self Referencing Soup']);
+        $recipe->update(['parent_id' => $recipe->id]);
+
+        $this->actingAs($user)
+            ->get(route('recipes.show', $recipe))
+            ->assertOk()
+            ->assertSee('No remixes yet');
+    });
+
+    test('hides remixes copied to teams the user is not in', function () {
+        $user = User::factory()->create();
+        $original = Recipe::factory()->for($user->currentTeam)->create();
+        Recipe::factory()->remixOf($original)->create(['team_id' => Team::factory(), 'name' => 'Another Household Copy']);
+
+        $this->actingAs($user)
+            ->get(route('recipes.show', $original))
+            ->assertOk()
+            ->assertDontSee('Another Household Copy')
+            ->assertSee('No remixes yet');
+    });
+});
+
 test('shows tags on recipe', function () {
     $user = User::factory()->create();
     $recipe = Recipe::factory()->for($user->currentTeam)->create([

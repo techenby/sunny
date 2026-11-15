@@ -108,19 +108,39 @@
             </flux:card>
         @endif
 
-        @if ($recipe->remixes->isNotEmpty())
-            <flux:card>
-                <flux:heading size="lg" class="mb-2 text-lg!">{{ __('Remixes') }}</flux:heading>
-                <ul class="list-disc ml-4 space-y-1">
-                    @foreach ($recipe->remixes as $remix)
-                    <li>
-                        <flux:link href="{{ route('recipes.show', $remix) }}" wire:navigate>
-                            {{ $remix->name }}
-                        </flux:link>
-                    </li>
+        @php
+            $remixes = $recipe->remixes()
+                ->whereKeyNot($recipe->getKey())
+                ->with('team')
+                ->latest()
+                ->get()
+                ->filter(fn ($remix) => Auth::user()?->can('view', $remix));
+        @endphp
+
+        <flux:card>
+            <flux:heading size="lg" class="mb-2 text-lg!">{{ __('Remixes') }}</flux:heading>
+
+            @if ($remixes->isEmpty())
+                <flux:text>{{ __('No remixes yet') }}</flux:text>
+            @else
+                <ul class="space-y-3">
+                    @foreach ($remixes as $remix)
+                        @php($changedFields = $remix->changedFieldsFrom($recipe))
+                        <li>
+                            <flux:link href="{{ route('recipes.show', $remix) }}" wire:navigate>
+                                {{ $remix->name }}
+                            </flux:link>
+                            <flux:text class="mt-0.5">
+                                {{ $remix->team->name }}
+                                &middot;
+                                {{ $changedFields ? __('Changed :fields', ['fields' => Arr::join($changedFields, ', ', ' and ')]) : __('No changes yet') }}
+                                &middot;
+                                <time datetime="{{ $remix->created_at->toIso8601String() }}">{{ $remix->created_at->diffForHumans() }}</time>
+                            </flux:text>
+                        </li>
                     @endforeach
                 </ul>
-            </flux:card>
-        @endif
+            @endif
+        </flux:card>
     </div>
 </div>

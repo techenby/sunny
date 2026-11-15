@@ -73,6 +73,30 @@ class Recipe extends Model
         return $this->hasMany(self::class, 'parent_id');
     }
 
+    /** @return list<string> */
+    public function changedFieldsFrom(Recipe $original): array
+    {
+        $fields = [
+            'photo_path' => __('photo'),
+            'description' => __('description'),
+            'tags' => __('tags'),
+            'ingredients' => __('ingredients'),
+            'instructions' => __('instructions'),
+            'notes' => __('notes'),
+            'servings' => __('servings'),
+            'prep_time' => __('prep time'),
+            'cook_time' => __('cook time'),
+            'total_time' => __('total time'),
+            'nutrition' => __('nutrition'),
+            'source' => __('source'),
+        ];
+
+        return collect($fields)
+            ->filter(fn (string $label, string $field) => $this->{$field} != $original->{$field})
+            ->values()
+            ->all();
+    }
+
     public function shortenedSource(): ?string
     {
         if (! $this->source) {
