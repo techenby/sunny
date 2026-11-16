@@ -13,10 +13,9 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
 use Native\Mobile\Attributes\On;
-use Native\Mobile\Edge\NativeComponent;
 use Native\Mobile\Facades\Dialog;
 
-class Today extends NativeComponent
+class Today extends Component
 {
     use ChecksSunnySync;
 

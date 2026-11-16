@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 test('existing item photos become the primary photo and go back on rollback', function () {
-    $migration = require database_path('migrations/2026_11_16_000000_create_item_photos_table.php');
+    $migration = require database_path('migrations/2026_11_16_190000_create_item_photos_table.php');
     $withPhoto = Item::factory()->create();
     $withoutThumb = Item::factory()->create();
     $withoutPhoto = Item::factory()->create();

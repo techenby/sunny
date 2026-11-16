@@ -1,7 +1,10 @@
 <?php
 
+use App\Actions\Fortify\CreateNewUser;
 use App\Models\TeamInvitation;
 use App\Models\User;
+use Bentonow\BentoLaravel\Facades\Bento;
+use Illuminate\Support\Facades\Http;
 
 test('registration screen can be rendered', function () {
     $response = $this->get(route('register'));
@@ -27,7 +30,7 @@ test('new users can register', function () {
         'password' => 'password',
         'password_confirmation' => 'password',
     ])->assertSessionHasNoErrors()
-        ->assertRedirect(route('dashboard', absolute: false));
+        ->assertRedirect(route('onboarding', absolute: false));
 
     $this->assertAuthenticated();
 });
@@ -41,7 +44,7 @@ test('new users with a single name can register', function () {
     ]);
 
     $response->assertSessionHasNoErrors()
-        ->assertRedirect(route('dashboard', absolute: false));
+        ->assertRedirect(route('onboarding', absolute: false));
 
     $this->assertAuthenticated();
 });
@@ -60,4 +63,82 @@ test('new users get a team on registration', function () {
         ->and($user->teams)->toHaveCount(1)
         ->and($user->teams->first()->name)->toBe("Monkey D. Luffy's Team")
         ->and($user->current_team_id)->toBe($user->teams->first()->id);
+});
+
+test('new users start out needing onboarding', function () {
+    $this->post(route('register.store'), [
+        'name' => 'Nami',
+        'email' => 'nami@example.com',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+    ]);
+
+    $user = User::where('email', 'nami@example.com')->sole();
+
+    expect($user->needsOnboarding())->toBeTrue();
+});
+
+test('people who register with a pending invitation skip onboarding', function () {
+    $luffy = User::factory()->create();
+    TeamInvitation::factory()->for($luffy->currentTeam)->create(['email' => 'Zoro@Example.com']);
+
+    $this->post(route('register.store'), [
+        'name' => 'Roronoa Zoro',
+        'email' => 'zoro@example.com',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+    ])->assertRedirect(route('dashboard', absolute: false));
+
+    $user = User::where('email', 'zoro@example.com')->sole();
+
+    expect($user->needsOnboarding())->toBeFalse()
+        ->and($user->currentTeam->checklists()->exists())->toBeFalse();
+});
+
+test('an expired invitation does not skip onboarding', function () {
+    $luffy = User::factory()->create();
+    TeamInvitation::factory()->for($luffy->currentTeam)->create(['email' => 'sanji@example.com', 'expires_at' => now()->subDay()]);
+
+    $this->post(route('register.store'), [
+        'name' => 'Sanji',
+        'email' => 'sanji@example.com',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+    ])->assertRedirect(route('onboarding', absolute: false));
+});
+
+test('registration in production tracks the new user in bento', function () {
+    app()->detectEnvironment(fn (): string => 'production');
+    config(['bentonow.secret_key' => 'secret']);
+    Http::fake();
+
+    Bento::shouldReceive('track')
+        ->once()
+        ->withArgs(fn (string $email, string $type): bool => $email === 'nami@example.com' && $type === '$completed_onboarding');
+
+    $user = resolve(CreateNewUser::class)->create([
+        'name' => 'Nami',
+        'email' => 'nami@example.com',
+        'password' => 'Sunny-Home-2026!',
+        'password_confirmation' => 'Sunny-Home-2026!',
+    ]);
+
+    expect($user->exists)->toBeTrue();
+});
+
+test('registration in production skips bento when it is not configured', function () {
+    app()->detectEnvironment(fn (): string => 'production');
+    config(['bentonow.secret_key' => null]);
+    Http::fake();
+
+    Bento::shouldReceive('track')->never();
+
+    $user = resolve(CreateNewUser::class)->create([
+        'name' => 'Nico Robin',
+        'email' => 'robin@example.com',
+        'password' => 'Sunny-Home-2026!',
+        'password_confirmation' => 'Sunny-Home-2026!',
+    ]);
+
+    expect($user->exists)->toBeTrue();
 });

@@ -7,10 +7,9 @@ use App\Concerns\ShowsQueuedChange;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
 use Native\Mobile\Attributes\On;
-use Native\Mobile\Edge\NativeComponent;
 use Native\Mobile\Facades\Browser;
 
-class RecipeDetail extends NativeComponent
+class RecipeDetail extends Component
 {
     use ChecksSunnySync;
     use ShowsQueuedChange;

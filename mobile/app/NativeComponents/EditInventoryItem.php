@@ -7,9 +7,8 @@ use App\Concerns\ManagesInventoryItemForm;
 use App\Enums\ItemType;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
-use Native\Mobile\Edge\NativeComponent;
 
-class EditInventoryItem extends NativeComponent
+class EditInventoryItem extends Component
 {
     use ChecksSunnySync;
     use ManagesInventoryItemForm;

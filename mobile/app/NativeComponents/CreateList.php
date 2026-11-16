@@ -5,9 +5,8 @@ namespace App\NativeComponents;
 use App\Concerns\ChecksSunnySync;
 use App\Concerns\ManagesListForm;
 use Illuminate\View\View;
-use Native\Mobile\Edge\NativeComponent;
 
-class CreateList extends NativeComponent
+class CreateList extends Component
 {
     use ChecksSunnySync;
     use ManagesListForm;

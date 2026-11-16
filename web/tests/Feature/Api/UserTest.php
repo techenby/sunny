@@ -2,7 +2,7 @@
 
 use App\Models\User;
 
-$userFields = ['id', 'name', 'email', 'email_verified_at', 'two_factor_enabled', 'current_team_id', 'created_at', 'updated_at'];
+$userFields = ['id', 'name', 'email', 'email_verified_at', 'two_factor_enabled', 'current_team_id', 'onboarded_at', 'created_at', 'updated_at'];
 
 test('guests cannot fetch the user', function () {
     $this->getJson(route('api.user'))->assertUnauthorized();

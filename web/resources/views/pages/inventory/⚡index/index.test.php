@@ -1176,3 +1176,80 @@ test('shows the item photo in place of the type icon', function () {
         ->test('pages::inventory.index')
         ->assertSeeHtml('guitar.png');
 });
+
+test('an empty place teaches how inventory works', function () {
+    $user = User::factory()->create();
+    $garage = Item::factory()->for($user->currentTeam)->location()->create(['name' => 'Garage']);
+
+    Livewire::actingAs($user)
+        ->test('pages::inventory.index')
+        ->set('parentId', $garage->id)
+        ->assertSeeHtml('data-test="empty-place"')
+        ->assertSee('Garage is ready for its first Storage')
+        ->assertSee(['Camping box', 'Tool chest', 'Holiday decorations', 'Paint shelf'])
+        ->assertDontSee('Search inventory...');
+});
+
+test('a place with something in it does not show the lesson', function () {
+    $user = User::factory()->create();
+    $garage = Item::factory()->for($user->currentTeam)->location()->create(['name' => 'Garage']);
+    Item::factory()->for($user->currentTeam)->bin()->childOf($garage)->create(['name' => 'Tool chest']);
+
+    Livewire::actingAs($user)
+        ->test('pages::inventory.index')
+        ->set('parentId', $garage->id)
+        ->assertDontSeeHtml('data-test="empty-place"')
+        ->assertSee('Tool chest');
+});
+
+test('empty storage still says nothing is inside yet', function () {
+    $user = User::factory()->create();
+    $shelf = Item::factory()->for($user->currentTeam)->bin()->create(['name' => 'Shelf']);
+
+    Livewire::actingAs($user)
+        ->test('pages::inventory.index')
+        ->set('parentId', $shelf->id)
+        ->assertDontSeeHtml('data-test="empty-place"')
+        ->assertSee('Nothing inside yet');
+});
+
+test('places without suggestions of their own get general ones', function () {
+    $user = User::factory()->create();
+    $stairs = Item::factory()->for($user->currentTeam)->location()->create(['name' => 'Under the stairs']);
+
+    Livewire::actingAs($user)
+        ->test('pages::inventory.index')
+        ->set('parentId', $stairs->id)
+        ->assertSee(['Top shelf', 'Storage box', 'Drawer', 'Cabinet']);
+});
+
+test('suggested storage is added to the place with one click', function () {
+    $user = User::factory()->create();
+    $garage = Item::factory()->for($user->currentTeam)->location()->create(['name' => 'Garage']);
+
+    Livewire::actingAs($user)
+        ->test('pages::inventory.index')
+        ->set('parentId', $garage->id)
+        ->call('addStorage', 'Camping box')
+        ->assertDontSeeHtml('data-test="empty-place"')
+        ->assertSee('Camping box');
+
+    $storage = $garage->children()->sole();
+
+    expect($storage->name)->toBe('Camping box')
+        ->and($storage->type)->toBe(ItemType::Bin)
+        ->and($storage->team_id)->toBe($user->current_team_id);
+});
+
+test('only the suggested storage can be added with one click', function () {
+    $user = User::factory()->create();
+    $garage = Item::factory()->for($user->currentTeam)->location()->create(['name' => 'Garage']);
+
+    Livewire::actingAs($user)
+        ->test('pages::inventory.index')
+        ->set('parentId', $garage->id)
+        ->call('addStorage', 'Treasure chest')
+        ->assertNotFound();
+
+    expect($garage->children()->exists())->toBeFalse();
+});

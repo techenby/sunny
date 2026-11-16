@@ -5,9 +5,8 @@ namespace App\NativeComponents;
 use App\Icons\Android;
 use App\Icons\Ios;
 use Illuminate\View\View;
-use Native\Mobile\Edge\NativeComponent;
 
-class FeatureCard extends NativeComponent
+class FeatureCard extends Component
 {
     public string $title = '';
 
