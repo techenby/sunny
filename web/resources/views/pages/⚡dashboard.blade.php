@@ -37,6 +37,8 @@ new class extends Component
         <flux:text class="mt-1">{{ auth()->user()->currentTeam->today()->format('l, F j') }}</flux:text>
     </div>
 
+    <livewire:dashboard.getting-started />
+
     <livewire:dashboard.events lazy />
 
     <div class="grid items-start gap-6 lg:grid-cols-2">
