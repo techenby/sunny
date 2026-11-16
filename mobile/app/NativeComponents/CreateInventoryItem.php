@@ -32,7 +32,7 @@ class CreateInventoryItem extends NativeComponent
             return;
         }
 
-        $this->saveRecord('items', $this->itemPayload());
+        $this->saveItem();
     }
 
     public function render(): View

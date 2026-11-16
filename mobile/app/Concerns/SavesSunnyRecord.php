@@ -5,6 +5,7 @@ namespace App\Concerns;
 use App\Http\Integrations\Sunny\SunnyOutbox;
 use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Http\Integrations\Sunny\SunnyTeam;
+use Closure;
 use Illuminate\Validation\ValidationException;
 use Native\Mobile\Attributes\Computed;
 use Throwable;
@@ -28,7 +29,7 @@ trait SavesSunnyRecord
         $this->recordTeamId = $id ?? app(SunnyTeam::class)->current()?->id;
     }
 
-    protected function saveRecord(string $resource, array $payload, ?int $id = null): void
+    protected function saveRecord(string $resource, array $payload, ?int $id = null, ?Closure $afterQueue = null): void
     {
         if ($this->saving || $this->savedId !== null) {
             return;
@@ -46,6 +47,7 @@ trait SavesSunnyRecord
         $this->saving = true;
         try {
             $this->savedId = app(SunnyOutbox::class)->queue($resource, $this->teamId, $payload, $id, $this->photoPath ?? null);
+            $afterQueue?->__invoke($this->savedId, $this->teamId);
             app(SunnySyncCoordinator::class)->dispatch();
             if ($id !== null) {
                 $this->back();

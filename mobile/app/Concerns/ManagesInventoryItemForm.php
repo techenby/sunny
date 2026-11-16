@@ -13,8 +13,8 @@ use Native\Mobile\Attributes\Computed;
  */
 trait ManagesInventoryItemForm
 {
-    use CapturesPhoto;
     use ChoosesInventoryParent;
+    use ManagesItemPhotos;
     use SavesSunnyRecord;
 
     public string $name = '';
@@ -39,7 +39,7 @@ trait ManagesInventoryItemForm
     public function fillFromItem(array $item): void
     {
         $this->initializeTeam($item['team_id']);
-        $this->existingPhotoUrl = $item['photo_url'] ?? null;
+        $this->loadPhotos($item['id']);
         $this->name = $item['name'];
         $this->typeIndex = (int) array_search($item['type'], ItemType::cases(), strict: true);
         $this->parentId = $this->parentChoice($item['parent_id']) === null ? null : $item['parent_id'];
@@ -110,13 +110,17 @@ trait ManagesInventoryItemForm
             ->all() ?: null;
     }
 
-    protected function itemPayload(bool $editing = false): array
+    protected function itemPayload(): array
     {
         return [
             'name' => trim($this->name), 'type' => $this->type->value,
             'parent_id' => $this->parentId, 'metadata' => $this->metadataMap,
-            ...($editing ? ['remove_photo' => $this->photoRemoved] : []),
         ];
+    }
+
+    protected function saveItem(?int $id = null): void
+    {
+        $this->saveRecord('items', $this->itemPayload(), $id, fn (int $itemId, int $teamId) => $this->queuePhotos($itemId, $teamId));
     }
 
     protected function validationError(): string

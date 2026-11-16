@@ -59,13 +59,7 @@
             @endforeach
         </column>
 
-        @include('native.photo-field', [
-            'photoPath' => $photoPath ?? $existingPhotoUrl,
-            'refPrefix' => $formRef,
-            'alt' => 'The photo chosen for this item',
-            'label' => 'Photo (optional)',
-            'labelClass' => 'text-lg font-semibold text-theme-on-surface',
-        ])
+        @include('native.item-photos-field', ['photos' => $photos, 'refPrefix' => $formRef])
 
         <column class="w-full gap-2">
             <text font="semibold" class="text-lg text-theme-on-surface">Extra details (optional)</text>
