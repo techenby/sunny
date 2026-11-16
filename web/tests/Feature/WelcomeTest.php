@@ -68,6 +68,7 @@ test('displays the privacy policy', function () {
         ->assertOk()
         ->assertSee('<title>Privacy Policy - ' . config('app.name') . '</title>', false)
         ->assertSee('Privacy Policy')
+        ->assertSee('Crash reports are kept by NativeWatch for up to 90 days.')
         ->assertSee(route('terms'));
 });
 
