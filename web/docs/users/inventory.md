@@ -28,7 +28,8 @@ The type supplies a recognizable icon and can be used as a filter. The
 3. Select **Add Item**.
 4. Enter a name and choose its type.
 5. Confirm the parent, or choose **None** to place it at the top level.
-6. Optionally add a JPG or PNG photo up to 5 MB.
+6. Optionally add a JPG or PNG photo up to 5 MB. You can add more photos from
+   the entry's page once it's saved.
 7. Add any custom metadata fields you want, such as serial number, purchase
    date, size, or warranty information.
 8. Select **Create**.
@@ -38,10 +39,28 @@ through the inventory hierarchy.
 
 ## View an entry
 
-An entry's page shows its type, the entry it is inside, its photo, any metadata,
-and its contents. Select **Add Item** there to add something inside it; the new
+An entry's page shows its type, the entry it is inside, its photos, any
+metadata, and its contents. Select **Add Item** there to add something inside it; the new
 entry's parent is already filled in. Select an entry in **Contents** to open it.
 Use **View** in an entry's menu to open its page from the inventory list.
+
+## Photos
+
+An entry can have up to 10 photos, like the front, the back, or a close-up of a
+scratch. The first photo is the primary one: it's the thumbnail shown in lists
+and next to the name.
+
+On an entry's page, select a thumbnail to see that photo larger, or use the
+arrows to step through them. From there you can:
+
+- Select **Add photo** to add one or more photos, up to 10 MB each.
+- Select **Make primary** on a photo to move it to the front.
+- Drag the thumbnails to change their order.
+- Select the trash button on a photo to delete it.
+
+In the mobile app, change an entry's photos from its **Edit** screen: take or
+choose a photo to add it, use the arrows to change the order, select **Make
+primary** to move a photo to the front, or delete it.
 
 ## Search, filter, and update inventory
 
@@ -51,7 +70,7 @@ Locations, Bins, or Items and can show deleted entries.
 
 An entry's menu provides these actions:
 
-- **Edit** changes its name, photo, type, parent, or metadata.
+- **Edit** changes its name, type, parent, or metadata.
 - **QR Code** creates a scannable link back to the entry.
 - **Duplicate** creates up to 25 copies, useful for similar containers or
   repeated household items.
