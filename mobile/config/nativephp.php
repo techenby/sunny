@@ -219,6 +219,7 @@ return [
         'storage/framework/cache',
         'storage/framework/testing',
         'storage/logs/laravel.log',
+        'public/images/sunny.icon',
     ],
 
     /*
@@ -434,6 +435,13 @@ return [
     |
     */
     'ipad' => false,
+
+    /*
+    |--------------------------------------------------------------------------
+    | iOS Icon Composer Icon
+    |--------------------------------------------------------------------------
+    */
+    'ios_icon' => 'public/images/sunny.icon',
 
     /*
     |--------------------------------------------------------------------------
