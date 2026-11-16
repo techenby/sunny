@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "8722231bf8848c6ac4a1ae87b5920997",
+    "content-hash": "f204ae0c621fcf0fce63d1893f330c34",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -7710,6 +7710,108 @@
                 }
             ],
             "time": "2024-11-24T11:45:37+00:00"
+        },
+        {
+            "name": "zinxan/native-core",
+            "version": "v0.2.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/zinxan/native.core.git",
+                "reference": "4ae499e908749310ef67dbdc95ca775a9f1b6228"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/zinxan/native.core/zipball/4ae499e908749310ef67dbdc95ca775a9f1b6228",
+                "reference": "4ae499e908749310ef67dbdc95ca775a9f1b6228",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/contracts": "^11.0|^12.0|^13.0",
+                "illuminate/http": "^11.0|^12.0|^13.0",
+                "illuminate/process": "^11.0|^12.0|^13.0",
+                "illuminate/support": "^11.0|^12.0|^13.0",
+                "php": "^8.4"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "ZXN\\NativeWatch\\Core\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "The shared NativeWatch client that zinxan/native-desktop and zinxan/native-mobile build on.",
+            "homepage": "https://native.watch",
+            "support": {
+                "docs": "https://native.watch/docs",
+                "issues": "https://github.com/zinxan/native.core/issues",
+                "source": "https://github.com/zinxan/native.core"
+            },
+            "time": "2026-11-01T17:12:45+00:00"
+        },
+        {
+            "name": "zinxan/native-mobile",
+            "version": "v0.2.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/zinxan/native.mobile.git",
+                "reference": "4c0b0abcb6f3232405a064c60afe38bba09ad7f8"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/zinxan/native.mobile/zipball/4c0b0abcb6f3232405a064c60afe38bba09ad7f8",
+                "reference": "4c0b0abcb6f3232405a064c60afe38bba09ad7f8",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.4",
+                "zinxan/native-core": "^0.2"
+            },
+            "suggest": {
+                "nativephp/mobile": "NativePHP Mobile 4; native UI integration is verified with 4.5."
+            },
+            "type": "nativephp-plugin",
+            "extra": {
+                "laravel": {
+                    "aliases": {
+                        "NativeWatch": "ZXN\\NativeWatch\\Core\\Laravel\\NativeWatch"
+                    },
+                    "providers": [
+                        "ZXN\\NativeWatch\\Mobile\\MobileServiceProvider"
+                    ]
+                },
+                "nativephp": {
+                    "manifest": "nativephp.json"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "ZXN\\NativeWatch\\Mobile\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "NativeWatch error tracking for NativePHP iOS and Android apps, with consent controls and native crash reporting.",
+            "homepage": "https://native.watch",
+            "keywords": [
+                "android",
+                "crash-reporting",
+                "error-tracking",
+                "ios",
+                "laravel",
+                "nativephp",
+                "nativewatch"
+            ],
+            "support": {
+                "docs": "https://native.watch/docs/install-mobile",
+                "issues": "https://github.com/zinxan/native.mobile/issues",
+                "source": "https://github.com/zinxan/native.mobile"
+            },
+            "time": "2026-11-03T09:38:33+00:00"
         }
     ],
     "packages-dev": [
