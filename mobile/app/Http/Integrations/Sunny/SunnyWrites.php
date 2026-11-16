@@ -34,7 +34,11 @@ class SunnyWrites
                 $sent = false;
 
                 foreach (PendingWrite::query()->forCurrentServer()->whereNull('error')->orderBy('id')->get() as $write) {
-                    if (($write->payload['parent_id'] ?? 0) < 0 || ($write->payload['checklist_id'] ?? 0) < 0 || ($write->payload['routine_id'] ?? 0) < 0) {
+                    if (($write->payload['parent_id'] ?? 0) < 0 || ($write->payload['checklist_id'] ?? 0) < 0 || ($write->payload['routine_id'] ?? 0) < 0 || ($write->payload['item_id'] ?? 0) < 0) {
+                        continue;
+                    }
+
+                    if (! $this->photoOrderIsReady($write)) {
                         continue;
                     }
 
@@ -45,6 +49,31 @@ class SunnyWrites
         } finally {
             $this->outbox->prunePhotos();
         }
+    }
+
+    private function photoOrderIsReady(PendingWrite $write): bool
+    {
+        $order = $write->payload['photo_order'] ?? null;
+
+        if ($write->resource !== 'items' || ! is_array($order)) {
+            return true;
+        }
+
+        $uploading = PendingWrite::query()->forCurrentServer()->where('resource', 'item_photos')->whereNull('error')->where('deletes', false)
+            ->whereIn('record_id', array_filter($order, fn (int $id): bool => $id < 0))
+            ->exists();
+
+        if ($uploading) {
+            return false;
+        }
+
+        $kept = array_values(array_filter($order, fn (int $id): bool => $id > 0));
+
+        if ($kept !== $order) {
+            $write->update(['payload' => [...$write->payload, 'photo_order' => $kept]]);
+        }
+
+        return true;
     }
 
     private function send(PendingWrite $write, SunnyConnector $connector): void

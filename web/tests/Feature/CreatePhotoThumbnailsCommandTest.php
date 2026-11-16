@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Item;
+use App\Models\ItemPhoto;
 use App\Models\Recipe;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -10,10 +10,10 @@ test('it creates thumbnails for photos that do not have one', function () {
     Storage::put('teams/1/items/hammer.jpg', UploadedFile::fake()->image('hammer.jpg')->get());
     Storage::put('teams/1/recipes/cake.jpg', UploadedFile::fake()->image('cake.jpg')->get());
 
-    $item = Item::factory()->create(['photo_path' => 'teams/1/items/hammer.jpg']);
+    $item = ItemPhoto::factory()->create(['path' => 'teams/1/items/hammer.jpg']);
     $recipe = Recipe::factory()->create(['photo_path' => 'teams/1/recipes/cake.jpg']);
-    $alreadyDone = Item::factory()->create(['photo_path' => 'teams/1/items/hammer.jpg', 'thumb_path' => 'teams/1/items/thumbs/existing.jpg']);
-    $withoutPhoto = Item::factory()->create(['photo_path' => null]);
+    $alreadyDone = ItemPhoto::factory()->create(['path' => 'teams/1/items/hammer.jpg', 'thumb_path' => 'teams/1/items/thumbs/existing.jpg']);
+    $withoutPhoto = Recipe::factory()->create(['photo_path' => null]);
 
     $this->artisan('photos:thumbnails')
         ->expectsOutputToContain('2 thumbnail(s) created.')
@@ -29,7 +29,7 @@ test('it reports photos it could not read', function () {
     Storage::fake();
     Storage::put('teams/1/items/broken.jpg', 'not an image');
 
-    $item = Item::factory()->create(['photo_path' => 'teams/1/items/broken.jpg']);
+    $item = ItemPhoto::factory()->create(['path' => 'teams/1/items/broken.jpg']);
 
     $this->artisan('photos:thumbnails')
         ->expectsOutputToContain('1 photo(s) could not be read.')

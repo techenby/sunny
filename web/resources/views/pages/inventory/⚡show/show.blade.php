@@ -52,8 +52,82 @@
 
     <div class="grid gap-6 lg:grid-cols-3">
         <div class="space-y-6 lg:col-span-2">
-            @if ($item->photo_url)
-                <img src="{{ $item->photo_url }}" alt="{{ __('Photo of :name', ['name' => $item->name]) }}" class="w-full rounded-lg object-cover max-h-96" />
+            @php
+                $photos = $this->photos;
+                $firstPhotoId = $photos->first()?->id;
+                $canEditPhotos = ! $item->trashed();
+            @endphp
+
+            @if ($photos->isNotEmpty() || $canEditPhotos)
+                <div wire:key="item-photos-{{ $photos->pluck('id')->join('-') }}" x-data="{ current: null }" class="space-y-3">
+                    @foreach ($photos as $photo)
+                        <div wire:key="photo-viewer-{{ $photo->id }}" x-show="(current ?? {{ $firstPhotoId }}) === {{ $photo->id }}" @unless ($loop->first) style="display: none" @endunless class="relative overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800">
+                            <img src="{{ $photo->url }}" loading="lazy" alt="{{ __('Photo :number of :count of :name', ['number' => $loop->iteration, 'count' => $photos->count(), 'name' => $item->name]) }}" class="h-72 w-full object-contain sm:h-96" />
+
+                            @if ($photos->count() > 1)
+                                <span class="absolute top-3 left-3 rounded-md bg-zinc-900/70 px-2 py-1 text-xs font-medium text-white">
+                                    {{ __(':number of :count', ['number' => $loop->iteration, 'count' => $photos->count()]) }}
+                                </span>
+
+                                <div class="absolute inset-y-0 left-3 flex items-center">
+                                    <flux:button x-on:click="current = {{ $photos->get($loop->index - 1, $photos->last())->id }}" icon="chevron-left" size="sm" class="rounded-full!" :aria-label="__('Previous photo')" />
+                                </div>
+                                <div class="absolute inset-y-0 right-3 flex items-center">
+                                    <flux:button x-on:click="current = {{ $photos->get($loop->index + 1, $photos->first())->id }}" icon="chevron-right" size="sm" class="rounded-full!" :aria-label="__('Next photo')" />
+                                </div>
+                            @endif
+
+                            @if ($canEditPhotos)
+                                <div class="absolute top-3 right-3 flex items-center gap-2">
+                                    @unless ($loop->first)
+                                        <flux:button wire:click="makePrimary({{ $photo->id }})" icon="star" size="sm">{{ __('Make primary') }}</flux:button>
+                                    @endunless
+                                    <flux:button wire:click="deletePhoto({{ $photo->id }})" wire:confirm="{{ __('Delete this photo?') }}" icon="trash" size="sm" :aria-label="__('Delete photo')" />
+                                </div>
+                            @endif
+                        </div>
+                    @endforeach
+
+                    <div wire:sort="movePhoto" wire:sort:config="{ draggable: '[data-photo]' }" class="grid grid-cols-3 gap-3 sm:grid-cols-5">
+                        @foreach ($photos as $photo)
+                            <button
+                                type="button"
+                                wire:key="photo-thumb-{{ $photo->id }}"
+                                @if ($canEditPhotos) wire:sort:item="{{ $photo->id }}" @endif
+                                data-photo
+                                x-on:click="current = {{ $photo->id }}"
+                                x-bind:class="(current ?? {{ $firstPhotoId }}) === {{ $photo->id }} ? 'ring-2 ring-accent ring-offset-2 ring-offset-white dark:ring-offset-zinc-900' : ''"
+                                class="relative aspect-4/3 overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800 {{ $canEditPhotos ? 'cursor-grab' : '' }}"
+                                aria-label="{{ __('Show photo :number', ['number' => $loop->iteration]) }}"
+                            >
+                                <img src="{{ $photo->thumb_url ?? $photo->url }}" alt="" class="size-full object-cover" />
+
+                                @if ($loop->first && $photos->count() > 1)
+                                    <flux:badge size="sm" color="amber" variant="solid" icon="star" class="absolute bottom-1.5 left-1.5">{{ __('Primary') }}</flux:badge>
+                                @endif
+                            </button>
+                        @endforeach
+
+                        @if ($canEditPhotos && $photos->count() < \App\Models\ItemPhoto::MAX_PER_ITEM)
+                            <label class="flex aspect-4/3 cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-zinc-300 text-sm font-medium text-zinc-600 hover:bg-zinc-50 dark:border-white/20 dark:text-zinc-300 dark:hover:bg-white/5">
+                                <input type="file" wire:model="newPhotos" accept="image/*" multiple class="sr-only" data-test="add-photos" />
+                                <flux:icon.plus variant="micro" wire:loading.remove wire:target="newPhotos" />
+                                <flux:icon.loading variant="micro" wire:loading wire:target="newPhotos" />
+                                {{ $photos->isEmpty() ? __('Add a photo') : __('Add photo') }}
+                            </label>
+                        @endif
+                    </div>
+
+                    <flux:error name="newPhotos" />
+                    <flux:error name="newPhotos.*" />
+
+                    @if ($canEditPhotos && $photos->count() > 1)
+                        <flux:text size="sm" class="flex items-center gap-1.5">
+                            <flux:icon.arrows-right-left variant="micro" />
+                            {{ __('Drag to reorder. The first photo is the thumbnail in lists.') }}
+                        </flux:text>
+                    @endif
+                </div>
             @endif
 
             @if ($item->type === \App\Enums\ItemType::Item && $this->children->isEmpty())

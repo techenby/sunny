@@ -6,6 +6,7 @@ namespace Database\Factories;
 
 use App\Enums\ItemType;
 use App\Models\Item;
+use App\Models\ItemPhoto;
 use App\Models\Team;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -49,5 +50,10 @@ class ItemFactory extends Factory
             'team_id' => $parent->team_id,
             'parent_id' => $parent->id,
         ]);
+    }
+
+    public function withPhoto(string $path, ?string $thumbPath = null): static
+    {
+        return $this->has(ItemPhoto::factory()->state(['path' => $path, 'thumb_path' => $thumbPath]), 'photos');
     }
 }

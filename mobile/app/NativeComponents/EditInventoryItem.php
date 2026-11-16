@@ -43,7 +43,7 @@ class EditInventoryItem extends Component
             return;
         }
 
-        $this->saveRecord('items', $this->itemPayload(true), $this->item['id']);
+        $this->saveItem($this->item['id']);
     }
 
     public function render(): View

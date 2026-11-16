@@ -25,7 +25,7 @@ class ItemController extends Controller
     {
         Gate::authorize('viewAny', Item::class);
 
-        $items = $team->items()->latest()->get();
+        $items = $team->items()->with('photos')->latest()->get();
 
         return ItemResource::collection($items);
     }

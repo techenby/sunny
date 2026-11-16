@@ -1,19 +1,25 @@
 <?php
 
+use App\Actions\Inventory\AddItemPhoto;
 use App\Actions\Inventory\DuplicateItem;
 use App\Actions\Inventory\GenerateItemQrCode;
+use App\Actions\Inventory\MoveItemPhoto;
 use App\Actions\Inventory\MoveItemToTeam;
+use App\Actions\Inventory\RemoveItemPhoto;
 use App\Enums\ItemType;
 use App\Livewire\Forms\Inventory\ItemForm;
 use App\Models\Item;
+use App\Models\ItemPhoto;
 use App\Models\Team;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection as BaseCollection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 
@@ -33,6 +39,9 @@ new class extends Component
     public ?array $qrCode = null;
 
     public ?int $moveParentId = null;
+
+    /** @var array<int, TemporaryUploadedFile> */
+    public array $newPhotos = [];
 
     #[Computed]
     public function breadcrumbs(): BaseCollection
@@ -57,6 +66,13 @@ new class extends Component
             ->withCount('children')
             ->orderBy('name')
             ->paginate(10);
+    }
+
+    /** @return Collection<int, ItemPhoto> */
+    #[Computed]
+    public function photos(): Collection
+    {
+        return $this->item->photos()->get();
     }
 
     /** @return Collection<int, Item> */
@@ -111,6 +127,58 @@ new class extends Component
         $this->redirectRoute('inventory.index', ['parentId' => $parentId]);
     }
 
+    public function deletePhoto(int $id): void
+    {
+        $this->authorize('update', $this->item);
+
+        (new RemoveItemPhoto)->handle($this->item->photos()->findOrFail($id));
+
+        $this->refreshPhotos();
+    }
+
+    public function makePrimary(int $id): void
+    {
+        $this->movePhoto($id, 0);
+    }
+
+    public function movePhoto(int $id, int $position): void
+    {
+        $this->authorize('update', $this->item);
+
+        (new MoveItemPhoto)->handle($this->item->photos()->findOrFail($id), $position);
+
+        $this->refreshPhotos();
+    }
+
+    public function updatedNewPhotos(): void
+    {
+        $this->authorize('update', $this->item);
+
+        $remaining = ItemPhoto::MAX_PER_ITEM - $this->photos->count();
+
+        $this->validate([
+            'newPhotos' => ['array', 'max:' . max(0, $remaining)],
+            'newPhotos.*' => ['image', 'max:10240'],
+        ], [
+            'newPhotos.max' => __('An item can have up to :count photos.', ['count' => ItemPhoto::MAX_PER_ITEM]),
+        ]);
+
+        try {
+            foreach ($this->newPhotos as $photo) {
+                (new AddItemPhoto)->handle($this->item, $photo);
+            }
+        } catch (ValidationException $exception) {
+            $this->addError('newPhotos', $exception->validator->errors()->first());
+        } finally {
+            foreach ($this->newPhotos as $photo) {
+                $photo->delete();
+            }
+
+            $this->reset('newPhotos');
+            $this->refreshPhotos();
+        }
+    }
+
     public function duplicate(): void
     {
         $this->validate([
@@ -150,13 +218,8 @@ new class extends Component
             $this->authorize('update', $this->form->editingItem);
         }
 
-        if ($this->form->photo) {
-            $this->form->photo->delete();
-            $this->form->photo = null;
-        } elseif ($this->form->existingPhotoUrl) {
-            $this->form->existingPhotoUrl = null;
-            $this->form->removePhoto = true;
-        }
+        $this->form->photo?->delete();
+        $this->form->photo = null;
     }
 
     public function startMove(): void
@@ -224,5 +287,11 @@ new class extends Component
         $this->qrCode = resolve(GenerateItemQrCode::class)->handle($this->item);
 
         $this->modal('qr-code')->show();
+    }
+
+    private function refreshPhotos(): void
+    {
+        $this->item->unsetRelation('primaryPhoto');
+        unset($this->photos);
     }
 };

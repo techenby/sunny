@@ -2,6 +2,7 @@
 
 use App\Actions\Inventory\DuplicateItem;
 use App\Models\Item;
+use App\Models\ItemPhoto;
 use Illuminate\Support\Facades\Storage;
 
 test('it creates the requested number of copies', function () {
@@ -35,23 +36,30 @@ test('it defaults to a single copy', function () {
     expect(Item::count())->toBe(2);
 });
 
-test('it copies the photo to a new file for each duplicate', function () {
+test('it copies every photo to new files for each duplicate, keeping their order', function () {
     Storage::fake();
 
     $item = Item::factory()->create(['name' => 'Guitar']);
-    $path = "teams/{$item->team_id}/items/guitar-{$item->id}.jpg";
-    Storage::put($path, 'photo-contents');
-    $item->update(['photo_path' => $path]);
+    $front = "teams/{$item->team_id}/items/guitar-front.jpg";
+    $back = "teams/{$item->team_id}/items/guitar-back.jpg";
+    Storage::put($front, 'front');
+    Storage::put($back, 'back');
+    ItemPhoto::factory()->for($item)->create(['path' => $back, 'position' => 1]);
+    ItemPhoto::factory()->for($item)->create(['path' => $front, 'position' => 0]);
 
     $copies = (new DuplicateItem)->handle($item, 2);
 
-    $copies->each(function (Item $copy) use ($path) {
-        expect($copy->photo_path)->not->toBe($path);
-        Storage::assertExists($copy->photo_path);
+    $copies->each(function (Item $copy) {
+        $photos = $copy->photos()->get();
+
+        expect($photos)->toHaveCount(2)
+            ->and($photos->pluck('position')->all())->toBe([0, 1])
+            ->and(Storage::get($photos[0]->path))->toBe('front')
+            ->and(Storage::get($photos[1]->path))->toBe('back');
     });
 
-    expect($copies->pluck('photo_path')->unique())->toHaveCount(2);
-    Storage::assertExists($path);
+    expect(ItemPhoto::query()->pluck('path')->unique())->toHaveCount(6);
+    Storage::assertExists([$front, $back]);
 });
 
 test('it copies the thumbnail to a new file for each duplicate', function () {
@@ -62,14 +70,16 @@ test('it copies the thumbnail to a new file for each duplicate', function () {
     $thumb = "teams/{$item->team_id}/items/thumbs/guitar-{$item->id}-abcdefgh.jpg";
     Storage::put($path, 'photo-contents');
     Storage::put($thumb, 'thumb-contents');
-    $item->update(['photo_path' => $path, 'thumb_path' => $thumb]);
+    ItemPhoto::factory()->for($item)->create(['path' => $path, 'thumb_path' => $thumb]);
 
     $copies = (new DuplicateItem)->handle($item, 2);
 
     $copies->each(function (Item $copy) use ($thumb) {
-        expect($copy->thumb_path)->not->toBe($thumb);
-        expect(Storage::get($copy->thumb_path))->toBe('thumb-contents');
+        $copyThumb = $copy->photos()->first()->thumb_path;
+
+        expect($copyThumb)->not->toBe($thumb);
+        expect(Storage::get($copyThumb))->toBe('thumb-contents');
     });
 
-    expect($copies->pluck('thumb_path')->unique())->toHaveCount(2);
+    expect($copies->map(fn (Item $copy) => $copy->photos()->first()->thumb_path)->unique())->toHaveCount(2);
 });

@@ -9,7 +9,6 @@ use App\Actions\Inventory\UpdateItem;
 use App\Enums\ItemType;
 use App\Models\Item;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\Form;
@@ -29,10 +28,6 @@ class ItemForm extends Form
 
     public ?TemporaryUploadedFile $photo = null;
 
-    public ?string $existingPhotoUrl = null;
-
-    public bool $removePhoto = false;
-
     public function load(Item $item): void
     {
         $metadata = collect($item->metadata ?? [])
@@ -46,7 +41,6 @@ class ItemForm extends Form
             'type' => $item->type->value,
             'parent_id' => $item->parent_id,
             'metadata' => $metadata,
-            'existingPhotoUrl' => $item->photo_path ? Storage::temporaryUrl($item->photo_path, now()->addMinutes(30)) : null,
         ]);
     }
 
@@ -71,7 +65,9 @@ class ItemForm extends Form
             ->all() ?: null;
 
         if ($this->editingItem) {
-            (new UpdateItem)->handle($this->editingItem, $data, $this->removePhoto);
+            unset($data['photo']);
+
+            (new UpdateItem)->handle($this->editingItem, $data);
         } else {
             (new CreateItem)->handle(Auth::user()->currentTeam, $data);
         }

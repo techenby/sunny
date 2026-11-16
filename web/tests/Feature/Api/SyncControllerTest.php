@@ -4,6 +4,7 @@ use App\Enums\TeamRole;
 use App\Models\Checklist;
 use App\Models\ChecklistItem;
 use App\Models\Item;
+use App\Models\ItemPhoto;
 use App\Models\Recipe;
 use App\Models\Routine;
 use App\Models\RoutineStep;
@@ -31,6 +32,23 @@ test('returns all teams, recipes, and items for the user', function () {
         ->assertJsonCount(2, 'recipes')
         ->assertJsonCount(3, 'items')
         ->assertJsonStructure(['teams', 'recipes', 'items', 'checklists', 'checklist_items', 'routines', 'routine_steps', 'routine_occurrences', 'synced_at']);
+});
+
+test('sends an item again with its photos when a photo changes', function () {
+    $user = User::factory()->create();
+    $item = Item::factory()->for($user->currentTeam)->create(['updated_at' => now()->subWeek()]);
+    Item::factory()->for($user->currentTeam)->create(['updated_at' => now()->subWeek()]);
+
+    $this->travelTo(now()->subWeek(), fn () => ItemPhoto::factory()->for($item)->create(['position' => 0]));
+    ItemPhoto::factory()->for($item)->create(['position' => 1]);
+
+    $this->actingAs($user)
+        ->getJson(route('api.sync', ['since' => now()->subDay()->toIso8601String()]))
+        ->assertOk()
+        ->assertJsonCount(1, 'items')
+        ->assertJsonPath('items.0.id', $item->id)
+        ->assertJsonCount(2, 'items.0.photos')
+        ->assertJsonPath('items.0.photos.1.position', 1);
 });
 
 test('returns routines and their steps for the user', function () {

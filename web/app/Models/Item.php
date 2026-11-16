@@ -11,10 +11,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection as BaseCollection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class Item extends Model
@@ -39,6 +39,18 @@ class Item extends Model
     public function children(): HasMany
     {
         return $this->hasMany(self::class, 'parent_id');
+    }
+
+    /** @return HasMany<ItemPhoto, $this> */
+    public function photos(): HasMany
+    {
+        return $this->hasMany(ItemPhoto::class)->orderBy('position')->orderBy('id');
+    }
+
+    /** @return HasOne<ItemPhoto, $this> */
+    public function primaryPhoto(): HasOne
+    {
+        return $this->hasOne(ItemPhoto::class)->ofMany(['position' => 'min', 'id' => 'min']);
     }
 
     /** @return BaseCollection<int, int> */
@@ -94,14 +106,19 @@ class Item extends Model
     protected function photoUrl(): Attribute
     {
         return Attribute::make(
-            get: fn () => $this->photo_path ? Storage::temporaryUrl($this->photo_path, now()->addMinutes(30)) : null,
+            get: fn () => $this->primary()?->url,
         );
     }
 
     protected function thumbUrl(): Attribute
     {
         return Attribute::make(
-            get: fn () => $this->thumb_path ? Storage::temporaryUrl($this->thumb_path, now()->addMinutes(30)) : $this->photo_url,
+            get: fn () => $this->primary()->thumb_url ?? $this->photo_url,
         );
+    }
+
+    private function primary(): ?ItemPhoto
+    {
+        return $this->relationLoaded('photos') ? $this->photos->first() : $this->primaryPhoto;
     }
 }

@@ -57,13 +57,43 @@
                     <text ref="item-error" class="text-base text-theme-destructive">{{ $error }}</text>
                 @endif
 
-                @if ($item['photo_url'] ?? null)
-                    <image
-                        ref="item-photo"
-                        :src="$item['photo_url']"
-                        :alt="'Photo of '.$item['name']"
-                        class="w-full h-[240] rounded-[18] object-cover"
-                    />
+                @php($photos = $this->photos)
+                @if ($photos !== [])
+                    @php($shown = $photos[$photoIndex] ?? $photos[0])
+                    <column class="w-full">
+                        <image
+                            ref="item-photo"
+                            :src="$shown['url']"
+                            :alt="'Photo '.($shown['number']).' of '.$item['name']"
+                            class="w-full h-[240] rounded-[18] object-cover"
+                        />
+                        @if (count($photos) > 1)
+                            <row class="absolute top-[12] right-[12] rounded-full bg-black/60 px-2.5 py-1">
+                                <text ref="item-photo-count" font="semibold" class="text-sm text-white">{{ $shown['number'] }} / {{ count($photos) }}</text>
+                            </row>
+                            @if ($shown['number'] === 1)
+                                <row class="absolute bottom-[12] left-[12] items-center gap-1 rounded-full bg-black/60 px-2.5 py-1">
+                                    <icon :ios="Ios::StarFill" :android="Android::Star" :size="12" class="text-white" />
+                                    <text ref="item-photo-primary" font="semibold" class="text-sm text-white">Main photo</text>
+                                </row>
+                            @endif
+                        @endif
+                    </column>
+
+                    @if (count($photos) > 1)
+                        <scroll-view ref="item-photo-strip" horizontal :shows-indicators="false" class="w-full gap-2">
+                            @foreach ($photos as $index => $photo)
+                                <pressable
+                                    ref="item-photo-thumb-{{ $index }}"
+                                    a11y-label="Show photo {{ $photo['number'] }}{{ $index === $photoIndex ? ', showing' : '' }}"
+                                    class="h-16 w-16 rounded-xl {{ $index === $photoIndex ? 'border-2 border-theme-primary' : '' }}"
+                                    @tap="showPhoto({{ $index }})"
+                                >
+                                    <image :src="$photo['thumb']" :alt="'Photo '.$photo['number']" class="h-full w-full rounded-xl object-cover" />
+                                </pressable>
+                            @endforeach
+                        </scroll-view>
+                    @endif
                 @endif
             </column>
 
@@ -222,7 +252,7 @@
                 </column>
             @endif
 
-            @unless ($item['photo_url'] ?? null)
+            @if ($this->photos === [])
                 <pressable
                     ref="item-add-photo"
                     a11y-label="Add a photo"
@@ -237,7 +267,7 @@
                         </column>
                     </row>
                 </pressable>
-            @endunless
+            @endif
 
             <pressable
                 ref="delete-item"

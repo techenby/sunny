@@ -108,13 +108,11 @@ it('stores fields the save response leaves out as empty locally', function (): v
 it('uploads a photo with method spoofing and retains metadata keys', function (): void {
     $photo = UploadedFile::fake()->image('photo.jpg');
     Saloon::fake([SaveRecordRequest::class => MockResponse::make(['data' => Item::find(1)->toArray()])]);
-    Native::visit('/inventory/1/edit')->set('photoPath', $photo->getPathname())
-        ->set('metadata', [['key' => 'size[inches]', 'value' => '12']])
-        ->tap('edit-item-submit')->assertSet('error', '');
+    app(SunnyOutbox::class)->queue('items', 1, ['name' => 'Kitchen', 'type' => 'location', 'metadata' => ['size[inches]' => '12']], 1, $photo->getPathname());
+    app(SunnyWrites::class)->push();
     Saloon::assertSent(function (SaveRecordRequest $request) use ($photo): bool {
         expect($request->getMethod())->toBe(Method::POST);
         expect($request->body()->get('_method')->value)->toBe('PATCH');
-        expect($request->body()->get('remove_photo')->value)->toBe('0');
         expect(json_decode($request->body()->get('metadata')->value, true))->toBe(['size[inches]' => '12']);
         expect((string) $request->body()->get('photo')->value)->toBe(file_get_contents($photo->getPathname()));
 

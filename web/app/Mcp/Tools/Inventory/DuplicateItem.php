@@ -15,7 +15,7 @@ use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Tool;
 
-#[Description('Duplicate an inventory item of the current team one or more times (1 to 25 copies). Each copy keeps the name, type, parent and metadata of the original, and gets its own copy of the photo. Children are not copied. Returns the new items.')]
+#[Description('Duplicate an inventory item of the current team one or more times (1 to 25 copies). Each copy keeps the name, type, parent and metadata of the original, and gets its own copy of each photo. Children are not copied. Returns the new items.')]
 class DuplicateItem extends Tool
 {
     public function handle(Request $request, DuplicateItemAction $action): Response|ResponseFactory

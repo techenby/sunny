@@ -30,6 +30,8 @@ class UpdateItemRequest extends FormRequest
             'parent_id' => ['nullable', 'integer', Rule::exists('items', 'id')->where('team_id', $this->route('team')->id)],
             'metadata' => ['nullable', 'array'],
             'photo' => ['nullable', 'image', 'max:10240'],
+            'photo_order' => ['sometimes', 'array'],
+            'photo_order.*' => ['integer'],
         ];
     }
 

@@ -131,9 +131,9 @@ class Team extends Model
 
     public function purge(): void
     {
-        $photos = $this->items()->withTrashed()->get(['photo_path', 'thumb_path'])->toBase()
-            ->merge($this->recipes()->withTrashed()->get(['photo_path', 'thumb_path']))
-            ->flatMap(fn (Model $record) => [$record->photo_path, $record->thumb_path])
+        $photos = ItemPhoto::query()->whereIn('item_id', $this->items()->withTrashed()->select('id'))->get(['path', 'thumb_path'])
+            ->flatMap(fn (ItemPhoto $photo) => [$photo->path, $photo->thumb_path])
+            ->merge($this->recipes()->withTrashed()->get(['photo_path', 'thumb_path'])->flatMap(fn (Model $record) => [$record->photo_path, $record->thumb_path]))
             ->filter()
             ->values()
             ->all();

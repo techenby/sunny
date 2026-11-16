@@ -140,6 +140,9 @@ user belongs to.
 | `PATCH` | `/api/teams/{team}/items/{item}` | Update an inventory entry. |
 | `DELETE` | `/api/teams/{team}/items/{item}` | Delete an inventory entry. |
 | `POST` | `/api/teams/{team}/items/{item}/duplicate` | Create 1–25 copies. |
+| `POST` | `/api/teams/{team}/items/{item}/photos` | Add a photo to an inventory entry. |
+| `PATCH` | `/api/teams/{team}/items/{item}/photos/{photo}` | Move a photo to another position. |
+| `DELETE` | `/api/teams/{team}/items/{item}/photos/{photo}` | Remove a photo. |
 | `GET` | `/api/teams/{team}/recipes` | List the team's recipes. |
 | `POST` | `/api/teams/{team}/recipes` | Create a recipe. |
 | `GET` | `/api/teams/{team}/recipes/{recipe}` | Read a recipe. |
@@ -189,6 +192,22 @@ Create an item with:
 uploaded image in `photo` are optional. `parent_id` must reference an item in
 the same team. Send image requests as multipart form
 data.
+
+An entry can have up to 10 photos. Each entry in a response has `photos`, in
+order, each with `id`, `position`, `url`, and `thumb_url`. The first photo is
+the primary one, and `photo_url` and `thumb_url` on the entry are its URLs.
+On create and update, `photo` and `remove_photo` act on the primary photo only:
+`photo` replaces it and `remove_photo` deletes it, leaving any other photos in
+place.
+
+Send `photo_order`, a list of photo ids, on update to put an entry's photos in
+that order. Ids that aren't the entry's photos are ignored, and photos left out
+keep their order after the ones listed.
+
+Add a photo with `photo` (an image up to 10 MB), plus an optional `position`
+(0 makes it the primary photo; it goes last by default) and `client_uuid`.
+Retrying with the same `client_uuid` returns the photo already saved. Move a
+photo by sending its new `position`; the others shift to make room.
 
 Duplicate an entry with an optional count:
 

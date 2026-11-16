@@ -39,7 +39,7 @@ class SyncController extends Controller
 
         $teamsQuery = $user->teams()->withTrashed();
         $recipesQuery = Recipe::query()->withTrashed()->whereIn('team_id', $teamIds);
-        $itemsQuery = Item::query()->withTrashed()->whereIn('team_id', $teamIds);
+        $itemsQuery = Item::query()->with('photos')->withTrashed()->whereIn('team_id', $teamIds);
         $checklistsQuery = Checklist::query()->withTrashed()->whereIn('team_id', $teamIds);
         $checklistItemsQuery = ChecklistItem::query()->whereHas('checklist', fn (Builder $query) => $query->whereIn('team_id', $teamIds));
         $routinesQuery = Routine::query()->withTrashed()->whereIn('team_id', $teamIds);

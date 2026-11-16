@@ -2,6 +2,7 @@
 
 use App\Enums\ItemType;
 use App\Models\Item;
+use App\Models\ItemPhoto;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
@@ -467,43 +468,164 @@ describe('can add item metadata', function () {
 });
 
 describe('can manage item photos', function () {
-    test('can update an item with a new photo', function () {
+    test('shows every photo with the primary one first', function () {
         Storage::fake();
         $user = User::factory()->create();
-        $item = Item::factory()->for($user->currentTeam)->create(['name' => 'Guitar', 'photo_path' => 'teams/1/items/guitar.jpg']);
-        Storage::put('teams/1/items/guitar.jpg', 'old');
-
-        $newPhoto = UploadedFile::fake()->image('new-guitar.png');
+        $item = Item::factory()->for($user->currentTeam)->create(['name' => 'Guitar']);
+        ItemPhoto::factory()->for($item)->create(['path' => 'teams/1/items/back.jpg', 'position' => 1]);
+        ItemPhoto::factory()->for($item)->create(['path' => 'teams/1/items/front.jpg', 'position' => 0]);
 
         Livewire::actingAs($user)
             ->test('pages::inventory.show', ['item' => $item])
-            ->call('edit')
-            ->set('form.photo', $newPhoto)
-            ->call('save')
-            ->assertHasNoErrors();
-
-        $item->refresh();
-
-        expect($item->photo_path)->not->toBeNull();
-        Storage::assertExists($item->photo_path);
-        Storage::assertMissing('teams/1/items/guitar.jpg');
+            ->assertSeeInOrder(['front.jpg', 'back.jpg'])
+            ->assertSee('1 of 2')
+            ->assertSee('Primary')
+            ->assertSee('Make primary')
+            ->assertSee('Add photo');
     });
 
-    test('can remove an existing photo', function () {
-        Storage::fake();
+    test('offers to add a photo when there are none', function () {
         $user = User::factory()->create();
-        $item = Item::factory()->for($user->currentTeam)->create(['name' => 'Guitar', 'photo_path' => 'teams/1/items/guitar.jpg']);
-        Storage::put('teams/1/items/guitar.jpg', 'content');
+        $item = Item::factory()->for($user->currentTeam)->create();
 
         Livewire::actingAs($user)
             ->test('pages::inventory.show', ['item' => $item])
-            ->call('edit')
-            ->call('removePhoto')
+            ->assertSee('Add a photo')
+            ->assertDontSee('Make primary');
+    });
+
+    test('can add several photos at once', function () {
+        Storage::fake();
+        $user = User::factory()->create();
+        $item = Item::factory()->for($user->currentTeam)->withPhoto('teams/1/items/front.jpg')->create(['name' => 'Guitar']);
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.show', ['item' => $item])
+            ->set('newPhotos', [UploadedFile::fake()->image('back.jpg'), UploadedFile::fake()->image('scratch.png')])
+            ->assertHasNoErrors()
+            ->assertSet('newPhotos', []);
+
+        $photos = $item->photos()->get();
+
+        expect($photos)->toHaveCount(3)
+            ->and($photos->pluck('position')->all())->toBe([0, 1, 2])
+            ->and($photos->first()->path)->toBe('teams/1/items/front.jpg');
+        Storage::assertExists($photos->last()->path);
+        Storage::assertExists($photos->last()->thumb_path);
+    });
+
+    test('stops at ten photos', function () {
+        Storage::fake();
+        $user = User::factory()->create();
+        $item = Item::factory()->for($user->currentTeam)->create();
+        ItemPhoto::factory()->for($item)->count(9)->sequence(fn ($sequence) => ['position' => $sequence->index])->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.show', ['item' => $item])
+            ->set('newPhotos', [UploadedFile::fake()->image('one.jpg'), UploadedFile::fake()->image('two.jpg')])
+            ->assertHasErrors(['newPhotos' => 'An item can have up to 10 photos.']);
+
+        expect($item->photos()->count())->toBe(9);
+    });
+
+    test('rejects files that are not images', function () {
+        Storage::fake();
+        $user = User::factory()->create();
+        $item = Item::factory()->for($user->currentTeam)->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.show', ['item' => $item])
+            ->set('newPhotos', [UploadedFile::fake()->create('manual.pdf', 100, 'application/pdf')])
+            ->assertHasErrors('newPhotos.0');
+
+        expect($item->photos()->count())->toBe(0);
+    });
+
+    test('can make a photo the primary one', function () {
+        $user = User::factory()->create();
+        $item = Item::factory()->for($user->currentTeam)->create();
+        [$front, $back, $scratch] = ItemPhoto::factory()->for($item)->count(3)->sequence(fn ($sequence) => ['position' => $sequence->index])->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.show', ['item' => $item])
+            ->call('makePrimary', $scratch->id);
+
+        expect($item->photos()->pluck('id')->all())->toBe([$scratch->id, $front->id, $back->id])
+            ->and($item->fresh()->primaryPhoto->id)->toBe($scratch->id);
+    });
+
+    test('can drag a photo to a new position', function () {
+        $user = User::factory()->create();
+        $item = Item::factory()->for($user->currentTeam)->create();
+        [$front, $back, $scratch] = ItemPhoto::factory()->for($item)->count(3)->sequence(fn ($sequence) => ['position' => $sequence->index])->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.show', ['item' => $item])
+            ->call('movePhoto', $front->id, 2);
+
+        expect($item->photos()->pluck('id')->all())->toBe([$back->id, $scratch->id, $front->id]);
+    });
+
+    test('can delete a photo', function () {
+        Storage::fake();
+        Storage::put('teams/1/items/front.jpg', 'front');
+        Storage::put('teams/1/items/thumbs/front.jpg', 'thumb');
+        $user = User::factory()->create();
+        $item = Item::factory()->for($user->currentTeam)->create();
+        $front = ItemPhoto::factory()->for($item)->create(['path' => 'teams/1/items/front.jpg', 'thumb_path' => 'teams/1/items/thumbs/front.jpg', 'position' => 0]);
+        $back = ItemPhoto::factory()->for($item)->create(['position' => 1]);
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.show', ['item' => $item])
+            ->call('deletePhoto', $front->id);
+
+        expect($item->photos()->get())->toHaveCount(1)
+            ->first()->id->toBe($back->id)
+            ->first()->position->toBe(0);
+        Storage::assertMissing('teams/1/items/front.jpg');
+        Storage::assertMissing('teams/1/items/thumbs/front.jpg');
+    });
+
+    test('cannot touch another item\'s photos', function () {
+        $user = User::factory()->create();
+        $item = Item::factory()->for($user->currentTeam)->create();
+        $other = ItemPhoto::factory()->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.show', ['item' => $item])
+            ->call('deletePhoto', $other->id)
+            ->assertNotFound();
+
+        expect($other->fresh())->not->toBeNull();
+    });
+
+    test('hides photo controls on a deleted item', function () {
+        $user = User::factory()->create();
+        $item = Item::factory()->for($user->currentTeam)->withPhoto('teams/1/items/front.jpg')->create();
+        ItemPhoto::factory()->for($item)->create(['position' => 1]);
+        $item->delete();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.show', ['item' => $item])
+            ->assertSee('front.jpg')
+            ->assertDontSee('Make primary')
+            ->assertDontSee('Add photo');
+    });
+
+    test('putting something inside can give it a first photo', function () {
+        Storage::fake();
+        $user = User::factory()->create();
+        $bin = Item::factory()->for($user->currentTeam)->bin()->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.show', ['item' => $bin])
+            ->call('create')
+            ->set('form.name', 'Guitar')
+            ->set('form.photo', UploadedFile::fake()->image('guitar.jpg'))
             ->call('save')
             ->assertHasNoErrors();
 
-        expect($item->fresh()->photo_path)->toBeNull();
-        Storage::assertMissing('teams/1/items/guitar.jpg');
+        expect(Item::firstWhere('name', 'Guitar')->photos)->toHaveCount(1);
     });
 
     test('photo validation rejects non-image files', function () {
@@ -513,7 +635,8 @@ describe('can manage item photos', function () {
 
         Livewire::actingAs($user)
             ->test('pages::inventory.show', ['item' => $item])
-            ->call('edit')
+            ->call('create')
+            ->set('form.name', 'Manual')
             ->set('form.photo', $file)
             ->call('save')
             ->assertHasErrors('form.photo');

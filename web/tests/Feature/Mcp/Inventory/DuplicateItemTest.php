@@ -9,7 +9,7 @@ use Tests\Feature\Mcp\SunnyTestServer;
 test('it duplicates an item once by default', function () {
     $user = User::factory()->create();
     $garage = Item::factory()->location()->for($user->currentTeam)->create(['name' => 'Garage']);
-    $item = Item::factory()->item()->childOf($garage)->create(['name' => 'Hammer', 'photo_path' => null]);
+    $item = Item::factory()->item()->childOf($garage)->create(['name' => 'Hammer']);
 
     SunnyTestServer::actingAs($user)
         ->tool(DuplicateItem::class, ['id' => $item->id])
@@ -27,7 +27,7 @@ test('it duplicates an item once by default', function () {
 
 test('it creates the requested number of copies', function () {
     $user = User::factory()->create();
-    $item = Item::factory()->for($user->currentTeam)->create(['name' => 'Hammer', 'photo_path' => null]);
+    $item = Item::factory()->for($user->currentTeam)->create(['name' => 'Hammer']);
 
     SunnyTestServer::actingAs($user)
         ->tool(DuplicateItem::class, ['id' => $item->id, 'count' => 3])

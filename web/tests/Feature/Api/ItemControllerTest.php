@@ -2,6 +2,7 @@
 
 use App\Enums\TeamRole;
 use App\Models\Item;
+use App\Models\ItemPhoto;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
@@ -169,32 +170,42 @@ test('show returns an item', function () {
         ->assertJsonPath('data.name', $item->name);
 });
 
-test('show returns photo_url when item has a photo', function () {
+test('show returns the primary photo and every photo in order', function () {
     Storage::fake();
 
     $user = User::factory()->create();
-    $item = Item::factory()->for($user->currentTeam)->create([
-        'photo_path' => "teams/{$user->current_team_id}/items/wrench.png",
-    ]);
+    $item = Item::factory()->for($user->currentTeam)->create();
+    ItemPhoto::factory()->for($item)->create(['path' => "teams/{$user->current_team_id}/items/wrench-back.png", 'position' => 1]);
+    $front = ItemPhoto::factory()->for($item)->create(['path' => "teams/{$user->current_team_id}/items/wrench.png", 'thumb_path' => "teams/{$user->current_team_id}/items/thumbs/wrench.jpg", 'position' => 0]);
 
     $response = $this->actingAs($user)
         ->getJson(route('api.items.show', [$user->currentTeam, $item]))
         ->assertOk()
         ->assertJsonMissingPath('data.photo_path')
         ->assertJsonMissingPath('data.thumb_path')
-        ->assertJsonPath('data.thumb_url', null);
+        ->assertJsonMissingPath('data.primary_photo')
+        ->assertJsonCount(2, 'data.photos')
+        ->assertJsonPath('data.photos.0.id', $front->id)
+        ->assertJsonPath('data.photos.0.item_id', $item->id)
+        ->assertJsonPath('data.photos.0.position', 0)
+        ->assertJsonPath('data.photos.1.position', 1)
+        ->assertJsonPath('data.photos.1.thumb_url', null)
+        ->assertJsonMissingPath('data.photos.0.path');
 
-    expect($response->json('data.photo_url'))->toBeString()->toContain('wrench.png');
+    expect($response->json('data.photo_url'))->toContain('wrench.png')
+        ->and($response->json('data.thumb_url'))->toContain('thumbs/wrench.jpg')
+        ->and($response->json('data.photos.1.url'))->toContain('wrench-back.png');
 });
 
 test('show returns null photo_url when item has no photo', function () {
     $user = User::factory()->create();
-    $item = Item::factory()->for($user->currentTeam)->create(['photo_path' => null]);
+    $item = Item::factory()->for($user->currentTeam)->create();
 
     $this->actingAs($user)
         ->getJson(route('api.items.show', [$user->currentTeam, $item]))
         ->assertOk()
-        ->assertJsonPath('data.photo_url', null);
+        ->assertJsonPath('data.photo_url', null)
+        ->assertJsonPath('data.photos', []);
 });
 
 test('show returns 403 for a team the user does not belong to item', function () {
@@ -301,31 +312,103 @@ test('store rejects a parent from another team', function () {
         ->assertJsonValidationErrors('parent_id');
 });
 
-test('item API accepts JSON metadata alongside photos and removes a photo explicitly', function () {
+test('item API accepts JSON metadata alongside a photo from older apps and removes it explicitly', function () {
     Storage::fake();
     $user = User::factory()->create();
     $response = $this->actingAs($user)->post(route('api.items.store', $user->currentTeam), [
         'name' => 'Measuring tape', 'type' => 'item', 'metadata' => json_encode(['size[inches]' => '12']),
         'photo' => UploadedFile::fake()->image('tape.jpg'),
-    ], ['Accept' => 'application/json'])->assertCreated()->assertJsonPath('data.metadata', ['size[inches]' => '12']);
+    ], ['Accept' => 'application/json'])->assertCreated()->assertJsonPath('data.metadata', ['size[inches]' => '12'])->assertJsonCount(1, 'data.photos');
     $item = Item::findOrFail($response->json('data.id'));
-    $path = $item->photo_path;
-    $thumb = $item->thumb_path;
-    Storage::assertExists($path);
-    Storage::assertExists($thumb);
+    $photo = $item->photos()->sole();
+    Storage::assertExists($photo->path);
+    Storage::assertExists($photo->thumb_path);
     expect($response->json('data.thumb_url'))->toContain('/thumbs/');
     $this->post(route('api.items.update', [$user->currentTeam, $item]), [
         '_method' => 'PATCH', 'metadata' => json_encode(['size[inches]' => '24']),
         'photo' => UploadedFile::fake()->image('tape.png'),
-    ], ['Accept' => 'application/json'])->assertOk()->assertJsonPath('data.metadata', ['size[inches]' => '24']);
-    Storage::assertMissing($path);
-    Storage::assertMissing($thumb);
-    $path = $item->fresh()->photo_path;
-    $thumb = $item->fresh()->thumb_path;
-    Storage::assertExists($thumb);
+    ], ['Accept' => 'application/json'])->assertOk()->assertJsonPath('data.metadata', ['size[inches]' => '24'])->assertJsonCount(1, 'data.photos');
+    Storage::assertMissing($photo->path);
+    Storage::assertMissing($photo->thumb_path);
+    $photo = $item->photos()->sole();
+    Storage::assertExists($photo->thumb_path);
     $this->patchJson(route('api.items.update', [$user->currentTeam, $item]), ['remove_photo' => true, 'metadata' => null])
-        ->assertOk()->assertJsonPath('data.photo_url', null)->assertJsonPath('data.thumb_url', null)->assertJsonPath('data.metadata', null);
-    Storage::assertMissing($path);
-    Storage::assertMissing($thumb);
-    expect($item->fresh()->thumb_path)->toBeNull();
+        ->assertOk()->assertJsonPath('data.photo_url', null)->assertJsonPath('data.thumb_url', null)->assertJsonPath('data.metadata', null)->assertJsonPath('data.photos', []);
+    Storage::assertMissing($photo->path);
+    Storage::assertMissing($photo->thumb_path);
+});
+
+test('a photo from an older app replaces only the primary photo', function () {
+    Storage::fake();
+    $user = User::factory()->create();
+    $item = Item::factory()->for($user->currentTeam)->create();
+    $front = ItemPhoto::factory()->for($item)->create(['position' => 0]);
+    $back = ItemPhoto::factory()->for($item)->create(['position' => 1]);
+
+    $response = $this->actingAs($user)->post(route('api.items.update', [$user->currentTeam, $item]), [
+        '_method' => 'PATCH', 'photo' => UploadedFile::fake()->image('new-front.jpg'),
+    ], ['Accept' => 'application/json'])->assertOk()->assertJsonCount(2, 'data.photos');
+
+    $photos = $item->photos()->get();
+
+    expect($front->fresh())->toBeNull()
+        ->and($photos->pluck('position')->all())->toBe([0, 1])
+        ->and($photos->last()->id)->toBe($back->id)
+        ->and($response->json('data.photo_url'))->toContain($photos->first()->path);
+});
+
+test('removing the photo from an older app removes only the primary photo', function () {
+    Storage::fake();
+    $user = User::factory()->create();
+    $item = Item::factory()->for($user->currentTeam)->create();
+    $front = ItemPhoto::factory()->for($item)->create(['position' => 0]);
+    $back = ItemPhoto::factory()->for($item)->create(['position' => 1]);
+
+    $this->actingAs($user)
+        ->patchJson(route('api.items.update', [$user->currentTeam, $item]), ['remove_photo' => true])
+        ->assertOk()
+        ->assertJsonCount(1, 'data.photos')
+        ->assertJsonPath('data.photos.0.id', $back->id)
+        ->assertJsonPath('data.photos.0.position', 0);
+
+    expect($front->fresh())->toBeNull();
+});
+
+test('index includes each item\'s photos', function () {
+    $user = User::factory()->create();
+    $item = Item::factory()->for($user->currentTeam)->create();
+    ItemPhoto::factory()->for($item)->count(2)->sequence(fn ($sequence) => ['position' => $sequence->index])->create();
+
+    $this->actingAs($user)
+        ->getJson(route('api.items.index', $user->currentTeam))
+        ->assertOk()
+        ->assertJsonCount(2, 'data.0.photos');
+});
+
+test('update puts the photos in the order given', function () {
+    $user = User::factory()->create();
+    $item = Item::factory()->for($user->currentTeam)->create();
+    [$front, $back, $scratch, $label] = ItemPhoto::factory()->for($item)->count(4)->sequence(fn ($sequence) => ['position' => $sequence->index])->create();
+    $elsewhere = ItemPhoto::factory()->create();
+
+    $this->actingAs($user)
+        ->patchJson(route('api.items.update', [$user->currentTeam, $item]), ['photo_order' => [$scratch->id, 999, $elsewhere->id, $front->id]])
+        ->assertOk()
+        ->assertJsonPath('data.photos.0.id', $scratch->id)
+        ->assertJsonPath('data.photos.1.id', $front->id)
+        ->assertJsonPath('data.photos.2.id', $back->id)
+        ->assertJsonPath('data.photos.3.id', $label->id);
+
+    expect($item->photos()->pluck('position')->all())->toBe([0, 1, 2, 3])
+        ->and($elsewhere->fresh()->position)->toBe(0);
+});
+
+test('update validates the photo order', function () {
+    $user = User::factory()->create();
+    $item = Item::factory()->for($user->currentTeam)->create();
+
+    $this->actingAs($user)
+        ->patchJson(route('api.items.update', [$user->currentTeam, $item]), ['photo_order' => ['front']])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('photo_order.0');
 });

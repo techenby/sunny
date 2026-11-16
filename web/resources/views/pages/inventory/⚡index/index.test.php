@@ -34,9 +34,8 @@ test('shows the item photo in place of the icon', function () {
     Storage::fake();
 
     $user = User::factory()->create();
-    Item::factory()->for($user->currentTeam)->create([
+    Item::factory()->for($user->currentTeam)->withPhoto("teams/{$user->current_team_id}/items/brown-hammer.png")->create([
         'name' => 'Brown Hammer',
-        'photo_path' => "teams/{$user->current_team_id}/items/brown-hammer.png",
     ]);
 
     Livewire::actingAs($user)
@@ -721,8 +720,8 @@ describe('can manage item photos', function () {
 
         $item = Item::where('name', 'Guitar')->first();
 
-        expect($item->photo_path)->not->toBeNull();
-        Storage::assertExists($item->photo_path);
+        expect($item->photos)->toHaveCount(1);
+        Storage::assertExists($item->photos->first()->path);
     });
 
     test('can create an item without a photo', function () {
@@ -735,46 +734,40 @@ describe('can manage item photos', function () {
             ->call('save')
             ->assertHasNoErrors();
 
-        expect(Item::where('name', 'Screwdriver')->first()->photo_path)->toBeNull();
+        expect(Item::where('name', 'Screwdriver')->first()->photos)->toBeEmpty();
     });
 
-    test('can update an item with a new photo', function () {
-        Storage::fake();
+    test('editing an item leaves its photos alone', function () {
         $user = User::factory()->create();
-        $item = Item::factory()->for($user->currentTeam)->create(['name' => 'Guitar', 'photo_path' => 'teams/1/items/guitar.jpg']);
-        Storage::put('teams/1/items/guitar.jpg', 'old');
-
-        $newPhoto = UploadedFile::fake()->image('new-guitar.png');
+        $item = Item::factory()->for($user->currentTeam)->withPhoto('teams/1/items/guitar.jpg')->create(['name' => 'Guitar']);
 
         Livewire::actingAs($user)
             ->test('pages::inventory.index')
             ->call('edit', $item->id)
-            ->set('form.photo', $newPhoto)
+            ->set('form.name', 'Bass guitar')
             ->call('save')
             ->assertHasNoErrors();
 
-        $item->refresh();
-
-        expect($item->photo_path)->not->toBeNull();
-        Storage::assertExists($item->photo_path);
-        Storage::assertMissing('teams/1/items/guitar.jpg');
+        expect($item->fresh())
+            ->name->toBe('Bass guitar')
+            ->photos->pluck('path')->all()->toBe(['teams/1/items/guitar.jpg']);
     });
 
-    test('can remove an existing photo', function () {
+    test('can drop a chosen photo before saving', function () {
         Storage::fake();
         $user = User::factory()->create();
-        $item = Item::factory()->for($user->currentTeam)->create(['name' => 'Guitar', 'photo_path' => 'teams/1/items/guitar.jpg']);
-        Storage::put('teams/1/items/guitar.jpg', 'content');
 
         Livewire::actingAs($user)
             ->test('pages::inventory.index')
-            ->call('edit', $item->id)
+            ->set('form.name', 'Guitar')
+            ->set('form.type', ItemType::Item->value)
+            ->set('form.photo', UploadedFile::fake()->image('guitar.jpg'))
             ->call('removePhoto')
+            ->assertSet('form.photo', null)
             ->call('save')
             ->assertHasNoErrors();
 
-        expect($item->fresh()->photo_path)->toBeNull();
-        Storage::assertMissing('teams/1/items/guitar.jpg');
+        expect(Item::where('name', 'Guitar')->first()->photos)->toBeEmpty();
     });
 
     test('photo validation rejects non-image files', function () {
@@ -1175,9 +1168,8 @@ test('shows the item photo in place of the type icon', function () {
     Storage::fake();
 
     $user = User::factory()->create();
-    Item::factory()->for($user->currentTeam)->create([
+    Item::factory()->for($user->currentTeam)->withPhoto("teams/{$user->current_team_id}/items/guitar.png")->create([
         'name' => 'Guitar',
-        'photo_path' => "teams/{$user->current_team_id}/items/guitar.png",
     ]);
 
     Livewire::actingAs($user)

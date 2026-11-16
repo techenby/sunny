@@ -189,50 +189,89 @@ it('asks the camera for a photo', function () {
         ->assertNativeCalled('Camera.GetPhoto');
 });
 
-it('asks the gallery for a single image', function () {
+it('asks the gallery for as many images as there is room for', function () {
     Native::fakeBridge();
 
     Native::visit('/inventory/create')
+        ->emitNative(PhotoTaken::class, ['path' => '/tmp/captured.jpg'])
         ->tap('create-item-photo-library')
         ->assertNativeCalled('Camera.PickMedia', fn (array $params): bool => ($params['mediaType'] ?? null) === 'image'
-            && ($params['multiple'] ?? null) === false);
+            && ($params['multiple'] ?? null) === true
+            && ($params['maxItems'] ?? null) === 9);
 });
 
-it('previews a captured photo and lets it be removed', function () {
+it('lists captured photos and lets one be removed', function () {
     Native::visit('/inventory/create')
         ->assertMissingElement('image')
-        ->emitNative(PhotoTaken::class, ['path' => '/tmp/captured.jpg'])
-        ->assertSet('photoPath', '/tmp/captured.jpg')
-        ->assertElement('image', fn (array $node): bool => ($node['ref'] ?? null) === 'create-item-photo'
-            && ($node['props']['src'] ?? null) === '/tmp/captured.jpg')
-        ->tap('create-item-photo-remove')
-        ->assertSet('photoPath', null)
-        ->assertMissingElement('image');
+        ->emitNative(PhotoTaken::class, ['path' => '/tmp/front.jpg'])
+        ->emitNative(PhotoTaken::class, ['path' => '/tmp/back.jpg'])
+        ->assertElement('image', fn (array $node): bool => ($node['ref'] ?? null) === 'create-item-photo-0'
+            && ($node['props']['src'] ?? null) === '/tmp/front.jpg')
+        ->assertElement('image', fn (array $node): bool => ($node['ref'] ?? null) === 'create-item-photo-1'
+            && ($node['props']['src'] ?? null) === '/tmp/back.jpg')
+        ->assertSee('Primary')
+        ->assertSee('Make primary')
+        ->tap('create-item-photo-0-remove')
+        ->assertElement('image', fn (array $node): bool => ($node['ref'] ?? null) === 'create-item-photo-0'
+            && ($node['props']['src'] ?? null) === '/tmp/back.jpg')
+        ->assertMissingElement('image', fn (array $node): bool => ($node['ref'] ?? null) === 'create-item-photo-1');
 });
 
-it('takes the first file a gallery selection hands back', function () {
-    Native::visit('/inventory/create')
+it('reorders photos with taps', function () {
+    $screen = Native::visit('/inventory/create')
+        ->emitNative(PhotoTaken::class, ['path' => '/tmp/front.jpg'])
+        ->emitNative(PhotoTaken::class, ['path' => '/tmp/back.jpg'])
+        ->emitNative(PhotoTaken::class, ['path' => '/tmp/scratch.jpg'])
+        ->tap('create-item-photo-2-primary');
+
+    expect(array_column($screen->get('photos'), 'path'))->toBe(['/tmp/scratch.jpg', '/tmp/front.jpg', '/tmp/back.jpg']);
+
+    $screen->tap('create-item-photo-0-down');
+    expect(array_column($screen->get('photos'), 'path'))->toBe(['/tmp/front.jpg', '/tmp/scratch.jpg', '/tmp/back.jpg']);
+
+    $screen->tap('create-item-photo-2-up')->tap('create-item-photo-0-up');
+    expect(array_column($screen->get('photos'), 'path'))->toBe(['/tmp/front.jpg', '/tmp/back.jpg', '/tmp/scratch.jpg']);
+});
+
+it('adds every file a gallery selection hands back', function () {
+    $screen = Native::visit('/inventory/create')
         ->emitNative(MediaSelected::class, [
             'success' => true,
             'files' => [
                 ['path' => '/tmp/gallery_selected_1.jpg', 'mimeType' => 'image/jpeg'],
                 ['path' => '/tmp/gallery_selected_2.jpg', 'mimeType' => 'image/jpeg'],
             ],
-        ])
-        ->assertSet('photoPath', '/tmp/gallery_selected_1.jpg');
+        ]);
+
+    expect(array_column($screen->get('photos'), 'path'))->toBe(['/tmp/gallery_selected_1.jpg', '/tmp/gallery_selected_2.jpg']);
 });
 
-it('keeps the current photo when a gallery selection fails or is cancelled', function () {
-    Native::visit('/inventory/create')
-        ->set('photoPath', '/tmp/captured.jpg')
-        ->emitNative(MediaSelected::class, ['success' => false, 'files' => []])
-        ->assertSet('photoPath', '/tmp/captured.jpg');
+it('keeps the photos when a gallery selection fails or is cancelled', function () {
+    $screen = Native::visit('/inventory/create')
+        ->emitNative(PhotoTaken::class, ['path' => '/tmp/captured.jpg'])
+        ->emitNative(MediaSelected::class, ['success' => false, 'files' => []]);
+
+    expect(array_column($screen->get('photos'), 'path'))->toBe(['/tmp/captured.jpg']);
+});
+
+it('stops adding photos at ten', function () {
+    $screen = Native::visit('/inventory/create')
+        ->emitNative(MediaSelected::class, [
+            'success' => true,
+            'files' => array_map(fn (int $number): array => ['path' => "/tmp/photo-{$number}.jpg"], range(1, 11)),
+        ])
+        ->assertSet('error', 'An item can have up to 10 photos.')
+        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'create-item-photo-camera')
+        ->assertSee('That’s the most photos one item can have.');
+
+    expect($screen->get('photos'))->toHaveCount(10);
 });
 
 it('gives every tappable control at least a 48dp touch target', function () {
     $harness = Native::visit('/inventory/create')
         ->tap('metadata-add')
-        ->set('photoPath', '/tmp/captured.jpg')
+        ->emitNative(PhotoTaken::class, ['path' => '/tmp/front.jpg'])
+        ->emitNative(PhotoTaken::class, ['path' => '/tmp/back.jpg'])
         ->tap('create-item-parent');
 
     $undersized = [];

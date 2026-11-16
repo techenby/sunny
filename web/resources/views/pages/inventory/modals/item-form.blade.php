@@ -22,30 +22,26 @@
             @endforeach
         </flux:radio.group>
 
-        <flux:field>
-            <flux:label>{{ __('Photo (optional)') }}</flux:label>
+        @unless ($form->editingItem)
+            <flux:field>
+                <flux:label>{{ __('Photo (optional)') }}</flux:label>
 
-            <flux:file-upload wire:model="form.photo">
-                <flux:file-upload.dropzone :heading="__('Drop photo here or click to browse')" :text="__('JPG, PNG up to 5MB')" inline />
-            </flux:file-upload>
+                <flux:file-upload wire:model="form.photo">
+                    <flux:file-upload.dropzone :heading="__('Drop photo here or click to browse')" :text="__('JPG, PNG up to 5MB. Add more photos from its page.')" inline />
+                </flux:file-upload>
 
-            <div class="mt-4 flex flex-col gap-2">
-            @if ($this->form->photo)
-                <flux:file-item :heading="$this->form->photo->getClientOriginalName()" :image="$this->form->photo->isPreviewable() ? $this->form->photo->temporaryUrl() : null" :size="$this->form->photo->getSize()">
-                    <x-slot name="actions">
-                        <flux:button wire:click="removePhoto" variant="ghost" size="sm" icon="x-mark" :aria-label="__('Remove photo')" />
-                    </x-slot>
-                </flux:file-item>
-            @elseif ($this->form->existingPhotoUrl)
-                <flux:file-item :heading="basename($this->form->editingItem->photo_path)" :image="$this->form->existingPhotoUrl">
-                    <x-slot name="actions">
-                        <flux:button wire:click="removePhoto" variant="ghost" size="sm" icon="x-mark" :aria-label="__('Remove photo')" />
-                    </x-slot>
-                </flux:file-item>
-            @endif
-            </div>
-            <flux:error name="form.photo" />
-        </flux:field>
+                @if ($form->photo)
+                    <div class="mt-4 flex flex-col gap-2">
+                        <flux:file-item :heading="$form->photo->getClientOriginalName()" :image="$form->photo->isPreviewable() ? $form->photo->temporaryUrl() : null" :size="$form->photo->getSize()">
+                            <x-slot name="actions">
+                                <flux:button wire:click="removePhoto" variant="ghost" size="sm" icon="x-mark" :aria-label="__('Remove photo')" />
+                            </x-slot>
+                        </flux:file-item>
+                    </div>
+                @endif
+                <flux:error name="form.photo" />
+            </flux:field>
+        @endunless
 
         <div>
             <flux:label class="mb-2">{{ __('Extra details (optional)') }}</flux:label>

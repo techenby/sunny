@@ -3,6 +3,7 @@
 namespace App\Http\Integrations\Sunny;
 
 use App\Models\Item;
+use App\Models\ItemPhoto;
 use App\Models\PendingWrite;
 use App\Models\RoutineOccurrence;
 use App\Models\RoutineOccurrenceStep;
@@ -32,7 +33,11 @@ class SunnyOutbox
             [$ownerType, $ownerKey] = $owner;
             $payload[$ownerKey] = $id === null ? ($payload[$ownerKey] ?? null) : $model::query()->whereKey($id)->value($ownerKey);
             if (! SunnyStore::inTeam($ownerType, $teamId)->whereKey($payload[$ownerKey])->exists()) {
-                $noun = $ownerType === 'checklists' ? 'list' : 'routine';
+                $noun = match ($ownerType) {
+                    'checklists' => 'list',
+                    'items' => 'item',
+                    default => 'routine',
+                };
                 throw ValidationException::withMessages([$ownerKey => "This {$noun} is no longer available. Sync with Sunny."]);
             }
         }
@@ -54,7 +59,11 @@ class SunnyOutbox
         return DB::transaction(function () use ($resource, $teamId, $payload, $id, $photoPath, $model): int {
             $record = $id === null ? $this->newRecord($resource, $teamId, $payload) : $model::query()->findOrFail($id);
             $record->fill([...Arr::only($payload, SunnyStore::editableFields($resource)), 'updated_at' => now()]);
-            if ($photoPath !== null || ($payload['remove_photo'] ?? false)) {
+            if ($resource === 'item_photos' && $photoPath !== null) {
+                $record->url = $photoPath;
+                $record->thumb_url = null;
+                $record->thumb_path = null;
+            } elseif ($photoPath !== null || ($payload['remove_photo'] ?? false)) {
                 $record->photo_url = $photoPath;
                 $record->thumb_url = null;
                 $record->thumb_path = null;
@@ -163,7 +172,9 @@ class SunnyOutbox
 
             if (SunnyStore::children($resource) !== null) {
                 $this->forgetChildren($resource, $id);
-            } elseif (SunnyStore::owner($resource) === null) {
+            }
+
+            if (in_array($resource, ['recipes', 'items'], true)) {
                 SunnyStore::model($resource)::query()->where('parent_id', $id)->update(['parent_id' => null]);
                 $this->rewritePendingReference($resource, 'parent_id', $id, null);
             }
@@ -184,9 +195,20 @@ class SunnyOutbox
             [$childType, $childKey] = $children;
             SunnyStore::model($childType)::query()->where($childKey, $localId)->update([$childKey => $serverId]);
             $this->rewritePendingReference($childType, $childKey, $localId, $serverId);
-        } elseif (SunnyStore::owner($resource) === null) {
+        }
+
+        if (in_array($resource, ['recipes', 'items'], true)) {
             $model::query()->where('parent_id', $localId)->update(['parent_id' => $serverId]);
             $this->rewritePendingReference($resource, 'parent_id', $localId, $serverId);
+        }
+
+        if ($resource === 'item_photos') {
+            PendingWrite::query()->forCurrentServer()->where('resource', 'items')->get()
+                ->filter(fn (PendingWrite $write): bool => in_array($localId, $write->payload['photo_order'] ?? [], true))
+                ->each(fn (PendingWrite $write) => $write->update(['payload' => [
+                    ...$write->payload,
+                    'photo_order' => array_map(fn (int $id): int => $id === $localId ? $serverId : $id, $write->payload['photo_order']),
+                ]]));
         }
     }
 
@@ -213,6 +235,7 @@ class SunnyOutbox
         $inUse = PendingWrite::query()->pluck('photo_path')
             ->merge(Item::query()->pluck('photo_url'))
             ->merge(SunnyStore::model('recipes')::query()->pluck('photo_url'))
+            ->merge(ItemPhoto::query()->pluck('url'))
             ->filter()->flip();
 
         foreach (File::glob(self::photoDirectory().'/*') as $path) {
@@ -249,7 +272,7 @@ class SunnyOutbox
 
     private function ensureRecordInTeam(string $resource, int $teamId, ?int $id): void
     {
-        throw_unless(in_array($resource, ['recipes', 'items', 'checklists', 'checklist_items', 'routines', 'routine_steps'], true), UnexpectedValueException::class);
+        throw_unless(in_array($resource, ['recipes', 'items', 'item_photos', 'checklists', 'checklist_items', 'routines', 'routine_steps'], true), UnexpectedValueException::class);
         if (! Team::query()->where('server', SunnyStore::server())->whereKey($teamId)->exists()) {
             throw ValidationException::withMessages(['team' => 'Sync with Sunny before saving to this team.']);
         }

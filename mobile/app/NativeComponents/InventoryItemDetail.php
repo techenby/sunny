@@ -10,6 +10,7 @@ use App\Http\Integrations\Sunny\SunnyOutbox;
 use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Icons\Android;
 use App\Icons\Ios;
+use App\Models\ItemPhoto;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
@@ -28,6 +29,8 @@ class InventoryItemDetail extends Component
     use ShowsQueuedChange;
 
     public string $error = '';
+
+    public int $photoIndex = 0;
 
     /**
      * @return array{id: int, parent_id: int|null, type: ItemType, name: string, metadata: array<string, string>|null, created_at: string, updated_at: string}|null
@@ -75,6 +78,30 @@ class InventoryItemDetail extends Component
     public function children(): array
     {
         return $this->item === null ? [] : Inventory::childrenOf($this->item['id']);
+    }
+
+    /** @return list<array{number: int, url: string, thumb: string}> */
+    #[Computed]
+    public function photos(): array
+    {
+        if ($this->item === null) {
+            return [];
+        }
+
+        $photos = ItemPhoto::query()->forCurrentServer()->where('item_id', $this->item['id'])->orderBy('position')->orderBy('id')->get()
+            ->filter(fn (ItemPhoto $photo): bool => $photo->url !== null)
+            ->values()
+            ->map(fn (ItemPhoto $photo, int $index): array => ['number' => $index + 1, 'url' => $photo->url, 'thumb' => (string) $photo->thumbnail()])
+            ->all();
+
+        return $photos !== [] || ($this->item['photo_url'] ?? null) === null
+            ? $photos
+            : [['number' => 1, 'url' => $this->item['photo_url'], 'thumb' => $this->item['thumb_path'] ?? $this->item['photo_url']]];
+    }
+
+    public function showPhoto(int $index): void
+    {
+        $this->photoIndex = max(0, min($index, count($this->photos) - 1));
     }
 
     /**
@@ -299,7 +326,7 @@ class InventoryItemDetail extends Component
 
     protected function refreshLocalSyncedData(): void
     {
-        unset($this->item, $this->parent, $this->path, $this->children, $this->starterStorage, $this->queuedChange, $this->parentChoices, $this->selectedParent, $this->browsedParent, $this->parentPickerRows, $this->parentTrail);
+        unset($this->item, $this->photos, $this->parent, $this->path, $this->children, $this->starterStorage, $this->queuedChange, $this->parentChoices, $this->selectedParent, $this->browsedParent, $this->parentPickerRows, $this->parentTrail);
     }
 
     /**
