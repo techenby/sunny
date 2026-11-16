@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "0f67179ea3730fc01287dfca6ce53087",
+    "content-hash": "295ee55ea90269b2317eca8112d459eb",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -2808,6 +2808,61 @@
             "time": "2026-07-19T02:38:14+00:00"
         },
         {
+            "name": "nativephp/mobile-local-notifications",
+            "version": "0.1.0",
+            "dist": {
+                "type": "zip",
+                "url": "https://plugins.nativephp.com/dist/nativephp/mobile-local-notifications/nativephp-mobile-local-notifications-a4a0ca21fe2b14b0d72c0f03f4264931de58a563-zip-21c93d.zip",
+                "reference": "a4a0ca21fe2b14b0d72c0f03f4264931de58a563",
+                "shasum": "c1f48d53e0064010f472b1dbecede9ef11a441d8"
+            },
+            "require": {
+                "nativephp/mobile": "^3.2.1 || ^4.0",
+                "php": "^8.2"
+            },
+            "require-dev": {
+                "orchestra/testbench": "^10.0",
+                "pestphp/pest": "^2.7|^3.0|^4.0"
+            },
+            "type": "nativephp-plugin",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "NativePHP\\LocalNotifications\\LocalNotificationsServiceProvider"
+                    ]
+                },
+                "nativephp": {
+                    "manifest": "nativephp.json"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "NativePHP\\LocalNotifications\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Tests\\": "tests/"
+                }
+            },
+            "scripts": {
+                "test": [
+                    "pest"
+                ]
+            },
+            "license": [
+                "proprietary"
+            ],
+            "authors": [
+                {
+                    "name": "NativePHP",
+                    "email": "support@nativephp.com"
+                }
+            ],
+            "description": "Local notifications for NativePHP Mobile with Laravel Notification channel integration",
+            "time": "2026-09-03T18:31:35+00:00"
+        },
+        {
             "name": "nativephp/mobile-ota",
             "version": "1.0.1",
             "source": {
@@ -4803,6 +4858,66 @@
                 }
             ],
             "time": "2026-09-28T07:16:50+00:00"
+        },
+        {
+            "name": "srwiez/nativephp-mobile-screen",
+            "version": "v2.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/SRWieZ/nativephp-mobile-screen.git",
+                "reference": "f6145c55171c33e151d5f5f0c3fd0c1d365daafd"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/SRWieZ/nativephp-mobile-screen/zipball/f6145c55171c33e151d5f5f0c3fd0c1d365daafd",
+                "reference": "f6145c55171c33e151d5f5f0c3fd0c1d365daafd",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/support": "^11.0|^12.0|^13.0",
+                "nativephp/mobile": "^3.3.11 || ^4.6.1",
+                "php": "^8.3"
+            },
+            "require-dev": {
+                "laravel/pint": "^1.24",
+                "orchestra/testbench": "^9.0|^10.0|^11.0",
+                "pestphp/pest": "^3.0|^4.0"
+            },
+            "type": "nativephp-plugin",
+            "extra": {
+                "laravel": {
+                    "aliases": {
+                        "Screen": "SRWieZ\\NativePHP\\Mobile\\Screen\\Facades\\Screen"
+                    },
+                    "providers": [
+                        "SRWieZ\\NativePHP\\Mobile\\Screen\\ScreenServiceProvider"
+                    ]
+                },
+                "nativephp": {
+                    "manifest": "nativephp.json"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "SRWieZ\\NativePHP\\Mobile\\Screen\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Eser Deniz",
+                    "email": "srwiez@gmail.com"
+                }
+            ],
+            "description": "Screen wake lock and brightness control for NativePHP Mobile apps",
+            "support": {
+                "issues": "https://github.com/SRWieZ/nativephp-mobile-screen/issues",
+                "source": "https://github.com/SRWieZ/nativephp-mobile-screen/tree/v2.1.0"
+            },
+            "time": "2026-10-29T16:31:09+00:00"
         },
         {
             "name": "sunny/item-scanner",
@@ -7702,6 +7817,76 @@
                 }
             ],
             "time": "2026-04-26T05:33:54+00:00"
+        },
+        {
+            "name": "vos/nativephp-live-activities",
+            "version": "v1.3.0",
+            "dist": {
+                "type": "zip",
+                "url": "https://plugins.nativephp.com/dist/vos/nativephp-live-activities/vos-nativephp-live-activities-a6984449e0994aee57b3b919fbe6d22edec1d1d4-zip-f3c68a.zip",
+                "reference": "a6984449e0994aee57b3b919fbe6d22edec1d1d4",
+                "shasum": "499f99386dfe8c19dfcb5801662d614af15baf0d"
+            },
+            "require": {
+                "illuminate/support": "^12.0",
+                "nativephp/mobile": "^4.5",
+                "php": "^8.4"
+            },
+            "require-dev": {
+                "larastan/larastan": "^3.0",
+                "laravel/boost": "^2.10",
+                "laravel/pint": "^1.0",
+                "orchestra/testbench": "^10.0",
+                "phpstan/phpstan": "^2.1",
+                "phpunit/phpunit": "^12.0"
+            },
+            "suggest": {
+                "ext-dom": "Required to validate registered SVG sources during icon preparation and build freshness checks.",
+                "ext-gd": "Required to generate prepared PNG icons with live-activities:prepare-icons."
+            },
+            "type": "nativephp-plugin",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Vos\\LiveActivities\\LiveActivitiesServiceProvider"
+                    ]
+                },
+                "nativephp": {
+                    "manifest": "nativephp.json"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Vos\\LiveActivities\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Vos\\LiveActivities\\Tests\\": "tests/"
+                }
+            },
+            "scripts": {
+                "analyse": [
+                    "phpstan analyse --no-progress --memory-limit=512M"
+                ],
+                "test": [
+                    "phpunit"
+                ],
+                "format": [
+                    "pint"
+                ],
+                "check": [
+                    "@composer validate --strict",
+                    "pint --test",
+                    "@analyse",
+                    "@test"
+                ]
+            },
+            "license": [
+                "proprietary"
+            ],
+            "description": "Live Activities and Live Updates for NativePHP Mobile.",
+            "time": "2026-10-13T14:37:48+00:00"
         },
         {
             "name": "workerman/workerman",
