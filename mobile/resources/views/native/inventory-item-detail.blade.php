@@ -97,6 +97,52 @@
                 @endif
             </column>
 
+            @if ($this->starterStorage)
+                <column ref="item-empty-place" class="w-full gap-4">
+                    <column class="w-full gap-2 px-1">
+                        <x-ui.heading size="xl">Nothing stored here yet</x-ui.heading>
+                        <x-ui.text size="lg">Storage is anything that holds things, like a box, shelf or drawer. Put Things in it, then search to see where anything lives.</x-ui.text>
+                    </column>
+                    <column class="w-full gap-2">
+                        <x-ui.text class="px-1">Tap one to add it to {{ $item['name'] }}</x-ui.text>
+                        <column class="{{ Card::classes() }} w-full">
+                            @foreach ($this->starterStorage as $index => $name)
+                                <pressable
+                                    ref="item-starter-{{ $index }}"
+                                    a11y-label="Add {{ $name }}"
+                                    class="min-h-12 w-full justify-center px-4 py-2"
+                                    @tap="addStarterStorage({{ $index }})"
+                                >
+                                    <row class="w-full items-center gap-4">
+                                        <x-ui.avatar :color="ItemType::Bin->color()" :ios="ItemType::Bin->iosIcon()" :android="ItemType::Bin->androidIcon()" />
+                                        <x-ui.heading size="lg" class="flex-1">{{ $name }}</x-ui.heading>
+                                        <icon :ios="Ios::Plus" :android="Android::Add" :size="20" class="text-theme-primary-text" />
+                                    </row>
+                                </pressable>
+                                @unless ($loop->last)
+                                    <divider class="ml-[72]" />
+                                @endunless
+                            @endforeach
+                        </column>
+                    </column>
+                    <column class="{{ Card::classes() }} w-full">
+                        <pressable
+                            ref="item-add"
+                            a11y-label="Put something inside"
+                            class="min-h-12 w-full justify-center px-4 py-2"
+                            :menu="$this->addMenu()"
+                        >
+                            <row class="w-full items-center gap-4">
+                                <column class="h-10 w-10 items-center justify-center rounded-lg bg-theme-primary/15">
+                                    <icon :ios="Ios::Plus" :android="Android::Add" :size="20" class="text-theme-primary-text" />
+                                </column>
+                                <text font="semibold" class="flex-1 text-lg text-theme-primary-text">Put something inside</text>
+                            </row>
+                        </pressable>
+                    </column>
+                </column>
+            @endif
+
             <column class="w-full gap-3">
                 <row class="w-full items-center gap-3 px-1">
                     <x-ui.heading size="lg" class="flex-1">Where it is</x-ui.heading>
@@ -164,6 +210,7 @@
                 </column>
             </column>
 
+            @unless ($this->starterStorage)
             <column class="w-full gap-3">
                 <x-ui.heading size="lg" class="px-1">{{ $this->children ? 'What’s inside ('.count($this->children).')' : 'What’s inside' }}</x-ui.heading>
                 <column class="{{ Card::classes() }} w-full">
@@ -186,6 +233,7 @@
                     </pressable>
                 </column>
             </column>
+            @endunless
 
             @if ($item['metadata'])
                 <column class="w-full gap-3">

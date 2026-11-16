@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\ItemController;
 use App\Http\Controllers\Api\ItemPhotoController;
 use App\Http\Controllers\Api\OnboardingController;
 use App\Http\Controllers\Api\RecipeController;
+use App\Http\Controllers\Api\RecipeImportController;
 use App\Http\Controllers\Api\RoutineController;
 use App\Http\Controllers\Api\RoutineOccurrenceController;
 use App\Http\Controllers\Api\RoutineOccurrenceStepController;
@@ -51,6 +52,7 @@ Route::middleware('auth:sanctum')
 
                 Route::get('recipes', [RecipeController::class, 'index'])->name('recipes.index');
                 Route::post('recipes', [RecipeController::class, 'store'])->name('recipes.store');
+                Route::post('recipes/import', RecipeImportController::class)->middleware('throttle:30,1')->name('recipes.import');
                 Route::get('recipes/{recipe}', [RecipeController::class, 'show'])->name('recipes.show');
                 Route::patch('recipes/{recipe}', [RecipeController::class, 'update'])->name('recipes.update');
                 Route::delete('recipes/{recipe}', [RecipeController::class, 'destroy'])->name('recipes.destroy');
