@@ -4,8 +4,10 @@ namespace App\Models;
 
 use App\Http\Integrations\Sunny\Requests\MarkOnboardedRequest;
 use App\Http\Integrations\Sunny\SunnyAuth;
+use App\Http\Integrations\Sunny\SunnyOutbox;
 use App\Http\Integrations\Sunny\SunnyStore;
 use App\Http\Integrations\Sunny\SunnySyncCoordinator;
+use App\Http\Integrations\Sunny\SunnyWrites;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Throwable;
@@ -62,6 +64,12 @@ class Onboarding extends Model
         }
 
         try {
+            app(SunnyWrites::class)->push();
+
+            if (app(SunnyOutbox::class)->hasPending()) {
+                return;
+            }
+
             app(SunnyAuth::class)->authenticatedConnector()->send(new MarkOnboardedRequest);
         } catch (Throwable) {
             return;

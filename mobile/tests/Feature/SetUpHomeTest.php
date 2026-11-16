@@ -7,6 +7,7 @@ use App\Http\Integrations\Sunny\Requests\CreateTokenRequest;
 use App\Http\Integrations\Sunny\Requests\ImportRecipeRequest;
 use App\Http\Integrations\Sunny\Requests\MarkOnboardedRequest;
 use App\Http\Integrations\Sunny\Requests\SaveRecordRequest;
+use App\Http\Integrations\Sunny\SunnyOutbox;
 use App\Http\Integrations\Sunny\SunnyStore;
 use App\Models\Checklist;
 use App\Models\ChecklistItem;
@@ -105,9 +106,10 @@ it('doesn’t add a place that’s already offered', function (): void {
         ->assertSet('places', ['Kitchen pantry', 'Garage', 'Hall closet']);
 });
 
-it('creates the places and starters, imports the sample recipe and marks onboarding done', function (): void {
+it('creates the places and starters and imports the sample recipe, waiting to mark onboarding done until they reach Sunny', function (): void {
     Onboarding::begin(42);
     Saloon::fake([
+        SaveRecordRequest::class => MockResponse::make([], 500),
         ImportRecipeRequest::class => MockResponse::make(['data' => [
             'id' => 90, 'team_id' => 1, 'name' => 'Apple Cider Donuts', 'source' => 'https://safelydelish.com/apple-cider-donuts/',
             'created_at' => now()->toIso8601String(), 'updated_at' => now()->toIso8601String(),
@@ -134,9 +136,10 @@ it('creates the places and starters, imports the sample recipe and marks onboard
 
     $onboarding = Onboarding::current();
     expect($onboarding->set_up_at)->not->toBeNull()
-        ->and($onboarding->reported_at)->not->toBeNull();
+        ->and($onboarding->reported_at)->toBeNull()
+        ->and(Onboarding::needsSetUp())->toBeFalse();
 
-    Saloon::assertSent(MarkOnboardedRequest::class);
+    Saloon::assertNotSent(MarkOnboardedRequest::class);
     Saloon::assertSent(fn (Request $request): bool => $request instanceof ImportRecipeRequest
         && $request->resolveEndpoint() === '/teams/alexs-team/recipes/import'
         && $request->body()->get('url') === 'https://safelydelish.com/apple-cider-donuts/');
@@ -187,6 +190,30 @@ it('skips set-up without creating anything', function (): void {
         ->and(Onboarding::current())->skipped_at->not->toBeNull()->reported_at->not->toBeNull()
         ->and(Onboarding::needsSetUp())->toBeFalse();
 });
+
+it('sends waiting places before marking onboarding done when Summary retries', function (bool $online): void {
+    Onboarding::begin(42)->update(['set_up_at' => now()]);
+    app(SunnyOutbox::class)->queue('items', 1, ['name' => 'Garage', 'type' => ItemType::Location->value, 'parent_id' => null, 'metadata' => null]);
+    $sunny = Saloon::fake([
+        SaveRecordRequest::class => $online
+            ? MockResponse::make(['data' => [
+                'id' => 500, 'team_id' => 1, 'parent_id' => null, 'type' => 'location', 'name' => 'Garage', 'metadata' => null,
+                'created_at' => now()->toIso8601String(), 'updated_at' => now()->toIso8601String(),
+            ]], 201)
+            : MockResponse::make([], 503),
+        MarkOnboardedRequest::class => MockResponse::make(['id' => 42]),
+    ]);
+
+    Native::visit('/dashboard');
+
+    if ($online) {
+        $sunny->assertSentInOrder([SaveRecordRequest::class, MarkOnboardedRequest::class]);
+        expect(Onboarding::current()->reported_at)->not->toBeNull();
+    } else {
+        Saloon::assertNotSent(MarkOnboardedRequest::class);
+        expect(Onboarding::current()->reported_at)->toBeNull();
+    }
+})->with(['back online' => true, 'still offline' => false]);
 
 it('tells Sunny about a finished set-up it couldn’t report earlier', function (): void {
     Saloon::fake([MarkOnboardedRequest::class => MockResponse::make(['id' => 42])]);
