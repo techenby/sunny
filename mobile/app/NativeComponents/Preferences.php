@@ -8,7 +8,6 @@ use App\Http\Integrations\Sunny\SunnyTeam;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
 use Native\Mobile\Attributes\On;
-use Native\Mobile\Edge\NativeComponent;
 use Native\Mobile\Events\Alert\ButtonPressed;
 use Native\Mobile\Facades\Browser;
 use Native\Mobile\Facades\Dialog;
@@ -16,7 +15,7 @@ use RuntimeException;
 use Saloon\Exceptions\Request\FatalRequestException;
 use Saloon\Exceptions\Request\RequestException;
 
-class Preferences extends NativeComponent
+class Preferences extends Component
 {
     public ?int $activeTeamId = null;
 

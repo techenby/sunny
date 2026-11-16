@@ -15,14 +15,13 @@ use Illuminate\View\View;
 use JsonException;
 use Native\Mobile\Attributes\Computed;
 use Native\Mobile\Attributes\On;
-use Native\Mobile\Edge\NativeComponent;
 use Native\Mobile\Facades\Dialog;
 use RuntimeException;
 use Saloon\Exceptions\Request\FatalRequestException;
 use Saloon\Exceptions\Request\RequestException;
 use Saloon\Exceptions\Request\Statuses\UnauthorizedException;
 
-class Dashboard extends NativeComponent
+class Dashboard extends Component
 {
     use ChecksSunnySync;
 

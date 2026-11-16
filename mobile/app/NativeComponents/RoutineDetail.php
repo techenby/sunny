@@ -14,11 +14,10 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
 use Native\Mobile\Attributes\On;
-use Native\Mobile\Edge\NativeComponent;
 use Native\Mobile\Events\Alert\ButtonPressed;
 use Native\Mobile\Facades\Dialog;
 
-class RoutineDetail extends NativeComponent
+class RoutineDetail extends Component
 {
     use ChecksSunnySync;
     use ShowsQueuedChange;

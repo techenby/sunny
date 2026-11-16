@@ -11,9 +11,8 @@ use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
 use Native\Mobile\Attributes\On;
-use Native\Mobile\Edge\NativeComponent;
 
-class Routines extends NativeComponent
+class Routines extends Component
 {
     use ChecksSunnySync;
 

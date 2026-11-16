@@ -6,12 +6,11 @@ use App\Actions\DestroySession;
 use App\Http\Integrations\Sunny\SunnyAuth;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\View\View;
-use Native\Mobile\Edge\NativeComponent;
 use RuntimeException;
 use Saloon\Exceptions\Request\FatalRequestException;
 use Saloon\Exceptions\Request\RequestException;
 
-class DeleteAccount extends NativeComponent
+class DeleteAccount extends Component
 {
     public string $password = '';
 
