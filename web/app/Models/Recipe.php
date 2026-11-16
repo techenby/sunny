@@ -96,10 +96,12 @@ class Recipe extends Model
             'source' => __('source'),
         ];
 
-        return collect($fields)
-            ->filter(fn (string $label, string $field) => $this->{$field} != $original->{$field})
-            ->values()
-            ->all();
+        return array_values(
+            collect($fields)
+                ->filter(fn (array|string $label, string $field) => $this->{$field} != $original->{$field})
+                ->map(fn (array|string $label): string => is_string($label) ? $label : '')
+                ->all()
+        );
     }
 
     public function shortenedSource(): ?string
