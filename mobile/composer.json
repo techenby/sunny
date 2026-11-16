@@ -135,7 +135,7 @@
                     "url": "patches/nativephp-mobile-tabs-display-mode.patch"
                 },
                 {
-                    "description": "iOS: ship a PrivacyInfo.xcprivacy declaring the required-reason APIs the PHP runtime, NativePHP and its plugins use",
+                    "description": "iOS: ship a PrivacyInfo.xcprivacy declaring the required-reason APIs the PHP runtime, NativePHP and its plugins use, and the crash and diagnostic data NativeWatch collects",
                     "url": "patches/nativephp-mobile-ios-privacy-manifest.patch"
                 }
             ],
