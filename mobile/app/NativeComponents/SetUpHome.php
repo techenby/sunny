@@ -23,11 +23,8 @@ class SetUpHome extends NativeComponent
 
     public string $newPlace = '';
 
-    public bool $groceries = true;
-
-    public bool $bedtime = true;
-
-    public bool $recipe = false;
+    /** @var list<string> */
+    public array $starters = ['groceries', 'bedtime'];
 
     public bool $saving = false;
 
@@ -62,14 +59,14 @@ class SetUpHome extends NativeComponent
     #[Computed]
     public function summary(): string
     {
-        $parts = array_filter([
-            $this->places === [] ? null : trans_choice(':count place|:count places', count($this->places)),
-            $this->groceries ? 'a groceries list' : null,
-            $this->bedtime ? 'a bedtime routine' : null,
-            $this->recipe ? 'a sample recipe' : null,
-        ]);
+        $parts = collect([
+            trans_choice(':count place|:count places', count($this->places)),
+            trans_choice(':count list|:count lists', count(array_intersect($this->starters, ['groceries']))),
+            trans_choice(':count routine|:count routines', count(array_intersect($this->starters, ['bedtime', 'morning']))),
+            trans_choice(':count recipe|:count recipes', count(array_intersect($this->starters, ['recipe']))),
+        ])->reject(fn (string $part): bool => str_starts_with($part, '0 '));
 
-        return $parts === [] ? 'Nothing picked yet' : ucfirst(str(implode(', ', $parts))->replaceLast(', ', ' and '));
+        return $parts->isEmpty() ? 'Nothing picked yet' : $parts->join(', ', ' and ');
     }
 
     public function togglePlace(int $index): void
@@ -108,12 +105,13 @@ class SetUpHome extends NativeComponent
 
     public function toggleStarter(string $starter): void
     {
-        match ($starter) {
-            'groceries' => $this->groceries = ! $this->groceries,
-            'bedtime' => $this->bedtime = ! $this->bedtime,
-            'recipe' => $this->recipe = ! $this->recipe,
-            default => null,
-        };
+        if (! in_array($starter, SetUpHomeAction::STARTERS, true)) {
+            return;
+        }
+
+        $this->starters = in_array($starter, $this->starters, true)
+            ? array_values(array_diff($this->starters, [$starter]))
+            : [...$this->starters, $starter];
     }
 
     public function setUp(): void
@@ -140,7 +138,7 @@ class SetUpHome extends NativeComponent
                 return;
             }
 
-            app(SetUpHomeAction::class)->handle($onboarding, $team, $this->places, $this->groceries, $this->bedtime, $this->recipe);
+            app(SetUpHomeAction::class)->handle($onboarding, $team, $this->places, $this->starters);
         } catch (Throwable $exception) {
             report($exception);
             $this->error = 'Unable to set up your home on this phone. Try again.';

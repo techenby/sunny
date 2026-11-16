@@ -66,7 +66,9 @@ it('greets the person and offers places and starters', function (): void {
         ->assertSee('Kitchen pantry')
         ->assertSee('Shed')
         ->assertSee('Groceries list')
-        ->assertSee('3 places, a groceries list and a bedtime routine')
+        ->assertSee('Office')
+        ->assertSee('Morning routine')
+        ->assertSee('3 places, 1 list and 1 routine')
         ->assertAccessible();
 });
 
@@ -79,16 +81,27 @@ it('toggles places and starters and adds the person’s own place', function ():
 
     Native::visit('/setup')
         ->tap('setup-place-0')
-        ->tap('setup-place-5')
+        ->tap('setup-place-6')
         ->tap('setup-own-place')
-        ->input('setup-new-place', '  Laundry room ')
+        ->input('setup-new-place', '  Sunroom ')
         ->tap('setup-add-place')
         ->tap('setup-starter-bedtime')
         ->tap('setup-starter-recipe')
-        ->assertSet('places', ['Garage', 'Hall closet', 'Shed', 'Laundry room'])
-        ->assertSet('bedtime', false)
-        ->assertSet('recipe', true)
-        ->assertSee('4 places, a groceries list and a sample recipe');
+        ->tap('setup-starter-morning')
+        ->assertSet('places', ['Garage', 'Hall closet', 'Shed', 'Sunroom'])
+        ->assertSet('starters', ['groceries', 'recipe', 'morning'])
+        ->assertSee('4 places, 1 list, 1 routine and 1 recipe');
+});
+
+it('doesn’t add a place that’s already offered', function (): void {
+    Onboarding::begin(42);
+
+    Native::visit('/setup')
+        ->tap('setup-own-place')
+        ->input('setup-new-place', 'laundry ROOM')
+        ->tap('setup-add-place')
+        ->assertSet('ownPlaces', [])
+        ->assertSet('places', ['Kitchen pantry', 'Garage', 'Hall closet']);
 });
 
 it('creates the places and starters, imports the sample recipe and marks onboarding done', function (): void {
@@ -103,6 +116,7 @@ it('creates the places and starters, imports the sample recipe and marks onboard
 
     Native::visit('/setup')
         ->tap('setup-starter-recipe')
+        ->tap('setup-starter-morning')
         ->tap('setup-submit')
         ->assertReplacedWith('/dashboard');
 
@@ -111,14 +125,16 @@ it('creates the places and starters, imports the sample recipe and marks onboard
     ]))
         ->and(Checklist::sole()->name)->toBe('Groceries')
         ->and(ChecklistItem::query()->orderByDesc('id')->pluck('name')->all())->toBe(['Milk', 'Eggs', 'Bread', 'Butter', 'Bananas', 'Coffee'])
-        ->and(Routine::sole())->name->toBe('Bedtime')->time_of_day->toBe(TimeOfDay::Evening)->frequency->toBe(RoutineFrequency::Daily)
-        ->and(RoutineStep::query()->orderByDesc('id')->pluck('name')->all())->toBe(['Bath', 'Pajamas', 'Brush teeth', 'Read a story'])
+        ->and(Routine::query()->where('name', 'Bedtime')->sole())->time_of_day->toBe(TimeOfDay::Evening)->frequency->toBe(RoutineFrequency::Daily)->weekdays->toBeNull()
+        ->and(Routine::query()->where('name', 'Morning')->sole())->time_of_day->toBe(TimeOfDay::Morning)->frequency->toBe(RoutineFrequency::Weekly)->weekdays->toBe([1, 2, 3, 4, 5])
+        ->and(RoutineStep::query()->where('routine_id', Routine::query()->where('name', 'Bedtime')->value('id'))->orderByDesc('id')->pluck('name')->all())->toBe(['Bath', 'Pajamas', 'Brush teeth', 'Read a story'])
+        ->and(RoutineStep::query()->where('routine_id', Routine::query()->where('name', 'Morning')->value('id'))->orderByDesc('id')->pluck('name')->all())->toBe(['Make bed', 'Get dressed', 'Breakfast', 'Brush teeth', 'Pack bags'])
         ->and(Recipe::sole()->name)->toBe('Apple Cider Donuts');
 
     $onboarding = Onboarding::current();
     expect($onboarding->set_up_at)->not->toBeNull()
         ->and($onboarding->reported_at)->not->toBeNull()
-        ->and($onboarding->starters())->toHaveCount(6);
+        ->and($onboarding->starters())->toHaveCount(7);
 
     Saloon::assertSent(fn (Request $request): bool => $request instanceof ImportRecipeRequest
         && $request->resolveEndpoint() === '/teams/alexs-team/recipes/import'

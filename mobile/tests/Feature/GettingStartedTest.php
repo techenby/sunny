@@ -7,11 +7,8 @@ use App\Http\Integrations\Sunny\Requests\MarkOnboardedRequest;
 use App\Http\Integrations\Sunny\SunnyOutbox;
 use App\Http\Integrations\Sunny\SunnyStore;
 use App\Http\Integrations\Sunny\SunnyTeam;
-use App\Models\Checklist;
 use App\Models\Item;
 use App\Models\Onboarding;
-use App\Models\PendingWrite;
-use App\Models\Routine;
 use Native\Mobile\Testing\Native;
 use Saloon\Http\Faking\MockResponse;
 use Saloon\Laravel\Facades\Saloon;
@@ -34,7 +31,7 @@ beforeEach(function (): void {
 function setUpStarterHome(): Onboarding
 {
     $onboarding = Onboarding::begin(42);
-    app(SetUpHome::class)->handle($onboarding, app(SunnyTeam::class)->current(), ['Garage', 'Hall closet'], true, true, false);
+    app(SetUpHome::class)->handle($onboarding, app(SunnyTeam::class)->current(), ['Garage', 'Hall closet'], ['groceries', 'bedtime']);
 
     return $onboarding->refresh();
 }
@@ -52,7 +49,7 @@ it('counts set-up as the first job and points at the first place it made', funct
         ->assertSee('1 of 4 done')
         ->assertSee('Add to Garage')
         ->assertSee('Hide this checklist')
-        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'getting-started-undo')
+        ->assertDontSee('Undo')
         ->tap('getting-started-place')
         ->assertNavigatedTo('/inventory/'.$garage->id);
 });
@@ -95,24 +92,6 @@ it('hides the checklist when asked', function (): void {
     expect(Onboarding::current()->hidden_at)->not->toBeNull();
 });
 
-it('undoes set-up but keeps places that already have something inside', function (): void {
-    setUpStarterHome();
-    $garage = Item::query()->where('name', 'Garage')->sole();
-    app(SunnyOutbox::class)->queue('items', 1, ['name' => 'Tool chest', 'type' => ItemType::Bin->value, 'parent_id' => $garage->id, 'metadata' => null]);
-
-    Native::visit('/dashboard')
-        ->tap('getting-started-undo')
-        ->assertSee('Set up your home')
-        ->assertSee('1 of 4 done')
-        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'getting-started-undo');
-
-    expect(Item::query()->pluck('name')->sort()->values()->all())->toBe(['Garage', 'Tool chest'])
-        ->and(Checklist::count())->toBe(0)
-        ->and(Routine::count())->toBe(0)
-        ->and(PendingWrite::query()->where('resource', 'checklist_items')->count())->toBe(0)
-        ->and(Onboarding::needsSetUp())->toBeFalse();
-});
-
 it('offers set-up again after it was skipped', function (): void {
     Onboarding::begin(42)->skip();
 
@@ -139,7 +118,7 @@ it('teaches an empty place with one-tap starter Storage', function (): void {
     Native::visit('/inventory/'.$garage->id)
         ->assertSee('Nothing stored here yet')
         ->assertSee('Tap one to add it to Garage')
-        ->assertSee('Camping bin')
+        ->assertSee('Camping box')
         ->assertSee('Put something inside')
         ->assertSee('Where it is')
         ->assertDontSee('What’s inside')
@@ -157,11 +136,17 @@ it('teaches an empty place with one-tap starter Storage', function (): void {
 it('offers general Storage for a place it doesn’t know', function (): void {
     $id = app(SunnyOutbox::class)->queue('items', 1, ['name' => 'Sunroom', 'type' => ItemType::Location->value, 'parent_id' => null, 'metadata' => null]);
 
-    Native::visit('/inventory/'.$id)->assertSet('starterStorage', ['Shelf', 'Box', 'Drawer', 'Cabinet']);
+    Native::visit('/inventory/'.$id)->assertSet('starterStorage', ['Top shelf', 'Storage box', 'Drawer', 'Cabinet']);
 });
 
 it('doesn’t teach Storage or things that are empty', function (): void {
     $id = app(SunnyOutbox::class)->queue('items', 1, ['name' => 'Toolbox', 'type' => ItemType::Bin->value, 'parent_id' => null, 'metadata' => null]);
 
     Native::visit('/inventory/'.$id)->assertSet('starterStorage', [])->assertSee('What’s inside');
+});
+
+it('offers the same Storage as the website for each starter place', function (): void {
+    $id = app(SunnyOutbox::class)->queue('items', 1, ['name' => SetUpHome::PLACES[7], 'type' => ItemType::Location->value, 'parent_id' => null, 'metadata' => null]);
+
+    Native::visit('/inventory/'.$id)->assertSet('starterStorage', ['Toy box', 'Bookshelf', 'Art supplies box', 'Dresser']);
 });

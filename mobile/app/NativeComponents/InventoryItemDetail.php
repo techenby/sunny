@@ -88,14 +88,17 @@ class InventoryItemDetail extends NativeComponent
             return [];
         }
 
-        return match (mb_strtolower($this->item['name'])) {
-            'kitchen pantry', 'pantry' => ['Baking bin', 'Snack basket', 'Spice rack', 'Top shelf'],
-            'garage' => ['Camping bin', 'Tool chest', 'Holiday decorations', 'Paint shelf'],
-            'hall closet' => ['Coat rack', 'Shoe shelf', 'Cleaning supplies', 'Gift wrap box'],
-            'basement' => ['Storage shelves', 'Keepsakes bin', 'Sports gear', 'Holiday decorations'],
-            'attic' => ['Holiday decorations', 'Keepsakes bin', 'Winter clothes', 'Baby clothes'],
-            'shed' => ['Garden tools', 'Potting bench', 'Bike rack', 'Lawn care shelf'],
-            default => ['Shelf', 'Box', 'Drawer', 'Cabinet'],
+        return match (mb_strtolower(trim($this->item['name']))) {
+            'garage' => ['Camping box', 'Tool chest', 'Holiday decorations', 'Paint shelf'],
+            'kitchen pantry' => ['Top shelf', 'Baking box', 'Snack basket', 'Spice rack'],
+            'hall closet' => ['Top shelf', 'Shoe rack', 'Gift wrap box', 'Cleaning caddy'],
+            'basement' => ['Storage shelves', 'Holiday decorations', 'Keepsake box', 'Tool bench'],
+            'attic' => ['Holiday decorations', 'Keepsake box', 'Winter clothes box', 'Baby clothes box'],
+            'laundry room' => ['Cleaning shelf', 'Linen shelf', 'Sewing box', 'Detergent cabinet'],
+            'shed' => ['Garden tools rack', 'Seed box', 'Paint shelf', 'Tool chest'],
+            "kids' rooms" => ['Toy box', 'Bookshelf', 'Art supplies box', 'Dresser'],
+            'office' => ['Desk drawer', 'Filing cabinet', 'Cable box', 'Bookshelf'],
+            default => ['Top shelf', 'Storage box', 'Drawer', 'Cabinet'],
         };
     }
 

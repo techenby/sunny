@@ -116,11 +116,12 @@
             </row>
             <column class="{{ Card::classes() }} w-full">
                 @foreach ([
-                    ['key' => 'groceries', 'title' => 'Groceries list', 'description' => 'A shopping list for the whole house', 'ios' => Ios::Cart, 'android' => Android::ShoppingCart],
-                    ['key' => 'bedtime', 'title' => 'Bedtime routine', 'description' => 'Bath, pajamas, teeth and a story', 'ios' => Ios::Moon, 'android' => Android::Bedtime],
-                    ['key' => 'recipe', 'title' => 'A sample recipe', 'description' => 'Apple cider donuts, to try things out', 'ios' => Ios::BookPages, 'android' => Android::MenuBook],
+                    ['key' => 'groceries', 'title' => 'Groceries list', 'description' => 'Shared, with a few staples', 'ios' => Ios::Cart, 'android' => Android::ShoppingCart],
+                    ['key' => 'bedtime', 'title' => 'Bedtime routine', 'description' => 'Every evening', 'ios' => Ios::Moon, 'android' => Android::Bedtime],
+                    ['key' => 'morning', 'title' => 'Morning routine', 'description' => 'Weekday mornings', 'ios' => Ios::Sunrise, 'android' => Android::WbTwilight],
+                    ['key' => 'recipe', 'title' => 'A sample recipe', 'description' => 'Apple cider donuts', 'ios' => Ios::BookPages, 'android' => Android::MenuBook],
                 ] as $starter)
-                    @php($picked = $this->{$starter['key']})
+                    @php($picked = in_array($starter['key'], $starters, true))
                     <pressable
                         ref="setup-starter-{{ $starter['key'] }}"
                         :a11y-label="$starter['title'].($picked ? ', selected' : '')"

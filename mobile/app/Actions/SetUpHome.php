@@ -19,11 +19,15 @@ use Throwable;
 
 class SetUpHome
 {
-    public const PLACES = ['Kitchen pantry', 'Garage', 'Hall closet', 'Basement', 'Attic', 'Shed'];
+    public const PLACES = ['Kitchen pantry', 'Garage', 'Hall closet', 'Basement', 'Attic', 'Laundry room', 'Shed', "Kids' rooms", 'Office'];
 
     public const GROCERIES = ['Milk', 'Eggs', 'Bread', 'Butter', 'Bananas', 'Coffee'];
 
     public const BEDTIME = ['Bath', 'Pajamas', 'Brush teeth', 'Read a story'];
+
+    public const MORNING = ['Make bed', 'Get dressed', 'Breakfast', 'Brush teeth', 'Pack bags'];
+
+    public const STARTERS = ['groceries', 'bedtime', 'morning', 'recipe'];
 
     public const RECIPE_URL = 'https://safelydelish.com/apple-cider-donuts/';
 
@@ -35,51 +39,68 @@ class SetUpHome
 
     /**
      * @param  list<string>  $places
+     * @param  list<string>  $starters
      */
-    public function handle(Onboarding $onboarding, Team $team, array $places, bool $groceries, bool $bedtime, bool $recipe): void
+    public function handle(Onboarding $onboarding, Team $team, array $places, array $starters): void
     {
-        $starters = DB::transaction(function () use ($team, $places, $groceries, $bedtime): array {
-            $starters = [];
+        $created = DB::transaction(function () use ($team, $places, $starters): array {
+            $created = [];
 
             foreach ($places as $place) {
-                $starters[] = ['resource' => 'items', 'id' => $this->outbox->queue('items', $team->id, [
+                $created[] = ['resource' => 'items', 'id' => $this->outbox->queue('items', $team->id, [
                     'name' => $place, 'type' => ItemType::Location->value, 'parent_id' => null, 'metadata' => null,
                 ])];
             }
 
-            if ($groceries) {
+            if (in_array('groceries', $starters, true)) {
                 $id = $this->outbox->queue('checklists', $team->id, ['name' => 'Groceries', 'type' => ChecklistType::Shopping->value]);
                 foreach (self::GROCERIES as $name) {
                     $this->outbox->queue('checklist_items', $team->id, ['checklist_id' => $id, 'name' => $name]);
                 }
-                $starters[] = ['resource' => 'checklists', 'id' => $id];
+                $created[] = ['resource' => 'checklists', 'id' => $id];
             }
 
-            if ($bedtime) {
-                $id = $this->outbox->queue('routines', $team->id, [
-                    'name' => 'Bedtime',
-                    'time_of_day' => TimeOfDay::Evening->value,
-                    'frequency' => RoutineFrequency::Daily->value,
-                    'weekdays' => null,
-                    'day_of_month' => null,
-                    'is_active' => true,
-                ]);
-                foreach (self::BEDTIME as $name) {
-                    $this->outbox->queue('routine_steps', $team->id, ['routine_id' => $id, 'name' => $name]);
-                }
-                $starters[] = ['resource' => 'routines', 'id' => $id];
+            if (in_array('bedtime', $starters, true)) {
+                $created[] = $this->createRoutine($team, 'Bedtime', TimeOfDay::Evening, RoutineFrequency::Daily, self::BEDTIME);
             }
 
-            return $starters;
+            if (in_array('morning', $starters, true)) {
+                $created[] = $this->createRoutine($team, 'Morning', TimeOfDay::Morning, RoutineFrequency::Weekly, self::MORNING, [1, 2, 3, 4, 5]);
+            }
+
+            return $created;
         });
 
-        if ($recipe && ($id = $this->importRecipe($team)) !== null) {
-            $starters[] = ['resource' => 'recipes', 'id' => $id];
+        if (in_array('recipe', $starters, true) && ($id = $this->importRecipe($team)) !== null) {
+            $created[] = ['resource' => 'recipes', 'id' => $id];
         }
 
-        $onboarding->update(['set_up_at' => now(), 'starters' => $starters]);
+        $onboarding->update(['set_up_at' => now(), 'starters' => $created]);
         app(SunnySyncCoordinator::class)->dispatch();
         $onboarding->report();
+    }
+
+    /**
+     * @param  list<string>  $steps
+     * @param  list<int>|null  $weekdays
+     * @return array{resource: string, id: int}
+     */
+    private function createRoutine(Team $team, string $name, TimeOfDay $timeOfDay, RoutineFrequency $frequency, array $steps, ?array $weekdays = null): array
+    {
+        $id = $this->outbox->queue('routines', $team->id, [
+            'name' => $name,
+            'time_of_day' => $timeOfDay->value,
+            'frequency' => $frequency->value,
+            'weekdays' => $weekdays,
+            'day_of_month' => null,
+            'is_active' => true,
+        ]);
+
+        foreach ($steps as $step) {
+            $this->outbox->queue('routine_steps', $team->id, ['routine_id' => $id, 'name' => $step]);
+        }
+
+        return ['resource' => 'routines', 'id' => $id];
     }
 
     private function importRecipe(Team $team): ?int
