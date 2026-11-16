@@ -14,5 +14,6 @@ Route::prefix('{current_team}/recipes')
         Route::livewire('/', 'pages::recipes.index')->name('.index')->middleware('can:viewAny,App\Models\Recipe')->withHead(title: 'Recipes');
         Route::livewire('create', 'pages::recipes.create')->name('.create')->middleware('can:create,App\Models\Recipe')->withHead(title: 'New recipe');
         Route::livewire('{recipe}', 'pages::recipes.show')->name('.show')->middleware('can:view,recipe');
+        Route::livewire('{recipe}/cook', 'pages::recipes.cook')->name('.cook')->middleware('can:view,recipe');
         Route::livewire('{recipe}/edit', 'pages::recipes.edit')->name('.edit')->middleware('can:update,recipe');
     });

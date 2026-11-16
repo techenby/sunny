@@ -6,6 +6,13 @@ namespace App\Support\Recipes;
 
 final class Quantity
 {
+    // One number as written in a recipe. The alternatives are tried in this order,
+    // so the longer forms win over the shorter ones they contain:
+    //   mixed number           "1 1/2"
+    //   fraction               "3/4"
+    //   whole plus a glyph     "1½" or "1 ½"
+    //   whole or decimal       "2" or "1.5"
+    //   glyph on its own       "½"
     public const string PATTERN = '(?:\d+\s+\d+\/\d+|\d+\/\d+|\d+\s?[½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]|\d+(?:\.\d+)?|[½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞])';
 
     private const array FRACTIONS = [
