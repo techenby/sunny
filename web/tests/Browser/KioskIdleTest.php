@@ -157,3 +157,63 @@ test('the kiosk refreshes its data when the shared clock rolls over', function (
 
     $page->waitForText('Hardware store');
 });
+
+test('the screensaver only refreshes its details while it is showing', function () use ($idleFor) {
+    $team = Team::factory()->create(['timezone' => 'America/Chicago', 'screensaver_after' => 1, 'return_home_after' => 0]);
+    $user = User::factory()->memberOf($team)->create();
+
+    $feed = function (string $summary, int $startsInMinutes) use ($team): void {
+        $url = 'https://example.com/' . str($summary)->slug() . '.ics';
+        $startsAt = CarbonImmutable::now('America/Chicago')->addMinutes($startsInMinutes)->format('Ymd\THis');
+
+        Http::fake([
+            $url => Http::response(<<<ICS
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Sunny//Tests//EN
+BEGIN:VEVENT
+UID:{$summary}
+DTSTAMP:20260501T120000Z
+DTSTART;TZID=America/Chicago:{$startsAt}
+SUMMARY:{$summary}
+END:VEVENT
+END:VCALENDAR
+ICS),
+        ]);
+
+        CalendarFeed::factory()->for($team)->create(['url' => $url]);
+    };
+
+    $rollClock = "Alpine.\$data(document.querySelector('[data-kiosk-screensaver]')).refreshSlot -= 1";
+
+    $feed('Soccer practice', 45);
+
+    actingAs($user);
+
+    $page = visit(route('kiosk.lists', absolute: false));
+
+    $page->assertNoJavaScriptErrors()
+        ->script($idleFor(61));
+
+    $page->wait(1.5)
+        ->assertVisible('[data-kiosk-screensaver]')
+        ->waitForText('Soccer practice');
+
+    $feed('Piano lesson', 30);
+
+    $page->wait(1.5)
+        ->assertDontSee('Piano lesson')
+        ->script($rollClock);
+
+    $page->waitForText('Piano lesson')
+        ->click('[data-kiosk-screensaver]')
+        ->assertMissing('[data-kiosk-screensaver]');
+
+    $feed('Dentist', 15);
+
+    $page->script($rollClock);
+
+    $page->wait(2.5)
+        ->assertScript("document.querySelector('[data-kiosk-screensaver]').textContent.includes('Piano lesson')")
+        ->assertScript("document.querySelector('[data-kiosk-screensaver]').textContent.includes('Dentist')", false);
+});
