@@ -15,11 +15,10 @@ use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
 use Native\Mobile\Attributes\On;
 use Native\Mobile\Edge\Layouts\Builders\NavAction;
-use Native\Mobile\Edge\NativeComponent;
 use Native\Mobile\Events\Alert\ButtonPressed;
 use Native\Mobile\Facades\Dialog;
 
-class InventoryItemDetail extends NativeComponent
+class InventoryItemDetail extends Component
 {
     use ChecksSunnySync;
     use ChoosesInventoryParent {

@@ -4,11 +4,10 @@ namespace App\NativeComponents;
 
 use App\Actions\GenerateItemQrCode;
 use Illuminate\View\View;
-use Native\Mobile\Edge\NativeComponent;
 use Native\Mobile\Facades\Share;
 use NativePHP\Clipboard\Facades\Clipboard;
 
-class InventoryItemQrCode extends NativeComponent
+class InventoryItemQrCode extends Component
 {
     public ?string $name = null;
 

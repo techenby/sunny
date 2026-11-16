@@ -21,7 +21,6 @@ use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
 use Native\Mobile\Attributes\On;
 use Native\Mobile\Edge\Layouts\Builders\NavAction;
-use Native\Mobile\Edge\NativeComponent;
 use Native\Mobile\Events\Alert\ButtonPressed;
 use Native\Mobile\Events\Camera\PhotoTaken;
 use Native\Mobile\Events\Gallery\MediaSelected;
@@ -39,7 +38,7 @@ use Throwable;
  * Photograph items one at a time, then add them all to Sunny in one go. When
  * Apple's on-device model can run, it names each one in the background.
  */
-class ScanInventory extends NativeComponent
+class ScanInventory extends Component
 {
     use ChecksSunnySync;
     use ChoosesInventoryParent {

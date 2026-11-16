@@ -10,9 +10,8 @@ use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
 use Native\Mobile\Attributes\On;
-use Native\Mobile\Edge\NativeComponent;
 
-class Lists extends NativeComponent
+class Lists extends Component
 {
     use ChecksSunnySync;
 

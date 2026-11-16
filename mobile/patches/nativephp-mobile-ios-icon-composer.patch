@@ -1,0 +1,57 @@
+diff --git a/src/Concerns/InstallsAppIcon.php b/src/Concerns/InstallsAppIcon.php
+index 023ebc2..17d3fd1 100644
+--- a/src/Concerns/InstallsAppIcon.php
++++ b/src/Concerns/InstallsAppIcon.php
+@@ -8,6 +8,8 @@ trait InstallsAppIcon
+ {
+     public function installIosIcon()
+     {
++        $this->installIosIconComposerIcon();
++
+         $iconPath = public_path('icon.png');
+ 
+         if (! File::exists($iconPath)) {
+@@ -19,6 +21,43 @@ trait InstallsAppIcon
+         }
+     }
+ 
++    private function installIosIconComposerIcon(): void
++    {
++        $appPath = base_path('nativephp/ios/NativePHP');
++        $projectPath = base_path('nativephp/ios/NativePHP.xcodeproj/project.pbxproj');
++
++        if (! File::isDirectory($appPath) || ! File::exists($projectPath)) {
++            return;
++        }
++
++        foreach (File::glob($appPath.'/*.icon') as $staleIcon) {
++            File::deleteDirectory($staleIcon);
++        }
++
++        $iconName = 'AppIcon';
++        $source = config('nativephp.ios_icon');
++
++        if ($source && File::exists(base_path($source).'/icon.json')) {
++            $iconName = basename($source, '.icon');
++            File::copyDirectory(base_path($source), "{$appPath}/{$iconName}.icon");
++        }
++
++        $setting = preg_match('/^[A-Za-z0-9_]+$/', $iconName)
++            ? $iconName
++            : '"'.addcslashes($iconName, '"\\').'"';
++
++        $contents = File::get($projectPath);
++        $updated = preg_replace_callback(
++            '/ASSETCATALOG_COMPILER_APPICON_NAME = [^;]*;/',
++            fn () => "ASSETCATALOG_COMPILER_APPICON_NAME = {$setting};",
++            $contents,
++        );
++
++        if ($updated !== $contents) {
++            File::put($projectPath, $updated);
++        }
++    }
++
+     private function validateIosIcon(string $iconPath): bool
+     {
+         if (! $image = @imagecreatefrompng($iconPath)) {

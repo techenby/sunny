@@ -13,14 +13,13 @@ use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
 use Native\Mobile\Attributes\On;
 use Native\Mobile\Edge\Layouts\Builders\NavAction;
-use Native\Mobile\Edge\NativeComponent;
 use Native\Mobile\Events\Scanner\CodeScanned;
 use Native\Mobile\Facades\Dialog;
 use Native\Mobile\Facades\Scanner;
 use Sunny\ItemScanner\Events\ScreenUncovered;
 use Sunny\ItemScanner\Facades\ItemScanner;
 
-class Inventory extends NativeComponent
+class Inventory extends Component
 {
     use ChecksSunnySync;
 

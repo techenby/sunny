@@ -14,6 +14,8 @@ Use these pages when developing or integrating with SunnyHome.
   scoping, application layers, scheduled work, queues, and integrations.
 - [HTTP API](/docs/developers/http-api): Authenticate with Sanctum and work with
   recipe, inventory, list, routine, and synchronization endpoints.
+- [Mobile OTA Updates](/docs/developers/mobile-ota): Understand how the mobile
+  app gets over-the-air updates from Bifrost, and how to ship one.
 - [MCP Setup](/docs/developers/mcp/setup): Connect an MCP client to SunnyHome with
   OAuth, and work on the MCP server locally.
 - [Database ERD](/docs/developers/database): Review SunnyHome's tables and

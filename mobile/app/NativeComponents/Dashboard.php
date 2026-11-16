@@ -9,6 +9,7 @@ use App\Http\Integrations\Sunny\SunnyStore;
 use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Http\Integrations\Sunny\SunnyTeam;
 use App\Models\Onboarding;
+use App\Support\CrashReports;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
@@ -16,14 +17,14 @@ use Illuminate\View\View;
 use JsonException;
 use Native\Mobile\Attributes\Computed;
 use Native\Mobile\Attributes\On;
-use Native\Mobile\Edge\NativeComponent;
+use Native\Mobile\Events\Alert\ButtonPressed;
 use Native\Mobile\Facades\Dialog;
 use RuntimeException;
 use Saloon\Exceptions\Request\FatalRequestException;
 use Saloon\Exceptions\Request\RequestException;
 use Saloon\Exceptions\Request\Statuses\UnauthorizedException;
 
-class Dashboard extends NativeComponent
+class Dashboard extends Component
 {
     use ChecksSunnySync;
 
@@ -32,6 +33,7 @@ class Dashboard extends NativeComponent
     public function mount(): void
     {
         $this->onResume();
+        $this->askAboutCrashReports();
     }
 
     public function onResume(): void
@@ -113,9 +115,33 @@ class Dashboard extends NativeComponent
             ->all();
     }
 
+    #[On(ButtonPressed::class)]
+    public function onAlertButtonPressed(string $label, ?string $id = null): void
+    {
+        if ($id === 'crash-reports' && $label === 'Share' && ! app(CrashReports::class)->share(true)) {
+            Dialog::toast('Unable to save your choice. You can turn on crash reports in Preferences.');
+        }
+    }
+
     public function render(): View
     {
         return view('native.dashboard');
+    }
+
+    private function askAboutCrashReports(): void
+    {
+        $crashReports = app(CrashReports::class);
+
+        if (! $crashReports->shouldAsk()) {
+            return;
+        }
+
+        $crashReports->markAsked();
+
+        Dialog::alert('Help improve Sunny?', 'Share crash reports so we can find and fix problems. They include technical details about the error and your device. You can change this anytime in Preferences.', [
+            ['label' => 'Not now', 'style' => 'cancel'],
+            ['label' => 'Share'],
+        ])->id('crash-reports')->show();
     }
 
     private function refreshLocalData(): void

@@ -47,6 +47,8 @@ See the [web README](web/README.md) and the [developer guides](web/docs/develope
 
 User and developer guides live in [`web/docs`](web/docs/index.md) and are published at [sunnyhome.app/docs](https://sunnyhome.app/docs).
 
+Want to run your own copy instead of using sunnyhome.app? See [Host Your Own SunnyHome](web/docs/users/self-hosting.md).
+
 ## Contributing
 
 Found a bug or have an idea? [Open an issue](https://github.com/techenby/sunny/issues).

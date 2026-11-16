@@ -7,10 +7,9 @@ use App\Http\Integrations\Sunny\SunnyStore;
 use App\Http\Integrations\Sunny\SunnyTeam;
 use App\Models\Item;
 use Illuminate\View\View;
-use Native\Mobile\Edge\NativeComponent;
 use Native\Mobile\Facades\Browser;
 
-class OpenItemLink extends NativeComponent
+class OpenItemLink extends Component
 {
     public string $error = '';
 
