@@ -11,7 +11,7 @@
 <script>
   window.addEventListener('bento:ready', function () {
     @if (auth()->user() && auth()->user()->email)
-      bento.identify({{ json_encode(auth()->user()->email) }}));
+      bento.identify(@js(auth()->user()->email));
     @endif
     bento.view();
   });

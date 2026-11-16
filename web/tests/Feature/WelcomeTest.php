@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Support\Js;
 
 test('displays the landing page for guests', function () {
     $this->get('/')
@@ -94,4 +95,15 @@ test('leaves bento out in production when it is not configured', function () {
     $this->get('/')
         ->assertOk()
         ->assertDontSee('https://app.bentonow.com/', false);
+});
+
+test('identifies signed-in users to bento in production', function () {
+    app()->detectEnvironment(fn (): string => 'production');
+    config(['bentonow.site_uuid' => 'site-uuid']);
+    $user = User::factory()->create(['email' => "o'brien@example.com"]);
+
+    $this->actingAs($user)
+        ->get(route('dashboard'))
+        ->assertOk()
+        ->assertSee('bento.identify(' . Js::from($user->email) . ');', false);
 });
