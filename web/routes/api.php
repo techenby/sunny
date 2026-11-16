@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AccountController;
 use App\Http\Controllers\Api\ChecklistController;
 use App\Http\Controllers\Api\ChecklistItemController;
 use App\Http\Controllers\Api\ItemController;
+use App\Http\Controllers\Api\ItemPhotoController;
 use App\Http\Controllers\Api\RecipeController;
 use App\Http\Controllers\Api\RoutineController;
 use App\Http\Controllers\Api\RoutineOccurrenceController;
@@ -41,6 +42,10 @@ Route::middleware('auth:sanctum')
                 Route::get('items/{item}', [ItemController::class, 'show'])->name('items.show');
                 Route::patch('items/{item}', [ItemController::class, 'update'])->name('items.update');
                 Route::delete('items/{item}', [ItemController::class, 'destroy'])->name('items.destroy');
+
+                Route::post('items/{item}/photos', [ItemPhotoController::class, 'store'])->name('items.photos.store');
+                Route::patch('items/{item}/photos/{photo}', [ItemPhotoController::class, 'update'])->name('items.photos.update');
+                Route::delete('items/{item}/photos/{photo}', [ItemPhotoController::class, 'destroy'])->name('items.photos.destroy');
 
                 Route::get('recipes', [RecipeController::class, 'index'])->name('recipes.index');
                 Route::post('recipes', [RecipeController::class, 'store'])->name('recipes.store');
