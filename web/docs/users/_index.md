@@ -24,3 +24,5 @@ These guides explain how to use SunnyHome's household features.
   Calendar or Google Calendar to a kiosk.
 - [Connect an AI Assistant](/docs/users/ai-assistants): Let Claude, ChatGPT, or
   another assistant use SunnyHome for you.
+- [Host Your Own SunnyHome](/docs/users/self-hosting): Run your own copy of
+  SunnyHome on Laravel Cloud instead of using sunnyhome.app.
