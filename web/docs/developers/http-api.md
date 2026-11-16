@@ -200,6 +200,10 @@ On create and update, `photo` and `remove_photo` act on the primary photo only:
 `photo` replaces it and `remove_photo` deletes it, leaving any other photos in
 place.
 
+Send `photo_order`, a list of photo ids, on update to put an entry's photos in
+that order. Ids that aren't the entry's photos are ignored, and photos left out
+keep their order after the ones listed.
+
 Add a photo with `photo` (an image up to 10 MB), plus an optional `position`
 (0 makes it the primary photo; it goes last by default) and `client_uuid`.
 Retrying with the same `client_uuid` returns the photo already saved. Move a

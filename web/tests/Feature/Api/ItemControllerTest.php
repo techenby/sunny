@@ -384,3 +384,31 @@ test('index includes each item\'s photos', function () {
         ->assertOk()
         ->assertJsonCount(2, 'data.0.photos');
 });
+
+test('update puts the photos in the order given', function () {
+    $user = User::factory()->create();
+    $item = Item::factory()->for($user->currentTeam)->create();
+    [$front, $back, $scratch, $label] = ItemPhoto::factory()->for($item)->count(4)->sequence(fn ($sequence) => ['position' => $sequence->index])->create();
+    $elsewhere = ItemPhoto::factory()->create();
+
+    $this->actingAs($user)
+        ->patchJson(route('api.items.update', [$user->currentTeam, $item]), ['photo_order' => [$scratch->id, 999, $elsewhere->id, $front->id]])
+        ->assertOk()
+        ->assertJsonPath('data.photos.0.id', $scratch->id)
+        ->assertJsonPath('data.photos.1.id', $front->id)
+        ->assertJsonPath('data.photos.2.id', $back->id)
+        ->assertJsonPath('data.photos.3.id', $label->id);
+
+    expect($item->photos()->pluck('position')->all())->toBe([0, 1, 2, 3])
+        ->and($elsewhere->fresh()->position)->toBe(0);
+});
+
+test('update validates the photo order', function () {
+    $user = User::factory()->create();
+    $item = Item::factory()->for($user->currentTeam)->create();
+
+    $this->actingAs($user)
+        ->patchJson(route('api.items.update', [$user->currentTeam, $item]), ['photo_order' => ['front']])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('photo_order.0');
+});

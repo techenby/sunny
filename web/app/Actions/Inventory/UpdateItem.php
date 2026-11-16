@@ -16,6 +16,7 @@ class UpdateItem
     public function handle(Item $item, array $data, bool $removePhoto = false): Item
     {
         $photo = Arr::pull($data, 'photo');
+        $photoOrder = Arr::pull($data, 'photo_order');
 
         $item->update($data);
 
@@ -29,6 +30,10 @@ class UpdateItem
 
         if ($photo instanceof UploadedFile) {
             (new AddItemPhoto)->handle($item, $photo, position: 0);
+        }
+
+        if (is_array($photoOrder)) {
+            (new OrderItemPhotos)->handle($item, array_map(intval(...), $photoOrder));
         }
 
         return $item->unsetRelation('primaryPhoto')->unsetRelation('photos');
