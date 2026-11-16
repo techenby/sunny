@@ -68,10 +68,20 @@ final class IngredientParser
     {
         $number = Quantity::PATTERN;
 
+        // A leading amount, an optional second amount after a dash or "to", then the rest of the line.
+        //   "2-3 tbsp olive oil"  =>  1: "2"   2: "3"   3: " tbsp olive oil"
+        //   "1 1/2 cups flour"    =>  1: "1 1/2"   2: ""   3: " cups flour"
+        // No match means the line doesn't start with a number ("Salt and pepper").
         if (! preg_match("/^({$number})(?:\s*(?:-|–|—|\s+to\s+)\s*({$number}))?(.*)$/su", $text, $matches)) {
             return null;
         }
 
+        // The number is a size or measurement, not an amount, when what follows it is:
+        //   x and a digit   "9x13-inch baking dish"
+        //   a quote mark    "3\" piece of ginger"
+        //   a degree sign   "350° oven"
+        //   a percent sign  "2% milk"
+        //   a hyphen        "1-inch piece ginger"
         if (preg_match('/^(?:x\s*\d|["\'°%-])/iu', $matches[3])) {
             return null;
         }
@@ -83,6 +93,7 @@ final class IngredientParser
             return null;
         }
 
+        // "1-1/2 cups" is one and a half, not a range from 1 down to 1/2.
         if ($max !== null && $max < $quantity) {
             $quantity = round($quantity + $max, 4);
             $max = null;
@@ -91,6 +102,9 @@ final class IngredientParser
         $unit = null;
         $rest = trim($matches[3]);
 
+        // The first word after the amount, with an optional full stop, followed by a space or the end.
+        //   "tsp. salt"   =>  1: "tsp"    2: " salt"
+        //   "large eggs"  =>  1: "large"  2: " eggs"  (not a unit, so it stays in the rest)
         if (preg_match('/^([A-Za-z]+)\.?(?=\s|$)(.*)$/su', $rest, $unitMatches)) {
             $unit = self::unit($unitMatches[1]);
 
@@ -108,6 +122,9 @@ final class IngredientParser
         $unit = null;
         $name = $text;
 
+        // An inexact measure with no number: optional "a"/"an", the measure, optional "of", then the ingredient.
+        //   "A pinch of cayenne"  =>  1: "pinch"    2: "cayenne"
+        //   "Handful basil"       =>  1: "Handful"  2: "basil"
         if (preg_match('/^(?:an?\s+)?(pinch|dash|handful|splash|drizzle)\s+(?:of\s+)?(.+)$/isu', $text, $matches)) {
             $unit = mb_strtolower($matches[1]);
             $name = $matches[2];
@@ -118,8 +135,11 @@ final class IngredientParser
 
     private static function name(string $name): string
     {
+        // Drop a leading "of": "1 pinch of salt" leaves "of salt" after the unit.
         $name = preg_replace('/^of\s+/i', '', trim($name)) ?? $name;
 
+        // Drop a trailing "to taste", with an optional comma or parentheses:
+        //   "salt, to taste"   "pepper to taste"   "salt & pepper (to taste)"
         return preg_replace('/,?\s+\(?to\s+taste\)?$/i', '', $name) ?? $name;
     }
 
