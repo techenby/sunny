@@ -8,10 +8,9 @@ use App\Http\Integrations\Sunny\SunnyTeam;
 use App\Models\Onboarding;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
-use Native\Mobile\Edge\NativeComponent;
 use Throwable;
 
-class SetUpHome extends NativeComponent
+class SetUpHome extends Component
 {
     /** @var list<string> */
     public array $places = ['Kitchen pantry', 'Garage', 'Hall closet'];
