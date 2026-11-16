@@ -55,8 +55,8 @@ it('finds a new record by the id it opened with after Sunny assigns one', functi
     expect(Recipe::find(90)->local_id)->toBe(-1);
 });
 
-it('sends the entire recipe form and preserves unedited rich text', function (): void {
-    Recipe::find(1)->update(['ingredients' => '<p><strong>Flour</strong></p>']);
+it('sends the entire recipe form and leaves unedited lines out', function (): void {
+    Recipe::find(1)->update(['ingredients' => "# Dry\nFlour"]);
     Saloon::fake([SaveRecordRequest::class => MockResponse::make(['data' => Recipe::find(1)->toArray()])]);
     Native::visit('/recipes/1/edit')->set('tags', ['Vegan'])->set('nutrition', 'Protein: 2g')->set('notes', '')
         ->set('instructions', 'Mix')->tap('edit-recipe-submit')->assertSet('error', '');
@@ -66,16 +66,16 @@ it('sends the entire recipe form and preserves unedited rich text', function ():
         expect($body['tags'])->toBe(['Vegan']);
         expect($body['nutrition'])->toBe('Protein: 2g');
         expect($body['notes'])->toBeNull();
-        expect($body['instructions'])->toBe('<ol><li>Mix</li></ol>');
+        expect($body['instructions'])->toBe('Mix');
 
         return true;
     });
 });
 
-it('leaves unedited rich text out even when a sync changes it while the form is open', function (): void {
+it('leaves unedited lines out even when a sync changes them while the form is open', function (): void {
     Saloon::fake([SaveRecordRequest::class => MockResponse::make(['data' => Recipe::find(1)->toArray()])]);
     $harness = Native::visit('/recipes/1/edit');
-    Recipe::find(1)->update(['ingredients' => '<ul><li><strong>Flour</strong> from the web</li></ul>', 'instructions' => '<p>Edited remotely</p>']);
+    Recipe::find(1)->update(['ingredients' => 'Flour from the web', 'instructions' => 'Edited remotely']);
     $harness->set('name', 'Weekend Pancakes')->tap('edit-recipe-submit')->assertSet('error', '');
     Saloon::assertSent(function (SaveRecordRequest $request): bool {
         expect($request->body()->all())->not->toHaveKeys(['ingredients', 'instructions']);

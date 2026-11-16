@@ -34,8 +34,14 @@ test('it imports a recipe from a url and saves it to the current team', function
         ->name->toBe('Chocolate Cake')
         ->source->toBe('https://example.com/chocolate-cake')
         ->servings->toBe('8 servings')
-        ->ingredients->toBe('<ul><li>2 cups flour</li><li>1 cup sugar</li></ul>')
-        ->instructions->toBe('<ol><li>Mix dry ingredients.</li><li>Bake at 350F.</li></ol>');
+        ->ingredients->sequence(
+            fn ($row) => $row->text->toBe('2 cups flour'),
+            fn ($row) => $row->text->toBe('1 cup sugar'),
+        )
+        ->instructions->sequence(
+            fn ($row) => $row->text->toBe('Mix dry ingredients.'),
+            fn ($row) => $row->text->toBe('Bake at 350F.'),
+        );
 });
 
 test('it returns an error when the url cannot be fetched', function () {

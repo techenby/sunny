@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Mcp\Tools\Recipes;
 
 use App\Actions\Recipes\CreateRecipe as CreateRecipeAction;
-use App\Mcp\Tools\Recipes\Concerns\NormalizesRecipeLists;
 use App\Models\Recipe;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\Support\Facades\Gate;
@@ -14,11 +13,9 @@ use Laravel\Mcp\Response;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Tool;
 
-#[Description('Create a new recipe for the current team. The ingredients and instructions fields accept either plain text (one item per line) or HTML lists; plain text is automatically wrapped in <ul>/<ol> lists.')]
+#[Description('Create a new recipe for the current team. The ingredients and instructions fields take plain text with one entry per line. Start a line with "# " to make it a section heading.')]
 class CreateRecipe extends Tool
 {
-    use NormalizesRecipeLists;
-
     public function handle(Request $request, CreateRecipeAction $action): Response
     {
         Gate::forUser($request->user())->authorize('create', Recipe::class);
@@ -40,7 +37,7 @@ class CreateRecipe extends Tool
 
         $recipe = $action->handle(
             $request->user()->currentTeam,
-            $this->normalizeRecipeLists($validated),
+            $validated,
         );
 
         return Response::text(json_encode($recipe->only([
@@ -60,9 +57,9 @@ class CreateRecipe extends Tool
             'description' => $schema->string()
                 ->description('A short description of the recipe.'),
             'ingredients' => $schema->string()
-                ->description('The ingredients, as plain text with one ingredient per line or as an HTML <ul> list.'),
+                ->description('The ingredients, as plain text with one ingredient per line. Start a line with "# " for a section heading.'),
             'instructions' => $schema->string()
-                ->description('The instructions, as plain text with one step per line or as an HTML <ol> list.'),
+                ->description('The instructions, as plain text with one step per line. Start a line with "# " for a section heading.'),
             'servings' => $schema->string()
                 ->description('How many servings the recipe yields, e.g. "4" or "8 servings".'),
             'prep_time' => $schema->string()

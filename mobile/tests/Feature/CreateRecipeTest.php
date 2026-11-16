@@ -2,6 +2,7 @@
 
 use App\Http\Integrations\Sunny\Requests\SaveRecordRequest;
 use App\Models\PendingWrite;
+use App\Models\Recipe;
 use App\NativeComponents\CreateRecipe;
 use Native\Mobile\Events\Camera\PhotoTaken;
 use Native\Mobile\Testing\Native;
@@ -123,25 +124,34 @@ it('keeps multi-word tags intact', function () {
         ->assertSet('tags', ['Slow Cooker']);
 });
 
-it('turns the ingredient and instruction lines into the stored html', function () {
+it('stores the ingredient and instruction lines as rows, with # lines as headings', function () {
     Native::visit('/recipes/create')
-        ->input('recipe-ingredients', "2 cups flour\n\n2 eggs  \n")
+        ->set('name', 'Pancakes')
+        ->input('recipe-ingredients', "# Batter\n2 cups flour\n\n2 eggs  \n")
         ->input('recipe-instructions', "Whisk the dry ingredients.\nCook on a hot griddle.")
-        ->assertSet('ingredientsHtml', '<ul><li>2 cups flour</li><li>2 eggs</li></ul>')
-        ->assertSet('instructionsHtml', '<ol><li>Whisk the dry ingredients.</li><li>Cook on a hot griddle.</li></ol>');
+        ->tap('create-recipe-submit');
+
+    expect(Recipe::query()->where('name', 'Pancakes')->sole())
+        ->ingredients->toBe([
+            ['type' => 'heading', 'text' => 'Batter'],
+            ['type' => 'item', 'text' => '2 cups flour'],
+            ['type' => 'item', 'text' => '2 eggs'],
+        ])
+        ->instructions->toBe([
+            ['type' => 'item', 'text' => 'Whisk the dry ingredients.'],
+            ['type' => 'item', 'text' => 'Cook on a hot griddle.'],
+        ]);
 });
 
 it('leaves the ingredients and instructions null when blank', function () {
     Native::visit('/recipes/create')
-        ->assertSet('ingredientsHtml', null)
+        ->set('name', 'Pancakes')
         ->input('recipe-ingredients', "  \n  ")
-        ->assertSet('ingredientsHtml', null);
-});
+        ->tap('create-recipe-submit');
 
-it('escapes html typed into an ingredient line', function () {
-    Native::visit('/recipes/create')
-        ->input('recipe-ingredients', '1 tbsp <b>butter</b>')
-        ->assertSet('ingredientsHtml', '<ul><li>1 tbsp &lt;b&gt;butter&lt;/b&gt;</li></ul>');
+    expect(Recipe::query()->where('name', 'Pancakes')->sole())
+        ->ingredients->toBeNull()
+        ->instructions->toBeNull();
 });
 
 it('captures a photo for the recipe', function () {

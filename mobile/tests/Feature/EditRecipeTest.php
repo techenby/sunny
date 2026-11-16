@@ -2,8 +2,8 @@
 
 use App\Http\Integrations\Sunny\Requests\SaveRecordRequest;
 use App\Models\PendingWrite;
+use App\Models\Recipe;
 use App\NativeComponents\EditRecipe;
-use App\NativeComponents\Recipes;
 use Native\Mobile\Testing\Native;
 use Saloon\Http\Faking\MockResponse;
 
@@ -36,22 +36,16 @@ it('prefills the form from the recipe', function () {
         ->assertSet('tags', ['breakfast', 'weekend']);
 });
 
-it('turns the stored html back into one line per item', function () {
+it('turns the stored rows back into one line per item', function () {
     Native::visit('/recipes/1/edit')
         ->assertSet('ingredients', "2 cups flour\n2 cups buttermilk\n2 eggs\n3 tbsp melted butter\n2 tbsp sugar\n2 tsp baking powder")
         ->assertSet('instructions', "Whisk the dry ingredients together in a large bowl.\nStir in the buttermilk, eggs, and melted butter until just combined.\nCook ¼ cup of batter at a time on a hot griddle until bubbles form, then flip.");
 });
 
-it('round-trips the ingredients back to the stored shape when nothing is edited', function () {
-    $harness = Native::visit('/recipes/1/edit');
+it('shows headings as # lines', function () {
+    Recipe::find(1)->update(['ingredients' => [['type' => 'heading', 'text' => 'Dry'], ['type' => 'item', 'text' => '2 cups flour']]]);
 
-    expect($harness->get('ingredientsHtml'))->toBe(Recipes::find(1)['ingredients']);
-});
-
-it('reads paragraph-style ingredients too', function () {
-    Native::visit('/recipes/5/edit')
-        ->assertSet('ingredients', "1 cup rolled oats\n1 cup milk\n½ cup Greek yogurt\n1 tbsp chia seeds")
-        ->assertSet('instructions', 'Stir everything together in a jar, cover, and refrigerate overnight.');
+    Native::visit('/recipes/1/edit')->assertSet('ingredients', "# Dry\n2 cups flour");
 });
 
 it('keeps tags outside the chip vocabulary so editing cannot drop them', function () {

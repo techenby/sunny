@@ -139,48 +139,49 @@ class ImportRecipeFromUrl
 
     private function formatIngredients(array $ingredients): string
     {
-        $items = array_map(fn (string $item) => '<li>' . e(trim($item)) . '</li>', $ingredients);
-
-        return '<ul>' . implode('', $items) . '</ul>';
+        return collect($ingredients)
+            ->map(fn (mixed $item): string => $this->clean($item))
+            ->filter()
+            ->implode("\n");
     }
 
     private function formatInstructions(array $instructions): string
     {
-        $items = [];
+        $lines = [];
 
         foreach ($instructions as $instruction) {
-            if (is_string($instruction)) {
-                $items[] = '<li>' . e(trim($instruction)) . '</li>';
-            } elseif (is_array($instruction)) {
-                $type = $instruction['@type'] ?? '';
+            if (! is_array($instruction)) {
+                $lines[] = $this->clean($instruction);
 
-                if ($type === 'HowToSection') {
-                    $sectionName = $instruction['name'] ?? '';
-                    $steps = $instruction['itemListElement'] ?? [];
+                continue;
+            }
 
-                    if ($sectionName !== '') {
-                        $items[] = '<li><strong>' . e(trim($sectionName)) . '</strong>';
-                    }
+            if (($instruction['@type'] ?? '') !== 'HowToSection') {
+                $lines[] = $this->clean($instruction['text'] ?? $instruction['name'] ?? '');
 
-                    if (is_array($steps) && $steps !== []) {
-                        $items[] = '<ol>' . implode('', array_map(function ($step) {
-                            $text = is_array($step) ? ($step['text'] ?? $step['name'] ?? '') : (string) $step;
+                continue;
+            }
 
-                            return '<li>' . e(trim((string) $text)) . '</li>';
-                        }, $steps)) . '</ol>';
-                    }
+            $section = $this->clean($instruction['name'] ?? '');
+            $lines[] = $section === '' ? '' : "# {$section}";
 
-                    if ($sectionName !== '') {
-                        $items[] = '</li>';
-                    }
-                } else {
-                    $text = $instruction['text'] ?? $instruction['name'] ?? '';
-                    $items[] = '<li>' . e(trim((string) $text)) . '</li>';
-                }
+            foreach ((array) ($instruction['itemListElement'] ?? []) as $step) {
+                $lines[] = $this->clean(is_array($step) ? ($step['text'] ?? $step['name'] ?? '') : $step);
             }
         }
 
-        return '<ol>' . implode('', $items) . '</ol>';
+        return implode("\n", array_filter($lines));
+    }
+
+    private function clean(mixed $text): string
+    {
+        if (! is_scalar($text)) {
+            return '';
+        }
+
+        $text = html_entity_decode(strip_tags((string) $text), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+        return trim(preg_replace('/[\s\x{00A0}]+/u', ' ', $text) ?? '');
     }
 
     /** @param  array<string, mixed>  $nutrition */

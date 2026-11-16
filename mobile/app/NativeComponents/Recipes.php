@@ -19,7 +19,7 @@ class Recipes extends NativeComponent
     /**
      * The last downloaded recipes, read entirely from the local database.
      *
-     * @return list<array{id: int, parent_id: int|null, name: string, source: string|null, servings: string|null, prep_time: string|null, cook_time: string|null, total_time: string|null, description: string|null, ingredients: string|null, instructions: string|null, notes: string|null, nutrition: string|null, tags: list<string>|null, created_at: string, updated_at: string}>
+     * @return list<array{id: int, parent_id: int|null, name: string, source: string|null, servings: string|null, prep_time: string|null, cook_time: string|null, total_time: string|null, description: string|null, ingredients: list<array<string, mixed>>|null, instructions: list<array<string, mixed>>|null, notes: string|null, nutrition: string|null, tags: list<string>|null, created_at: string, updated_at: string}>
      */
     public static function all(): array
     {
@@ -27,7 +27,7 @@ class Recipes extends NativeComponent
     }
 
     /**
-     * @return array{id: int, parent_id: int|null, name: string, source: string|null, servings: string|null, prep_time: string|null, cook_time: string|null, total_time: string|null, description: string|null, ingredients: string|null, instructions: string|null, notes: string|null, nutrition: string|null, tags: list<string>|null, created_at: string, updated_at: string}|null
+     * @return array{id: int, parent_id: int|null, name: string, source: string|null, servings: string|null, prep_time: string|null, cook_time: string|null, total_time: string|null, description: string|null, ingredients: list<array<string, mixed>>|null, instructions: list<array<string, mixed>>|null, notes: string|null, nutrition: string|null, tags: list<string>|null, created_at: string, updated_at: string}|null
      */
     public static function find(int $id): ?array
     {
@@ -63,30 +63,6 @@ class Recipes extends NativeComponent
         }
 
         return Str::limit($source, 30);
-    }
-
-    /**
-     * Split the rich-text editor's HTML into plain-text rows: one per list
-     * item, or per paragraph/line when there is no list. The inverse of the
-     * serialization the create and edit forms perform.
-     *
-     * @return list<string>
-     */
-    public static function lines(?string $html): array
-    {
-        if (blank($html)) {
-            return [];
-        }
-
-        $blocks = preg_match_all('/<li\b[^>]*>(.*?)<\/li>/is', $html, $matches)
-            ? $matches[1]
-            : preg_split('/<\/p>|<br\s*\/?>|\R/i', $html);
-
-        return collect($blocks)
-            ->map(fn (string $block): string => trim(html_entity_decode(strip_tags($block), ENT_QUOTES | ENT_HTML5, 'UTF-8')))
-            ->filter()
-            ->values()
-            ->all();
     }
 
     /**

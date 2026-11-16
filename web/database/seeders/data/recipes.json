@@ -1,0 +1,245 @@
+[
+    {
+        "name": "Luffy's Favorite Meat on the Bone",
+        "source": "Inspired by One Piece, Chapter 69",
+        "servings": "4",
+        "prep_time": "25 minutes",
+        "cook_time": "35 minutes",
+        "total_time": "1 hour",
+        "description": "Juicy chicken drumsticks wrapped around a savory boiled egg and glazed with a sweet soy sauce.",
+        "ingredients": [
+            "4 chicken drumsticks",
+            "4 hard-boiled eggs, peeled",
+            "1 pound ground chicken",
+            "1/2 cup panko breadcrumbs",
+            "1 egg, beaten",
+            "2 tablespoons soy sauce",
+            "1 tablespoon honey",
+            "1 teaspoon grated ginger",
+            "Salt and black pepper"
+        ],
+        "instructions": [
+            "Heat the oven to 400°F and line a sheet pan with parchment.",
+            "Push the chicken meat down each drumstick to expose the bone.",
+            "Season the ground chicken, then mix it with the panko and beaten egg.",
+            "Wrap each boiled egg in the chicken mixture and press it firmly around a drumstick.",
+            "Roast for 25 minutes. Brush with soy sauce, honey, and ginger, then roast for 10 minutes more.",
+            "Rest for 5 minutes before serving."
+        ],
+        "notes": "Chill the wrapped drumsticks for 15 minutes before roasting if the mixture feels loose.",
+        "nutrition": "Approximately 520 calories, 45g protein, 19g carbohydrates, and 28g fat per serving.",
+        "tags": ["Dinner", "Chicken", "Crew Favorites"]
+    },
+    {
+        "name": "Gin's Takeout Stir-Fry",
+        "source": "Inspired by One Piece, Chapter 44",
+        "servings": "4",
+        "prep_time": "15 minutes",
+        "cook_time": "12 minutes",
+        "total_time": "27 minutes",
+        "description": "A fast, filling noodle stir-fry with pork, crisp vegetables, and a savory-sweet sauce.",
+        "ingredients": [
+            "8 ounces yakisoba noodles",
+            "8 ounces thinly sliced pork loin",
+            "2 cups shredded cabbage",
+            "1 carrot, cut into matchsticks",
+            "1/2 yellow onion, sliced",
+            "2 tablespoons neutral oil",
+            "3 tablespoons soy sauce",
+            "2 tablespoons Worcestershire sauce",
+            "1 tablespoon ketchup",
+            "1 teaspoon brown sugar"
+        ],
+        "instructions": [
+            "Whisk together the soy sauce, Worcestershire sauce, ketchup, and brown sugar.",
+            "Heat one tablespoon oil in a wok and brown the pork. Transfer it to a plate.",
+            "Add the remaining oil, cabbage, carrot, and onion; stir-fry until just tender.",
+            "Add the noodles, pork, and sauce. Toss over high heat until glossy and hot.",
+            "Divide among bowls and serve immediately."
+        ],
+        "notes": "A handful of bean sprouts or sliced mushrooms can be added with the cabbage.",
+        "nutrition": "Approximately 460 calories, 25g protein, 55g carbohydrates, and 16g fat per serving.",
+        "tags": ["Dinner", "Noodles", "Quick"]
+    },
+    {
+        "name": "Kokoro's Curry Rice",
+        "source": "Inspired by One Piece, Chapter 353",
+        "servings": "6",
+        "prep_time": "20 minutes",
+        "cook_time": "50 minutes",
+        "total_time": "1 hour 10 minutes",
+        "description": "A comforting Japanese-style beef curry loaded with potatoes and carrots and served over steamed rice.",
+        "ingredients": [
+            "1 1/2 pounds beef chuck, cut into cubes",
+            "1 yellow onion, diced",
+            "2 carrots, cut into chunks",
+            "2 russet potatoes, cut into chunks",
+            "1 tablespoon grated ginger",
+            "2 cloves garlic, minced",
+            "4 cups beef stock",
+            "4 ounces Japanese curry roux",
+            "1 tablespoon neutral oil",
+            "6 cups cooked short-grain rice"
+        ],
+        "instructions": [
+            "Heat the oil in a heavy pot and brown the beef in batches.",
+            "Add the onion, ginger, and garlic; cook until fragrant.",
+            "Return the beef to the pot with the carrots, potatoes, and stock.",
+            "Simmer, partially covered, for 35 minutes or until the beef is tender.",
+            "Turn off the heat, stir in the curry roux, then simmer gently for 10 minutes until thick.",
+            "Serve alongside steamed rice."
+        ],
+        "notes": "The curry tastes even better the next day. Add a splash of stock when reheating.",
+        "nutrition": "Approximately 610 calories, 31g protein, 76g carbohydrates, and 20g fat per serving.",
+        "tags": ["Dinner", "Beef", "Comfort Food"]
+    },
+    {
+        "name": "Ladies' Never-Before-Seen Takoyaki",
+        "source": "Inspired by One Piece, Chapter 222",
+        "servings": "24 pieces",
+        "prep_time": "20 minutes",
+        "cook_time": "20 minutes",
+        "total_time": "40 minutes",
+        "description": "Crisp-edged, custardy octopus dumplings finished with tangy sauce, mayonnaise, and bonito flakes.",
+        "ingredients": [
+            "1 cup all-purpose flour",
+            "2 large eggs",
+            "2 1/2 cups dashi",
+            "1 tablespoon soy sauce",
+            "6 ounces cooked octopus, diced",
+            "3 scallions, thinly sliced",
+            "1/4 cup pickled ginger, chopped",
+            "Takoyaki sauce",
+            "Japanese mayonnaise",
+            "Bonito flakes and aonori"
+        ],
+        "instructions": [
+            "Whisk the flour, eggs, dashi, and soy sauce into a thin batter.",
+            "Heat and generously oil a takoyaki pan.",
+            "Fill each well with batter, then add octopus, scallions, and pickled ginger.",
+            "As the edges set, turn each piece a quarter turn with skewers. Keep turning until round and browned.",
+            "Top with takoyaki sauce, mayonnaise, bonito flakes, and aonori."
+        ],
+        "notes": "Keep the pan well oiled and do not worry about spilled batter; tuck it into the wells as you turn each piece.",
+        "nutrition": "Approximately 290 calories, 14g protein, 39g carbohydrates, and 9g fat per 6-piece serving.",
+        "tags": ["Snack", "Seafood", "Japanese"]
+    },
+    {
+        "name": "Mock Town Cherry Pie",
+        "source": "Inspired by One Piece, Chapter 223",
+        "servings": "8",
+        "prep_time": "30 minutes",
+        "cook_time": "55 minutes",
+        "total_time": "2 hours 25 minutes",
+        "description": "A classic lattice-topped pie with a bright cherry filling and a crisp, buttery crust.",
+        "ingredients": [
+            "2 refrigerated pie crusts",
+            "5 cups pitted sour cherries",
+            "3/4 cup granulated sugar",
+            "1/4 cup cornstarch",
+            "1 tablespoon lemon juice",
+            "1 teaspoon vanilla extract",
+            "1/4 teaspoon almond extract",
+            "1 tablespoon unsalted butter",
+            "1 egg beaten with 1 tablespoon water"
+        ],
+        "instructions": [
+            "Heat the oven to 425°F and fit one crust into a 9-inch pie plate.",
+            "Toss the cherries with sugar, cornstarch, lemon juice, vanilla, and almond extract.",
+            "Fill the crust, dot with butter, and cover with a lattice made from the second crust.",
+            "Brush with egg wash and bake for 20 minutes.",
+            "Reduce the heat to 375°F and bake for 35 minutes more.",
+            "Cool for at least 1 hour before slicing."
+        ],
+        "notes": "Place the pie on a foil-lined sheet pan to catch any bubbling filling.",
+        "nutrition": "Approximately 410 calories, 4g protein, 64g carbohydrates, and 17g fat per slice.",
+        "tags": ["Dessert", "Baking", "Fruit"]
+    },
+    {
+        "name": "Gan Fall's Spiced Pumpkin Juice",
+        "source": "Inspired by One Piece, Chapter 248",
+        "servings": "4",
+        "prep_time": "5 minutes",
+        "cook_time": "5 minutes",
+        "total_time": "10 minutes",
+        "description": "A creamy pumpkin drink with apple, orange, warming spices, and just enough maple sweetness.",
+        "ingredients": [
+            "1 cup pumpkin purée",
+            "2 cups apple cider",
+            "1 cup orange juice",
+            "2 tablespoons maple syrup",
+            "1/2 teaspoon ground cinnamon",
+            "1/4 teaspoon ground ginger",
+            "Pinch of ground nutmeg",
+            "1 teaspoon vanilla extract"
+        ],
+        "instructions": [
+            "Combine all ingredients in a blender and blend until completely smooth.",
+            "For a warm drink, heat gently in a saucepan without boiling.",
+            "For a cold drink, chill for 1 hour and serve over ice.",
+            "Stir before pouring and garnish with cinnamon."
+        ],
+        "notes": "Use unsweetened pumpkin purée, not pumpkin pie filling.",
+        "nutrition": "Approximately 150 calories, 2g protein, 37g carbohydrates, and 1g fat per serving.",
+        "tags": ["Drinks", "Vegetarian", "Fall"]
+    },
+    {
+        "name": "Fruit Macedonia of Amends",
+        "source": "Inspired by One Piece, Chapter 46",
+        "servings": "6",
+        "prep_time": "20 minutes",
+        "cook_time": "0 minutes",
+        "total_time": "50 minutes",
+        "description": "A colorful fruit salad tossed in a light citrus-mint syrup for an easy galley dessert.",
+        "ingredients": [
+            "2 oranges, peeled and segmented",
+            "2 cups pineapple chunks",
+            "2 kiwis, peeled and sliced",
+            "1 cup strawberries, quartered",
+            "1 cup seedless grapes, halved",
+            "1 mango, diced",
+            "2 tablespoons honey",
+            "2 tablespoons lime juice",
+            "2 tablespoons chopped fresh mint"
+        ],
+        "instructions": [
+            "Place all prepared fruit in a large serving bowl.",
+            "Whisk the honey and lime juice until smooth.",
+            "Pour the dressing over the fruit and fold gently to combine.",
+            "Chill for 30 minutes, then add the mint just before serving."
+        ],
+        "notes": "Add bananas only at serving time so they do not brown or soften.",
+        "nutrition": "Approximately 170 calories, 2g protein, 43g carbohydrates, and less than 1g fat per serving.",
+        "tags": ["Dessert", "Fruit", "Vegan", "Gluten Free"]
+    },
+    {
+        "name": "Sea King Penne Gorgonzola",
+        "source": "Inspired by One Piece, Chapter 522",
+        "servings": "4",
+        "prep_time": "10 minutes",
+        "cook_time": "20 minutes",
+        "total_time": "30 minutes",
+        "description": "Penne in a rich gorgonzola cream sauce balanced with spinach, lemon, and toasted walnuts.",
+        "ingredients": [
+            "12 ounces penne",
+            "1 tablespoon unsalted butter",
+            "1 shallot, minced",
+            "1 cup heavy cream",
+            "5 ounces gorgonzola, crumbled",
+            "3 cups baby spinach",
+            "1 teaspoon lemon zest",
+            "1/3 cup toasted walnuts, chopped",
+            "Salt and black pepper"
+        ],
+        "instructions": [
+            "Cook the penne in well-salted water until al dente, reserving one cup of pasta water.",
+            "Melt the butter in a skillet and cook the shallot until soft.",
+            "Add the cream and simmer for 3 minutes. Stir in the gorgonzola until smooth.",
+            "Add the pasta and spinach, tossing until the spinach wilts.",
+            "Loosen with pasta water as needed, then finish with lemon zest and walnuts."
+        ],
+        "notes": "Use a mild, creamy gorgonzola dolce for a balanced sauce.",
+        "nutrition": "Approximately 720 calories, 24g protein, 75g carbohydrates, and 38g fat per serving.",
+        "tags": ["Dinner", "Pasta", "Vegetarian"]
+    }
+]

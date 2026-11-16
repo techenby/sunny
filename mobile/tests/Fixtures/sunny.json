@@ -10,8 +10,46 @@
             "cook_time": "15 minutes",
             "total_time": "25 minutes",
             "description": "Fluffy weekend pancakes that come together in one bowl.",
-            "ingredients": "<ul><li>2 cups flour<\/li><li>2 cups buttermilk<\/li><li>2 eggs<\/li><li>3 tbsp melted butter<\/li><li>2 tbsp sugar<\/li><li>2 tsp baking powder<\/li><\/ul>",
-            "instructions": "<ol><li>Whisk the dry ingredients together in a large bowl.<\/li><li>Stir in the buttermilk, eggs, and melted butter until just combined.<\/li><li>Cook ¼ cup of batter at a time on a hot griddle until bubbles form, then flip.<\/li><\/ol>",
+            "ingredients": [
+                {
+                    "type": "item",
+                    "text": "2 cups flour"
+                },
+                {
+                    "type": "item",
+                    "text": "2 cups buttermilk"
+                },
+                {
+                    "type": "item",
+                    "text": "2 eggs"
+                },
+                {
+                    "type": "item",
+                    "text": "3 tbsp melted butter"
+                },
+                {
+                    "type": "item",
+                    "text": "2 tbsp sugar"
+                },
+                {
+                    "type": "item",
+                    "text": "2 tsp baking powder"
+                }
+            ],
+            "instructions": [
+                {
+                    "type": "step",
+                    "text": "Whisk the dry ingredients together in a large bowl."
+                },
+                {
+                    "type": "step",
+                    "text": "Stir in the buttermilk, eggs, and melted butter until just combined."
+                },
+                {
+                    "type": "step",
+                    "text": "Cook ¼ cup of batter at a time on a hot griddle until bubbles form, then flip."
+                }
+            ],
             "notes": "Let the batter rest for five minutes for taller pancakes.",
             "nutrition": null,
             "tags": [
@@ -31,8 +69,46 @@
             "cook_time": "30 minutes",
             "total_time": "45 minutes",
             "description": "A hearty, freezer-friendly chili.",
-            "ingredients": "<ul><li>1 lb ground beef<\/li><li>1 onion, diced<\/li><li>2 cans kidney beans<\/li><li>1 can crushed tomatoes<\/li><li>2 tbsp chili powder<\/li><li>1 tsp cumin<\/li><\/ul>",
-            "instructions": "<ol><li>Brown the beef with the onion.<\/li><li>Add the spices and cook for one minute.<\/li><li>Stir in the beans and tomatoes, then simmer for 25 minutes.<\/li><\/ol>",
+            "ingredients": [
+                {
+                    "type": "item",
+                    "text": "1 lb ground beef"
+                },
+                {
+                    "type": "item",
+                    "text": "1 onion, diced"
+                },
+                {
+                    "type": "item",
+                    "text": "2 cans kidney beans"
+                },
+                {
+                    "type": "item",
+                    "text": "1 can crushed tomatoes"
+                },
+                {
+                    "type": "item",
+                    "text": "2 tbsp chili powder"
+                },
+                {
+                    "type": "item",
+                    "text": "1 tsp cumin"
+                }
+            ],
+            "instructions": [
+                {
+                    "type": "step",
+                    "text": "Brown the beef with the onion."
+                },
+                {
+                    "type": "step",
+                    "text": "Add the spices and cook for one minute."
+                },
+                {
+                    "type": "step",
+                    "text": "Stir in the beans and tomatoes, then simmer for 25 minutes."
+                }
+            ],
             "notes": null,
             "nutrition": "Calories: 410\nProtein: 28 g",
             "tags": [
@@ -52,8 +128,50 @@
             "cook_time": "1 hour",
             "total_time": "1 hour 30 minutes",
             "description": "The family favorite for birthdays and holidays.",
-            "ingredients": "<ul><li>12 lasagna noodles<\/li><li>1 lb Italian sausage<\/li><li>3 cups marinara<\/li><li>15 oz ricotta<\/li><li>3 cups mozzarella<\/li><li>1 egg<\/li><\/ul>",
-            "instructions": "<ol><li>Brown the sausage and stir in the marinara.<\/li><li>Mix the ricotta with the egg.<\/li><li>Layer noodles, ricotta, sauce, and mozzarella three times.<\/li><li>Cover and bake at 375°F for 45 minutes, then uncover for 15 more.<\/li><\/ol>",
+            "ingredients": [
+                {
+                    "type": "item",
+                    "text": "12 lasagna noodles"
+                },
+                {
+                    "type": "item",
+                    "text": "1 lb Italian sausage"
+                },
+                {
+                    "type": "item",
+                    "text": "3 cups marinara"
+                },
+                {
+                    "type": "item",
+                    "text": "15 oz ricotta"
+                },
+                {
+                    "type": "item",
+                    "text": "3 cups mozzarella"
+                },
+                {
+                    "type": "item",
+                    "text": "1 egg"
+                }
+            ],
+            "instructions": [
+                {
+                    "type": "step",
+                    "text": "Brown the sausage and stir in the marinara."
+                },
+                {
+                    "type": "step",
+                    "text": "Mix the ricotta with the egg."
+                },
+                {
+                    "type": "step",
+                    "text": "Layer noodles, ricotta, sauce, and mozzarella three times."
+                },
+                {
+                    "type": "step",
+                    "text": "Cover and bake at 375°F for 45 minutes, then uncover for 15 more."
+                }
+            ],
             "notes": "Freezes well before baking.",
             "nutrition": null,
             "tags": [
@@ -73,8 +191,46 @@
             "cook_time": "1 hour",
             "total_time": "1 hour 30 minutes",
             "description": "Grandma’s lasagna with roasted vegetables instead of sausage.",
-            "ingredients": "<ul><li>12 lasagna noodles<\/li><li>2 zucchini, sliced<\/li><li>1 eggplant, sliced<\/li><li>3 cups marinara<\/li><li>15 oz ricotta<\/li><li>3 cups mozzarella<\/li><\/ul>",
-            "instructions": "<ol><li>Roast the zucchini and eggplant at 425°F for 20 minutes.<\/li><li>Layer noodles, ricotta, vegetables, sauce, and mozzarella three times.<\/li><li>Cover and bake at 375°F for 45 minutes, then uncover for 15 more.<\/li><\/ol>",
+            "ingredients": [
+                {
+                    "type": "item",
+                    "text": "12 lasagna noodles"
+                },
+                {
+                    "type": "item",
+                    "text": "2 zucchini, sliced"
+                },
+                {
+                    "type": "item",
+                    "text": "1 eggplant, sliced"
+                },
+                {
+                    "type": "item",
+                    "text": "3 cups marinara"
+                },
+                {
+                    "type": "item",
+                    "text": "15 oz ricotta"
+                },
+                {
+                    "type": "item",
+                    "text": "3 cups mozzarella"
+                }
+            ],
+            "instructions": [
+                {
+                    "type": "step",
+                    "text": "Roast the zucchini and eggplant at 425°F for 20 minutes."
+                },
+                {
+                    "type": "step",
+                    "text": "Layer noodles, ricotta, vegetables, sauce, and mozzarella three times."
+                },
+                {
+                    "type": "step",
+                    "text": "Cover and bake at 375°F for 45 minutes, then uncover for 15 more."
+                }
+            ],
             "notes": null,
             "nutrition": null,
             "tags": [
@@ -94,8 +250,30 @@
             "cook_time": null,
             "total_time": "8 hours",
             "description": null,
-            "ingredients": "<p>1 cup rolled oats<\/p><p>1 cup milk<\/p><p>½ cup Greek yogurt<\/p><p>1 tbsp chia seeds<\/p>",
-            "instructions": "<p>Stir everything together in a jar, cover, and refrigerate overnight.<\/p>",
+            "ingredients": [
+                {
+                    "type": "item",
+                    "text": "1 cup rolled oats"
+                },
+                {
+                    "type": "item",
+                    "text": "1 cup milk"
+                },
+                {
+                    "type": "item",
+                    "text": "½ cup Greek yogurt"
+                },
+                {
+                    "type": "item",
+                    "text": "1 tbsp chia seeds"
+                }
+            ],
+            "instructions": [
+                {
+                    "type": "step",
+                    "text": "Stir everything together in a jar, cover, and refrigerate overnight."
+                }
+            ],
             "notes": null,
             "nutrition": null,
             "tags": null,
@@ -112,8 +290,46 @@
             "cook_time": "10 minutes",
             "total_time": "25 minutes",
             "description": "Crisp edges, chewy centers.",
-            "ingredients": "<ul><li>2¼ cups flour<\/li><li>1 cup butter<\/li><li>¾ cup brown sugar<\/li><li>¾ cup sugar<\/li><li>2 eggs<\/li><li>2 cups chocolate chips<\/li><\/ul>",
-            "instructions": "<ol><li>Cream the butter and sugars, then beat in the eggs.<\/li><li>Mix in the flour, then fold in the chocolate chips.<\/li><li>Bake spoonfuls at 375°F for 10 minutes.<\/li><\/ol>",
+            "ingredients": [
+                {
+                    "type": "item",
+                    "text": "2¼ cups flour"
+                },
+                {
+                    "type": "item",
+                    "text": "1 cup butter"
+                },
+                {
+                    "type": "item",
+                    "text": "¾ cup brown sugar"
+                },
+                {
+                    "type": "item",
+                    "text": "¾ cup sugar"
+                },
+                {
+                    "type": "item",
+                    "text": "2 eggs"
+                },
+                {
+                    "type": "item",
+                    "text": "2 cups chocolate chips"
+                }
+            ],
+            "instructions": [
+                {
+                    "type": "step",
+                    "text": "Cream the butter and sugars, then beat in the eggs."
+                },
+                {
+                    "type": "step",
+                    "text": "Mix in the flour, then fold in the chocolate chips."
+                },
+                {
+                    "type": "step",
+                    "text": "Bake spoonfuls at 375°F for 10 minutes."
+                }
+            ],
             "notes": null,
             "nutrition": null,
             "tags": [

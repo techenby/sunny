@@ -95,7 +95,7 @@
             <outlined-text-input
                 ref="recipe-ingredients"
                 label="Ingredients"
-                placeholder="One ingredient per line"
+                placeholder="One ingredient per line. Start a line with # for a heading."
                 multiline
                 :min-lines="5"
                 native:model.blur="ingredients"
@@ -103,7 +103,7 @@
             <outlined-text-input
                 ref="recipe-instructions"
                 label="Instructions"
-                placeholder="One step per line"
+                placeholder="One step per line. Start a line with # for a heading."
                 multiline
                 :min-lines="5"
                 native:model.blur="instructions"

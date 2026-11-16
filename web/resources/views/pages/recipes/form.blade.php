@@ -97,14 +97,20 @@
         rows="3"
     />
 
-    <flux:editor
+    <flux:textarea
         wire:model="form.ingredients"
         :label="__('Ingredients')"
+        :description="__('One ingredient per line. Start a line with # to add a heading.')"
+        :placeholder="__('2 cups flour')"
+        rows="8"
     />
 
-    <flux:editor
+    <flux:textarea
         wire:model="form.instructions"
         :label="__('Instructions')"
+        :description="__('One step per line. Start a line with # to add a heading.')"
+        :placeholder="__('Whisk the dry ingredients together.')"
+        rows="8"
     />
 
     <flux:textarea

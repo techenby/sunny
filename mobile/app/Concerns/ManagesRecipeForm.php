@@ -2,7 +2,7 @@
 
 namespace App\Concerns;
 
-use App\NativeComponents\Recipes;
+use App\Casts\RecipeLines;
 use Native\Mobile\Attributes\Computed;
 
 /**
@@ -68,8 +68,8 @@ trait ManagesRecipeForm
     public ?array $loadedLines = null;
 
     /**
-     * Load an existing recipe into the form, turning the stored rich-text
-     * HTML back into the one-per-line text the fields edit.
+     * Load an existing recipe into the form, turning the stored rows back
+     * into the one-per-line text the fields edit.
      *
      * @param  array<string, mixed>  $recipe
      */
@@ -85,8 +85,8 @@ trait ManagesRecipeForm
         $this->cookTime = (string) ($recipe['cook_time'] ?? '');
         $this->totalTime = (string) ($recipe['total_time'] ?? '');
         $this->description = (string) ($recipe['description'] ?? '');
-        $this->ingredients = implode("\n", Recipes::lines($recipe['ingredients'] ?? null));
-        $this->instructions = implode("\n", Recipes::lines($recipe['instructions'] ?? null));
+        $this->ingredients = RecipeLines::toText($recipe['ingredients'] ?? null);
+        $this->instructions = RecipeLines::toText($recipe['instructions'] ?? null);
         $this->notes = (string) ($recipe['notes'] ?? '');
         $this->nutrition = (string) ($recipe['nutrition'] ?? '');
         $this->loadedLines = ['ingredients' => $this->ingredients, 'instructions' => $this->instructions];
@@ -169,24 +169,6 @@ trait ManagesRecipeForm
         $this->tags = $tags->values()->all();
     }
 
-    /**
-     * Ingredients are stored as the HTML the web app's rich-text editor
-     * produces. They are typed one per line here, so each non-empty line
-     * becomes a list item — the shape Recipes::lines() reads back out.
-     */
-    #[Computed]
-    public function ingredientsHtml(): ?string
-    {
-        return $this->htmlList($this->ingredients, 'ul');
-    }
-
-    /** @see ingredientsHtml() */
-    #[Computed]
-    public function instructionsHtml(): ?string
-    {
-        return $this->htmlList($this->instructions, 'ol');
-    }
-
     protected function recipePayload(): array
     {
         $payload = [
@@ -194,7 +176,7 @@ trait ManagesRecipeForm
             'tags' => $this->tags, 'servings' => $this->servings ?: null,
             'prep_time' => $this->prepTime ?: null, 'cook_time' => $this->cookTime ?: null,
             'total_time' => $this->totalTime ?: null, 'description' => $this->description ?: null,
-            'ingredients' => $this->ingredientsHtml, 'instructions' => $this->instructionsHtml,
+            'ingredients' => trim($this->ingredients) ?: null, 'instructions' => trim($this->instructions) ?: null,
             'notes' => $this->notes ?: null, 'nutrition' => $this->nutrition ?: null,
         ];
         if ($this->loadedLines !== null) {
@@ -235,18 +217,5 @@ trait ManagesRecipeForm
         }
 
         return '';
-    }
-
-    /**
-     * Wrap each non-empty line of $text as a list item, or null when blank.
-     */
-    private function htmlList(string $text, string $tag): ?string
-    {
-        $items = collect(preg_split('/\R/', $text) ?: [])
-            ->map(fn (string $line): string => trim($line))
-            ->filter()
-            ->map(fn (string $line): string => '<li>'.e($line).'</li>');
-
-        return $items->isEmpty() ? null : "<{$tag}>".$items->implode('')."</{$tag}>";
     }
 }

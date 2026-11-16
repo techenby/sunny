@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\RecipeLines;
 use App\Http\Integrations\Sunny\SunnyStore;
 use App\Http\Integrations\Sunny\SunnyTeam;
 use Illuminate\Database\Eloquent\Builder;
@@ -20,7 +21,7 @@ class Recipe extends Model
     /** @return array<string, string> */
     protected function casts(): array
     {
-        return ['tags' => 'array', 'created_at' => 'immutable_datetime', 'updated_at' => 'immutable_datetime'];
+        return ['tags' => 'array', 'ingredients' => RecipeLines::class, 'instructions' => RecipeLines::class, 'created_at' => 'immutable_datetime', 'updated_at' => 'immutable_datetime'];
     }
 
     public function scopeForCurrentServer(Builder $query): void

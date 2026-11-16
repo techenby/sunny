@@ -74,8 +74,14 @@ class SunnySync
         $rules['recipes.*.tags'] = ['nullable', 'array'];
         $rules['recipes.*.tags.*'] = ['string'];
 
-        foreach (['source', 'servings', 'prep_time', 'cook_time', 'total_time', 'description', 'ingredients', 'instructions', 'notes', 'nutrition'] as $field) {
+        foreach (['source', 'servings', 'prep_time', 'cook_time', 'total_time', 'description', 'notes', 'nutrition'] as $field) {
             $rules['recipes.*.'.$field] = ['nullable', 'string'];
+        }
+
+        foreach (['ingredients', 'instructions'] as $field) {
+            $rules['recipes.*.'.$field] = ['nullable', 'array', 'list'];
+            $rules['recipes.*.'.$field.'.*.type'] = ['required', 'string'];
+            $rules['recipes.*.'.$field.'.*.text'] = ['required', 'string'];
         }
 
         $rules['routine_occurrences'] = ['present', 'array', 'list'];

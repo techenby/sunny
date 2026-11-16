@@ -94,16 +94,20 @@
                     <row class="w-full items-center">
                         <x-ui.heading size="lg" class="flex-1">Ingredients</x-ui.heading>
                         @if ($this->checkedCount)
-                            <x-ui.text size="sm">{{ $this->checkedCount }} of {{ count($this->ingredients) }}</x-ui.text>
+                            <x-ui.text size="sm">{{ $this->checkedCount }} of {{ $this->ingredientCount }}</x-ui.text>
                         @endif
                     </row>
                     <column class="{{ Card::classes() }} w-full">
                         @foreach ($this->ingredients as $index => $ingredient)
+                            @if ($this->isHeading($ingredient))
+                                <x-ui.heading ref="ingredient-heading-{{ $index }}" class="w-full px-4 pt-4 pb-1">{{ $ingredient['text'] }}</x-ui.heading>
+                                @continue
+                            @endif
                             @php($checked = $this->isChecked($index))
                             <pressable
                                 ref="ingredient-{{ $index }}"
                                 @press="toggleIngredient({{ $index }})"
-                                :a11y-label="($checked ? 'Checked: ' : '').$ingredient"
+                                :a11y-label="($checked ? 'Checked: ' : '').$ingredient['text']"
                                 class="w-full px-4 py-3"
                             >
                                 <row class="w-full items-start gap-3">
@@ -113,10 +117,10 @@
                                         :size="22"
                                         :class="$checked ? 'text-theme-primary' : 'text-theme-outline'"
                                     />
-                                    <text :class="$checked ? 'flex-1 text-base text-theme-on-surface-variant line-through' : 'flex-1 text-base text-theme-on-surface'">{{ $ingredient }}</text>
+                                    <text :class="$checked ? 'flex-1 text-base text-theme-on-surface-variant line-through' : 'flex-1 text-base text-theme-on-surface'">{{ $ingredient['text'] }}</text>
                                 </row>
                             </pressable>
-                            @unless ($loop->last)
+                            @unless ($loop->last || $this->isHeading($this->ingredients[$index + 1]))
                                 <divider class="ml-14" />
                             @endunless
                         @endforeach
@@ -129,11 +133,15 @@
                     <x-ui.heading size="lg">Instructions</x-ui.heading>
                     <column class="{{ Card::classes() }} w-full gap-4 p-4">
                         @foreach ($this->instructions as $instruction)
-                            <row ref="step-{{ $loop->iteration }}" class="w-full items-start gap-3">
+                            @if ($this->isHeading($instruction))
+                                <x-ui.heading ref="step-heading-{{ $loop->index }}" class="w-full">{{ $instruction['text'] }}</x-ui.heading>
+                                @continue
+                            @endif
+                            <row ref="step-{{ $instruction['number'] }}" class="w-full items-start gap-3">
                                 <column class="h-7 w-7 items-center justify-center rounded-full bg-theme-primary/15">
-                                    <text font="accent" class="text-sm text-theme-primary-text">{{ $loop->iteration }}</text>
+                                    <text font="accent" class="text-sm text-theme-primary-text">{{ $instruction['number'] }}</text>
                                 </column>
-                                <text class="flex-1 text-base text-theme-on-surface">{{ $instruction }}</text>
+                                <text class="flex-1 text-base text-theme-on-surface">{{ $instruction['text'] }}</text>
                             </row>
                         @endforeach
                     </column>

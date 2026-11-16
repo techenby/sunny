@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Casts\RecipeList;
 use Database\Factories\RecipeFactory;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -14,6 +15,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
+/**
+ * @property list<array<string, mixed>>|null $ingredients
+ * @property list<array<string, mixed>>|null $instructions
+ */
 class Recipe extends Model
 {
     /** @use HasFactory<RecipeFactory> */
@@ -137,6 +142,8 @@ class Recipe extends Model
     {
         return [
             'tags' => 'array',
+            'ingredients' => RecipeList::class . ':ingredients',
+            'instructions' => RecipeList::class . ':instructions',
         ];
     }
 

@@ -257,3 +257,45 @@ test('recipe API rejects invalid tags and photos on create and update', function
     $this->patchJson(route('api.recipes.update', [$user->currentTeam, $recipe]), $data)
         ->assertUnprocessable()->assertJsonValidationErrors(['tags.0', 'photo']);
 });
+
+test('recipe API stores ingredients and instructions as rows from text or a list', function () {
+    $user = User::factory()->create();
+
+    $id = $this->actingAs($user)
+        ->postJson(route('api.recipes.store', $user->currentTeam), [
+            'name' => 'Apple Cider Donuts',
+            'ingredients' => "# Wet\n1/2 cup apple cider",
+            'instructions' => 'Bake for 8 minutes.',
+        ])
+        ->assertCreated()
+        ->assertJsonPath('data.ingredients', [
+            ['type' => 'heading', 'text' => 'Wet'],
+            ['type' => 'item', 'text' => '1/2 cup apple cider', 'quantity' => 0.5, 'quantity_max' => null, 'unit' => 'cup', 'name' => 'apple cider'],
+        ])
+        ->assertJsonPath('data.instructions', [
+            ['type' => 'step', 'text' => 'Bake for 8 minutes.', 'timers' => [['seconds' => 480]]],
+        ])
+        ->json('data.id');
+
+    $this->actingAs($user)
+        ->patchJson(route('api.recipes.update', [$user->currentTeam, $id]), [
+            'ingredients' => [['type' => 'item', 'text' => '2 cups flour'], '1 tsp salt'],
+            'instructions' => null,
+        ])
+        ->assertOk()
+        ->assertJsonPath('data.ingredients.0.name', 'flour')
+        ->assertJsonPath('data.ingredients.1.unit', 'tsp')
+        ->assertJsonPath('data.instructions', null);
+});
+
+test('recipe API rejects ingredients and instructions that are not text or a list of entries', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->postJson(route('api.recipes.store', $user->currentTeam), [
+            'name' => 'Apple Cider Donuts',
+            'ingredients' => 5,
+            'instructions' => [['quantity' => 2]],
+        ])
+        ->assertJsonValidationErrors(['ingredients', 'instructions']);
+});
