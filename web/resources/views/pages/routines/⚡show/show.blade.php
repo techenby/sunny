@@ -5,7 +5,7 @@
     </flux:breadcrumbs>
 
     <div class="flex flex-wrap items-center justify-between gap-4">
-        <div class="flex items-center gap-4">
+        <div>
             <div class="flex items-center gap-3">
                 <flux:heading size="xl">{{ $routine->name }}</flux:heading>
 
@@ -13,6 +13,9 @@
                     <flux:badge size="sm" color="amber">{{ __('Paused') }}</flux:badge>
                 @endunless
             </div>
+            <flux:text>
+                {{ $routine->time_of_day->getLabel() }} · {{ $routine->scheduleSummary() }} · {{ $routine->user?->name ?? __('Household') }}
+            </flux:text>
         </div>
 
         <div class="flex items-center gap-2">
@@ -32,7 +35,7 @@
 
     <div class="grid items-start gap-6 lg:grid-cols-3">
         <div class="space-y-4 lg:col-span-2">
-            <flux:heading size="lg">{{ __('Steps') }}</flux:heading>
+            <flux:heading>{{ __('Steps') }}</flux:heading>
 
             @if ($this->steps->isEmpty())
                 <flux:text>
@@ -89,30 +92,28 @@
         </div>
 
         <flux:card>
-            <flux:heading size="lg" class="mb-4">{{ __('Details') }}</flux:heading>
+            <flux:heading size="lg" class="mb-4 text-lg!">{{ __('Details') }}</flux:heading>
 
-            <dl class="space-y-4">
-                <div>
-                    <dt class="text-sm font-medium text-zinc-500 dark:text-zinc-400">{{ __('Time of day') }}</dt>
-                    <dd class="mt-1 flex items-center gap-2 text-zinc-800 dark:text-white">
-                        <flux:icon :name="$routine->time_of_day->getIcon()" variant="outline" class="size-5 text-zinc-400" />
-                        {{ $routine->time_of_day->getLabel() }}
-                    </dd>
+            <dl class="space-y-3.5 text-sm">
+                <div class="flex items-baseline justify-between gap-4">
+                    <dt class="text-zinc-500 dark:text-zinc-400">{{ __('Time of day') }}</dt>
+                    <dd class="text-right font-medium text-zinc-800 tabular-nums dark:text-white">{{ $routine->time_of_day->getLabel() }}</dd>
                 </div>
-
-                <div>
-                    <dt class="text-sm font-medium text-zinc-500 dark:text-zinc-400">{{ __('Repeats') }}</dt>
-                    <dd class="mt-1 text-zinc-800 dark:text-white">{{ $routine->scheduleSummary() }}</dd>
+                <div class="flex items-baseline justify-between gap-4">
+                    <dt class="text-zinc-500 dark:text-zinc-400">{{ __('Repeats') }}</dt>
+                    <dd class="text-right font-medium text-zinc-800 tabular-nums dark:text-white">{{ $routine->scheduleSummary() }}</dd>
                 </div>
-
-                <div>
-                    <dt class="text-sm font-medium text-zinc-500 dark:text-zinc-400">{{ __('Assigned to') }}</dt>
-                    <dd class="mt-1 text-zinc-800 dark:text-white">{{ $routine->user?->name ?? __('Household') }}</dd>
+                <div class="flex items-baseline justify-between gap-4">
+                    <dt class="text-zinc-500 dark:text-zinc-400">{{ __('Assigned to') }}</dt>
+                    <dd class="text-right font-medium text-zinc-800 tabular-nums dark:text-white">{{ $routine->user?->name ?? __('Household') }}</dd>
                 </div>
-
-                <div>
-                    <dt class="text-sm font-medium text-zinc-500 dark:text-zinc-400">{{ __('Last done') }}</dt>
-                    <dd class="mt-1 text-zinc-800 dark:text-white">{{ $this->lastDone }}</dd>
+                <div class="flex items-baseline justify-between gap-4">
+                    <dt class="text-zinc-500 dark:text-zinc-400">{{ __('Steps') }}</dt>
+                    <dd class="text-right font-medium text-zinc-800 tabular-nums dark:text-white">{{ $this->steps->count() }}</dd>
+                </div>
+                <div class="flex items-baseline justify-between gap-4">
+                    <dt class="text-zinc-500 dark:text-zinc-400">{{ __('Last done') }}</dt>
+                    <dd class="text-right font-medium text-zinc-800 tabular-nums dark:text-white">{{ $this->lastDone }}</dd>
                 </div>
             </dl>
         </flux:card>
