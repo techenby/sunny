@@ -249,46 +249,50 @@ new class extends Component {
                                     @endphp
                                     <li
                                         wire:key="step-{{ $number }}"
-                                        wire:click="goToStep({{ $number }})"
                                         @if ($number === $step) aria-current="step" @endif
                                         @class([
-                                            '-mx-3 grid cursor-pointer grid-cols-[2.5rem_1fr] gap-3 rounded-xl border p-3',
+                                            '-mx-3 grid grid-cols-[2.5rem_1fr] gap-x-3 gap-y-2 rounded-xl border p-3',
                                             'border-(--color-accent)/30 bg-(--color-accent)/5 text-zinc-800 dark:text-white' => $number === $step,
                                             'border-transparent text-zinc-400 dark:text-zinc-500' => $number < $step,
                                             'border-transparent text-zinc-600 dark:text-zinc-300' => $number > $step,
                                         ])
                                     >
-                                        <span @class([
-                                            'text-3xl leading-7 font-medium tracking-tight',
-                                            'text-(--color-accent)' => $number === $step,
-                                            'text-(--color-accent)/55' => $number > $step,
-                                            'text-zinc-400/60' => $number < $step,
-                                        ])>{{ $number }}</span>
+                                        <button
+                                            type="button"
+                                            wire:click="goToStep({{ $number }})"
+                                            class="col-span-2 grid cursor-pointer grid-cols-subgrid rounded-lg text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-(--color-accent)"
+                                        >
+                                            <span @class([
+                                                'text-3xl leading-7 font-medium tracking-tight',
+                                                'text-(--color-accent)' => $number === $step,
+                                                'text-(--color-accent)/55' => $number > $step,
+                                                'text-zinc-400/60' => $number < $step,
+                                            ])>{{ $number }}</span>
 
-                                        <div class="space-y-2">
-                                            @if ($number === $step)
-                                                <span class="inline-flex h-5 items-center rounded-md bg-(--color-accent) px-2 text-xs font-medium text-(--color-accent-foreground)">{{ __('Current step') }}</span>
-                                            @endif
+                                            <span class="space-y-2">
+                                                @if ($number === $step)
+                                                    <span class="inline-flex h-5 items-center rounded-md bg-(--color-accent) px-2 text-xs font-medium text-(--color-accent-foreground)">{{ __('Current step') }}</span>
+                                                @endif
 
-                                            <p>{{ $row['text'] }}</p>
+                                                <span class="block">{{ $row['text'] }}</span>
+                                            </span>
+                                        </button>
 
-                                            @if ($timers)
-                                                <div
-                                                    wire:ignore
-                                                    x-data="cookTimer(@js("cook-timer-{$recipe->id}-{$number}"), @js($timers), @js(__('Step :number timer is done', ['number' => $number])))"
-                                                    x-on:click.stop
-                                                    class="flex flex-wrap items-center gap-3"
-                                                >
-                                                    <flux:button size="sm" x-on:click="toggle()">
-                                                        <flux:icon name="play" variant="micro" class="text-(--color-accent)" x-show="! running" />
-                                                        <flux:icon name="stop" variant="micro" class="text-(--color-accent)" x-show="running" x-cloak />
-                                                        <span x-text="running ? @js(__('Stop timer')) : @js(__('Start timer'))">{{ __('Start timer') }}</span>
-                                                        <span class="font-mono font-bold text-(--color-accent) tabular-nums" x-text="clock"></span>
-                                                    </flux:button>
-                                                    <flux:text size="sm" variant="subtle" x-show="upcoming" x-text="upcoming"></flux:text>
-                                                </div>
-                                            @endif
-                                        </div>
+                                        @if ($timers)
+                                            <div
+                                                wire:ignore
+                                                x-data="cookTimer(@js("cook-timer-{$recipe->id}-{$number}"), @js($timers), @js(__('Step :number timer is done', ['number' => $number])))"
+                                                class="col-start-2 flex flex-wrap items-center gap-3"
+                                            >
+                                                <flux:button size="sm" x-on:click="toggle()">
+                                                    <flux:icon name="play" variant="micro" class="text-(--color-accent)" x-show="! running" />
+                                                    <flux:icon name="stop" variant="micro" class="text-(--color-accent)" x-show="running" x-cloak />
+                                                    <span x-text="running ? @js(__('Stop timer')) : @js(__('Start timer'))">{{ __('Start timer') }}</span>
+                                                    <span class="font-mono font-bold text-(--color-accent) tabular-nums" x-text="clock"></span>
+                                                </flux:button>
+                                                <flux:text size="sm" variant="subtle" x-show="upcoming" x-text="upcoming"></flux:text>
+                                            </div>
+                                        @endif
                                     </li>
                                 @endforeach
                             </ol>
