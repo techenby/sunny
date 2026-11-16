@@ -9,7 +9,7 @@
                 <flux:sidebar.brand
                     href="#"
                     :logo="asset('icon.svg')"
-                    name="Sunny Home"
+                    name="SunnyHome"
                 />
                 <flux:sidebar.collapse class="in-data-flux-sidebar-on-desktop:not-in-data-flux-sidebar-collapsed-desktop:-mr-2" />
             </flux:sidebar.header>
@@ -45,7 +45,7 @@
             <flux:spacer />
 
             <flux:sidebar.item icon="light-bulb" icon:trailing="arrow-up-right" href="https://suggest.gg/techenby" target="_blank">
-                {{ __('Make a Suggestion') }}
+                {{ __('Make a suggestion') }}
             </flux:sidebar.item>
 
             @can('admin')

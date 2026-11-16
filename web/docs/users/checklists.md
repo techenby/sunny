@@ -6,7 +6,7 @@ order: 2
 
 # Lists and Checklists
 
-Sunny calls checklists **Lists** in the navigation. Lists remain available
+SunnyHome calls checklists **Lists** in the navigation. Lists remain available
 until someone updates them, which makes them useful for groceries, errands,
 wish lists, and other shared collections.
 
@@ -18,17 +18,17 @@ does not make it private or prevent another team member from updating it.
 
 1. Open **Lists** from the main sidebar.
 2. Select **Add List**.
-3. Enter a name and choose **To-do**, **Shopping**, or **Wish List**. The type
+3. Enter a name and choose **To-do**, **Shopping**, or **Wish list**. The type
    supplies a recognizable label and icon; all three work the same way.
 4. Set **Belongs to** to the whole **Household** or to a specific team member.
 5. Select **Create**.
 6. Add items using the field at the bottom of the list.
 
-On a **Wish List**, you can also paste a link, such as the product page, into
+On a **Wish list**, you can also paste a link, such as the product page, into
 the **Link (optional)** field when adding an item. Items with a link show a
 button that opens it in a new tab.
 
-Tap an item to check or uncheck it. Sunny records who checked it and shows
+Tap an item to check or uncheck it. SunnyHome records who checked it and shows
 their name beside the completed item. Use the pencil button beside an item to
 rename it, then select **Save** or press Enter; press Escape or select
 **Cancel** to keep the original name. Use the trash button beside an item to
@@ -55,5 +55,5 @@ between the team's lists.
 
 The kiosk can update list items, but it cannot create or delete an entire list
 or change a list's name, type, or owner. Make those changes from the main app.
-If the team has no lists yet, the kiosk directs you back to Sunny on a phone or
+If the team has no lists yet, the kiosk directs you back to SunnyHome on a phone or
 computer to create one.

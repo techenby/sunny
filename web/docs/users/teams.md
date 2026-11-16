@@ -6,7 +6,7 @@ order: 5
 
 # Teams and Households
 
-A team is a shared Sunny workspace. Recipes, inventory, routines, lists,
+A team is a shared SunnyHome workspace. Recipes, inventory, routines, lists,
 calendar feeds, and kiosk settings belong to a team so different households or
 groups can keep their information separate.
 
@@ -16,7 +16,7 @@ teams.
 ## Switch teams
 
 Use the team switcher near the top of the main sidebar, then select the team
-you want to use. Sunny updates the page to show that team's information.
+you want to use. SunnyHome updates the page to show that team's information.
 
 Always check the current team before adding or editing shared information. API
 and MCP actions also use the account's currently selected team unless their
@@ -32,7 +32,7 @@ You can create a team from the team switcher or from **Settings → Teams**:
 2. Enter a team name.
 3. Select **Create team**.
 
-The creator becomes the team's owner and Sunny switches to the new team.
+The creator becomes the team's owner and SunnyHome switches to the new team.
 
 ## Invite someone
 
@@ -43,7 +43,7 @@ The creator becomes the team's owner and Sunny switches to the new team.
 5. Select **Send invitation**.
 
 Invitations expire after three days. The recipient must sign in with the same
-email address that received the invitation. After acceptance, Sunny switches
+email address that received the invitation. After acceptance, SunnyHome switches
 their account to the joined team.
 
 A pending invitation can be cancelled from the team's settings page.

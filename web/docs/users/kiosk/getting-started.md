@@ -1,25 +1,25 @@
 ---
 title: Set Up a Kiosk
-description: Pair a display with Sunny and choose the household information it shows.
+description: Pair a display with SunnyHome and choose the household information it shows.
 order: 1
 ---
 
 # Set Up a Kiosk
 
-A kiosk is a shared Sunny display for routines, lists, calendars, and other
+A kiosk is a shared SunnyHome display for routines, lists, calendars, and other
 household information.
 
 ## Pair a display
 
-1. Open Sunny's `/kiosk` page on the device that will be used as the display.
-2. Scan the QR code with a phone or computer where you are signed in to Sunny.
+1. Open SunnyHome's `/kiosk` page on the device that will be used as the display.
+2. Scan the QR code with a phone or computer where you are signed in to SunnyHome.
    You can also open the displayed pairing URL manually.
 3. Give the display an optional name, choose the team it should show, and
    select **Pair display**.
 4. After the display loads, use the kiosk sidebar to choose a page such as
    **Routines** or **Lists**.
 
-Actions performed on the kiosk are credited to the Sunny account that paired
+Actions performed on the kiosk are credited to the SunnyHome account that paired
 the display.
 
 ## Refresh the display

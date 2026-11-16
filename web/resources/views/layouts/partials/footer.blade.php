@@ -2,7 +2,7 @@
     <div class="mx-auto flex max-w-7xl items-center justify-between gap-6 px-6 max-md:flex-col lg:px-8">
         <div class="flex items-center gap-2">
             <img src="{{ asset('icon.svg') }}" alt="" class="size-6 rounded-md" />
-            <span class="font-semibold">Sunny Home</span>
+            <span class="font-semibold">SunnyHome</span>
         </div>
 
         <nav class="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-zinc-600 dark:text-zinc-400">

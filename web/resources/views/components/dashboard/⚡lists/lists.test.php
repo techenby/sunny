@@ -54,7 +54,36 @@ test('it caps the items shown per list', function () {
 
     Livewire::actingAs($user)
         ->test('dashboard.lists')
-        ->assertSee(__(':count more', ['count' => 2]));
+        ->assertSee(__(':count more', ['count' => 4]))
+        ->assertCount('lists.0.items', 3);
+});
+
+test('it caps the lists shown and says how many more are open', function () {
+    $user = User::factory()->create();
+
+    foreach (['Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo'] as $name) {
+        $list = Checklist::factory()->for($user->currentTeam)->todo()->household()->create(['name' => $name]);
+        ChecklistItem::factory()->for($list)->create();
+    }
+
+    $component = Livewire::actingAs($user)->test('dashboard.lists');
+
+    expect($component->get('lists')->pluck('name')->all())->toBe(['Alpha', 'Bravo', 'Charlie']);
+
+    $component
+        ->assertDontSee('Delta')
+        ->assertSee('2 more lists')
+        ->assertSee('Showing 3 of 5 open lists');
+});
+
+test('it leaves out the footer when every open list fits', function () {
+    $user = User::factory()->create();
+    $list = Checklist::factory()->for($user->currentTeam)->todo()->household()->create();
+    ChecklistItem::factory()->for($list)->create();
+
+    Livewire::actingAs($user)
+        ->test('dashboard.lists')
+        ->assertDontSee('open lists');
 });
 
 test('it shows an empty state when nothing is left', function () {

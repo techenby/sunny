@@ -6,7 +6,7 @@
             @endforeach
         </flux:select>
 
-        <flux:select wire:model="form.week_start" :label="__('Calendar Week Start')" variant="listbox">
+        <flux:select wire:model="form.week_start" :label="__('Week starts on')" variant="listbox">
             <flux:select.option value="0">{{ __('Sunday') }}</flux:select.option>
             <flux:select.option value="1">{{ __('Monday') }}</flux:select.option>
             <flux:select.option value="2">{{ __('Tuesday') }}</flux:select.option>
@@ -30,14 +30,14 @@
         </flux:radio.group>
 
         <div class="grid gap-6 sm:grid-cols-2">
-            <flux:select wire:model="form.screensaver_after" :label="__('Screensaver')" :description="__('Shows a clock after the display sits untouched.')" variant="listbox">
+            <flux:select wire:model="form.screensaver_after" :label="__('Screensaver')" :description="__('Shows a clock when the display is idle.')" variant="listbox">
                 <flux:select.option value="0">{{ __('Never') }}</flux:select.option>
                 @foreach ([1, 2, 5, 10, 15, 30] as $minutes)
                     <flux:select.option value="{{ $minutes }}">{{ trans_choice('After :count minute|After :count minutes', $minutes) }}</flux:select.option>
                 @endforeach
             </flux:select>
 
-            <flux:select wire:model="form.return_home_after" :label="__('Return to calendar')" :description="__('Goes back to today\'s calendar after the display sits untouched.')" variant="listbox">
+            <flux:select wire:model="form.return_home_after" :label="__('Return to calendar')" :description="__('Shows today when the display is idle.')" variant="listbox">
                 <flux:select.option value="0">{{ __('Never') }}</flux:select.option>
                 @foreach ([5, 10, 15, 30, 60] as $minutes)
                     <flux:select.option value="{{ $minutes }}">{{ trans_choice('After :count minute|After :count minutes', $minutes) }}</flux:select.option>
@@ -58,21 +58,25 @@
             </div>
         </flux:fieldset>
 
-        <flux:field>
-            <flux:label>Address for Weather</flux:label>
+        <div class="space-y-4">
+            <flux:field>
+                <flux:label>{{ __('Address for weather') }}</flux:label>
 
-            <mapbox-address-autofill access-token="{{ config('services.mapbox.key') }}">
-                <flux:input wire:model="form.address.address" name="address" autocomplete="address-line1" placeholder="Address"/>
-            </mapbox-address-autofill>
+                <mapbox-address-autofill access-token="{{ config('services.mapbox.key') }}">
+                    <flux:input wire:model="form.address.address" name="address" autocomplete="address-line1" />
+                </mapbox-address-autofill>
 
-            <div class="flex gap-2 mt-2">
-                <flux:input wire:model="form.address.city" name="city" autocomplete="address-level2" placeholder="City" />
-                <flux:input wire:model="form.address.state" name="state" autocomplete="address-level1" placeholder="State" />
-                <flux:input wire:model="form.address.zip" name="postcode" autocomplete="postal-code" placeholder="ZIP / Postcode" />
+                <flux:error name="form.address.address" />
+            </flux:field>
+
+            <div class="grid gap-4 sm:grid-cols-3">
+                <flux:input wire:model="form.address.city" :label="__('City')" name="city" autocomplete="address-level2" />
+                <flux:input wire:model="form.address.state" :label="__('State')" name="state" autocomplete="address-level1" />
+                <flux:input wire:model="form.address.zip" :label="__('ZIP')" name="postcode" autocomplete="postal-code" />
             </div>
-        </flux:field>
+        </div>
 
-        <flux:button type="submit" variant="primary">Save</flux:button>
+        <flux:button type="submit" variant="primary">{{ __('Save') }}</flux:button>
     </form>
 
     <section class="space-y-4 border-t border-zinc-200 p-6 dark:border-zinc-700 lg:p-8">
@@ -82,9 +86,15 @@
         </flux:text>
 
         @if ($this->pairedDevices->isEmpty())
-            <flux:text class="text-sm italic text-zinc-500 dark:text-zinc-400">
-                {{ __('No paired displays yet.') }}
-            </flux:text>
+            <div class="flex gap-3 rounded-lg bg-zinc-50 p-4 dark:bg-white/5">
+                <flux:icon.device-tablet variant="outline" class="mt-0.5 size-5 shrink-0 text-zinc-400" />
+                <div>
+                    <flux:heading>{{ __('No paired displays yet') }}</flux:heading>
+                    <flux:text class="text-zinc-500 dark:text-zinc-400">
+                        {{ __('Open :url on the tablet, then scan its QR code with your phone.', ['url' => preg_replace('#^https?://#', '', route('kiosk.index'))]) }}
+                    </flux:text>
+                </div>
+            </div>
         @else
             <ul class="space-y-2">
                 @foreach ($this->pairedDevices as $device)

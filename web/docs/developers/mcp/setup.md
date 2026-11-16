@@ -1,12 +1,12 @@
 ---
 title: MCP Setup
-description: Connect MCP clients to Sunny with OAuth, and work on the MCP server locally.
+description: Connect MCP clients to SunnyHome with OAuth, and work on the MCP server locally.
 order: 5
 ---
 
 # MCP Setup
 
-Sunny exposes a Laravel MCP server at `/mcp`. The server is registered in
+SunnyHome exposes a Laravel MCP server at `/mcp`. The server is registered in
 `routes/ai.php` and uses `App\Mcp\Servers\SunnyServer`.
 
 ```php
@@ -20,7 +20,7 @@ Mcp::web('/mcp', SunnyServer::class)
 
 The server only accepts OAuth 2.1 access tokens issued by Passport, through
 the `api` guard. Clients such as Claude, ChatGPT, Raycast, and Claude Code
-connect by having the user log in to Sunny and approve access.
+connect by having the user log in to SunnyHome and approve access.
 
 Sanctum API tokens from **Settings → API tokens** are for the
 [HTTP API](/docs/developers/http-api) and the mobile app. `/mcp` rejects them.
@@ -32,7 +32,7 @@ endpoints, and Passport provides the authorize and token endpoints:
 
 | Endpoint | Purpose |
 | --- | --- |
-| `GET /.well-known/oauth-protected-resource` | Points clients at Sunny's authorization server. |
+| `GET /.well-known/oauth-protected-resource` | Points clients at SunnyHome's authorization server. |
 | `GET /.well-known/oauth-authorization-server` | Lists the authorize, token, and registration endpoints. |
 | `POST /oauth/register` | Dynamic client registration. Clients register themselves as public clients with the `mcp:use` scope. |
 | `GET /oauth/authorize` | Shows the consent screen (`pages::auth.oauth-authorize`) to a signed-in user. |
@@ -109,7 +109,7 @@ claude mcp add --transport http sunny https://sunny.test/mcp
 ```
 
 Then run `/mcp` in Claude Code, choose **sunny**, and select **Authenticate**.
-Your browser opens Sunny's consent screen. After you allow access, the app
+Your browser opens SunnyHome's consent screen. After you allow access, the app
 appears under **Connected apps**.
 
 If your Herd site uses a different host, keep the `/mcp` path and change the

@@ -1,12 +1,13 @@
 <x-dashboard.card :heading="__('Recently added recipes')" :action="__('All recipes')" :href="route('recipes.index')">
     @if ($this->recipes->isEmpty())
-        <div class="py-6 text-center">
-            <flux:icon name="book-open" class="mx-auto mb-3 size-10 text-zinc-400" />
-            <flux:text>{{ __('Save your family\'s favorite recipes in one place.') }}</flux:text>
-            <flux:button size="sm" class="mt-4" icon="plus" :href="route('recipes.create')" wire:navigate>
-                {{ __('Add a recipe') }}
-            </flux:button>
-        </div>
+        <x-dashboard.empty
+            icon="book-open"
+            tile="bg-amber-200 text-amber-800 dark:bg-amber-400/40 dark:text-amber-200"
+            :heading="__('No recipes yet')"
+            :text="__('Save one from a link or type it in, and the newest show up here.')"
+            :action="__('Add a recipe')"
+            :href="route('recipes.create')"
+        />
     @else
         <flux:card.bleed class="divide-y divide-zinc-900/5 dark:divide-white/10">
             @foreach ($this->recipes as $recipe)
@@ -15,12 +16,11 @@
                     :href="route('recipes.show', $recipe)"
                     :heading="$recipe->name"
                     :subheading="$recipe->shortenedSource()"
-                    :meta="$recipe->created_at->diffForHumans(short: true)"
-                >
-                    <x-slot:avatar>
-                        <flux:avatar size="sm" :src="$recipe->thumb_url" icon="book-open" color="amber" icon:variant="outline" />
-                    </x-slot:avatar>
-                </x-dashboard.row>
+                    :meta="$recipe->created_at->diffForHumans()"
+                    :src="$recipe->thumb_url"
+                    icon="book-open"
+                    tile="bg-amber-200 text-amber-800 dark:bg-amber-400/40 dark:text-amber-200"
+                />
             @endforeach
         </flux:card.bleed>
     @endif

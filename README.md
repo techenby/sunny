@@ -2,14 +2,14 @@
     <img src="web/public/icon.svg" alt="" width="80" height="80">
 </p>
 
-<h1 align="center">Sunny Home</h1>
+<h1 align="center">SunnyHome</h1>
 
 <p align="center">
     Your household, organized.<br>
     <a href="https://sunnyhome.app">sunnyhome.app</a>
 </p>
 
-Sunny Home keeps a family's recipes, lists, routines, calendars, and everything in storage in one shared place. You can use it on the web, on your phone, and on a kiosk display on the wall.
+SunnyHome keeps a family's recipes, lists, routines, calendars, and everything in storage in one shared place. You can use it on the web, on your phone, and on a kiosk display on the wall.
 
 ## Features
 
@@ -53,4 +53,4 @@ Found a bug or have an idea? [Open an issue](https://github.com/techenby/sunny/i
 
 ## License
 
-Sunny Home is open source under the [MIT License](LICENSE.md).
+SunnyHome is open source under the [MIT License](LICENSE.md).

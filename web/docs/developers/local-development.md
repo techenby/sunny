@@ -1,12 +1,12 @@
 ---
 title: Local Development
-description: Set up Sunny locally and run its development and quality tools.
+description: Set up SunnyHome locally and run its development and quality tools.
 order: 1
 ---
 
 # Local Development
 
-Sunny is a Laravel 13 application built with PHP 8.4, Livewire 4, Flux UI 2,
+SunnyHome is a Laravel 13 application built with PHP 8.4, Livewire 4, Flux UI 2,
 Tailwind CSS 4, Vite, and Pest 4. The frontend toolchain uses Node.js 22.
 
 ## Initial setup

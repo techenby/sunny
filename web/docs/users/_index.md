@@ -1,12 +1,12 @@
 ---
 title: User Guides
-description: Learn how to use Sunny in the main app and on a shared kiosk.
+description: Learn how to use SunnyHome in the main app and on a shared kiosk.
 order: 1
 ---
 
 # User Guides
 
-These guides explain how to use Sunny's household features.
+These guides explain how to use SunnyHome's household features.
 
 - [Routines](/docs/users/routines): Create repeating checklists and complete
   scheduled steps from a kiosk.
@@ -23,4 +23,4 @@ These guides explain how to use Sunny's household features.
 - [Calendar Feeds](/docs/users/kiosk/calendar-feeds): Add events from Proton
   Calendar or Google Calendar to a kiosk.
 - [Connect an AI Assistant](/docs/users/ai-assistants): Let Claude, ChatGPT, or
-  another assistant use Sunny for you.
+  another assistant use SunnyHome for you.

@@ -21,6 +21,7 @@ test('renders successfully', function () {
     actingAs($user)
         ->get(route('kiosk.configure.calendar'))
         ->assertOk()
+        ->assertSee('Calendar feeds that show up on the kiosk')
         ->assertSee('Family Calendar');
 
     Livewire::actingAs($user)
@@ -118,8 +119,53 @@ test('shows failure details for a failing feed', function () {
     Livewire::actingAs($user)
         ->test('pages::kiosk.configure.calendar')
         ->assertSee('Failing')
+        ->assertSee('1 feed is failing.')
+        ->assertSee('Last failed')
         ->assertSee('The calendar server responded with HTTP 401.')
         ->assertSee('Secret address in iCal format');
+});
+
+test('summarizes failing feeds from one host in a single notice', function () {
+    $team = Team::factory()
+        ->has(CalendarFeed::factory()->failing()->count(3)->sequence(
+            ['url' => 'https://calendar.google.com/a.ics'],
+            ['url' => 'https://calendar.google.com/b.ics'],
+            ['url' => 'https://calendar.google.com/c.ics'],
+        ))
+        ->create();
+    $user = User::factory()->memberOf($team)->create();
+
+    $component = Livewire::actingAs($user)
+        ->test('pages::kiosk.configure.calendar')
+        ->assertSee('3 feeds are failing, all from calendar.google.com.');
+
+    expect(substr_count($component->html(), 'Secret address in iCal format'))->toBe(1)
+        ->and(substr_count($component->html(), 'Last failed'))->toBe(3);
+});
+
+test('summarizes failing feeds from different hosts without naming a host', function () {
+    $team = Team::factory()
+        ->has(CalendarFeed::factory()->failing()->count(2)->sequence(
+            ['url' => 'https://calendar.google.com/a.ics'],
+            ['url' => 'https://example.com/b.ics'],
+        ))
+        ->create();
+    $user = User::factory()->memberOf($team)->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::kiosk.configure.calendar')
+        ->assertSee('2 feeds are failing.')
+        ->assertDontSee('all from');
+});
+
+test('does not show the failing notice when every feed is healthy', function () {
+    $team = Team::factory()->has(CalendarFeed::factory())->create();
+    $user = User::factory()->memberOf($team)->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::kiosk.configure.calendar')
+        ->assertDontSee('failing.')
+        ->assertDontSee('Secret address in iCal format');
 });
 
 test('updating a feed url clears its failure state', function () {

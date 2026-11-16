@@ -1,8 +1,11 @@
 <div class="space-y-6">
+    <flux:breadcrumbs>
+        <flux:breadcrumbs.item :href="route('lists.index')" wire:navigate class="cursor-pointer">{{ __('Lists') }}</flux:breadcrumbs.item>
+        <flux:breadcrumbs.item>{{ $checklist->name }}</flux:breadcrumbs.item>
+    </flux:breadcrumbs>
+
     <div class="flex items-center justify-between gap-4">
         <div class="flex items-center gap-4">
-            <flux:button :href="route('lists.index')" icon="arrow-left" variant="ghost" wire:navigate />
-
             <div>
                 <flux:heading size="xl">{{ $checklist->name }}</flux:heading>
                 <flux:text>
@@ -12,14 +15,10 @@
         </div>
 
         @if ($this->items->contains(fn ($item) => $item->isCompleted()))
-            <flux:dropdown>
-                <flux:button icon="ellipsis-horizontal" variant="ghost" />
-
-                <flux:menu>
-                    <flux:menu.item icon="arrow-path" wire:click="resetList">{{ __('Uncheck all') }}</flux:menu.item>
-                    <flux:menu.item icon="trash" variant="danger" wire:click="clearCompleted">{{ __('Clear completed') }}</flux:menu.item>
-                </flux:menu>
-            </flux:dropdown>
+            <x-ui.actions size="base">
+                <flux:menu.item icon="arrow-path" wire:click="resetList">{{ __('Uncheck all') }}</flux:menu.item>
+                <flux:menu.item icon="trash" variant="danger" wire:click="clearCompleted">{{ __('Clear completed') }}</flux:menu.item>
+            </x-ui.actions>
         @endif
     </div>
 
@@ -29,7 +28,7 @@
         @else
             <ul class="space-y-2">
                 @foreach ($this->items as $item)
-                    <li wire:key="item-{{ $item->id }}" class="flex items-center gap-2">
+                    <li wire:key="item-{{ $item->id }}" class="group flex items-center gap-2">
                         @if ($editingItemId === $item->id)
                             <form wire:submit="updateItem" wire:keydown.escape="cancelEdit" class="flex flex-1 items-start gap-2">
                                 <div class="flex-1 space-y-2">
@@ -72,7 +71,9 @@
                             @if ($item->url)
                                 <flux:button
                                     icon="arrow-top-right-on-square"
+                                    icon:variant="outline"
                                     variant="ghost"
+                                    class="text-zinc-500! disabled:text-zinc-400! disabled:opacity-100! dark:text-zinc-400! dark:disabled:text-zinc-600!"
                                     :href="$item->url"
                                     target="_blank"
                                     rel="noopener noreferrer"
@@ -80,19 +81,25 @@
                                 />
                             @endif
 
-                            <flux:button
-                                icon="pencil-square"
-                                variant="ghost"
-                                wire:click="editItem({{ $item->id }})"
-                                :aria-label="__('Edit :item', ['item' => $item->name])"
-                            />
+                            <div class="flex shrink-0 items-center gap-2 transition-opacity pointer-fine:opacity-0 pointer-fine:group-hover:opacity-100 pointer-fine:group-focus-within:opacity-100">
+                                <flux:button
+                                    icon="pencil-square"
+                                    icon:variant="outline"
+                                    variant="ghost"
+                                    class="text-zinc-500! disabled:text-zinc-400! disabled:opacity-100! dark:text-zinc-400! dark:disabled:text-zinc-600!"
+                                    wire:click="editItem({{ $item->id }})"
+                                    :aria-label="__('Edit :item', ['item' => $item->name])"
+                                />
 
-                            <flux:button
-                                icon="trash"
-                                variant="ghost"
-                                wire:click="removeItem({{ $item->id }})"
-                                :aria-label="__('Remove :item', ['item' => $item->name])"
-                            />
+                                <flux:button
+                                    icon="trash"
+                                    icon:variant="outline"
+                                    variant="ghost"
+                                    class="text-zinc-500! hover:text-red-600! dark:text-zinc-400! dark:hover:text-red-400!"
+                                    wire:click="removeItem({{ $item->id }})"
+                                    :aria-label="__('Remove :item', ['item' => $item->name])"
+                                />
+                            </div>
                         @endif
                     </li>
                 @endforeach

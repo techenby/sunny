@@ -1,13 +1,21 @@
 <?php
 
+use App\Livewire\Forms\Routines\RoutineForm;
 use App\Models\Routine;
 use App\Models\RoutineStep;
+use App\Models\User;
+use Carbon\CarbonImmutable;
+use Flux\Flux;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
 new class extends Component
 {
     public Routine $routine;
+
+    public RoutineForm $form;
 
     public string $newStep = '';
 
@@ -24,6 +32,37 @@ new class extends Component
     public function steps()
     {
         return $this->routine->steps()->get();
+    }
+
+    /** @return Collection<int, User> */
+    #[Computed]
+    public function members(): Collection
+    {
+        return $this->routine->team->members()->orderBy('name')->get();
+    }
+
+    #[Computed]
+    public function lastDone(): string
+    {
+        $dueOn = $this->routine->occurrences()
+            ->whereHas('steps')
+            ->whereDoesntHave('steps', fn (Builder $query) => $query->whereNull('completed_at'))
+            ->latest('due_on')
+            ->value('due_on');
+
+        if ($dueOn === null) {
+            return __('Not yet');
+        }
+
+        $dueOn = CarbonImmutable::parse($dueOn);
+        $today = $this->routine->team->today();
+
+        return match (true) {
+            $dueOn->isSameDay($today) => __('Today'),
+            $dueOn->isSameDay($today->subDay()) => __('Yesterday'),
+            $dueOn->isSameYear($today) => $dueOn->format('l, F j'),
+            default => $dueOn->format('F j, Y'),
+        };
     }
 
     public function addStep(): void
@@ -73,6 +112,43 @@ new class extends Component
 
         unset($this->steps);
         $this->syncNames();
+    }
+
+    public function delete(): void
+    {
+        $this->authorize('delete', $this->routine);
+
+        $this->routine->delete();
+
+        $this->redirect(route('routines.index'), navigate: true);
+    }
+
+    public function edit(): void
+    {
+        $this->authorize('update', $this->routine);
+
+        $this->form->load($this->routine);
+
+        $this->modal('routine-form')->show();
+    }
+
+    public function save(): void
+    {
+        $this->authorize('update', $this->routine);
+
+        $this->form->save();
+
+        $this->modal('routine-form')->close();
+        Flux::toast(variant: 'success', text: __('Routine saved.'));
+
+        $this->routine->refresh();
+    }
+
+    public function toggleActive(): void
+    {
+        $this->authorize('update', $this->routine);
+
+        $this->routine->update(['is_active' => ! $this->routine->is_active]);
     }
 
     public function moveDown(int $stepId): void

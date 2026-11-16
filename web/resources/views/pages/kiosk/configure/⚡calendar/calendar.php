@@ -20,6 +20,38 @@ new #[Layout('layouts::kiosk-configure')] class extends Component
         return $this->team->calendarFeeds()->orderBy('name')->get();
     }
 
+    #[Computed]
+    public function failingFeeds()
+    {
+        return $this->feeds->filter->isFailing();
+    }
+
+    #[Computed]
+    public function failingSummary(): ?string
+    {
+        $count = $this->failingFeeds->count();
+
+        if ($count === 0) {
+            return null;
+        }
+
+        $hosts = $this->failingFeeds->map(fn (CalendarFeed $feed) => parse_url($feed->url, PHP_URL_HOST))->unique();
+
+        if ($count > 1 && $hosts->count() === 1 && $hosts->first()) {
+            return __(':count feeds are failing, all from :host.', ['count' => $count, 'host' => $hosts->first()]);
+        }
+
+        return trans_choice(':count feed is failing.|:count feeds are failing.', $count);
+    }
+
+    #[Computed]
+    public function sharedFailingError(): ?string
+    {
+        $errors = $this->failingFeeds->pluck('last_error')->filter()->unique();
+
+        return $errors->count() === 1 ? $errors->first() : null;
+    }
+
     public function delete(int $id): void
     {
         $feed = $this->feeds->firstWhere('id', $id);
@@ -28,7 +60,7 @@ new #[Layout('layouts::kiosk-configure')] class extends Component
 
         $feed->delete();
 
-        unset($this->feeds);
+        unset($this->feeds, $this->failingFeeds, $this->failingSummary, $this->sharedFailingError);
         Flux::toast(variant: 'success', text: __('Calendar feed removed.'));
     }
 
@@ -52,6 +84,6 @@ new #[Layout('layouts::kiosk-configure')] class extends Component
 
         $this->form->save($this->team);
         $this->modal('feed-form')->close();
-        unset($this->feeds);
+        unset($this->feeds, $this->failingFeeds, $this->failingSummary, $this->sharedFailingError);
     }
 };

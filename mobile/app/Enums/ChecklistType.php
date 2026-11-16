@@ -16,7 +16,7 @@ enum ChecklistType: string
         return match ($this) {
             self::Todo => 'To-do',
             self::Shopping => 'Shopping',
-            self::Wishlist => 'Wish List',
+            self::Wishlist => 'Wish list',
         };
     }
 

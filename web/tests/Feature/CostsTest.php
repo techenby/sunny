@@ -21,7 +21,7 @@ afterEach(function () {
     File::delete($this->path);
 });
 
-test('sync saves only Sunny Home costs from the previous billing period', function () {
+test('sync saves only SunnyHome costs from the previous billing period', function () {
     Date::setTestNow('2026-10-25 12:00:00');
 
     Saloon::fake([
@@ -86,7 +86,7 @@ test('costs page shows cloud costs, filled in services, and the total', function
 
     $this->get(route('costs'))
         ->assertOk()
-        ->assertSee('What it costs to run Sunny Home')
+        ->assertSee('What it costs to run SunnyHome')
         ->assertSee('Laravel Cloud: App servers')
         ->assertSee('$7.56')
         ->assertSee('$8.99')

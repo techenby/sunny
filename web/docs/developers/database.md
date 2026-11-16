@@ -1,6 +1,6 @@
 ---
 title: Database ERD
-description: Review Sunny's tables and how they relate to each other.
+description: Review SunnyHome's tables and how they relate to each other.
 order: 6
 ---
 

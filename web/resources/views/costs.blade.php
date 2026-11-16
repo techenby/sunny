@@ -1,9 +1,9 @@
 <x-layouts::guest>
     <div class="max-w-2xl">
-        <flux:heading size="xl" level="1">{{ __('What it costs to run Sunny Home') }}</flux:heading>
+        <flux:heading size="xl" level="1">{{ __('What it costs to run SunnyHome') }}</flux:heading>
 
         <flux:text class="mt-4 text-base">
-            {{ __('Sunny Home has no ads and never sells your data, so I pay to keep it running. Here is what that costs each month. If Sunny Home is useful to your household, sponsoring helps cover these costs.') }}
+            {{ __('SunnyHome has no ads and never sells your data, so I pay to keep it running. Here is what that costs each month. If SunnyHome is useful to your household, sponsoring helps cover these costs.') }}
         </flux:text>
 
         <flux:table class="mt-8">
@@ -45,7 +45,7 @@
         @endif
 
         <div class="mt-8 flex items-center gap-3">
-            <flux:button :href="config('costs.sponsor_url')" variant="primary" icon="heart">{{ __('Sponsor Sunny Home') }}</flux:button>
+            <flux:button :href="config('costs.sponsor_url')" variant="primary" icon="heart">{{ __('Sponsor SunnyHome') }}</flux:button>
             <flux:button href="https://github.com/techenby/sunny" variant="ghost">{{ __('View the code') }}</flux:button>
         </div>
     </div>

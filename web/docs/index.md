@@ -1,12 +1,12 @@
 ---
-title: Sunny Home Documentation
-description: Learn how to use Sunny in the main app and on a shared kiosk display.
+title: SunnyHome Documentation
+description: Learn how to use SunnyHome in the main app and on a shared kiosk display.
 order: 1
 ---
 
-# Sunny Home Documentation
+# SunnyHome Documentation
 
-Sunny helps a household share routines, lists, calendars, recipes, and other
+SunnyHome helps a household share routines, lists, calendars, recipes, and other
 everyday information.
 
 ## User Guides
@@ -25,14 +25,18 @@ everyday information.
 - [Calendar Feeds](/docs/users/kiosk/calendar-feeds): Add Proton Calendar or Google
   Calendar events to the kiosk.
 - [Connect an AI Assistant](/docs/users/ai-assistants): Let Claude, ChatGPT, or
-  another assistant use Sunny for you.
+  another assistant use SunnyHome for you.
 
 ## Developer Guides
 
-- [Local Development](/docs/developers/local-development): Install Sunny and
+- [Local Development](/docs/developers/local-development): Install SunnyHome and
   run its development and quality tools.
 - [Architecture and Operations](/docs/developers/architecture): Understand the
   application layers, team scoping, queues, scheduling, and integrations.
-- [HTTP API](/docs/developers/http-api): Integrate with Sunny through Sanctum.
-- [MCP Setup](/docs/developers/mcp/setup): Connect an MCP client to Sunny with
+- [HTTP API](/docs/developers/http-api): Integrate with SunnyHome through Sanctum.
+- [MCP Setup](/docs/developers/mcp/setup): Connect an MCP client to SunnyHome with
   OAuth.
+- [Table Components](/docs/developers/components/tables): Build list tables
+  from the shared row components.
+- [Dashboard Components](/docs/developers/components/dashboard): Build
+  dashboard cards from the shared card components.

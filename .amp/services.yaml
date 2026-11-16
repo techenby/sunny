@@ -6,7 +6,7 @@ services:
       PHP_CLI_SERVER_WORKERS: "4"
     health: /up
     portal:
-      title: Sunny Home
+      title: SunnyHome
   assets:
     cwd: web
     command: npm run build -- --watch
