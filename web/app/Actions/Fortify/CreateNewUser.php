@@ -31,14 +31,11 @@ class CreateNewUser implements CreatesNewUsers
         ])->validate();
 
         return DB::transaction(function () use ($input) {
-            $invited = $this->hasPendingInvitation($input['email']) ? now() : null;
-
             $user = User::create([
                 'name' => $input['name'],
                 'email' => $input['email'],
                 'password' => $input['password'],
-                'onboarded_at' => $invited,
-                'onboarding_dismissed_at' => $invited,
+                'onboarded_at' => $this->hasPendingInvitation($input['email']) ? now() : null,
             ]);
 
             $this->createTeam->handle($user, $user->name . "'s Team", isPersonal: true);

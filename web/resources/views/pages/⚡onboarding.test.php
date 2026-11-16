@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\Onboarding\CompleteOnboarding;
 use App\Actions\Onboarding\SetUpHome;
 use App\Models\User;
 use Illuminate\Support\Facades\Http;
@@ -67,12 +68,13 @@ test('setting up creates what was picked and lands on the dashboard', function (
 
     expect($user->fresh()->needsOnboarding())->toBeFalse()
         ->and($team->items()->pluck('name')->sort()->values()->all())->toBe(['Garage', 'Shed'])
-        ->and($team->checklists()->pluck('name')->all())->toBe(['Groceries'])
+        ->and($team->checklists()->household()->pluck('name')->all())->toBe(['Groceries'])
+        ->and($team->checklists()->where('user_id', $user->id)->pluck('name')->all())->toBe([CompleteOnboarding::LIST_NAME])
         ->and($team->routines()->pluck('name')->all())->toBe(['Bedtime'])
         ->and($team->recipes()->value('source'))->toBe(SetUpHome::SAMPLE_RECIPE_URL);
 });
 
-test('starting empty creates nothing and lands on the dashboard', function () {
+test('starting empty creates only the getting-started list and lands on the dashboard', function () {
     Http::fake();
     $user = User::factory()->needsOnboarding()->create();
     $team = $user->currentTeam;
@@ -84,7 +86,7 @@ test('starting empty creates nothing and lands on the dashboard', function () {
 
     expect($user->fresh()->needsOnboarding())->toBeFalse()
         ->and($team->items()->exists())->toBeFalse()
-        ->and($team->checklists()->exists())->toBeFalse()
+        ->and($team->checklists()->pluck('name')->all())->toBe([CompleteOnboarding::LIST_NAME])
         ->and($team->routines()->exists())->toBeFalse()
         ->and($team->recipes()->exists())->toBeFalse();
 
@@ -131,4 +133,29 @@ test('only the offered starters can be set up', function () {
 
     expect($user->fresh()->needsOnboarding())->toBeTrue()
         ->and($user->currentTeam->checklists()->exists())->toBeFalse();
+});
+
+test('setting up twice, like a double click, only creates the starters once', function () {
+    Http::fake();
+    $user = User::factory()->needsOnboarding()->create();
+    $team = $user->currentTeam;
+
+    Livewire::actingAs($user)
+        ->test('pages::onboarding')
+        ->set('places', ['Garage', 'Shed'])
+        ->set('starters', ['groceries', 'bedtime'])
+        ->call('setUp')
+        ->call('setUp')
+        ->assertRedirect(route('dashboard'));
+
+    expect($team->items()->count())->toBe(2)
+        ->and($team->checklists()->count())->toBe(2)
+        ->and($team->routines()->count())->toBe(1);
+});
+
+test('both buttons are disabled while either one is working', function () {
+    Livewire::actingAs(User::factory()->needsOnboarding()->create())
+        ->test('pages::onboarding')
+        ->assertSeeHtml('wire:loading.attr="disabled"')
+        ->assertSeeHtml('wire:target="setUp, startEmpty"');
 });

@@ -11,8 +11,8 @@ use App\Enums\ItemType;
 use App\Enums\RoutineFrequency;
 use App\Enums\TimeOfDay;
 use App\Models\Team;
+use App\Models\User;
 use Carbon\CarbonInterface;
-use Illuminate\Support\Facades\DB;
 use Throwable;
 
 class SetUpHome
@@ -30,6 +30,7 @@ class SetUpHome
     public const array STARTERS = ['groceries', 'bedtime', 'morning', 'recipe'];
 
     public function __construct(
+        private CompleteOnboarding $completeOnboarding,
         private ImportRecipeFromUrl $importRecipe,
         private CreateRecipe $createRecipe,
     ) {}
@@ -38,9 +39,13 @@ class SetUpHome
      * @param  list<string>  $places
      * @param  list<string>  $starters
      */
-    public function handle(Team $team, array $places, array $starters): void
+    public function handle(User $user, array $places, array $starters): bool
     {
-        DB::transaction(function () use ($team, $places, $starters): void {
+        $team = null;
+
+        $didSetUp = $this->completeOnboarding->handle($user, function (Team $currentTeam) use (&$team, $places, $starters): void {
+            $team = $currentTeam;
+
             collect($places)
                 ->map(fn (string $place): string => trim($place))
                 ->filter()
@@ -66,9 +71,11 @@ class SetUpHome
             }
         });
 
-        if (in_array('recipe', $starters, true)) {
+        if ($didSetUp && $team && in_array('recipe', $starters, true)) {
             $this->importSampleRecipe($team);
         }
+
+        return $didSetUp;
     }
 
     private function createGroceries(Team $team): void
@@ -107,12 +114,10 @@ class SetUpHome
     {
         try {
             $data = $this->importRecipe->handle(self::SAMPLE_RECIPE_URL);
+
+            $this->createRecipe->handle($team, array_filter($data, fn (mixed $value): bool => filled($value)));
         } catch (Throwable $e) {
             report($e);
-
-            return;
         }
-
-        $this->createRecipe->handle($team, array_filter($data, fn (mixed $value): bool => filled($value)));
     }
 }

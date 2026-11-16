@@ -22,7 +22,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Sanctum\HasApiTokens;
 use LogicException;
 
-#[Fillable(['name', 'email', 'password', 'current_team_id', 'timezone', 'onboarded_at', 'onboarding_dismissed_at'])]
+#[Fillable(['name', 'email', 'password', 'current_team_id', 'timezone', 'onboarded_at'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable implements PasskeyUser
 {
@@ -72,18 +72,6 @@ class User extends Authenticatable implements PasskeyUser
         return $this->onboarded_at === null;
     }
 
-    public function markAsOnboarded(): void
-    {
-        if ($this->needsOnboarding()) {
-            $this->update(['onboarded_at' => now()]);
-        }
-    }
-
-    public function dismissOnboarding(): void
-    {
-        $this->update(['onboarding_dismissed_at' => now()]);
-    }
-
     public function purge(): void
     {
         throw_if($this->teamsBlockingDeletion()->isNotEmpty(), LogicException::class, 'A user who owns a team other people use cannot be deleted.');
@@ -115,7 +103,6 @@ class User extends Authenticatable implements PasskeyUser
             'email_verified_at' => 'datetime',
             'last_active_at' => 'datetime',
             'onboarded_at' => 'datetime',
-            'onboarding_dismissed_at' => 'datetime',
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
         ];

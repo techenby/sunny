@@ -11,6 +11,5 @@ test('existing users are marked as onboarded so they never see set-up', function
     $user->refresh();
 
     expect($user->onboarded_at->equalTo($user->created_at))->toBeTrue()
-        ->and($user->onboarding_dismissed_at->equalTo($user->created_at))->toBeTrue()
         ->and($user->needsOnboarding())->toBeFalse();
 });
