@@ -12,3 +12,5 @@ parameters:
         - routes/
 
     level: 7
+
+    tmpDir: storage/framework/cache/phpstan
