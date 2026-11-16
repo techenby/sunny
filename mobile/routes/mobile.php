@@ -1,6 +1,7 @@
 <?php
 
 use App\Layouts\TabsLayout;
+use App\NativeComponents\CookRecipe;
 use App\NativeComponents\CreateInventoryItem;
 use App\NativeComponents\CreateList;
 use App\NativeComponents\CreateRecipe;
@@ -46,6 +47,7 @@ Route::nativeGroup(TabsLayout::class, function () {
     Route::native('/recipes', Recipes::class);
     Route::native('/recipes/create', CreateRecipe::class);
     Route::native('/recipes/{id}', RecipeDetail::class);
+    Route::native('/recipes/{id}/cook', CookRecipe::class);
     Route::native('/recipes/{id}/edit', EditRecipe::class);
     Route::native('/inventory', Inventory::class);
     Route::native('/inventory/create', CreateInventoryItem::class);

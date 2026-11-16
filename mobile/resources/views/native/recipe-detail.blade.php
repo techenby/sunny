@@ -8,9 +8,12 @@
 <native:top-bar :title="$recipe ? '' : 'Recipe'" back />
 
 @if ($recipe)
-    @include('native.action-bottom-bar', ['actions' => [
+    @include('native.action-bottom-bar', ['actions' => array_filter([
+        $this->ingredients || $this->instructions
+            ? ['ref' => 'cook-recipe', 'label' => 'Cook', 'ios' => Ios::Flame, 'android' => Android::LocalFireDepartment, 'url' => '/recipes/'.$recipe['id'].'/cook']
+            : null,
         ['ref' => 'edit-recipe', 'label' => 'Edit', 'ios' => Ios::Pencil, 'android' => Android::Edit, 'url' => '/recipes/'.$recipe['id'].'/edit'],
-    ]])
+    ])])
 
     <scroll-view ref="recipe-detail" fill class="bg-theme-background">
         <column class="w-full gap-6 px-4 pt-2 pb-8">
