@@ -77,3 +77,21 @@ test('displays the terms of service', function () {
         ->assertSee('Terms of Service')
         ->assertSee(route('privacy'));
 });
+
+test('loads bento in production when it is configured', function () {
+    app()->detectEnvironment(fn (): string => 'production');
+    config(['bentonow.site_uuid' => 'site-uuid']);
+
+    $this->get('/')
+        ->assertOk()
+        ->assertSee('<script src="https://app.bentonow.com/site-uuid.js" defer></script>', false);
+});
+
+test('leaves bento out in production when it is not configured', function () {
+    app()->detectEnvironment(fn (): string => 'production');
+    config(['bentonow.site_uuid' => null]);
+
+    $this->get('/')
+        ->assertOk()
+        ->assertDontSee('https://app.bentonow.com/', false);
+});

@@ -1,7 +1,10 @@
 <?php
 
+use App\Actions\Fortify\CreateNewUser;
 use App\Models\TeamInvitation;
 use App\Models\User;
+use Bentonow\BentoLaravel\Facades\Bento;
+use Illuminate\Support\Facades\Http;
 
 test('registration screen can be rendered', function () {
     $response = $this->get(route('register'));
@@ -60,4 +63,40 @@ test('new users get a team on registration', function () {
         ->and($user->teams)->toHaveCount(1)
         ->and($user->teams->first()->name)->toBe("Monkey D. Luffy's Team")
         ->and($user->current_team_id)->toBe($user->teams->first()->id);
+});
+
+test('registration in production tracks the new user in bento', function () {
+    app()->detectEnvironment(fn (): string => 'production');
+    config(['bentonow.secret_key' => 'secret']);
+    Http::fake();
+
+    Bento::shouldReceive('track')
+        ->once()
+        ->withArgs(fn (string $email, string $type): bool => $email === 'nami@example.com' && $type === '$completed_onboarding');
+
+    $user = resolve(CreateNewUser::class)->create([
+        'name' => 'Nami',
+        'email' => 'nami@example.com',
+        'password' => 'Sunny-Home-2026!',
+        'password_confirmation' => 'Sunny-Home-2026!',
+    ]);
+
+    expect($user->exists)->toBeTrue();
+});
+
+test('registration in production skips bento when it is not configured', function () {
+    app()->detectEnvironment(fn (): string => 'production');
+    config(['bentonow.secret_key' => null]);
+    Http::fake();
+
+    Bento::shouldReceive('track')->never();
+
+    $user = resolve(CreateNewUser::class)->create([
+        'name' => 'Nico Robin',
+        'email' => 'robin@example.com',
+        'password' => 'Sunny-Home-2026!',
+        'password_confirmation' => 'Sunny-Home-2026!',
+    ]);
+
+    expect($user->exists)->toBeTrue();
 });
