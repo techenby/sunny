@@ -4,7 +4,6 @@ namespace App\NativeComponents;
 
 use App\Actions\DestroySession;
 use App\Concerns\ChecksSunnySync;
-use App\Concerns\ShowsGettingStarted;
 use App\Enums\ItemType;
 use App\Http\Integrations\Sunny\SunnyStore;
 use App\Http\Integrations\Sunny\SunnySyncCoordinator;
@@ -27,7 +26,6 @@ use Saloon\Exceptions\Request\Statuses\UnauthorizedException;
 class Dashboard extends NativeComponent
 {
     use ChecksSunnySync;
-    use ShowsGettingStarted;
 
     public string $syncError = '';
 
@@ -38,8 +36,8 @@ class Dashboard extends NativeComponent
 
     public function onResume(): void
     {
-        app(SunnySyncCoordinator::class)->dispatchIfDue();
         Onboarding::current()?->report();
+        app(SunnySyncCoordinator::class)->dispatchIfDue();
         $this->refreshLocalData();
     }
 
@@ -123,7 +121,6 @@ class Dashboard extends NativeComponent
     private function refreshLocalData(): void
     {
         unset($this->recentRecipes, $this->recentItems, $this->teamOptions);
-        $this->refreshGettingStarted();
     }
 
     protected function refreshLocalSyncedData(): void

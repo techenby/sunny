@@ -133,9 +133,9 @@ it('creates the places and starters, imports the sample recipe and marks onboard
 
     $onboarding = Onboarding::current();
     expect($onboarding->set_up_at)->not->toBeNull()
-        ->and($onboarding->reported_at)->not->toBeNull()
-        ->and($onboarding->starters())->toHaveCount(7);
+        ->and($onboarding->reported_at)->not->toBeNull();
 
+    Saloon::assertSent(MarkOnboardedRequest::class);
     Saloon::assertSent(fn (Request $request): bool => $request instanceof ImportRecipeRequest
         && $request->resolveEndpoint() === '/teams/alexs-team/recipes/import'
         && $request->body()->get('url') === 'https://safelydelish.com/apple-cider-donuts/');
@@ -163,4 +163,14 @@ it('skips set-up without creating anything', function (): void {
     expect(Item::count())->toBe(0)
         ->and(Onboarding::current())->skipped_at->not->toBeNull()->reported_at->not->toBeNull()
         ->and(Onboarding::needsSetUp())->toBeFalse();
+});
+
+it('tells Sunny about a finished set-up it couldn’t report earlier', function (): void {
+    Saloon::fake([MarkOnboardedRequest::class => MockResponse::make(['id' => 42])]);
+    Onboarding::begin(42)->update(['skipped_at' => now()]);
+
+    Native::visit('/dashboard');
+
+    expect(Onboarding::current()->reported_at)->not->toBeNull();
+    Saloon::assertSent(MarkOnboardedRequest::class);
 });

@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Http\Integrations\Sunny\Requests\MarkOnboardedRequest;
 use App\Http\Integrations\Sunny\SunnyAuth;
 use App\Http\Integrations\Sunny\SunnyStore;
+use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Throwable;
@@ -19,12 +20,9 @@ class Onboarding extends Model
     protected function casts(): array
     {
         return [
-            'starters' => 'array',
             'set_up_at' => 'immutable_datetime',
             'skipped_at' => 'immutable_datetime',
             'reported_at' => 'immutable_datetime',
-            'invited_at' => 'immutable_datetime',
-            'hidden_at' => 'immutable_datetime',
         ];
     }
 
@@ -54,6 +52,7 @@ class Onboarding extends Model
     {
         $this->update(['skipped_at' => now()]);
         $this->report();
+        app(SunnySyncCoordinator::class)->dispatch();
     }
 
     public function report(): void
@@ -69,34 +68,5 @@ class Onboarding extends Model
         }
 
         $this->update(['reported_at' => now()]);
-    }
-
-    /**
-     * @return list<array{resource: string, id: int}>
-     */
-    public function starters(): array
-    {
-        return $this->starters ?? [];
-    }
-
-    public function starterRecord(string $resource, int $id): ?Model
-    {
-        return SunnyStore::model($resource)::query()
-            ->where('server', SunnyStore::server())
-            ->where(fn ($query) => $query->whereKey($id)->orWhere('local_id', $id))
-            ->first();
-    }
-
-    /**
-     * @return list<Model>
-     */
-    public function starterRecords(string $resource): array
-    {
-        return collect($this->starters())
-            ->where('resource', $resource)
-            ->map(fn (array $starter): ?Model => $this->starterRecord($resource, $starter['id']))
-            ->filter()
-            ->values()
-            ->all();
     }
 }

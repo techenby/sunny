@@ -16,9 +16,6 @@ return new class extends Migration
             $table->timestamp('set_up_at')->nullable();
             $table->timestamp('skipped_at')->nullable();
             $table->timestamp('reported_at')->nullable();
-            $table->timestamp('invited_at')->nullable();
-            $table->timestamp('hidden_at')->nullable();
-            $table->json('starters')->nullable();
             $table->timestamps();
             $table->unique(['server', 'user_id']);
         });

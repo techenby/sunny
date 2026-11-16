@@ -43,13 +43,11 @@ class SetUpHome
      */
     public function handle(Onboarding $onboarding, Team $team, array $places, array $starters): void
     {
-        $created = DB::transaction(function () use ($team, $places, $starters): array {
-            $created = [];
-
+        DB::transaction(function () use ($team, $places, $starters): void {
             foreach ($places as $place) {
-                $created[] = ['resource' => 'items', 'id' => $this->outbox->queue('items', $team->id, [
+                $this->outbox->queue('items', $team->id, [
                     'name' => $place, 'type' => ItemType::Location->value, 'parent_id' => null, 'metadata' => null,
-                ])];
+                ]);
             }
 
             if (in_array('groceries', $starters, true)) {
@@ -57,35 +55,31 @@ class SetUpHome
                 foreach (self::GROCERIES as $name) {
                     $this->outbox->queue('checklist_items', $team->id, ['checklist_id' => $id, 'name' => $name]);
                 }
-                $created[] = ['resource' => 'checklists', 'id' => $id];
             }
 
             if (in_array('bedtime', $starters, true)) {
-                $created[] = $this->createRoutine($team, 'Bedtime', TimeOfDay::Evening, RoutineFrequency::Daily, self::BEDTIME);
+                $this->createRoutine($team, 'Bedtime', TimeOfDay::Evening, RoutineFrequency::Daily, self::BEDTIME);
             }
 
             if (in_array('morning', $starters, true)) {
-                $created[] = $this->createRoutine($team, 'Morning', TimeOfDay::Morning, RoutineFrequency::Weekly, self::MORNING, [1, 2, 3, 4, 5]);
+                $this->createRoutine($team, 'Morning', TimeOfDay::Morning, RoutineFrequency::Weekly, self::MORNING, [1, 2, 3, 4, 5]);
             }
-
-            return $created;
         });
 
-        if (in_array('recipe', $starters, true) && ($id = $this->importRecipe($team)) !== null) {
-            $created[] = ['resource' => 'recipes', 'id' => $id];
+        if (in_array('recipe', $starters, true)) {
+            $this->importRecipe($team);
         }
 
-        $onboarding->update(['set_up_at' => now(), 'starters' => $created]);
-        app(SunnySyncCoordinator::class)->dispatch();
+        $onboarding->update(['set_up_at' => now()]);
         $onboarding->report();
+        app(SunnySyncCoordinator::class)->dispatch();
     }
 
     /**
      * @param  list<string>  $steps
      * @param  list<int>|null  $weekdays
-     * @return array{resource: string, id: int}
      */
-    private function createRoutine(Team $team, string $name, TimeOfDay $timeOfDay, RoutineFrequency $frequency, array $steps, ?array $weekdays = null): array
+    private function createRoutine(Team $team, string $name, TimeOfDay $timeOfDay, RoutineFrequency $frequency, array $steps, ?array $weekdays = null): void
     {
         $id = $this->outbox->queue('routines', $team->id, [
             'name' => $name,
@@ -99,14 +93,12 @@ class SetUpHome
         foreach ($steps as $step) {
             $this->outbox->queue('routine_steps', $team->id, ['routine_id' => $id, 'name' => $step]);
         }
-
-        return ['resource' => 'routines', 'id' => $id];
     }
 
-    private function importRecipe(Team $team): ?int
+    private function importRecipe(Team $team): void
     {
         if (! $team->slug) {
-            return null;
+            return;
         }
 
         try {
@@ -114,15 +106,11 @@ class SetUpHome
                 ->send(new ImportRecipeRequest($team->slug, self::RECIPE_URL, (string) Str::uuid()))
                 ->json('data');
         } catch (Throwable) {
-            return null;
+            return;
         }
 
-        if (! is_array($record) || ! is_int($record['id'] ?? null) || ($record['team_id'] ?? null) !== $team->id) {
-            return null;
+        if (is_array($record) && is_int($record['id'] ?? null) && ($record['team_id'] ?? null) === $team->id) {
+            $this->store->saveRecord('recipes', $record);
         }
-
-        $this->store->saveRecord('recipes', $record);
-
-        return $record['id'];
     }
 }
