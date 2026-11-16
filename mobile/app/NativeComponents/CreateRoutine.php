@@ -5,9 +5,8 @@ namespace App\NativeComponents;
 use App\Concerns\ChecksSunnySync;
 use App\Concerns\ManagesRoutineForm;
 use Illuminate\View\View;
-use Native\Mobile\Edge\NativeComponent;
 
-class CreateRoutine extends NativeComponent
+class CreateRoutine extends Component
 {
     use ChecksSunnySync;
     use ManagesRoutineForm;

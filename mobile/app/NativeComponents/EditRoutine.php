@@ -8,9 +8,8 @@ use App\Enums\RoutineFrequency;
 use App\Enums\TimeOfDay;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
-use Native\Mobile\Edge\NativeComponent;
 
-class EditRoutine extends NativeComponent
+class EditRoutine extends Component
 {
     use ChecksSunnySync;
     use ManagesRoutineForm;

@@ -13,6 +13,7 @@ use NativePHP\BackgroundTasks\BackgroundTasksServiceProvider;
 use NativePHP\Clipboard\ClipboardServiceProvider;
 use Nativephp\MobileOta\OtaServiceProvider;
 use Sunny\ItemScanner\ItemScannerServiceProvider;
+use ZXN\NativeWatch\Mobile\MobileServiceProvider;
 
 class NativeServiceProvider extends ServiceProvider
 {
@@ -54,6 +55,7 @@ class NativeServiceProvider extends ServiceProvider
             ShareServiceProvider::class,
             ClipboardServiceProvider::class,
             OtaServiceProvider::class,
+            MobileServiceProvider::class,
         ];
     }
 }

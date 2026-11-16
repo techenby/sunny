@@ -1,5 +1,5 @@
 {
-    "_hash": "9ad3e9318974d4b679041cb9a50611d4d561e96fcb183cb7feac9ae0859f1c3b",
+    "_hash": "ac0215c1fdcb82dc5e930d6b0d3804e04bd956ff1beb7429db828ef9a3993b97",
     "patches": {
         "nativephp/mobile-camera": [
             {
@@ -66,9 +66,9 @@
             },
             {
                 "package": "nativephp/mobile",
-                "description": "iOS: ship a PrivacyInfo.xcprivacy declaring the required-reason APIs the PHP runtime, NativePHP and its plugins use",
+                "description": "iOS: ship a PrivacyInfo.xcprivacy declaring the required-reason APIs the PHP runtime, NativePHP and its plugins use, and the crash and diagnostic data NativeWatch collects",
                 "url": "patches/nativephp-mobile-ios-privacy-manifest.patch",
-                "sha256": "9086d5296045804a9705838ed1e91230bd31d23e852df2cdb3b41eac7048b638",
+                "sha256": "32543d8307b325a88bf1c26ab0206feda3cbb5f3a9e845d4fcb6f02f8b5898fd",
                 "depth": 1,
                 "extra": {
                     "provenance": "root"

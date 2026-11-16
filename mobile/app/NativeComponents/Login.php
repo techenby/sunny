@@ -6,13 +6,12 @@ use App\Http\Integrations\Sunny\SunnyAuth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
 use JsonException;
-use Native\Mobile\Edge\NativeComponent;
 use RuntimeException;
 use Saloon\Exceptions\Request\FatalRequestException;
 use Saloon\Exceptions\Request\RequestException;
 use UnexpectedValueException;
 
-class Login extends NativeComponent
+class Login extends Component
 {
     public string $email = '';
 

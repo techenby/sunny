@@ -1,9 +1,9 @@
 diff --git a/resources/xcode/NativePHP/PrivacyInfo.xcprivacy b/resources/xcode/NativePHP/PrivacyInfo.xcprivacy
 new file mode 100644
-index 0000000..8f4ca2a
+index 0000000..e94bdd8
 --- /dev/null
 +++ b/resources/xcode/NativePHP/PrivacyInfo.xcprivacy
-@@ -0,0 +1,58 @@
+@@ -0,0 +1,97 @@
 +<?xml version="1.0" encoding="UTF-8"?>
 +<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 +<plist version="1.0">
@@ -12,6 +12,45 @@ index 0000000..8f4ca2a
 +	<false/>
 +	<key>NSPrivacyTrackingDomains</key>
 +	<array/>
++	<key>NSPrivacyCollectedDataTypes</key>
++	<array>
++		<dict>
++			<key>NSPrivacyCollectedDataType</key>
++			<string>NSPrivacyCollectedDataTypeCrashData</string>
++			<key>NSPrivacyCollectedDataTypeLinked</key>
++			<false/>
++			<key>NSPrivacyCollectedDataTypeTracking</key>
++			<false/>
++			<key>NSPrivacyCollectedDataTypePurposes</key>
++			<array>
++				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
++			</array>
++		</dict>
++		<dict>
++			<key>NSPrivacyCollectedDataType</key>
++			<string>NSPrivacyCollectedDataTypePerformanceData</string>
++			<key>NSPrivacyCollectedDataTypeLinked</key>
++			<false/>
++			<key>NSPrivacyCollectedDataTypeTracking</key>
++			<false/>
++			<key>NSPrivacyCollectedDataTypePurposes</key>
++			<array>
++				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
++			</array>
++		</dict>
++		<dict>
++			<key>NSPrivacyCollectedDataType</key>
++			<string>NSPrivacyCollectedDataTypeOtherDiagnosticData</string>
++			<key>NSPrivacyCollectedDataTypeLinked</key>
++			<false/>
++			<key>NSPrivacyCollectedDataTypeTracking</key>
++			<false/>
++			<key>NSPrivacyCollectedDataTypePurposes</key>
++			<array>
++				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
++			</array>
++		</dict>
++	</array>
 +	<key>NSPrivacyAccessedAPITypes</key>
 +	<array>
 +		<!-- PHP and its bundled SQLite, curl and OpenSSL stat() the app's own files; NativeUI reads image modification dates to refresh its cache. -->

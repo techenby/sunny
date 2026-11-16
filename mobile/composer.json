@@ -43,7 +43,8 @@
         "nativephp/mobile-ui": "^0.9",
         "saloonphp/laravel-plugin": "^5.0",
         "saloonphp/saloon": "^4.3",
-        "sunny/item-scanner": "@dev"
+        "sunny/item-scanner": "@dev",
+        "zinxan/native-mobile": "^0.2"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
@@ -135,7 +136,7 @@
                     "url": "patches/nativephp-mobile-tabs-display-mode.patch"
                 },
                 {
-                    "description": "iOS: ship a PrivacyInfo.xcprivacy declaring the required-reason APIs the PHP runtime, NativePHP and its plugins use",
+                    "description": "iOS: ship a PrivacyInfo.xcprivacy declaring the required-reason APIs the PHP runtime, NativePHP and its plugins use, and the crash and diagnostic data NativeWatch collects",
                     "url": "patches/nativephp-mobile-ios-privacy-manifest.patch"
                 },
                 {
