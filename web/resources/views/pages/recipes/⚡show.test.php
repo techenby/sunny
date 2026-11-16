@@ -74,18 +74,13 @@ test('parent shows remixes', function () {
 });
 
 describe('remixes', function () {
-    test('labels each remix with its team, what changed and when', function () {
+    test('labels each remix with its name and when it was made', function () {
         $this->freezeTime();
 
         $user = User::factory()->create();
-        $original = Recipe::factory()->for($user->currentTeam)->create([
-            'ingredients' => '<ul><li>Flour</li></ul>',
-            'servings' => '4',
-        ]);
+        $original = Recipe::factory()->for($user->currentTeam)->create();
         Recipe::factory()->remixOf($original)->create([
             'name' => 'Gluten Free Cake',
-            'ingredients' => '<ul><li>Rice flour</li></ul>',
-            'servings' => '6',
             'created_at' => now()->subDays(2),
         ]);
 
@@ -93,20 +88,7 @@ describe('remixes', function () {
             ->get(route('recipes.show', $original))
             ->assertOk()
             ->assertSee('Gluten Free Cake')
-            ->assertSee($user->currentTeam->name)
-            ->assertSee('Changed ingredients and servings')
             ->assertSee('2 days ago');
-    });
-
-    test('says when a remix has no changes', function () {
-        $user = User::factory()->create();
-        $original = Recipe::factory()->for($user->currentTeam)->create(['ingredients' => '<ul><li>Flour</li></ul>']);
-        Recipe::factory()->remixOf($original)->create(['ingredients' => '<ul><li>Flour</li></ul>']);
-
-        $this->actingAs($user)
-            ->get(route('recipes.show', $original))
-            ->assertOk()
-            ->assertSee('No changes yet');
     });
 
     test('shows an empty state when there are no remixes', function () {

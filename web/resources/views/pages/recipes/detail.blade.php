@@ -174,17 +174,11 @@
             @else
                 <ul class="space-y-3">
                     @foreach ($remixes as $remix)
-                        @php($changedFields = $remix->changedFieldsFrom($recipe))
                         <li>
                             <a href="{{ route('recipes.show', $remix) }}" wire:navigate class="group flex items-start gap-3">
                                 <x-ui.table.thumb icon="arrow-path-rounded-square" size="base" />
                                 <div class="min-w-0 text-sm">
                                     <div class="font-medium text-zinc-800 group-hover:text-(--color-accent-content) dark:text-white">{{ $remix->name }}</div>
-                                    <flux:text>
-                                        {{ $remix->team->name }}
-                                        &middot;
-                                        {{ $changedFields ? __('Changed :fields', ['fields' => Arr::join($changedFields, ', ', ' and ')]) : __('No changes yet') }}
-                                    </flux:text>
                                     <flux:text variant="subtle">
                                         <time datetime="{{ $remix->created_at->toIso8601String() }}">{{ $remix->created_at->diffForHumans() }}</time>
                                     </flux:text>
