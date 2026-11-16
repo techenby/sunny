@@ -43,42 +43,16 @@
             </flux:card>
         @endif
 
-        @if ($recipe->ingredients || $editable)
-            <flux:card>
-                <flux:heading size="lg" class="mb-2 text-lg!">{{ __('Ingredients') }}</flux:heading>
-                @if ($recipe->ingredients)
-                    <x-prose>
-                        @foreach (RecipeLines::groups($recipe->ingredients) as $group)
-                            @if ($group['heading'])
-                                <h4>{{ $group['heading'] }}</h4>
-                            @endif
-                            @if ($group['rows'])
-                                <ul>
-                                    @foreach ($group['rows'] as $row)
-                                        <li>{{ $row['text'] }}</li>
-                                    @endforeach
-                                </ul>
-                            @endif
-                        @endforeach
-                    </x-prose>
-                @else
-                    <x-dashboard.empty
-                        icon="list-bullet"
-                        :tile="$emptyTile"
-                        :heading="__('No ingredients yet')"
-                        :text="__('List what goes in, one ingredient per line.')"
-                        :action="__('Add ingredients')"
-                        :href="$editUrl"
-                    />
-                @endif
-            </flux:card>
-        @endif
-
         @if ($recipe->instructions || $editable)
             <flux:card>
-                <flux:heading size="lg" class="mb-2 text-lg!">{{ __('Instructions') }}</flux:heading>
+                <div class="mb-2 flex items-baseline justify-between gap-2">
+                    <flux:heading size="lg" class="text-lg!">{{ __('Instructions') }}</flux:heading>
+                    @if ($stepCount = collect($recipe->instructions)->where('type', '!=', 'heading')->count())
+                        <flux:text size="sm" variant="subtle">{{ trans_choice(':count step|:count steps', $stepCount) }}</flux:text>
+                    @endif
+                </div>
                 @if ($recipe->instructions)
-                    <x-prose>
+                    <x-prose class="max-w-none [&>ol]:flex [&>ol]:list-none [&>ol]:flex-col [&>ol]:gap-3 [&>ol]:pl-0 [&>ol>li]:relative [&>ol>li]:pl-10 [&>ol>li]:before:absolute [&>ol>li]:before:left-0 [&>ol>li]:before:top-0 [&>ol>li]:before:flex [&>ol>li]:before:size-7 [&>ol>li]:before:items-center [&>ol>li]:before:justify-center [&>ol>li]:before:rounded-full [&>ol>li]:before:border [&>ol>li]:before:border-zinc-200 [&>ol>li]:before:text-sm [&>ol>li]:before:font-medium [&>ol>li]:before:text-zinc-800 [&>ol>li]:before:content-[attr(data-step)] dark:[&>ol>li]:before:border-white/20 dark:[&>ol>li]:before:text-white">
                         @foreach (RecipeLines::groups($recipe->instructions) as $group)
                             @if ($group['heading'])
                                 <h4>{{ $group['heading'] }}</h4>
@@ -86,7 +60,7 @@
                             @if ($group['rows'])
                                 <ol start="{{ $group['start'] }}">
                                     @foreach ($group['rows'] as $row)
-                                        <li>{{ $row['text'] }}</li>
+                                        <li data-step="{{ $group['start'] + $loop->index }}">{{ $row['text'] }}</li>
                                     @endforeach
                                 </ol>
                             @endif
@@ -116,54 +90,49 @@
     </div>
 
     <div class="space-y-6">
-        <flux:card>
-            <flux:heading size="lg" class="mb-4 text-lg!">{{ __('Details') }}</flux:heading>
-
-            <dl class="space-y-4">
-                @if ($recipe->source)
-                    <div>
-                        <dt class="text-sm font-medium text-zinc-500 dark:text-zinc-400">{{ __('Source') }}</dt>
-                        <dd class="mt-1 text-zinc-800 dark:text-white">
-                            @if ($recipe->isSourceUrl())
-                                <flux:link href="{{ $recipe->source }}" target="_blank">
-                                    {{ $recipe->shortenedSource() }}
-                                </flux:link>
-                            @else
-                                {{ $recipe->source }}
+        @if ($recipe->ingredients || $editable)
+            <flux:card>
+                <div class="mb-2 flex items-baseline justify-between gap-2">
+                    <flux:heading size="lg" class="text-lg!">{{ __('Ingredients') }}</flux:heading>
+                    @if ($ingredientCount = collect($recipe->ingredients)->where('type', '!=', 'heading')->count())
+                        <flux:text size="sm" variant="subtle">{{ trans_choice(':count ingredient|:count ingredients', $ingredientCount) }}</flux:text>
+                    @endif
+                </div>
+                @if ($recipe->ingredients)
+                    <x-prose>
+                        @foreach (RecipeLines::groups($recipe->ingredients) as $group)
+                            @if ($group['heading'])
+                                @php
+                                    preg_match('/^(.*?)\s*\((Step \d+)\)$/i', $group['heading'], $tagged);
+                                @endphp
+                                <h4 class="flex items-baseline gap-2 border-b border-zinc-100 pb-1 dark:border-white/10">
+                                    {{ $tagged[1] ?? $group['heading'] }}
+                                    @isset($tagged[2])
+                                        <span class="text-xs font-normal text-zinc-400">{{ $tagged[2] }}</span>
+                                    @endisset
+                                </h4>
                             @endif
-                        </dd>
-                    </div>
+                            @if ($group['rows'])
+                                <ul>
+                                    @foreach ($group['rows'] as $row)
+                                        <li>{{ $row['text'] }}</li>
+                                    @endforeach
+                                </ul>
+                            @endif
+                        @endforeach
+                    </x-prose>
+                @else
+                    <x-dashboard.empty
+                        icon="list-bullet"
+                        :tile="$emptyTile"
+                        :heading="__('No ingredients yet')"
+                        :text="__('List what goes in, one ingredient per line.')"
+                        :action="__('Add ingredients')"
+                        :href="$editUrl"
+                    />
                 @endif
-
-                @if ($recipe->servings)
-                    <div>
-                        <dt class="text-sm font-medium text-zinc-500 dark:text-zinc-400">{{ __('Servings') }}</dt>
-                        <dd class="mt-1 text-zinc-800 dark:text-white">{{ $recipe->servings }}</dd>
-                    </div>
-                @endif
-
-                @if ($recipe->prep_time)
-                    <div>
-                        <dt class="text-sm font-medium text-zinc-500 dark:text-zinc-400">{{ __('Prep time') }}</dt>
-                        <dd class="mt-1 text-zinc-800 dark:text-white">{{ $recipe->prep_time }}</dd>
-                    </div>
-                @endif
-
-                @if ($recipe->cook_time)
-                    <div>
-                        <dt class="text-sm font-medium text-zinc-500 dark:text-zinc-400">{{ __('Cook time') }}</dt>
-                        <dd class="mt-1 text-zinc-800 dark:text-white">{{ $recipe->cook_time }}</dd>
-                    </div>
-                @endif
-
-                @if ($recipe->total_time)
-                    <div>
-                        <dt class="text-sm font-medium text-zinc-500 dark:text-zinc-400">{{ __('Total time') }}</dt>
-                        <dd class="mt-1 text-zinc-800 dark:text-white">{{ $recipe->total_time }}</dd>
-                    </div>
-                @endif
-            </dl>
-        </flux:card>
+            </flux:card>
+        @endif
 
         @if ($recipe->nutrition)
             <flux:card>
@@ -193,7 +162,12 @@
         @endphp
 
         <flux:card>
-            <flux:heading size="lg" class="mb-2 text-lg!">{{ __('Remixes') }}</flux:heading>
+            <div class="mb-3 flex items-baseline justify-between gap-2">
+                <flux:heading size="lg" class="text-lg!">{{ __('Remixes') }}</flux:heading>
+                @if ($remixes->isNotEmpty())
+                    <flux:text size="sm" variant="subtle">{{ $remixes->count() }}</flux:text>
+                @endif
+            </div>
 
             @if ($remixes->isEmpty())
                 <flux:text>{{ __('No remixes yet') }}</flux:text>
@@ -202,16 +176,20 @@
                     @foreach ($remixes as $remix)
                         @php($changedFields = $remix->changedFieldsFrom($recipe))
                         <li>
-                            <flux:link href="{{ route('recipes.show', $remix) }}" wire:navigate>
-                                {{ $remix->name }}
-                            </flux:link>
-                            <flux:text class="mt-0.5">
-                                {{ $remix->team->name }}
-                                &middot;
-                                {{ $changedFields ? __('Changed :fields', ['fields' => Arr::join($changedFields, ', ', ' and ')]) : __('No changes yet') }}
-                                &middot;
-                                <time datetime="{{ $remix->created_at->toIso8601String() }}">{{ $remix->created_at->diffForHumans() }}</time>
-                            </flux:text>
+                            <a href="{{ route('recipes.show', $remix) }}" wire:navigate class="group flex items-start gap-3">
+                                <x-ui.table.thumb icon="arrow-path-rounded-square" size="base" />
+                                <div class="min-w-0 text-sm">
+                                    <div class="font-medium text-zinc-800 group-hover:text-(--color-accent-content) dark:text-white">{{ $remix->name }}</div>
+                                    <flux:text>
+                                        {{ $remix->team->name }}
+                                        &middot;
+                                        {{ $changedFields ? __('Changed :fields', ['fields' => Arr::join($changedFields, ', ', ' and ')]) : __('No changes yet') }}
+                                    </flux:text>
+                                    <flux:text variant="subtle">
+                                        <time datetime="{{ $remix->created_at->toIso8601String() }}">{{ $remix->created_at->diffForHumans() }}</time>
+                                    </flux:text>
+                                </div>
+                            </a>
                         </li>
                     @endforeach
                 </ul>

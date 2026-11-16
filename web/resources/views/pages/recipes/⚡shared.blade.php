@@ -57,7 +57,11 @@ new #[Layout('layouts::guest')] class extends Component {
 
 <div class="space-y-6">
     <div class="flex items-center justify-between">
-        <flux:heading size="xl">{{ $recipe->name }}</flux:heading>
+        <div>
+            <flux:heading size="xl">{{ $recipe->name }}</flux:heading>
+
+            @include('pages.recipes.meta')
+        </div>
 
         @auth
             <flux:button wire:click="addToMyTeam" icon="plus" :disabled="Auth::user()->current_team_id === $recipe->team_id">{{ __('Add to My Team') }}</flux:button>
