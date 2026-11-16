@@ -94,12 +94,12 @@
             <flux:table.column class="w-8"><flux:checkbox.all /></flux:table.column>
             <flux:table.column sortable :sorted="$sortBy === 'name'" :direction="$sortDirection" wire:click="sort('name')">{{ __('Name') }}</flux:table.column>
             @if (filled($search))
-                <flux:table.column class="w-68">{{ __('Where it is') }}</flux:table.column>
+                <flux:table.column class="w-90">{{ __('Where it is') }}</flux:table.column>
             @else
-                <flux:table.column class="w-36">{{ __('Modified') }}</flux:table.column>
-                <flux:table.column class="w-32">{{ __('What’s inside') }}</flux:table.column>
+                <flux:table.column class="w-45">{{ __('Modified') }}</flux:table.column>
+                <flux:table.column class="w-45">{{ __('What’s inside') }}</flux:table.column>
             @endif
-            <flux:table.column class="w-12" align="end"></flux:table.column>
+            <flux:table.column class="w-14" align="end"></flux:table.column>
         </flux:table.columns>
 
         <flux:table.rows>

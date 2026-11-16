@@ -13,6 +13,8 @@
                 {{ $parent->name }}
             </flux:breadcrumbs.item>
         @endif
+
+        <flux:breadcrumbs.item>{{ $item->name }}</flux:breadcrumbs.item>
     </flux:breadcrumbs>
 
     <div class="flex flex-wrap items-center justify-between gap-4">
