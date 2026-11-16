@@ -61,18 +61,16 @@ expire after 30 minutes, so the files never need to be public.
 
 ## Set environment variables
 
-Open the environment's settings and add these variables. Variables you add
-take priority over the ones Cloud adds for you.
+Open the environment's settings and add these variables. Cloud sets
+`APP_URL` and the database, storage, and queue variables itself, and
+variables you add take priority over the ones it sets.
 
 | Variable | Value |
 | --- | --- |
 | `APP_NAME` | `SunnyHome`, or whatever you'd like the app to be called. |
 | `APP_ENV` | `production` |
 | `APP_DEBUG` | `false` |
-| `APP_URL` | Your site's full address, such as `https://home.example.com`. |
 | `SESSION_DRIVER` | `database` |
-| `CACHE_STORE` | `database` |
-| `QUEUE_CONNECTION` | `database` |
 | `PASSPORT_PRIVATE_KEY` | See [create the AI assistant keys](#create-the-ai-assistant-keys). |
 | `PASSPORT_PUBLIC_KEY` | See [create the AI assistant keys](#create-the-ai-assistant-keys). |
 | `FLUX_USERNAME` | The email address on your Flux license. |
@@ -117,12 +115,13 @@ Open the environment's **Deployments** settings.
 Cloud writes your variables to a `.env` file during the build but doesn't
 make them available to the build's shell, so the build reads the Flux
 license from that file before installing anything. Replace the build
-commands with:
+commands with the ones sunnyhome.app uses:
 
 ```bash
-export $(grep -E '^FLUX_(USERNAME|LICENSE_KEY)=' .env | xargs)
-composer config http-basic.composer.fluxui.dev "$FLUX_USERNAME" "$FLUX_LICENSE_KEY"
-composer install --no-dev
+composer config http-basic.composer.fluxui.dev "$(grep -m1 '^FLUX_USERNAME=' .env | cut -d= -f2- | tr -d '"')" "$(grep -m1 '^FLUX_LICENSE_KEY=' .env | cut -d= -f2- | tr -d '"')"
+
+composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+
 npm ci --audit false
 npm run build
 ```
@@ -133,15 +132,18 @@ Set the deploy command to:
 php artisan migrate --force
 ```
 
-## Turn on the scheduler and a queue worker
+## Turn on the scheduler and add a queue
 
-Select the App cluster on the canvas, then:
+1. Select the App cluster on the canvas and turn on **Scheduler**. Each night
+   it prepares the next week of routines, clears expired sign-in tokens, and
+   removes expired team invitations. Cloud wakes a sleeping app to run it.
+2. On the canvas, select **Add compute → Managed queue** and choose a Flex
+   size. Team invitation emails are sent from the queue, so they won't go out
+   without it. Cloud points SunnyHome at the queue for you.
 
-1. Turn on **Scheduler**. Each night it prepares the next week of routines,
-   clears expired sign-in tokens, and removes expired team invitations.
-2. Under **Background processes**, add a queue worker with one process.
-   Team invitation emails are sent from the queue, so they won't go out
-   without it.
+A managed queue runs on its own compute, sleeps when there's nothing to do,
+and wakes when a job arrives, so invitations go out even while the app is
+asleep. Cloud bills it separately for worker time and queue operations.
 
 ## Deploy
 
@@ -150,8 +152,8 @@ Deploy the environment. When it finishes, open your site and select
 your site the same way, and you can invite them to your team from
 [Teams and Households](/docs/users/teams).
 
-To use your own domain, add it under the environment's **Network settings**,
-then update `APP_URL` to match and deploy again.
+To use your own domain, add it under the environment's **Network settings**
+and deploy again.
 
 ## Optional services
 
@@ -170,8 +172,7 @@ variables unset; SunnyHome skips Bento when they're empty.
 
 Cloud charges for the time your app and database are awake. Turn on **Scale
 to zero** for the App cluster and keep the database's sleep timer short so
-both sleep when nobody is using SunnyHome. Queued emails wait until the app
-next wakes.
+both sleep when nobody is using SunnyHome.
 
 A kiosk display keeps things awake. It refreshes its data every ten minutes,
 which wakes the app and the database each time. On sunnyhome.app, the kiosk
