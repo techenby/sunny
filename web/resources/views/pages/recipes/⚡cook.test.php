@@ -4,20 +4,17 @@ use App\Models\Recipe;
 use App\Models\User;
 use Livewire\Livewire;
 
-function cookableRecipe(User $user, array $attributes = []): Recipe
-{
-    return Recipe::factory()->for($user->currentTeam)->create([
-        'name' => 'Apple Cider Donuts',
-        'servings' => '12 donuts',
-        'ingredients' => "# Wet\n1/4 cup granulated sugar\n2 Tbsp brown sugar\n# Dry\n1 1/2 cups flour\nSalt, to taste",
-        'instructions' => "Preheat oven to 375°F.\n# Bake\nBake for 8–9 minutes. Cool in the pan for 3–5 minutes.\nServe.",
-        ...$attributes,
-    ]);
-}
+$cookableRecipe = fn (User $user, array $attributes = []): Recipe => Recipe::factory()->for($user->currentTeam)->create([
+    'name' => 'Apple Cider Donuts',
+    'servings' => '12 donuts',
+    'ingredients' => "# Wet\n1/4 cup granulated sugar\n2 Tbsp brown sugar\n# Dry\n1 1/2 cups flour\nSalt, to taste",
+    'instructions' => "Preheat oven to 375°F.\n# Bake\nBake for 8–9 minutes. Cool in the pan for 3–5 minutes.\nServe.",
+    ...$attributes,
+]);
 
-test('can cook a recipe', function () {
+test('can cook a recipe', function () use ($cookableRecipe) {
     $user = User::factory()->create();
-    $recipe = cookableRecipe($user);
+    $recipe = $cookableRecipe($user);
 
     $this->actingAs($user)
         ->get(route('recipes.cook', $recipe))
@@ -33,20 +30,20 @@ test('cannot cook a recipe from another team', function () {
         ->assertForbidden();
 });
 
-test('the recipe page links to cook mode only when there is something to cook', function () {
+test('the recipe page links to cook mode only when there is something to cook', function () use ($cookableRecipe) {
     $user = User::factory()->create();
-    $recipe = cookableRecipe($user);
+    $recipe = $cookableRecipe($user);
     $empty = Recipe::factory()->for($user->currentTeam)->create();
 
     $this->actingAs($user)->get(route('recipes.show', $recipe))->assertSee(route('recipes.cook', $recipe));
     $this->actingAs($user)->get(route('recipes.show', $empty))->assertDontSee(route('recipes.cook', $empty));
 });
 
-test('changing the servings scales the ingredient amounts', function () {
+test('changing the servings scales the ingredient amounts', function () use ($cookableRecipe) {
     $user = User::factory()->create();
 
     $page = Livewire::actingAs($user)
-        ->test('pages::recipes.cook', ['recipe' => cookableRecipe($user, ['servings' => '2'])])
+        ->test('pages::recipes.cook', ['recipe' => $cookableRecipe($user, ['servings' => '2'])])
         ->assertSet('servings', 2)
         ->call('changeServings', 1)
         ->call('changeServings', 1)
@@ -59,11 +56,11 @@ test('changing the servings scales the ingredient amounts', function () {
     expect($page->html())->toContain('1/8 cup', '1 Tbsp', '3/4 cup');
 });
 
-test('recipes without a serving count cannot be scaled', function () {
+test('recipes without a serving count cannot be scaled', function () use ($cookableRecipe) {
     $user = User::factory()->create();
 
     Livewire::actingAs($user)
-        ->test('pages::recipes.cook', ['recipe' => cookableRecipe($user, ['servings' => null])])
+        ->test('pages::recipes.cook', ['recipe' => $cookableRecipe($user, ['servings' => null])])
         ->assertSet('servings', null)
         ->assertDontSee('Servings')
         ->call('changeServings', 1)
@@ -71,11 +68,11 @@ test('recipes without a serving count cannot be scaled', function () {
         ->assertSee('1/4 cup');
 });
 
-test('ingredients can be ticked off, but headings cannot', function () {
+test('ingredients can be ticked off, but headings cannot', function () use ($cookableRecipe) {
     $user = User::factory()->create();
 
     Livewire::actingAs($user)
-        ->test('pages::recipes.cook', ['recipe' => cookableRecipe($user)])
+        ->test('pages::recipes.cook', ['recipe' => $cookableRecipe($user)])
         ->call('toggleIngredient', 0)
         ->assertSet('checked', [])
         ->call('toggleIngredient', 1)
@@ -87,11 +84,11 @@ test('ingredients can be ticked off, but headings cannot', function () {
         ->assertSet('checked', [4 => '1 1/2 cups flour']);
 });
 
-test('the current step can be moved and stays within the recipe', function () {
+test('the current step can be moved and stays within the recipe', function () use ($cookableRecipe) {
     $user = User::factory()->create();
 
     Livewire::actingAs($user)
-        ->test('pages::recipes.cook', ['recipe' => cookableRecipe($user)])
+        ->test('pages::recipes.cook', ['recipe' => $cookableRecipe($user)])
         ->assertSet('step', 1)
         ->call('goToStep', 2)
         ->assertSet('step', 2)
@@ -102,9 +99,9 @@ test('the current step can be moved and stays within the recipe', function () {
         ->assertSet('step', 1);
 });
 
-test('progress is remembered when the page is opened again', function () {
+test('progress is remembered when the page is opened again', function () use ($cookableRecipe) {
     $user = User::factory()->create();
-    $recipe = cookableRecipe($user);
+    $recipe = $cookableRecipe($user);
 
     Livewire::actingAs($user)
         ->test('pages::recipes.cook', ['recipe' => $recipe])
@@ -119,9 +116,9 @@ test('progress is remembered when the page is opened again', function () {
         ->assertSet('step', 2);
 });
 
-test('steps offer timers for their durations, except very long ones', function () {
+test('steps offer timers for their durations, except very long ones', function () use ($cookableRecipe) {
     $user = User::factory()->create();
-    $recipe = cookableRecipe($user, ['instructions' => "Bake for 8–9 minutes. Cool for 3 minutes.\nBrine for 24 hours.\nServe."]);
+    $recipe = $cookableRecipe($user, ['instructions' => "Bake for 8–9 minutes. Cool for 3 minutes.\nBrine for 24 hours.\nServe."]);
 
     Livewire::actingAs($user)
         ->test('pages::recipes.cook', ['recipe' => $recipe])
