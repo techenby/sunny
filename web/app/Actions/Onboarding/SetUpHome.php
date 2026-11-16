@@ -13,7 +13,6 @@ use App\Enums\TimeOfDay;
 use App\Models\Team;
 use App\Models\User;
 use Carbon\CarbonInterface;
-use Illuminate\Support\Facades\DB;
 use Throwable;
 
 class SetUpHome
@@ -31,6 +30,7 @@ class SetUpHome
     public const array STARTERS = ['groceries', 'bedtime', 'morning', 'recipe'];
 
     public function __construct(
+        private CompleteOnboarding $completeOnboarding,
         private ImportRecipeFromUrl $importRecipe,
         private CreateRecipe $createRecipe,
     ) {}
@@ -39,14 +39,12 @@ class SetUpHome
      * @param  list<string>  $places
      * @param  list<string>  $starters
      */
-    public function handle(User $user, Team $team, array $places, array $starters): bool
+    public function handle(User $user, array $places, array $starters): bool
     {
-        $didSetUp = DB::transaction(function () use ($user, $team, $places, $starters): bool {
-            $user = User::query()->whereKey($user->id)->lockForUpdate()->firstOrFail();
+        $team = null;
 
-            if (! $user->needsOnboarding()) {
-                return false;
-            }
+        $didSetUp = $this->completeOnboarding->handle($user, function (Team $currentTeam) use (&$team, $places, $starters): void {
+            $team = $currentTeam;
 
             collect($places)
                 ->map(fn (string $place): string => trim($place))
@@ -71,13 +69,9 @@ class SetUpHome
                     CarbonInterface::FRIDAY,
                 ]);
             }
-
-            $user->markAsOnboarded();
-
-            return true;
         });
 
-        if ($didSetUp && in_array('recipe', $starters, true)) {
+        if ($didSetUp && $team && in_array('recipe', $starters, true)) {
             $this->importSampleRecipe($team);
         }
 

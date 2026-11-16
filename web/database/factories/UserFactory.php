@@ -31,7 +31,6 @@ class UserFactory extends Factory
             'two_factor_recovery_codes' => null,
             'two_factor_confirmed_at' => null,
             'onboarded_at' => now(),
-            'onboarding_dismissed_at' => now(),
         ];
     }
 
@@ -54,15 +53,6 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'onboarded_at' => null,
-            'onboarding_dismissed_at' => null,
-        ]);
-    }
-
-    public function gettingStarted(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'onboarded_at' => now(),
-            'onboarding_dismissed_at' => null,
         ]);
     }
 

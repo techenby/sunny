@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\Onboarding\CompleteOnboarding;
 use App\Actions\Onboarding\SetUpHome;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -76,14 +77,14 @@ new #[Layout('layouts::onboarding')] class extends Component
             'starters.*' => [Rule::in(SetUpHome::STARTERS)],
         ]);
 
-        $setUpHome->handle(Auth::user(), Auth::user()->currentTeam, array_values($this->places), array_values($this->starters));
+        $setUpHome->handle(Auth::user(), array_values($this->places), array_values($this->starters));
 
         $this->redirectRoute('dashboard', navigate: true);
     }
 
-    public function startEmpty(): void
+    public function startEmpty(CompleteOnboarding $completeOnboarding): void
     {
-        Auth::user()->markAsOnboarded();
+        $completeOnboarding->handle(Auth::user());
 
         $this->redirectRoute('dashboard', navigate: true);
     }

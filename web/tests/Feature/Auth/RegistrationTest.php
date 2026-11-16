@@ -72,8 +72,7 @@ test('new users start out needing onboarding', function () {
 
     $user = User::where('email', 'nami@example.com')->sole();
 
-    expect($user->needsOnboarding())->toBeTrue()
-        ->and($user->onboarding_dismissed_at)->toBeNull();
+    expect($user->needsOnboarding())->toBeTrue();
 });
 
 test('people who register with a pending invitation skip onboarding', function () {
@@ -90,7 +89,7 @@ test('people who register with a pending invitation skip onboarding', function (
     $user = User::where('email', 'zoro@example.com')->sole();
 
     expect($user->needsOnboarding())->toBeFalse()
-        ->and($user->onboarding_dismissed_at)->not->toBeNull();
+        ->and($user->currentTeam->checklists()->exists())->toBeFalse();
 });
 
 test('an expired invitation does not skip onboarding', function () {

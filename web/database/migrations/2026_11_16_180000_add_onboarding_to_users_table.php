@@ -11,19 +11,15 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             $table->timestamp('onboarded_at')->nullable()->after('last_active_at');
-            $table->timestamp('onboarding_dismissed_at')->nullable()->after('onboarded_at');
         });
 
-        DB::table('users')->update([
-            'onboarded_at' => DB::raw('COALESCE(created_at, CURRENT_TIMESTAMP)'),
-            'onboarding_dismissed_at' => DB::raw('COALESCE(created_at, CURRENT_TIMESTAMP)'),
-        ]);
+        DB::table('users')->update(['onboarded_at' => DB::raw('COALESCE(created_at, CURRENT_TIMESTAMP)')]);
     }
 
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn(['onboarded_at', 'onboarding_dismissed_at']);
+            $table->dropColumn('onboarded_at');
         });
     }
 };
