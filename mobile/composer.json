@@ -36,6 +36,7 @@
         "nativephp/mobile-browser": "^1.0",
         "nativephp/mobile-camera": "^1.0",
         "nativephp/mobile-clipboard": "^1.0",
+        "nativephp/mobile-ota": "^1.0",
         "nativephp/mobile-scanner": "^1.1",
         "nativephp/mobile-secure-storage": "^1.0",
         "nativephp/mobile-share": "^1.0",
@@ -137,6 +138,10 @@
                 {
                     "description": "iOS: ship a PrivacyInfo.xcprivacy declaring the required-reason APIs the PHP runtime, NativePHP and its plugins use, and the crash and diagnostic data NativeWatch collects",
                     "url": "patches/nativephp-mobile-ios-privacy-manifest.patch"
+                },
+                {
+                    "description": "iOS: build the app icon from the Icon Composer file set in nativephp.ios_icon so iOS 26 gets the Liquid Glass light, dark and tinted variants",
+                    "url": "patches/nativephp-mobile-ios-icon-composer.patch"
                 }
             ],
             "nativephp/mobile-scanner": [

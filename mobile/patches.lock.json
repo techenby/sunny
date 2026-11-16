@@ -1,5 +1,5 @@
 {
-    "_hash": "b2cc3c00ed11203d76d5ba654101e5b75f85fdfa9dc04e639e804169cae09eab",
+    "_hash": "ac0215c1fdcb82dc5e930d6b0d3804e04bd956ff1beb7429db828ef9a3993b97",
     "patches": {
         "nativephp/mobile-camera": [
             {
@@ -69,6 +69,16 @@
                 "description": "iOS: ship a PrivacyInfo.xcprivacy declaring the required-reason APIs the PHP runtime, NativePHP and its plugins use, and the crash and diagnostic data NativeWatch collects",
                 "url": "patches/nativephp-mobile-ios-privacy-manifest.patch",
                 "sha256": "32543d8307b325a88bf1c26ab0206feda3cbb5f3a9e845d4fcb6f02f8b5898fd",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
+            },
+            {
+                "package": "nativephp/mobile",
+                "description": "iOS: build the app icon from the Icon Composer file set in nativephp.ios_icon so iOS 26 gets the Liquid Glass light, dark and tinted variants",
+                "url": "patches/nativephp-mobile-ios-icon-composer.patch",
+                "sha256": "cd0742065e808d36aeaf756b606cb8e4e03c5b15dd49d2f8d2baf460ec9ea482",
                 "depth": 1,
                 "extra": {
                     "provenance": "root"
