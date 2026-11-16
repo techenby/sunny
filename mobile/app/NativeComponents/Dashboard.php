@@ -8,6 +8,7 @@ use App\Enums\ItemType;
 use App\Http\Integrations\Sunny\SunnyStore;
 use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Http\Integrations\Sunny\SunnyTeam;
+use App\Models\Onboarding;
 use App\Support\CrashReports;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Support\Carbon;
@@ -37,6 +38,7 @@ class Dashboard extends Component
 
     public function onResume(): void
     {
+        Onboarding::current()?->report();
         app(SunnySyncCoordinator::class)->dispatchIfDue();
         $this->refreshLocalData();
     }

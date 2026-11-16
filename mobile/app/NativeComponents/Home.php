@@ -6,6 +6,7 @@ use App\Actions\DestroySession;
 use App\Http\Integrations\Sunny\Requests\GetUserRequest;
 use App\Http\Integrations\Sunny\SunnyAuth;
 use App\Http\Integrations\Sunny\SunnyStore;
+use App\Models\Onboarding;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\View\View;
 use RuntimeException;
@@ -32,7 +33,7 @@ class Home extends Component
                 if (is_int($userId)) {
                     app(SunnyStore::class)->rememberAccount($userId);
                 }
-                $this->replace('/dashboard');
+                $this->replace(Onboarding::needsSetUp() ? '/setup' : '/dashboard');
             } catch (UnauthorizedException) {
                 app(DestroySession::class)->handle();
             }

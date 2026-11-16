@@ -77,6 +77,57 @@ class InventoryItemDetail extends Component
         return $this->item === null ? [] : Inventory::childrenOf($this->item['id']);
     }
 
+    /**
+     * @return list<string>
+     */
+    #[Computed]
+    public function starterStorage(): array
+    {
+        if ($this->item === null || $this->item['type'] !== ItemType::Location || $this->children !== []) {
+            return [];
+        }
+
+        return match (mb_strtolower(trim($this->item['name']))) {
+            'garage' => ['Camping box', 'Tool chest', 'Holiday decorations', 'Paint shelf'],
+            'kitchen pantry' => ['Top shelf', 'Baking box', 'Snack basket', 'Spice rack'],
+            'hall closet' => ['Top shelf', 'Shoe rack', 'Gift wrap box', 'Cleaning caddy'],
+            'basement' => ['Storage shelves', 'Holiday decorations', 'Keepsake box', 'Tool bench'],
+            'attic' => ['Holiday decorations', 'Keepsake box', 'Winter clothes box', 'Baby clothes box'],
+            'laundry room' => ['Cleaning shelf', 'Linen shelf', 'Sewing box', 'Detergent cabinet'],
+            'shed' => ['Garden tools rack', 'Seed box', 'Paint shelf', 'Tool chest'],
+            "kids' rooms" => ['Toy box', 'Bookshelf', 'Art supplies box', 'Dresser'],
+            'office' => ['Desk drawer', 'Filing cabinet', 'Cable box', 'Bookshelf'],
+            default => ['Top shelf', 'Storage box', 'Drawer', 'Cabinet'],
+        };
+    }
+
+    public function addStarterStorage(int $index): void
+    {
+        $name = $this->starterStorage[$index] ?? null;
+
+        if ($name === null) {
+            return;
+        }
+
+        try {
+            app(SunnyOutbox::class)->queue('items', $this->item['team_id'], [
+                'name' => $name,
+                'type' => ItemType::Bin->value,
+                'parent_id' => $this->item['id'],
+                'metadata' => null,
+            ]);
+        } catch (ValidationException $exception) {
+            $this->error = collect($exception->errors())->flatten()->first() ?? 'Unable to save on this phone. Try again.';
+
+            return;
+        }
+
+        app(SunnySyncCoordinator::class)->dispatch();
+        $this->error = '';
+        $this->refreshLocalSyncedData();
+        Dialog::toast('Added '.$name.' to '.$this->item['name']);
+    }
+
     #[Computed]
     public function teamId(): ?int
     {
@@ -248,7 +299,7 @@ class InventoryItemDetail extends Component
 
     protected function refreshLocalSyncedData(): void
     {
-        unset($this->item, $this->parent, $this->path, $this->children, $this->queuedChange, $this->parentChoices, $this->selectedParent, $this->browsedParent, $this->parentPickerRows, $this->parentTrail);
+        unset($this->item, $this->parent, $this->path, $this->children, $this->starterStorage, $this->queuedChange, $this->parentChoices, $this->selectedParent, $this->browsedParent, $this->parentPickerRows, $this->parentTrail);
     }
 
     /**
