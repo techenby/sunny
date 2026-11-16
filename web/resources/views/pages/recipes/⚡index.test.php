@@ -57,6 +57,21 @@ test('can search recipes by name', function () {
         ->assertDontSee('Chicken Tikka');
 });
 
+test('search ignores letter case', function () {
+    $user = User::factory()->create();
+    Recipe::factory()
+        ->count(2)
+        ->for($user->currentTeam)
+        ->sequence(['name' => 'Pasta Carbonara'], ['name' => 'Chicken Tikka'])
+        ->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::recipes.index')
+        ->set('search', 'pASTA')
+        ->assertSee('Pasta Carbonara')
+        ->assertDontSee('Chicken Tikka');
+});
+
 test('can sort recipes', function () {
     $user = User::factory()->create();
     Recipe::factory()->count(2)->for($user->currentTeam)->sequence(['name' => 'Zucchini Bread'], ['name' => 'Apple Pie'])->create();

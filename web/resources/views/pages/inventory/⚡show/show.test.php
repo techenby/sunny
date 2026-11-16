@@ -54,6 +54,19 @@ test('shows the kind of thing and the trail of places it is inside', function ()
         ->assertSeeHtml('href="' . route('inventory.show', ['item' => $shelf]) . '"');
 });
 
+test('the breadcrumb shortens to the parent and keeps the full path in Where it is', function () {
+    $user = User::factory()->create();
+    $garage = Item::factory()->for($user->currentTeam)->location()->create(['name' => 'Garage']);
+    $shelf = Item::factory()->for($user->currentTeam)->bin()->childOf($garage)->create(['name' => 'Metal Shelf']);
+    $bin = Item::factory()->for($user->currentTeam)->bin()->childOf($shelf)->create(['name' => 'Blue Bin']);
+
+    Livewire::actingAs($user)
+        ->test('pages::inventory.show', ['item' => $bin])
+        ->assertSeeInOrder(['Inventory', 'Metal Shelf', 'Blue Bin', 'Where it is', 'Garage', 'Metal Shelf'])
+        ->assertSeeHtml('href="' . route('inventory.index', ['parentId' => $shelf->id]) . '"')
+        ->assertDontSeeHtml('href="' . route('inventory.index', ['parentId' => $garage->id]) . '"');
+});
+
 test('says when something is not in a place yet', function () {
     $user = User::factory()->create();
     $item = Item::factory()->for($user->currentTeam)->create();
@@ -151,6 +164,21 @@ test('the delete confirmation names the item and says where its contents go', fu
         ->assertSee('“Tool Chest” will be deleted for everyone on your team. The 2 things inside it will move to “Not in a place yet”.');
 });
 
+test('a deleted item does not offer delete again', function () {
+    $user = User::factory()->create();
+    $item = Item::factory()->for($user->currentTeam)->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::inventory.show', ['item' => $item])
+        ->assertSeeHtml('wire:click="delete"');
+
+    $item->delete();
+
+    Livewire::actingAs($user)
+        ->test('pages::inventory.show', ['item' => $item->fresh()])
+        ->assertDontSeeHtml('wire:click="delete"');
+});
+
 describe('contents', function () {
     test('lists the items inside', function () {
         $user = User::factory()->create();
@@ -172,6 +200,31 @@ describe('contents', function () {
         Livewire::actingAs($user)
             ->test('pages::inventory.show', ['item' => $bin])
             ->assertSee('Nothing inside yet.');
+    });
+
+    test('a thing with nothing inside offers a quiet way to put something inside', function () {
+        $user = User::factory()->create();
+        $thing = Item::factory()->for($user->currentTeam)->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.show', ['item' => $thing])
+            ->assertSee('Does this hold other things?')
+            ->assertDontSee('Nothing inside yet.')
+            ->assertDontSee('What’s inside')
+            ->call('create')
+            ->assertSet('form.parent_id', $thing->id);
+    });
+
+    test('a thing with something inside lists it', function () {
+        $user = User::factory()->create();
+        $thing = Item::factory()->for($user->currentTeam)->create();
+        Item::factory()->for($user->currentTeam)->childOf($thing)->create(['name' => 'Spare Strings']);
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.show', ['item' => $thing])
+            ->assertSee('What’s inside (1)')
+            ->assertSeeHtml('<span>Spare Strings</span>')
+            ->assertDontSee('Does this hold other things?');
     });
 
     test('can add an item inside', function () {

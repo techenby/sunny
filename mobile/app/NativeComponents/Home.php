@@ -8,13 +8,12 @@ use App\Http\Integrations\Sunny\SunnyAuth;
 use App\Http\Integrations\Sunny\SunnyStore;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\View\View;
-use Native\Mobile\Edge\NativeComponent;
 use RuntimeException;
 use Saloon\Exceptions\Request\FatalRequestException;
 use Saloon\Exceptions\Request\RequestException;
 use Saloon\Exceptions\Request\Statuses\UnauthorizedException;
 
-class Home extends NativeComponent
+class Home extends Component
 {
     public string $error = '';
 

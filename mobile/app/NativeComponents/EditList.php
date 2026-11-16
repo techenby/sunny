@@ -7,9 +7,8 @@ use App\Concerns\ManagesListForm;
 use App\Enums\ChecklistType;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
-use Native\Mobile\Edge\NativeComponent;
 
-class EditList extends NativeComponent
+class EditList extends Component
 {
     use ChecksSunnySync;
     use ManagesListForm;

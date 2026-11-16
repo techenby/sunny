@@ -12,9 +12,11 @@ use Native\Mobile\UI\NativeUIServiceProvider;
 use NativePHP\BackgroundTasks\BackgroundTasksServiceProvider;
 use NativePHP\Clipboard\ClipboardServiceProvider;
 use NativePHP\LocalNotifications\LocalNotificationsServiceProvider;
+use Nativephp\MobileOta\OtaServiceProvider;
 use SRWieZ\NativePHP\Mobile\Screen\ScreenServiceProvider;
 use Sunny\ItemScanner\ItemScannerServiceProvider;
 use Vos\LiveActivities\LiveActivitiesServiceProvider;
+use ZXN\NativeWatch\Mobile\MobileServiceProvider;
 
 class NativeServiceProvider extends ServiceProvider
 {
@@ -55,6 +57,8 @@ class NativeServiceProvider extends ServiceProvider
             ScannerServiceProvider::class,
             ShareServiceProvider::class,
             ClipboardServiceProvider::class,
+            OtaServiceProvider::class,
+            MobileServiceProvider::class,
             ScreenServiceProvider::class,
             LocalNotificationsServiceProvider::class,
             LiveActivitiesServiceProvider::class,

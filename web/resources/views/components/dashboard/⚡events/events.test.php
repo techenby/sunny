@@ -7,12 +7,17 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Http;
 use Livewire\Livewire;
 
-test('it prompts to add a calendar when the team has no feeds', function () {
-    $user = User::factory()->create();
+test('it keeps the three day columns and prompts to connect a calendar when the team has no feeds', function () {
+    Date::setTestNow('2026-05-08 08:00:00');
+
+    $team = Team::factory()->create(['timezone' => 'America/Chicago']);
+    $user = User::factory()->memberOf($team)->create();
 
     Livewire::actingAs($user)
         ->test('dashboard.events')
-        ->assertSee(__('Add a calendar'));
+        ->assertSeeInOrder([__('Today'), __('Tomorrow'), 'Sunday'])
+        ->assertSee(__('Nothing scheduled.'))
+        ->assertSee(__('Connect a calendar'));
 });
 
 test('it groups the next three days of events', function () {
@@ -66,6 +71,7 @@ ICS),
         ->assertSee('Main St')
         ->assertSee(__('All day'))
         ->assertSee(__('Nothing scheduled.'))
+        ->assertDontSee(__('Connect a calendar'))
         ->assertDontSee('Next week');
 });
 
@@ -77,7 +83,7 @@ test('it does not show another team\'s feeds', function () {
 
     Livewire::actingAs($user)
         ->test('dashboard.events')
-        ->assertSee(__('Add a calendar'));
+        ->assertSee(__('Connect a calendar'));
 
     Http::assertNothingSent();
 });

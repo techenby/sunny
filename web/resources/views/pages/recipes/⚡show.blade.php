@@ -11,7 +11,8 @@ use Laravel\Head\Facades\Head;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
-new class extends Component {
+new class extends Component
+{
     public Recipe $recipe;
 
     public ?int $copyToTeamId = null;
@@ -81,31 +82,40 @@ new class extends Component {
 }; ?>
 
 <div class="space-y-6">
-    <div class="flex items-center justify-between">
-        <div class="flex items-center gap-4">
-            <flux:button :href="route('recipes.index')" icon="arrow-left" variant="ghost" wire:navigate />
+    <flux:breadcrumbs>
+        <flux:breadcrumbs.item :href="route('recipes.index')" wire:navigate class="cursor-pointer">{{ __('Recipes') }}</flux:breadcrumbs.item>
+        <flux:breadcrumbs.item>{{ $recipe->name }}</flux:breadcrumbs.item>
+    </flux:breadcrumbs>
+
+    <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div class="min-w-0">
             <flux:heading size="xl">{{ $recipe->name }}</flux:heading>
+
+            @include('pages.recipes.meta', ['editable' => true])
         </div>
-        <flux:dropdown align="end">
-            <flux:button icon="ellipsis-vertical" variant="ghost" />
-            <flux:menu>
+        <div class="flex shrink-0 flex-wrap items-center gap-2">
+            @if ($recipe->ingredients || $recipe->instructions)
+                <flux:button :href="route('recipes.cook', $recipe)" icon="play" wire:navigate>{{ __('Cook') }}</flux:button>
+            @endif
+            <flux:button icon="arrow-path-rounded-square" wire:click="remix">{{ __('Remix') }}</flux:button>
+            <flux:button icon="pencil-square" :href="route('recipes.edit', $recipe)" wire:navigate>{{ __('Edit') }}</flux:button>
+            <x-ui.actions size="base">
                 <flux:modal.trigger name="share-recipe">
                     <flux:menu.item icon="share">{{ __('Share') }}</flux:menu.item>
                 </flux:modal.trigger>
-                <flux:menu.item icon="document-duplicate" wire:click="remix">{{ __('Remix') }}</flux:menu.item>
                 @if ($this->otherTeams->isNotEmpty())
                     <flux:modal.trigger name="copy-recipe">
                         <flux:menu.item icon="arrow-up-tray">{{ __('Copy to Team') }}</flux:menu.item>
                     </flux:modal.trigger>
                 @endif
-                <flux:menu.item icon="pencil" :href="route('recipes.edit', $recipe)" wire:navigate>{{ __('Edit') }}</flux:menu.item>
+                <flux:menu.separator />
                 <flux:menu.item wire:click="delete" variant="danger" icon="trash" wire:confirm="{{ __('“:name” will be deleted for everyone on your team.', ['name' => $recipe->name]) }}">{{ __('Delete') }}</flux:menu.item>
-            </flux:menu>
-        </flux:dropdown>
+            </x-ui.actions>
+        </div>
 
         @include('pages::recipes.modals.share-recipe')
         @include('pages::recipes.modals.copy-to-team')
     </div>
 
-    @include('pages.recipes.detail')
+    @include('pages.recipes.detail', ['editable' => true])
 </div>

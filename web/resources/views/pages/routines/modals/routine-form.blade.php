@@ -1,7 +1,7 @@
 @teleport('body')
 <flux:modal name="routine-form" flyout variant="floating" class="md:w-96">
     <form wire:submit="save" class="space-y-6">
-        <flux:heading size="lg">{{ $form->editingRoutine ? __('Edit Routine') : __('Add Routine') }}</flux:heading>
+        <flux:heading size="lg">{{ $form->editingRoutine ? __('Edit routine') : __('Add routine') }}</flux:heading>
 
         <flux:input wire:model="form.name" :label="__('Name')" :placeholder="__('Morning Routine')" type="text" required />
 

@@ -24,7 +24,8 @@ test('renders successfully', function () {
 
     actingAs($user)
         ->get(route('kiosk.configure.settings'))
-        ->assertOk();
+        ->assertOk()
+        ->assertSee('Choose how the kiosk display looks and behaves');
 
     Livewire::actingAs($user)
         ->test('pages::kiosk.configure.settings')

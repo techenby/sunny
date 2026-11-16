@@ -4,15 +4,17 @@
             {{ __('Inventory') }}
         </flux:breadcrumbs.item>
 
-        @foreach ($this->breadcrumbs as $breadcrumb)
-            <flux:breadcrumbs.item :href="route('inventory.index', ['parentId' => $breadcrumb->id])" class="cursor-pointer">
-                {{ $breadcrumb->name }}
-            </flux:breadcrumbs.item>
-        @endforeach
+        @if ($this->breadcrumbs->count() > 1)
+            <flux:breadcrumbs.item icon="ellipsis-horizontal" />
+        @endif
 
-        <flux:breadcrumbs.item>
-            {{ $item->name }}
-        </flux:breadcrumbs.item>
+        @if ($parent = $this->breadcrumbs->last())
+            <flux:breadcrumbs.item :href="route('inventory.index', ['parentId' => $parent->id])" class="cursor-pointer">
+                {{ $parent->name }}
+            </flux:breadcrumbs.item>
+        @endif
+
+        <flux:breadcrumbs.item>{{ $item->name }}</flux:breadcrumbs.item>
     </flux:breadcrumbs>
 
     <div class="flex flex-wrap items-center justify-between gap-4">
@@ -31,19 +33,20 @@
         <div class="flex flex-wrap items-center gap-2">
             <flux:button wire:click="edit" icon="pencil">{{ __('Edit') }}</flux:button>
             <flux:button wire:click="showQrCode" icon="qr-code">{{ __('QR code') }}</flux:button>
-            <flux:dropdown align="end">
-                <flux:button icon="ellipsis-vertical" variant="ghost" :aria-label="__('More actions')" />
-                <flux:menu>
-                    <flux:modal.trigger name="duplicate-item">
-                        <flux:menu.item icon="square-2-stack">{{ __('Make copies') }}</flux:menu.item>
+            <x-ui.actions size="base">
+                <flux:modal.trigger name="duplicate-item">
+                    <flux:menu.item icon="square-2-stack">{{ __('Make copies') }}</flux:menu.item>
+                </flux:modal.trigger>
+                @if ($this->otherTeams->isNotEmpty())
+                    <flux:modal.trigger name="move-item">
+                        <flux:menu.item icon="arrow-up-tray">{{ __('Move to another team') }}</flux:menu.item>
                     </flux:modal.trigger>
-                    @if ($this->otherTeams->isNotEmpty())
-                        <flux:modal.trigger name="move-item">
-                            <flux:menu.item icon="arrow-up-tray">{{ __('Move to another team') }}</flux:menu.item>
-                        </flux:modal.trigger>
-                    @endif
-                </flux:menu>
-            </flux:dropdown>
+                @endif
+                @unless ($item->trashed())
+                    <flux:menu.separator />
+                    <flux:menu.item wire:click="delete" wire:confirm="{{ $item->deletionWarning() }}" variant="danger" icon="trash">{{ __('Delete') }}</flux:menu.item>
+                @endunless
+            </x-ui.actions>
         </div>
     </div>
 
@@ -53,6 +56,14 @@
                 <img src="{{ $item->photo_url }}" alt="{{ __('Photo of :name', ['name' => $item->name]) }}" class="w-full rounded-lg object-cover max-h-96" />
             @endif
 
+            @if ($item->type === \App\Enums\ItemType::Item && $this->children->isEmpty())
+                @unless ($item->trashed())
+                    <flux:text>
+                        {{ __('Does this hold other things?') }}
+                        <flux:link as="button" variant="ghost" wire:click="create">{{ __('Put something inside') }}</flux:link>
+                    </flux:text>
+                @endunless
+            @else
             <div class="space-y-3">
                 <div class="flex items-center justify-between gap-2">
                     <flux:heading size="lg">
@@ -67,34 +78,44 @@
                     <flux:card class="text-center">
                         <flux:text>{{ __('Nothing inside yet.') }}</flux:text>
                         @unless ($item->trashed())
-                            <flux:button wire:click="create" icon="plus" variant="primary" size="sm" class="mt-3">{{ __('Put something inside') }}</flux:button>
+                            <flux:button wire:click="create" icon="plus" variant="primary" class="mt-3">{{ __('Put something inside') }}</flux:button>
                         @endunless
                     </flux:card>
                 @else
-                    <flux:table :paginate="$this->children">
+                    <flux:table :paginate="$this->children" class="w-full">
                         <flux:table.columns>
                             <flux:table.column>{{ __('Name') }}</flux:table.column>
-                            <flux:table.column>{{ __('Modified') }}</flux:table.column>
-                            <flux:table.column>{{ __('What’s inside') }}</flux:table.column>
+                            <flux:table.column class="w-36">{{ __('Modified') }}</flux:table.column>
+                            <flux:table.column class="w-32">{{ __('What’s inside') }}</flux:table.column>
                         </flux:table.columns>
 
                         <flux:table.rows>
                             @foreach ($this->children as $child)
-                                <flux:table.row :key="$child->id">
+                                <x-ui.table.row :key="$child->id" :href="route('inventory.show', ['item' => $child])">
                                     <flux:table.cell>
-                                        <flux:link :href="route('inventory.show', ['item' => $child])" wire:navigate inset="top bottom" class="!flex !items-center gap-3">
-                                            <flux:avatar size="xs" :src="$child->thumb_url" :icon="$child->type->getIcon()" :color="$child->type->getIconColor()" icon:variant="outline" />
-                                            <span>{{ $child->truncated_name }}</span>
-                                        </flux:link>
+                                        <x-ui.table.name :href="route('inventory.show', ['item' => $child])">
+                                            <x-slot:thumb>
+                                                <x-ui.table.thumb :src="$child->thumb_url" :icon="$child->type->getIcon()" :color="$child->type->getIconColor()" size="base" />
+                                            </x-slot:thumb>
+
+                                            {{ $child->truncated_name }}
+                                        </x-ui.table.name>
                                     </flux:table.cell>
                                     <flux:table.cell>{{ $child->updated_at->diffForHumans() }}</flux:table.cell>
-                                    <flux:table.cell>{{ $child->children_count > 0 ? trans_choice(':count thing|:count things', $child->children_count) : '—' }}</flux:table.cell>
-                                </flux:table.row>
+                                    <flux:table.cell>
+                                        @if ($child->children_count > 0)
+                                            {{ trans_choice(':count thing|:count things', $child->children_count) }}
+                                        @else
+                                            <x-ui.table.blank />
+                                        @endif
+                                    </flux:table.cell>
+                                </x-ui.table.row>
                             @endforeach
                         </flux:table.rows>
                     </flux:table>
                 @endif
             </div>
+            @endif
         </div>
 
         <div class="space-y-6">
@@ -159,12 +180,6 @@
             @endif
         </div>
     </div>
-
-    @unless ($item->trashed())
-    <div class="flex justify-center">
-        <flux:button wire:click="delete" wire:confirm="{{ $item->deletionWarning() }}" variant="subtle" icon="trash" class="!text-red-600 dark:!text-red-400">{{ __('Delete :name', ['name' => $item->name]) }}</flux:button>
-    </div>
-    @endunless
 
     @include('pages.inventory.modals.item-form')
     @include('pages.inventory.modals.qr-code')

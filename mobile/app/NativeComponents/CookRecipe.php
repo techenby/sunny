@@ -9,13 +9,12 @@ use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
 use Native\Mobile\Attributes\On;
 use Native\Mobile\Attributes\Poll;
-use Native\Mobile\Edge\NativeComponent;
 use Native\Mobile\Facades\Dialog;
 use Native\Mobile\Facades\Haptics;
 use NativePHP\LocalNotifications\Events\PermissionGranted;
 use SRWieZ\NativePHP\Mobile\Screen\Facades\Screen;
 
-class CookRecipe extends NativeComponent
+class CookRecipe extends Component
 {
     public const TAB_PREP = 0;
 

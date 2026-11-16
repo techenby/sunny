@@ -10,9 +10,24 @@ use Livewire\Component;
 
 new class extends Component
 {
+    public const LIMIT = 3;
+
     /** @return Collection<int, RoutineOccurrence> */
     #[Computed]
     public function occurrences(): Collection
+    {
+        return $this->todaysOccurrences->take(self::LIMIT);
+    }
+
+    #[Computed]
+    public function total(): int
+    {
+        return $this->todaysOccurrences->count();
+    }
+
+    /** @return Collection<int, RoutineOccurrence> */
+    #[Computed]
+    public function todaysOccurrences(): Collection
     {
         return resolve(GenerateRoutineOccurrences::class)
             ->forDate(Auth::user()->currentTeam)
@@ -28,6 +43,6 @@ new class extends Component
 
         $occurrenceStep->toggle(Auth::user());
 
-        unset($this->occurrences);
+        unset($this->occurrences, $this->total, $this->todaysOccurrences);
     }
 };

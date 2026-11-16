@@ -23,7 +23,7 @@
     ];
 
     $lists = [
-        ['name' => 'Groceries', 'type' => ChecklistType::Shopping, 'household' => true, 'items' => ['Oat milk', 'Kidney beans', 'Tortillas', 'Cilantro']],
+        ['name' => 'Groceries', 'type' => ChecklistType::Shopping, 'household' => true, 'items' => ['Oat milk', 'Kidney beans', 'Tortillas']],
         ['name' => 'Riley\'s to-dos', 'type' => ChecklistType::Todo, 'household' => false, 'items' => ['Return library books', 'Sign permission slip']],
     ];
 @endphp
@@ -33,7 +33,7 @@
         <x-welcome.screen width="1000" height="660">
             <div class="flex h-full bg-white text-zinc-950 dark:bg-zinc-800 dark:text-white">
                 <div class="flex w-64 shrink-0 flex-col gap-4 border-e border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-900">
-                    <flux:sidebar.brand href="#" :logo="asset('icon.svg')" name="Sunny Home" />
+                    <flux:sidebar.brand href="#" :logo="asset('icon.svg')" name="SunnyHome" />
 
                     <flux:sidebar.nav>
                         <flux:sidebar.item icon="home" href="#" current>{{ __('Dashboard') }}</flux:sidebar.item>
@@ -55,19 +55,17 @@
                         <div class="@container">
                             <div class="grid gap-5 @2xl:grid-cols-3">
                                 @foreach ($days as $label => $events)
-                                    <section class="space-y-2">
-                                        <flux:heading size="sm" class="text-zinc-500 dark:text-zinc-400">{{ $label }}</flux:heading>
-
+                                    <x-dashboard.day :$label>
                                         @foreach ($events as $event)
                                             <x-dashboard.event :time="$event['time']" :title="$event['title']" :location="$event['location']" :color="$event['color']" />
                                         @endforeach
-                                    </section>
+                                    </x-dashboard.day>
                                 @endforeach
                             </div>
                         </div>
                     </x-dashboard.card>
 
-                    <div class="grid grid-cols-2 gap-6">
+                    <div class="grid grid-cols-2 items-start gap-6">
                         <x-dashboard.card :heading="__('Today\'s routines')" :action="__('All routines')" href="#">
                             <div class="space-y-5">
                                 @foreach ($routines as $routine)

@@ -21,6 +21,19 @@
         @endforelse
     </list-section>
 
+    @if ($canShareCrashReports)
+        <list-section header="Privacy" footer="Sends error details and information about your device to NativeWatch so we can fix problems. Off unless you turn it on.">
+            <list-item
+                ref="crash-reports"
+                headline="Share crash reports"
+                :leadingIconIos="Ios::Ladybug"
+                :leadingIconAndroid="Android::BugReport"
+                :trailingSwitch="$shareCrashReports"
+                onTrailingChange="setCrashReports"
+            />
+        </list-section>
+    @endif
+
     <list-section header="About">
         <list-item
             ref="privacy-policy"

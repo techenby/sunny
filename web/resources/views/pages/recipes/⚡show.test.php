@@ -57,7 +57,7 @@ test('remix shows parent recipe', function () {
     $this->actingAs($user)
         ->get(route('recipes.show', $remix))
         ->assertOk()
-        ->assertSee('Remixed From')
+        ->assertSee('Remixed from')
         ->assertSee('Original Recipe');
 });
 
@@ -71,6 +71,99 @@ test('parent shows remixes', function () {
         ->assertOk()
         ->assertSee('Remixes')
         ->assertSee('Remixed Recipe');
+});
+
+describe('remixes', function () {
+    test('labels each remix with its name and when it was made', function () {
+        $this->freezeTime();
+
+        $user = User::factory()->create();
+        $original = Recipe::factory()->for($user->currentTeam)->create();
+        Recipe::factory()->remixOf($original)->create([
+            'name' => 'Gluten Free Cake',
+            'created_at' => now()->subDays(2),
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('recipes.show', $original))
+            ->assertOk()
+            ->assertSee('Gluten Free Cake')
+            ->assertSee('2 days ago');
+    });
+
+    test('shows an empty state when there are no remixes', function () {
+        $user = User::factory()->create();
+        $recipe = Recipe::factory()->for($user->currentTeam)->create();
+
+        $this->actingAs($user)
+            ->get(route('recipes.show', $recipe))
+            ->assertOk()
+            ->assertSee('No remixes yet');
+    });
+
+    test('never lists the recipe itself', function () {
+        $user = User::factory()->create();
+        $recipe = Recipe::factory()->for($user->currentTeam)->create(['name' => 'Self Referencing Soup']);
+        $recipe->update(['parent_id' => $recipe->id]);
+
+        $this->actingAs($user)
+            ->get(route('recipes.show', $recipe))
+            ->assertOk()
+            ->assertSee('No remixes yet');
+    });
+
+    test('hides remixes copied to teams the user is not in', function () {
+        $user = User::factory()->create();
+        $original = Recipe::factory()->for($user->currentTeam)->create();
+        Recipe::factory()->remixOf($original)->create(['team_id' => Team::factory(), 'name' => 'Another Household Copy']);
+
+        $this->actingAs($user)
+            ->get(route('recipes.show', $original))
+            ->assertOk()
+            ->assertDontSee('Another Household Copy')
+            ->assertSee('No remixes yet');
+    });
+});
+
+describe('empty recipe', function () {
+    test('shows an empty state for each missing section, leading to the edit page', function () {
+        $user = User::factory()->create();
+        $recipe = Recipe::factory()->for($user->currentTeam)->create();
+
+        $this->actingAs($user)
+            ->get(route('recipes.show', $recipe))
+            ->assertOk()
+            ->assertSee('Upload a photo')
+            ->assertSee('No description yet')
+            ->assertSee('Add a description')
+            ->assertSee('No ingredients yet')
+            ->assertSee('Add ingredients')
+            ->assertSee('No instructions yet')
+            ->assertSee('Add steps')
+            ->assertSee('Paste from text')
+            ->assertSee('No remixes yet')
+            ->assertSee('href="' . route('recipes.edit', $recipe) . '"', false);
+    });
+
+    test('hides empty states for sections that have content', function () {
+        Storage::fake();
+
+        $user = User::factory()->create();
+        $recipe = Recipe::factory()->for($user->currentTeam)->create([
+            'photo_path' => "teams/{$user->current_team_id}/recipes/cake.png",
+            'description' => 'A tall chocolate cake',
+            'ingredients' => '<ul><li>Flour</li></ul>',
+            'instructions' => '<ol><li>Bake</li></ol>',
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('recipes.show', $recipe))
+            ->assertOk()
+            ->assertDontSee('Upload a photo')
+            ->assertDontSee('No description yet')
+            ->assertDontSee('No ingredients yet')
+            ->assertDontSee('No instructions yet');
+    });
 });
 
 test('shows tags on recipe', function () {
@@ -215,4 +308,13 @@ describe('sharing feature', function () {
             ->call('toggleSharing')
             ->assertForbidden();
     });
+});
+
+test('breadcrumb links back to the index', function () {
+    $user = User::factory()->create();
+    $recipe = Recipe::factory()->for($user->currentTeam)->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::recipes.show', ['recipe' => $recipe])
+        ->assertSeeHtml('href="' . route('recipes.index') . '"');
 });

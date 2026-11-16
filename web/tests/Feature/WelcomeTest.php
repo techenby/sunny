@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Support\Js;
 
 test('displays the landing page for guests', function () {
     $this->get('/')
@@ -12,7 +13,7 @@ test('displays the landing page for guests', function () {
         ->assertSee('Your household, organized')
         ->assertSeeInOrder(['id="features"', 'id="kiosk"', 'id="mobile"', 'id="assistant"', 'id="built-by"'], false)
         ->assertDontSee('Soon')
-        ->assertSee('Sunny Home')
+        ->assertSee('SunnyHome')
         ->assertSee('Built by Andy Swick')
         ->assertSee('https://github.com/techenby/sunny')
         ->assertSee(route('privacy'))
@@ -34,8 +35,8 @@ test('includes a description and preview image for link previews', function () {
 test('describes the app with structured data', function () {
     $this->get('/')
         ->assertOk()
-        ->assertSee('"@type":"WebSite","name":"Sunny Home"', false)
-        ->assertSee('"@type":"WebApplication","name":"Sunny Home"', false)
+        ->assertSee('"@type":"WebSite","name":"SunnyHome"', false)
+        ->assertSee('"@type":"WebApplication","name":"SunnyHome"', false)
         ->assertSee('"offers":{"@type":"Offer","price":0,"priceCurrency":"USD"}', false);
 });
 
@@ -68,6 +69,7 @@ test('displays the privacy policy', function () {
         ->assertOk()
         ->assertSee('<title>Privacy Policy - ' . config('app.name') . '</title>', false)
         ->assertSee('Privacy Policy')
+        ->assertSee('Crash reports are kept by NativeWatch for up to 90 days.')
         ->assertSee(route('terms'));
 });
 
@@ -76,4 +78,33 @@ test('displays the terms of service', function () {
         ->assertOk()
         ->assertSee('Terms of Service')
         ->assertSee(route('privacy'));
+});
+
+test('loads bento in production when it is configured', function () {
+    app()->detectEnvironment(fn (): string => 'production');
+    config(['bentonow.site_uuid' => 'site-uuid']);
+
+    $this->get('/')
+        ->assertOk()
+        ->assertSee('<script src="https://app.bentonow.com/site-uuid.js" defer></script>', false);
+});
+
+test('leaves bento out in production when it is not configured', function () {
+    app()->detectEnvironment(fn (): string => 'production');
+    config(['bentonow.site_uuid' => null]);
+
+    $this->get('/')
+        ->assertOk()
+        ->assertDontSee('https://app.bentonow.com/', false);
+});
+
+test('identifies signed-in users to bento in production', function () {
+    app()->detectEnvironment(fn (): string => 'production');
+    config(['bentonow.site_uuid' => 'site-uuid']);
+    $user = User::factory()->create(['email' => "o'brien@example.com"]);
+
+    $this->actingAs($user)
+        ->get(route('dashboard'))
+        ->assertOk()
+        ->assertSee('bento.identify(' . Js::from($user->email) . ');', false);
 });

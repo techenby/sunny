@@ -98,6 +98,13 @@ class Recipe extends Model
         return filter_var($this->source, FILTER_VALIDATE_URL) !== false;
     }
 
+    public function servingCount(): ?int
+    {
+        $count = preg_match('/\d+/', (string) $this->servings, $matches) === 1 ? (int) $matches[0] : 0;
+
+        return $count > 0 ? $count : null;
+    }
+
     public function enableSharing(): void
     {
         $this->update(['share_token' => Str::uuid()->toString()]);

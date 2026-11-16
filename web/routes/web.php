@@ -9,11 +9,11 @@ use Laravel\Head\Facades\Schema;
 
 Route::view('/', 'welcome')->name('home')->withHead(schema: [
     Schema::webSite()
-        ->name('Sunny Home')
+        ->name('SunnyHome')
         ->url(config('app.url'))
         ->toJsonLd(),
     Schema::webApplication()
-        ->name('Sunny Home')
+        ->name('SunnyHome')
         ->url(config('app.url'))
         ->description('Recipes, lists, routines, calendars, and everything in storage, shared with your whole family.')
         ->applicationCategory('LifestyleApplication')

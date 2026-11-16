@@ -13,7 +13,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\File;
 
-#[Description('Save what Sunny Home cost on Laravel Cloud in the last full billing period for the costs page')]
+#[Description('Save what SunnyHome cost on Laravel Cloud in the last full billing period for the costs page')]
 #[Signature('costs:sync {--period=1 : Billing period to read, where 0 is the current period and 1 is the previous one}')]
 class SyncCloudCostsCommand extends Command
 {

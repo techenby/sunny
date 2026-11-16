@@ -284,3 +284,12 @@ describe('crud and actions', function () {
             ->completed()->count()->toBe(0);
     });
 });
+
+test('breadcrumb links back to the index', function () {
+    $user = User::factory()->create();
+    $checklist = Checklist::factory()->for($user->currentTeam)->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::lists.show', ['checklist' => $checklist])
+        ->assertSeeHtml('href="' . route('lists.index') . '"');
+});

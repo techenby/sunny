@@ -1,12 +1,12 @@
 <x-layouts::guest>
     <div class="max-w-3xl">
         <flux:heading level="1" size="xl">Privacy Policy</flux:heading>
-        <flux:text class="mt-2">Last updated October 9, 2026</flux:text>
+        <flux:text class="mt-2">Last updated November 16, 2026</flux:text>
 
         <flux:text size="lg" class="mt-4">
-            Sunny Home is a family dashboard operated by TechEnby ("we", "us"). This policy explains what
-            information we collect when you use sunnyhome.app and the Sunny Home mobile apps, and what we do with it.
-            Sunny Home is open source, so you can also read
+            SunnyHome is a family dashboard operated by TechEnby ("we", "us"). This policy explains what
+            information we collect when you use sunnyhome.app and the SunnyHome mobile apps, and what we do with it.
+            SunnyHome is open source, so you can also read
             <flux:link href="https://github.com/techenby/sunny">the code</flux:link> to see exactly how your data is handled.
         </flux:text>
 
@@ -17,26 +17,28 @@
             <li><strong>Kiosk settings:</strong> the address you enter to show local weather, and the devices you pair as kiosks.</li>
             <li><strong>Connected assistants:</strong> access tokens for any AI assistant or API client you authorize.</li>
             <li><strong>Technical data:</strong> IP address, browser details, and logs that keep the service running and secure.</li>
+            <li><strong>Crash reports:</strong> if you turn on Share crash reports in the mobile app, error messages, stack traces, and details about your device and app such as model, operating system version, and app version. This is off unless you choose to share, and you can turn it off at any time in Preferences.</li>
         </ul>
 
         <flux:heading level="2" size="lg" class="mt-10">How we use it</flux:heading>
         <flux:text size="lg" class="mt-4">
-            We use your information to run Sunny Home, keep your account secure, send account emails such as
+            We use your information to run SunnyHome, keep your account secure, send account emails such as
             verification, password resets, and team invitations, and understand how the app is used so we can improve it.
             We do not sell your data and we do not show ads.
         </flux:text>
 
         <flux:heading level="2" size="lg" class="mt-10">Who we share it with</flux:heading>
-        <flux:text size="lg" class="mt-4">We share only what's needed with the services that help us run Sunny Home:</flux:text>
+        <flux:text size="lg" class="mt-4">We share only what's needed with the services that help us run SunnyHome:</flux:text>
         <ul class="mt-4 list-disc space-y-2 ps-5 text-base text-zinc-500 dark:text-white/70 [&_strong]:font-medium [&_strong]:text-zinc-800 dark:[&_strong]:text-white">
             <li><strong>Laravel Cloud</strong> hosts the app and its database.</li>
             <li><strong>Laravel Nightwatch</strong> collects error and performance monitoring data.</li>
+            <li><strong>NativeWatch</strong> receives crash reports from the mobile apps when you choose to share them.</li>
             <li><strong>Bento</strong> sends email and records page views on our website.</li>
             <li><strong>Mapbox</strong> suggests addresses when you set up a kiosk's weather location.</li>
             <li><strong>OpenWeather</strong> receives your kiosk's location to provide the forecast.</li>
         </ul>
         <flux:text size="lg" class="mt-4">
-            When you add a calendar feed or import a recipe from a link, Sunny Home requests that URL on your behalf.
+            When you add a calendar feed or import a recipe from a link, SunnyHome requests that URL on your behalf.
             When you connect an AI assistant, that assistant can read and change the household data you allow it to,
             under its own provider's privacy policy.
         </flux:text>
@@ -57,10 +59,14 @@
             your profile settings, which removes your account information. Content you shared with a team may remain
             available to that team's other members.
         </flux:text>
+        <flux:text size="lg" class="mt-4">
+            Crash reports are kept by NativeWatch for up to 90 days. Turning off Share crash reports deletes any reports
+            still waiting on your device. To delete reports that were already sent, email us.
+        </flux:text>
 
         <flux:heading level="2" size="lg" class="mt-10">Children</flux:heading>
         <flux:text size="lg" class="mt-4">
-            Sunny Home accounts are meant for adults managing a household. We don't knowingly collect information from
+            SunnyHome accounts are meant for adults managing a household. We don't knowingly collect information from
             children under 13 without a parent's involvement.
         </flux:text>
 

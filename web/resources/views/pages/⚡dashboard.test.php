@@ -20,6 +20,14 @@ test('renders successfully', function () {
         ->assertSeeLivewire('dashboard.items');
 })->group('smoke');
 
+test('the calendar card shows its day columns while events load', function () {
+    $user = User::factory()->create();
+
+    actingAs($user)
+        ->get(route('dashboard'))
+        ->assertSeeInOrder([__('Coming up'), __('Calendars'), __('Today'), __('Tomorrow')]);
+});
+
 test('it greets the user for the time of day in the team timezone', function (string $now, string $greeting) {
     Date::setTestNow($now);
 

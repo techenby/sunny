@@ -1,7 +1,7 @@
 @teleport('body')
 <flux:modal name="checklist-form" flyout variant="floating" class="md:w-96">
     <form wire:submit="save" class="space-y-6">
-        <flux:heading size="lg">{{ $form->editingChecklist ? __('Edit List') : __('Add List') }}</flux:heading>
+        <flux:heading size="lg">{{ $form->editingChecklist ? __('Edit list') : __('Add list') }}</flux:heading>
 
         <flux:input wire:model="form.name" :label="__('Name')" :placeholder="__('Groceries')" type="text" required />
 

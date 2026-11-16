@@ -205,6 +205,16 @@ describe('grouping at the top level', function () {
             ->assertSeeInOrder(['Places in your home', 'Garage', 'Not in a place yet', 'Camping Tent', 'Blue Tote']);
     });
 
+    test('counts everything in each group', function () {
+        $user = User::factory()->create();
+        Item::factory()->for($user->currentTeam)->location()->count(2)->create();
+        Item::factory()->for($user->currentTeam)->create(['name' => 'Camping Tent']);
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->assertSeeInOrder(['Places in your home', '2 places', 'Not in a place yet', '1 thing']);
+    });
+
     test('leaves out a heading for a group with nothing in it', function () {
         $user = User::factory()->create();
         Item::factory()->for($user->currentTeam)->location()->create(['name' => 'Garage']);
@@ -279,12 +289,13 @@ describe('can navigate between levels', function () {
             ->assertSeeInOrder(['Inventory', 'Bedroom', 'Right Closet', 'Game Tote']);
     });
 
-    test('breadcrumbs are empty at root level', function () {
+    test('root level shows the page title without breadcrumbs', function () {
         $user = User::factory()->create();
 
         Livewire::actingAs($user)
             ->test('pages::inventory.index')
-            ->assertSee('All')
+            ->assertSee('Every room, bin and box in your home, and what’s inside.')
+            ->assertDontSeeHtml('data-flux-breadcrumbs')
             ->assertSet('parentId', null);
     });
 
@@ -1158,4 +1169,18 @@ describe('can filter', function () {
             ->assertDontSeeHtml('<span>Tangerines</span>')
             ->assertSeeHtml('<span>Small Box</span>');
     });
+});
+
+test('shows the item photo in place of the type icon', function () {
+    Storage::fake();
+
+    $user = User::factory()->create();
+    Item::factory()->for($user->currentTeam)->create([
+        'name' => 'Guitar',
+        'photo_path' => "teams/{$user->current_team_id}/items/guitar.png",
+    ]);
+
+    Livewire::actingAs($user)
+        ->test('pages::inventory.index')
+        ->assertSeeHtml('guitar.png');
 });
