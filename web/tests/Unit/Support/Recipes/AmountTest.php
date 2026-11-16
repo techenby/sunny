@@ -20,6 +20,8 @@ test('it formats a scaled ingredient amount', function (string $text, float $fac
     'count without a unit' => ['3 eggs', 0.5, '1 1/2', 'eggs'],
     'count unit becomes plural' => ['1 clove garlic', 3.0, '3 cloves', 'garlic'],
     'metric stays decimal' => ['250 g flour', 1.5, '375 g', 'flour'],
+    'larger metric keeps a decimal' => ['15 g yeast', 1.5, '22.5 g', 'yeast'],
+    'metric rounds to one decimal' => ['100 ml milk', 1 / 3, '33.3 ml', 'milk'],
     'small metric keeps a decimal' => ['5 ml vanilla', 0.5, '2.5 ml', 'vanilla'],
     'awkward fraction falls back to a decimal' => ['1 cup stock', 0.2, '0.2 cup', 'stock'],
     'keeps the words after the amount' => ['1 tsp salt, to taste', 2.0, '2 tsp', 'salt, to taste'],

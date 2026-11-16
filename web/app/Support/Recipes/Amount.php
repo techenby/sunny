@@ -62,7 +62,7 @@ final class Amount
     public static function number(float $value, ?string $unit = null): string
     {
         if (in_array($unit, self::DECIMAL_UNITS, true)) {
-            return self::decimal($value, $value >= 10 ? 0 : 1);
+            return self::decimal($value, 1);
         }
 
         $whole = (int) floor($value + 0.0001);
