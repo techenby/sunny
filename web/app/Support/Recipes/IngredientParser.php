@@ -42,24 +42,45 @@ final class IngredientParser
     public static function parse(string $text): array
     {
         $text = trim($text);
-        $number = Quantity::PATTERN;
-        $unparsed = self::withoutAmount($text);
+        $split = self::split($text);
 
-        if (! preg_match("/^({$number})(?:\s*(?:-|–|—|\s+to\s+)\s*({$number}))?(.*)$/su", $text, $matches)) {
-            return $unparsed;
+        if ($split === null) {
+            return self::withoutAmount($text);
         }
 
-        $rest = $matches[3];
+        return [
+            'quantity' => $split['quantity'],
+            'quantity_max' => $split['quantity_max'],
+            'unit' => $split['unit'],
+            'name' => self::name($split['rest']),
+        ];
+    }
 
-        if (preg_match('/^(?:x\s*\d|["\'°%-])/iu', $rest)) {
-            return $unparsed;
+    public static function rest(string $text): string
+    {
+        $text = trim($text);
+
+        return self::split($text)['rest'] ?? $text;
+    }
+
+    /** @return array{quantity: float, quantity_max: float|null, unit: string|null, rest: string}|null */
+    private static function split(string $text): ?array
+    {
+        $number = Quantity::PATTERN;
+
+        if (! preg_match("/^({$number})(?:\s*(?:-|–|—|\s+to\s+)\s*({$number}))?(.*)$/su", $text, $matches)) {
+            return null;
+        }
+
+        if (preg_match('/^(?:x\s*\d|["\'°%-])/iu', $matches[3])) {
+            return null;
         }
 
         $quantity = Quantity::toFloat($matches[1]);
         $max = $matches[2] === '' ? null : Quantity::toFloat($matches[2]);
 
         if ($quantity === null) {
-            return $unparsed;
+            return null;
         }
 
         if ($max !== null && $max < $quantity) {
@@ -68,22 +89,17 @@ final class IngredientParser
         }
 
         $unit = null;
-        $name = trim($rest);
+        $rest = trim($matches[3]);
 
-        if (preg_match('/^([A-Za-z]+)\.?(?=\s|$)(.*)$/su', $name, $unitMatches)) {
+        if (preg_match('/^([A-Za-z]+)\.?(?=\s|$)(.*)$/su', $rest, $unitMatches)) {
             $unit = self::unit($unitMatches[1]);
 
             if ($unit !== null) {
-                $name = trim($unitMatches[2]);
+                $rest = trim($unitMatches[2]);
             }
         }
 
-        return [
-            'quantity' => $quantity,
-            'quantity_max' => $max,
-            'unit' => $unit,
-            'name' => self::name($name),
-        ];
+        return ['quantity' => $quantity, 'quantity_max' => $max, 'unit' => $unit, 'rest' => $rest];
     }
 
     /** @return array{quantity: null, quantity_max: null, unit: string|null, name: string} */
