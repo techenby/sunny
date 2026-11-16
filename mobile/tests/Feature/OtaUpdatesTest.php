@@ -9,23 +9,24 @@ it('compiles the OTA plugin into native builds', function (): void {
     expect((new NativeServiceProvider(app()))->plugins())->toContain(OtaServiceProvider::class);
 });
 
-it('leaves OTA updates in manual mode', function (): void {
-    expect(config('nativephp-ota.mode'))->toBe('manual');
+it('defaults OTA updates to silent mode', function (): void {
+    expect(config('nativephp-ota.mode'))->toBe('silent');
 });
 
-it('does not check for updates on launch in manual mode', function (): void {
-    $bridge = Native::fakeBridge();
-
-    app(Ota::class)->onLaunch();
-
-    $bridge->assertNotCalled('Ota.Check');
-});
-
-it('checks for updates on launch in silent mode', function (): void {
-    config(['nativephp-ota.mode' => 'silent']);
+it('checks for an update on launch without downloading when the app is up to date', function (): void {
     $bridge = Native::fakeBridge()->withOtaUpToDate();
 
     app(Ota::class)->onLaunch();
 
     $bridge->assertOtaChecked()->assertNothingOtaDownloaded();
+});
+
+it('downloads and queues a waiting update on launch', function (): void {
+    $bridge = Native::fakeBridge()
+        ->withOtaUpdate()
+        ->respondTo('Ota.Download', ['success' => true]);
+
+    app(Ota::class)->onLaunch();
+
+    $bridge->assertOtaChecked()->assertOtaDownloaded()->assertOtaQueued();
 });
