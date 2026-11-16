@@ -6,6 +6,7 @@ use App\Enums\TimeOfDay;
 use App\Http\Integrations\Sunny\Requests\CreateTokenRequest;
 use App\Http\Integrations\Sunny\Requests\ImportRecipeRequest;
 use App\Http\Integrations\Sunny\Requests\MarkOnboardedRequest;
+use App\Http\Integrations\Sunny\Requests\SaveRecordRequest;
 use App\Http\Integrations\Sunny\SunnyStore;
 use App\Models\Checklist;
 use App\Models\ChecklistItem;
@@ -139,6 +140,28 @@ it('creates the places and starters, imports the sample recipe and marks onboard
     Saloon::assertSent(fn (Request $request): bool => $request instanceof ImportRecipeRequest
         && $request->resolveEndpoint() === '/teams/alexs-team/recipes/import'
         && $request->body()->get('url') === 'https://safelydelish.com/apple-cider-donuts/');
+});
+
+it('sends the new places to Sunny before marking onboarding done', function (): void {
+    Onboarding::begin(42);
+    $sunny = Saloon::fake([
+        SaveRecordRequest::class => MockResponse::make(['data' => [
+            'id' => 500, 'team_id' => 1, 'parent_id' => null, 'type' => 'location', 'name' => 'Garage', 'metadata' => null,
+            'created_at' => now()->toIso8601String(), 'updated_at' => now()->toIso8601String(),
+        ]], 201),
+        MarkOnboardedRequest::class => MockResponse::make(['id' => 42]),
+    ]);
+
+    Native::visit('/setup')
+        ->tap('setup-place-0')
+        ->tap('setup-place-2')
+        ->tap('setup-starter-groceries')
+        ->tap('setup-starter-bedtime')
+        ->tap('setup-submit')
+        ->assertReplacedWith('/dashboard');
+
+    $sunny->assertSentInOrder([SaveRecordRequest::class, MarkOnboardedRequest::class]);
+    expect(Item::find(500)->name)->toBe('Garage');
 });
 
 it('finishes set-up without the recipe when the import fails', function (): void {

@@ -11,6 +11,7 @@ use App\Http\Integrations\Sunny\SunnyAuth;
 use App\Http\Integrations\Sunny\SunnyOutbox;
 use App\Http\Integrations\Sunny\SunnyStore;
 use App\Http\Integrations\Sunny\SunnySyncCoordinator;
+use App\Http\Integrations\Sunny\SunnyWrites;
 use App\Models\Onboarding;
 use App\Models\Team;
 use Illuminate\Support\Facades\DB;
@@ -35,6 +36,7 @@ class SetUpHome
         private readonly SunnyOutbox $outbox,
         private readonly SunnyAuth $auth,
         private readonly SunnyStore $store,
+        private readonly SunnyWrites $writes,
     ) {}
 
     /**
@@ -71,6 +73,7 @@ class SetUpHome
         }
 
         $onboarding->update(['set_up_at' => now()]);
+        rescue(fn () => $this->writes->push(), report: false);
         $onboarding->report();
         app(SunnySyncCoordinator::class)->dispatch();
     }
