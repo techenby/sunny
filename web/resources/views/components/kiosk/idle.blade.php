@@ -7,6 +7,8 @@
             screensaverAfter: @js($team->screensaver_after * 60_000),
             returnHomeAfter: @js($team->return_home_after * 60_000),
             routineHold: 30 * 60_000,
+            refreshEvery: 10 * 60_000,
+            refreshSlot: null,
             homeUrl: @js(route('kiosk.calendar', absolute: false)),
             timezone: @js($team->timezone),
             nightStartsAt: @js($team->night_starts_at),
@@ -28,6 +30,14 @@
 
             tick() {
                 this.now = new Date()
+
+                const refreshSlot = Math.floor(Date.now() / this.refreshEvery)
+
+                if (this.refreshSlot !== null && refreshSlot !== this.refreshSlot) {
+                    this.$dispatch('kiosk-refresh')
+                }
+
+                this.refreshSlot = refreshSlot
 
                 const idleFor = Date.now() - this.lastActivityAt
 
