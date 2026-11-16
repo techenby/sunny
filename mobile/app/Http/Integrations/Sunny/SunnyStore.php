@@ -5,6 +5,7 @@ namespace App\Http\Integrations\Sunny;
 use App\Models\Checklist;
 use App\Models\ChecklistItem;
 use App\Models\Item;
+use App\Models\ItemPhoto;
 use App\Models\PendingWrite;
 use App\Models\Recipe;
 use App\Models\Routine;
@@ -66,7 +67,7 @@ class SunnyStore
                 }
             }
 
-            foreach (['checklist_items', 'routine_steps'] as $type) {
+            foreach (['item_photos', 'checklist_items', 'routine_steps'] as $type) {
                 [$ownerType, $ownerKey] = self::owner($type);
                 $orphans = self::model($type)::query()->whereNotIn($ownerKey, self::model($ownerType)::query()->select('id'))->pluck('id');
                 PendingWrite::query()->where('resource', $type)->whereIn('record_id', $orphans)->delete();
@@ -89,6 +90,23 @@ class SunnyStore
     {
         $fields = self::storedFields($type);
         self::model($type)::query()->updateOrCreate(['id' => $record['id']], ['server' => self::server(), ...array_fill_keys($fields, null), ...Arr::only($record, $fields)]);
+
+        if ($type === 'items' && is_array($record['photos'] ?? null)) {
+            $this->savePhotos($record['id'], $record['photos']);
+        }
+    }
+
+    public function savePhotos(int $itemId, array $photos): void
+    {
+        $pending = PendingWrite::query()->forCurrentServer()->where('resource', 'item_photos')->get();
+        $pendingIds = $pending->pluck('record_id');
+        $pendingUuids = $pending->pluck('client_uuid')->filter();
+        $photos = collect($photos)->filter(fn (mixed $photo): bool => is_array($photo) && is_int($photo['id'] ?? null));
+
+        ItemPhoto::query()->where('item_id', $itemId)->whereNotIn('id', $photos->pluck('id')->merge($pendingIds))->where('id', '>', 0)->delete();
+
+        $photos->reject(fn (array $photo): bool => $pendingIds->contains($photo['id']) || $pendingUuids->contains($photo['client_uuid'] ?? null))
+            ->each(fn (array $photo) => $this->saveRecord('item_photos', [...$photo, 'item_id' => $itemId]));
     }
 
     /**
@@ -124,7 +142,9 @@ class SunnyStore
             $pending = PendingWrite::query()->get();
             RoutineOccurrenceStep::query()->delete();
             RoutineOccurrence::query()->delete();
-            Item::query()->whereNotIn('id', $pending->where('resource', 'items')->pluck('record_id'))->delete();
+            Item::query()->whereNotIn('id', $pending->where('resource', 'items')->pluck('record_id')
+                ->merge($pending->where('resource', 'item_photos')->pluck('payload.item_id')))->delete();
+            ItemPhoto::query()->whereNotIn('id', $pending->where('resource', 'item_photos')->pluck('record_id'))->delete();
             Recipe::query()->whereNotIn('id', $pending->where('resource', 'recipes')->pluck('record_id'))->delete();
             ChecklistItem::query()->whereNotIn('id', $pending->where('resource', 'checklist_items')->pluck('record_id'))->delete();
             Checklist::query()->whereNotIn('id', $pending->where('resource', 'checklists')->pluck('record_id')
@@ -150,6 +170,7 @@ class SunnyStore
             'recipes' => ['parent_id', 'name', 'source', 'servings', 'prep_time', 'cook_time', 'total_time', 'description', 'ingredients', 'instructions', 'notes', 'nutrition', 'tags'],
             'items' => ['parent_id', 'type', 'name', 'metadata'],
             'checklists' => ['type', 'name'],
+            'item_photos' => ['item_id'],
             'checklist_items' => ['checklist_id', 'name'],
             'routines' => ['name', 'time_of_day', 'frequency', 'weekdays', 'day_of_month', 'is_active'],
             'routine_steps' => ['routine_id', 'name'],
@@ -161,6 +182,7 @@ class SunnyStore
     {
         return match ($type) {
             'recipes', 'items' => ['team_id', ...self::editableFields($type), 'photo_url', 'thumb_url', 'created_at', 'updated_at'],
+            'item_photos' => [...self::editableFields($type), 'url', 'thumb_url', 'position', 'created_at', 'updated_at'],
             'checklists' => ['team_id', 'user_id', ...self::editableFields($type), 'created_at', 'updated_at'],
             'checklist_items' => [...self::editableFields($type), 'url', 'position', 'completed_at', 'completed_by', 'created_at', 'updated_at'],
             'routines' => ['team_id', 'user_id', ...self::editableFields($type), 'starts_on', 'created_at', 'updated_at'],
@@ -168,12 +190,13 @@ class SunnyStore
         };
     }
 
-    /** @return class-string<Recipe|Item|Checklist|ChecklistItem|Routine|RoutineStep> */
+    /** @return class-string<Recipe|Item|ItemPhoto|Checklist|ChecklistItem|Routine|RoutineStep> */
     public static function model(string $type): string
     {
         return match ($type) {
             'recipes' => Recipe::class,
             'items' => Item::class,
+            'item_photos' => ItemPhoto::class,
             'checklists' => Checklist::class,
             'checklist_items' => ChecklistItem::class,
             'routines' => Routine::class,
@@ -185,6 +208,7 @@ class SunnyStore
     public static function owner(string $type): ?array
     {
         return match ($type) {
+            'item_photos' => ['items', 'item_id', 'photos'],
             'checklist_items' => ['checklists', 'checklist_id', 'items'],
             'routine_steps' => ['routines', 'routine_id', 'steps'],
             default => null,
@@ -195,6 +219,7 @@ class SunnyStore
     public static function children(string $type): ?array
     {
         return match ($type) {
+            'items' => ['item_photos', 'item_id'],
             'checklists' => ['checklist_items', 'checklist_id'],
             'routines' => ['routine_steps', 'routine_id'],
             default => null,

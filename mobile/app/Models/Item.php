@@ -48,4 +48,9 @@ class Item extends Model
     {
         return $this->hasMany(self::class, 'parent_id');
     }
+
+    public function photos(): HasMany
+    {
+        return $this->hasMany(ItemPhoto::class)->orderBy('position')->orderBy('id');
+    }
 }

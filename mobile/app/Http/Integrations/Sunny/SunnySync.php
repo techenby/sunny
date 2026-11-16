@@ -51,6 +51,11 @@ class SunnySync
         $rules['items.*.photo_url'] = ['nullable', 'url'];
         $rules['recipes.*.thumb_url'] = ['nullable', 'url'];
         $rules['items.*.thumb_url'] = ['nullable', 'url'];
+        $rules['items.*.photos'] = ['sometimes', 'array', 'list'];
+        $rules['items.*.photos.*.id'] = ['required', 'integer', 'min:1'];
+        $rules['items.*.photos.*.url'] = ['required', 'url'];
+        $rules['items.*.photos.*.thumb_url'] = ['nullable', 'url'];
+        $rules['items.*.photos.*.position'] = ['required', 'integer', 'min:0'];
 
         $rules['items.*.type'] = ['required', Rule::enum(ItemType::class)];
         $rules['items.*.metadata'] = ['nullable', 'array'];

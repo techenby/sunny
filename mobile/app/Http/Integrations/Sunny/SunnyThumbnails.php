@@ -3,6 +3,7 @@
 namespace App\Http\Integrations\Sunny;
 
 use App\Models\Item;
+use App\Models\ItemPhoto;
 use App\Models\Recipe;
 use Illuminate\Http\Client\Pool;
 use Illuminate\Http\Client\Response;
@@ -18,16 +19,16 @@ class SunnyThumbnails
      */
     public function refresh(): void
     {
-        foreach ([Item::class, Recipe::class] as $model) {
+        foreach ([Item::class, ItemPhoto::class, Recipe::class] as $model) {
             $model::query()->forCurrentServer()->whereNull('thumb_url')->whereNotNull('thumb_path')->update(['thumb_path' => null]);
 
             $missing = $model::query()->forCurrentServer()->whereNotNull('thumb_url')->get(['id', 'thumb_url', 'thumb_path'])
-                ->reject(fn (Item|Recipe $record): bool => $record->thumb_path === self::pathFor($record->thumb_url) && is_file($record->thumb_path));
+                ->reject(fn (Item|ItemPhoto|Recipe $record): bool => $record->thumb_path === self::pathFor($record->thumb_url) && is_file($record->thumb_path));
 
             foreach ($missing->chunk(self::CONCURRENCY) as $chunk) {
-                $downloads = $chunk->reject(fn (Item|Recipe $record): bool => is_file(self::pathFor($record->thumb_url)));
+                $downloads = $chunk->reject(fn (Item|ItemPhoto|Recipe $record): bool => is_file(self::pathFor($record->thumb_url)));
                 $responses = $downloads->isEmpty() ? [] : Http::pool(fn (Pool $pool) => $downloads
-                    ->map(fn (Item|Recipe $record) => $pool->as((string) $record->id)->timeout(15)->get($record->thumb_url))
+                    ->map(fn (Item|ItemPhoto|Recipe $record) => $pool->as((string) $record->id)->timeout(15)->get($record->thumb_url))
                     ->all());
 
                 foreach ($chunk as $record) {
@@ -55,6 +56,7 @@ class SunnyThumbnails
     public function prune(): void
     {
         $inUse = Item::query()->pluck('thumb_path')
+            ->merge(ItemPhoto::query()->pluck('thumb_path'))
             ->merge(Recipe::query()->pluck('thumb_path'))
             ->filter()->flip();
 
