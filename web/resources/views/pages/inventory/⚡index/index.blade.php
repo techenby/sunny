@@ -52,6 +52,9 @@
         </div>
     </div>
 
+    @if ($this->emptyPlace)
+    @include('pages.inventory.empty-place', ['place' => $this->emptyPlace])
+    @else
     <div class="mb-4 flex items-center justify-between">
         <div class="flex items-center gap-1">
             <flux:input wire:model.live.debounce.300ms="search" :placeholder="__('Search inventory...')" icon="magnifying-glass" class="max-w-sm" />
@@ -180,6 +183,7 @@
     </flux:table>
     @endif
     </flux:checkbox.group>
+    @endif
 
     @include('pages.inventory.modals.item-form')
     @include('pages.inventory.modals.qr-code')

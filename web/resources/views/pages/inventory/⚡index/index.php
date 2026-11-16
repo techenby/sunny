@@ -10,6 +10,7 @@ use App\Livewire\Traits\WithSearching;
 use App\Livewire\Traits\WithSorting;
 use App\Models\Item;
 use App\Models\Team;
+use App\Support\Inventory\StorageSuggestions;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -77,6 +78,37 @@ new class extends Component
         }
 
         return $breadcrumbs;
+    }
+
+    #[Computed]
+    public function emptyPlace(): ?Item
+    {
+        $place = $this->breadcrumbs->last();
+
+        if ($place?->type !== ItemType::Location || filled($this->search) || $this->areFiltersActive || filled($this->filters['types'] ?? [])) {
+            return null;
+        }
+
+        return $this->items->isEmpty() ? $place : null;
+    }
+
+    public function addStorage(string $name): void
+    {
+        $place = $this->emptyPlace;
+
+        abort_unless($place && in_array($name, StorageSuggestions::storageFor($place->name), true), 404);
+
+        $this->authorize('create', Item::class);
+
+        Auth::user()->currentTeam->items()->create([
+            'name' => $name,
+            'type' => ItemType::Bin,
+            'parent_id' => $place->id,
+        ]);
+
+        unset($this->items, $this->parentItems, $this->emptyPlace);
+
+        Flux::toast(__('Added :name to :place.', ['name' => $name, 'place' => $place->name]));
     }
 
     public function isGroupedByPlace(): bool

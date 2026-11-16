@@ -7,6 +7,13 @@ use Livewire\Component;
 
 new class extends Component
 {
+    public function mount(): void
+    {
+        if (Auth::user()->needsOnboarding()) {
+            $this->redirectRoute('onboarding', navigate: true);
+        }
+    }
+
     #[Computed]
     public function greeting(): string
     {
