@@ -89,6 +89,58 @@
     </div>
 
     <flux:checkbox.group wire:model.live="selected">
+    @if ($this->isGroupedByPlace() && $this->items->isNotEmpty())
+        <div class="space-y-6">
+            @foreach ($this->items->getCollection()->groupBy(fn ($item) => $item->type === App\Enums\ItemType::Location ? 'places' : 'unplaced') as $group => $groupItems)
+                <flux:card wire:key="group-{{ $group }}" class="overflow-hidden p-0!">
+                    <div class="px-6 pt-5 pb-4">
+                        <div class="flex items-baseline gap-2">
+                            @if ($group === 'places')
+                                <flux:heading size="lg">{{ __('Places in your home') }}</flux:heading>
+                                <flux:text size="sm" variant="subtle">{{ trans_choice(':count place|:count places', $this->groupCounts['places']) }}</flux:text>
+                            @else
+                                <flux:heading size="lg">{{ __('Not in a place yet') }}</flux:heading>
+                                <flux:text size="sm" variant="subtle">{{ trans_choice(':count thing|:count things', $this->groupCounts['unplaced']) }}</flux:text>
+                            @endif
+                        </div>
+                        <flux:text class="mt-1">
+                            {{ $group === 'places' ? __('Rooms, cars and storage your things live in.') : __('Open one and choose Move to put it away.') }}
+                        </flux:text>
+                    </div>
+
+                    <flux:table class="w-full border-t border-zinc-800/10 dark:border-white/20 [&_td:first-child]:ps-6 [&_td:last-child]:pe-6 [&_th:first-child]:ps-6 [&_th:last-child]:pe-6">
+                        <flux:table.columns>
+                            <flux:table.column class="w-14">
+                                <label class="relative block size-[1.125rem]">
+                                    <input
+                                        type="checkbox"
+                                        class="peer absolute inset-0 size-full appearance-none rounded-[.3rem] border border-zinc-300 bg-white shadow-xs checked:border-transparent checked:bg-(--color-accent) dark:border-white/10 dark:bg-white/10"
+                                        x-data="{ ids: @js($groupItems->pluck('id')->map(fn ($id) => (string) $id)->values()->all()) }"
+                                        x-bind:checked="ids.every((id) => $wire.selected.map(String).includes(id))"
+                                        x-on:change="$el.closest('table').querySelectorAll('tbody ui-checkbox').forEach((box) => box.hasAttribute('data-checked') !== $event.target.checked && box.click())"
+                                        aria-label="{{ $group === 'places' ? __('Select every place on this page') : __('Select everything not in a place on this page') }}"
+                                    />
+                                    <flux:icon.check variant="micro" class="pointer-events-none absolute inset-0 m-auto hidden size-3.5 text-(--color-accent-foreground) peer-checked:block" />
+                                </label>
+                            </flux:table.column>
+                            <flux:table.column sortable :sorted="$sortBy === 'name'" :direction="$sortDirection" wire:click="sort('name')">{{ __('Name') }}</flux:table.column>
+                            <flux:table.column class="w-45">{{ __('Modified') }}</flux:table.column>
+                            <flux:table.column class="w-45">{{ __('What’s inside') }}</flux:table.column>
+                            <flux:table.column class="w-20" align="end"></flux:table.column>
+                        </flux:table.columns>
+
+                        <flux:table.rows>
+                            @foreach ($groupItems as $item)
+                                @include('pages.inventory.row')
+                            @endforeach
+                        </flux:table.rows>
+                    </flux:table>
+                </flux:card>
+            @endforeach
+
+            <flux:pagination :paginator="$this->items" class="border-t-0! pt-0!" />
+        </div>
+    @else
     <flux:table :paginate="$this->items" class="w-full">
         <flux:table.columns>
             <flux:table.column class="w-8"><flux:checkbox.all /></flux:table.column>
@@ -104,92 +156,7 @@
 
         <flux:table.rows>
             @forelse ($this->items as $item)
-                @php($isPlace = $item->type === App\Enums\ItemType::Location)
-                @if ($this->isGroupedByPlace() && ($loop->first || $isPlace !== $wasPlace))
-                    <flux:table.row :key="$isPlace ? 'group-places' : 'group-unplaced'">
-                        <flux:table.cell colspan="5" class="bg-zinc-50 dark:bg-white/5">
-                            @if ($isPlace)
-                                <flux:heading>{{ __('Places in your home') }}</flux:heading>
-                            @else
-                                <flux:heading>{{ __('Not in a place yet') }}</flux:heading>
-                                <flux:text size="sm">{{ __('Open one and choose Move to put it away.') }}</flux:text>
-                            @endif
-                        </flux:table.cell>
-                    </flux:table.row>
-                @endif
-                @php($wasPlace = $isPlace)
-                <x-ui.table.row
-                    :key="$item->id"
-                    :href="filled($search) ? route('inventory.show', ['item' => $item]) : null"
-                    action="$wire.navigateDown({{ $item->id }})"
-                >
-                    <flux:table.cell>
-                        <flux:checkbox :value="$item->id"/>
-                    </flux:table.cell>
-                    <flux:table.cell>
-                        @if (filled($search))
-                            <div class="flex items-center gap-2">
-                                <x-ui.table.name :href="route('inventory.show', ['item' => $item])">
-                                    <x-slot:thumb>
-                                        <x-ui.table.thumb :src="$item->thumb_url" :icon="$item->type->getIcon()" :color="$item->type->getIconColor()" size="base" />
-                                    </x-slot:thumb>
-
-                                    {{ $item->truncated_name }}
-                                </x-ui.table.name>
-                                @if ($detail = $this->matchedDetail($item))
-                                    <flux:text size="sm">{{ $detail }}</flux:text>
-                                @endif
-                            </div>
-                        @else
-                            <x-ui.table.name wire:click="navigateDown({{ $item->id }})">
-                                <x-slot:thumb>
-                                    <x-ui.table.thumb :src="$item->thumb_url" :icon="$item->type->getIcon()" :color="$item->type->getIconColor()" size="base" />
-                                </x-slot:thumb>
-
-                                {{ $item->truncated_name }}
-                            </x-ui.table.name>
-                        @endif
-                    </flux:table.cell>
-                    @if (filled($search))
-                        <flux:table.cell>
-                            @if ($trail = $this->trails[$item->id] ?? [])
-                                {{ implode(' › ', $trail) }}
-                            @elseif ($isPlace)
-                                {{ __('Home') }}
-                            @else
-                                {{ __('Not in a place yet') }}
-                            @endif
-                        </flux:table.cell>
-                    @else
-                        <flux:table.cell>{{ $item->updated_at->diffForHumans() }}</flux:table.cell>
-                        <flux:table.cell>
-                            @if ($item->children_count > 0)
-                                {{ trans_choice(':count thing|:count things', $item->children_count) }}
-                            @else
-                                <x-ui.table.blank />
-                            @endif
-                        </flux:table.cell>
-                    @endif
-                    <flux:table.cell align="end">
-                        @if ($filters['showTrashed'] ?? false)
-                            <div class="flex items-center gap-1">
-                                <flux:button wire:click="restore({{ $item->id }})" wire:confirm="{{ __('Bring “:name” back into your inventory?', ['name' => $item->name]) }}" variant="ghost" size="sm" icon="arrow-uturn-left">{{ __('Restore') }}</flux:button>
-                                <flux:button wire:click="forceDelete({{ $item->id }})" wire:confirm="{{ __('“:name” will be deleted forever for everyone on your team. You won’t be able to bring it back.', ['name' => $item->name]) }}" variant="danger" size="sm" icon="trash">{{ __('Delete forever') }}</flux:button>
-                            </div>
-                        @else
-                            <x-ui.actions :label="__('Actions for :name', ['name' => $item->name])">
-                                <flux:menu.item :href="route('inventory.show', ['item' => $item])" icon="eye" wire:navigate>{{ __('View') }}</flux:menu.item>
-                                <flux:menu.item wire:click="edit({{ $item->id }})" icon="pencil">{{ __('Edit') }}</flux:menu.item>
-                                <flux:menu.item wire:click="showQrCode({{ $item->id }})" icon="qr-code">{{ __('QR code') }}</flux:menu.item>
-                                <flux:menu.item wire:click="openDuplicateModal({{ $item->id }})" icon="square-2-stack">{{ __('Make copies') }}</flux:menu.item>
-                                @if ($this->otherTeams->isNotEmpty())
-                                        <flux:menu.item wire:click="openMoveModal({{ $item->id }})" icon="arrow-up-tray">{{ __('Move to another team') }}</flux:menu.item>
-                                @endif
-                                <flux:menu.item wire:click="delete({{ $item->id }})" variant="danger" icon="trash" wire:confirm="{{ $item->deletionWarning() }}">{{ __('Delete') }}</flux:menu.item>
-                            </x-ui.actions>
-                        @endif
-                    </flux:table.cell>
-                </x-ui.table.row>
+                @include('pages.inventory.row')
             @empty
                 <flux:table.row key="empty-item">
                     <flux:table.cell :colspan="filled($search) ? 4 : 5" class="py-8 text-center">
@@ -211,6 +178,7 @@
             @endforelse
         </flux:table.rows>
     </flux:table>
+    @endif
     </flux:checkbox.group>
 
     @include('pages.inventory.modals.item-form')

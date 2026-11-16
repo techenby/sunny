@@ -87,6 +87,19 @@ new class extends Component
             && ! ($this->filters['showTrashed'] ?? false);
     }
 
+    /** @return array{places: int, unplaced: int} */
+    #[Computed]
+    public function groupCounts(): array
+    {
+        $places = Auth::user()->currentTeam
+            ->items()
+            ->whereNull('parent_id')
+            ->where('type', ItemType::Location)
+            ->count();
+
+        return ['places' => $places, 'unplaced' => $this->items->total() - $places];
+    }
+
     #[Computed]
     public function items(): LengthAwarePaginator
     {

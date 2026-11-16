@@ -205,6 +205,16 @@ describe('grouping at the top level', function () {
             ->assertSeeInOrder(['Places in your home', 'Garage', 'Not in a place yet', 'Camping Tent', 'Blue Tote']);
     });
 
+    test('counts everything in each group', function () {
+        $user = User::factory()->create();
+        Item::factory()->for($user->currentTeam)->location()->count(2)->create();
+        Item::factory()->for($user->currentTeam)->create(['name' => 'Camping Tent']);
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->assertSeeInOrder(['Places in your home', '2 places', 'Not in a place yet', '1 thing']);
+    });
+
     test('leaves out a heading for a group with nothing in it', function () {
         $user = User::factory()->create();
         Item::factory()->for($user->currentTeam)->location()->create(['name' => 'Garage']);
