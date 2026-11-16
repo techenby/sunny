@@ -6,15 +6,17 @@
 @fonts
 
 @production
-<script src="https://app.bentonow.com/d14d22f048103e883848523b335aa614.js" defer></script>
+@if (filled(config('bentonow.site_uuid')))
+<script src="https://app.bentonow.com/{{ config('bentonow.site_uuid') }}.js" defer></script>
 <script>
   window.addEventListener('bento:ready', function () {
     @if (auth()->user() && auth()->user()->email)
-      bento.identify({{ json_encode(auth()->user()->email) }}));
+      bento.identify(@js(auth()->user()->email));
     @endif
     bento.view();
   });
 </script>
+@endif
 @endproduction
 
 @vite(['resources/css/app.css', 'resources/js/app.js'])

@@ -5,10 +5,10 @@ namespace App\NativeComponents;
 use App\Http\Integrations\Sunny\SunnyAuth;
 use App\Http\Integrations\Sunny\SunnyConnector;
 use App\Http\Integrations\Sunny\SunnyTeam;
+use App\Support\CrashReports;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
 use Native\Mobile\Attributes\On;
-use Native\Mobile\Edge\NativeComponent;
 use Native\Mobile\Events\Alert\ButtonPressed;
 use Native\Mobile\Facades\Browser;
 use Native\Mobile\Facades\Dialog;
@@ -16,13 +16,19 @@ use RuntimeException;
 use Saloon\Exceptions\Request\FatalRequestException;
 use Saloon\Exceptions\Request\RequestException;
 
-class Preferences extends NativeComponent
+class Preferences extends Component
 {
     public ?int $activeTeamId = null;
+
+    public bool $canShareCrashReports = false;
+
+    public bool $shareCrashReports = false;
 
     public function mount(): void
     {
         $this->activeTeamId = app(SunnyTeam::class)->current()?->id;
+        $this->canShareCrashReports = app(CrashReports::class)->available();
+        $this->shareCrashReports = app(CrashReports::class)->sharing();
     }
 
     /**
@@ -40,6 +46,18 @@ class Preferences extends NativeComponent
             app(SunnyTeam::class)->select($id);
             $this->activeTeamId = $id;
         }
+    }
+
+    public function setCrashReports(bool $share): void
+    {
+        $crashReports = app(CrashReports::class);
+
+        if (! $crashReports->share($share)) {
+            Dialog::toast('Unable to save your choice. Please try again.');
+        }
+
+        $crashReports->markAsked();
+        $this->shareCrashReports = $crashReports->sharing();
     }
 
     public function openPrivacyPolicy(): void

@@ -40,7 +40,7 @@ class CreateNewUser implements CreatesNewUsers
 
             $this->createTeam->handle($user, $user->name . "'s Team", isPersonal: true);
 
-            if (app()->isProduction()) {
+            if (app()->isProduction() && filled(config('bentonow.secret_key'))) {
                 $name = str($user->name)->explode(' ', 2);
                 Bento::track(
                     $user->email,

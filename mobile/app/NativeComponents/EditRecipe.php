@@ -6,9 +6,8 @@ use App\Concerns\ChecksSunnySync;
 use App\Concerns\ManagesRecipeForm;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
-use Native\Mobile\Edge\NativeComponent;
 
-class EditRecipe extends NativeComponent
+class EditRecipe extends Component
 {
     use ChecksSunnySync;
     use ManagesRecipeForm;

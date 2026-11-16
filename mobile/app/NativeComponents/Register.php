@@ -4,10 +4,9 @@ namespace App\NativeComponents;
 
 use App\Http\Integrations\Sunny\SunnyConnector;
 use Illuminate\View\View;
-use Native\Mobile\Edge\NativeComponent;
 use Native\Mobile\Facades\Browser;
 
-class Register extends NativeComponent
+class Register extends Component
 {
     public string $error = '';
 

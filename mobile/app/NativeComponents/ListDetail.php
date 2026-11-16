@@ -12,12 +12,11 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
 use Native\Mobile\Attributes\On;
-use Native\Mobile\Edge\NativeComponent;
 use Native\Mobile\Events\Alert\ButtonPressed;
 use Native\Mobile\Facades\Browser;
 use Native\Mobile\Facades\Dialog;
 
-class ListDetail extends NativeComponent
+class ListDetail extends Component
 {
     use ChecksSunnySync;
     use ShowsQueuedChange;
