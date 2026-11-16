@@ -78,6 +78,54 @@ class InventoryItemDetail extends NativeComponent
         return $this->item === null ? [] : Inventory::childrenOf($this->item['id']);
     }
 
+    /**
+     * @return list<string>
+     */
+    #[Computed]
+    public function starterStorage(): array
+    {
+        if ($this->item === null || $this->item['type'] !== ItemType::Location || $this->children !== []) {
+            return [];
+        }
+
+        return match (mb_strtolower($this->item['name'])) {
+            'kitchen pantry', 'pantry' => ['Baking bin', 'Snack basket', 'Spice rack', 'Top shelf'],
+            'garage' => ['Camping bin', 'Tool chest', 'Holiday decorations', 'Paint shelf'],
+            'hall closet' => ['Coat rack', 'Shoe shelf', 'Cleaning supplies', 'Gift wrap box'],
+            'basement' => ['Storage shelves', 'Keepsakes bin', 'Sports gear', 'Holiday decorations'],
+            'attic' => ['Holiday decorations', 'Keepsakes bin', 'Winter clothes', 'Baby clothes'],
+            'shed' => ['Garden tools', 'Potting bench', 'Bike rack', 'Lawn care shelf'],
+            default => ['Shelf', 'Box', 'Drawer', 'Cabinet'],
+        };
+    }
+
+    public function addStarterStorage(int $index): void
+    {
+        $name = $this->starterStorage[$index] ?? null;
+
+        if ($name === null) {
+            return;
+        }
+
+        try {
+            app(SunnyOutbox::class)->queue('items', $this->item['team_id'], [
+                'name' => $name,
+                'type' => ItemType::Bin->value,
+                'parent_id' => $this->item['id'],
+                'metadata' => null,
+            ]);
+        } catch (ValidationException $exception) {
+            $this->error = collect($exception->errors())->flatten()->first() ?? 'Unable to save on this phone. Try again.';
+
+            return;
+        }
+
+        app(SunnySyncCoordinator::class)->dispatch();
+        $this->error = '';
+        $this->refreshLocalSyncedData();
+        Dialog::toast('Added '.$name.' to '.$this->item['name']);
+    }
+
     #[Computed]
     public function teamId(): ?int
     {
@@ -249,7 +297,7 @@ class InventoryItemDetail extends NativeComponent
 
     protected function refreshLocalSyncedData(): void
     {
-        unset($this->item, $this->parent, $this->path, $this->children, $this->queuedChange, $this->parentChoices, $this->selectedParent, $this->browsedParent, $this->parentPickerRows, $this->parentTrail);
+        unset($this->item, $this->parent, $this->path, $this->children, $this->starterStorage, $this->queuedChange, $this->parentChoices, $this->selectedParent, $this->browsedParent, $this->parentPickerRows, $this->parentTrail);
     }
 
     /**

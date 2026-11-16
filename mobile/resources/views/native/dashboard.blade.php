@@ -62,6 +62,11 @@
             </column>
         @endunless
 
+        @if ($this->gettingStarted)
+            @include('native.getting-started', ['checklist' => $this->gettingStarted, 'canUndo' => $this->canUndoSetUp])
+        @endif
+
+        @if ($this->recentRecipes || ! $this->gettingStarted)
         <column class="w-full gap-3">
             <x-ui.heading size="lg">Recent recipes</x-ui.heading>
             @if ($this->recentRecipes)
@@ -102,6 +107,7 @@
                 </pressable>
             @endif
         </column>
+        @endif
 
         <column class="w-full gap-3">
             <x-ui.heading size="lg">Recent items</x-ui.heading>
