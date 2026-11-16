@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AccountController;
 use App\Http\Controllers\Api\ChecklistController;
 use App\Http\Controllers\Api\ChecklistItemController;
 use App\Http\Controllers\Api\ItemController;
+use App\Http\Controllers\Api\OnboardingController;
 use App\Http\Controllers\Api\RecipeController;
 use App\Http\Controllers\Api\RoutineController;
 use App\Http\Controllers\Api\RoutineOccurrenceController;
@@ -27,6 +28,7 @@ Route::middleware('auth:sanctum')
     ->group(function (): void {
         Route::get('user', fn (Request $request): UserResource => UserResource::make($request->user()))->name('user');
         Route::delete('user', [AccountController::class, 'destroy'])->middleware('throttle:6,1')->name('user.destroy');
+        Route::post('user/onboarding', OnboardingController::class)->name('user.onboarding');
         Route::get('sync', SyncController::class)->name('sync');
         Route::post('sanctum/token/refresh', [TokenController::class, 'refresh'])->name('token.refresh');
         Route::post('logout', [TokenController::class, 'destroy'])->name('logout');
