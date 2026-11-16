@@ -132,3 +132,28 @@ test('only the offered starters can be set up', function () {
     expect($user->fresh()->needsOnboarding())->toBeTrue()
         ->and($user->currentTeam->checklists()->exists())->toBeFalse();
 });
+
+test('setting up twice, like a double click, only creates the starters once', function () {
+    Http::fake();
+    $user = User::factory()->needsOnboarding()->create();
+    $team = $user->currentTeam;
+
+    Livewire::actingAs($user)
+        ->test('pages::onboarding')
+        ->set('places', ['Garage', 'Shed'])
+        ->set('starters', ['groceries', 'bedtime'])
+        ->call('setUp')
+        ->call('setUp')
+        ->assertRedirect(route('dashboard'));
+
+    expect($team->items()->count())->toBe(2)
+        ->and($team->checklists()->count())->toBe(1)
+        ->and($team->routines()->count())->toBe(1);
+});
+
+test('both buttons are disabled while either one is working', function () {
+    Livewire::actingAs(User::factory()->needsOnboarding()->create())
+        ->test('pages::onboarding')
+        ->assertSeeHtml('wire:loading.attr="disabled"')
+        ->assertSeeHtml('wire:target="setUp, startEmpty"');
+});

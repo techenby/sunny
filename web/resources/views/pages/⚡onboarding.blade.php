@@ -76,17 +76,12 @@ new #[Layout('layouts::onboarding')] class extends Component
             'starters.*' => [Rule::in(SetUpHome::STARTERS)],
         ]);
 
-        $setUpHome->handle(Auth::user()->currentTeam, array_values($this->places), array_values($this->starters));
+        $setUpHome->handle(Auth::user(), Auth::user()->currentTeam, array_values($this->places), array_values($this->starters));
 
-        $this->finish();
+        $this->redirectRoute('dashboard', navigate: true);
     }
 
     public function startEmpty(): void
-    {
-        $this->finish();
-    }
-
-    private function finish(): void
     {
         Auth::user()->markAsOnboarded();
 
@@ -175,8 +170,8 @@ new #[Layout('layouts::onboarding')] class extends Component
         </flux:text>
 
         <div class="flex flex-col-reverse gap-2 sm:flex-row sm:items-center">
-            <flux:button variant="ghost" wire:click="startEmpty" data-test="start-empty">{{ __('Start empty instead') }}</flux:button>
-            <flux:button variant="primary" icon:trailing="arrow-right" wire:click="setUp" data-test="set-up">{{ __('Set up my home') }}</flux:button>
+            <flux:button variant="ghost" wire:click="startEmpty" wire:loading.attr="disabled" wire:target="setUp, startEmpty" data-test="start-empty">{{ __('Start empty instead') }}</flux:button>
+            <flux:button variant="primary" icon:trailing="arrow-right" wire:click="setUp" wire:loading.attr="disabled" wire:target="setUp, startEmpty" data-test="set-up">{{ __('Set up my home') }}</flux:button>
         </div>
     </section>
 
