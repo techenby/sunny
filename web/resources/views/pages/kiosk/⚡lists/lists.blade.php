@@ -1,4 +1,4 @@
-<div class="group/lists flex h-full flex-col overflow-hidden" wire:poll.600s>
+<div class="group/lists flex h-full flex-col overflow-hidden" x-on:kiosk-refresh.window="$wire.$refresh()">
     <div class="flex shrink-0 flex-col gap-3 border-b border-zinc-200 px-5 py-4 dark:border-zinc-700 sm:flex-row sm:items-center sm:justify-between">
         <x-ui.clock :timezone="$this->team->timezone" />
 

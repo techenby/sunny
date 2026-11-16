@@ -94,6 +94,9 @@ new class extends Component
             @include('pages.recipes.meta', ['editable' => true])
         </div>
         <div class="flex shrink-0 flex-wrap items-center gap-2">
+            @if ($recipe->ingredients || $recipe->instructions)
+                <flux:button :href="route('recipes.cook', $recipe)" icon="play" wire:navigate>{{ __('Cook') }}</flux:button>
+            @endif
             <flux:button icon="arrow-path-rounded-square" wire:click="remix">{{ __('Remix') }}</flux:button>
             <flux:button icon="pencil-square" :href="route('recipes.edit', $recipe)" wire:navigate>{{ __('Edit') }}</flux:button>
             <x-ui.actions size="base">

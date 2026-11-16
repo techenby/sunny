@@ -1,4 +1,4 @@
-<div class="p-2" wire:poll.900s>
+<div class="p-2" x-on:kiosk-refresh.window="$wire.$refresh()">
     @if ($this->weather)
         <x-kiosk.weather
             :location="$this->weather['location']"
