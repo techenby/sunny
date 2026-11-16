@@ -137,6 +137,10 @@
                 {
                     "description": "iOS: ship a PrivacyInfo.xcprivacy declaring the required-reason APIs the PHP runtime, NativePHP and its plugins use",
                     "url": "patches/nativephp-mobile-ios-privacy-manifest.patch"
+                },
+                {
+                    "description": "iOS: build the app icon from the Icon Composer file set in nativephp.ios_icon so iOS 26 gets the Liquid Glass light, dark and tinted variants",
+                    "url": "patches/nativephp-mobile-ios-icon-composer.patch"
                 }
             ],
             "nativephp/mobile-scanner": [
