@@ -35,7 +35,7 @@
                         <flux:text variant="subtle" class="truncate max-w-64" title="{{ $feed->url }}">{{ $feed->url }}</flux:text>
 
                         @if ($feed->isFailing())
-                            <flux:text variant="subtle" class="text-xs">{{ __('Last failed :time', ['time' => $feed->last_failed_at->diffForHumans()]) }}</flux:text>
+                            <flux:text class="text-xs text-amber-800! dark:text-amber-200!">{{ __('Last failed :time', ['time' => $feed->last_failed_at->diffForHumans()]) }}</flux:text>
                         @endif
                     </div>
 
@@ -43,7 +43,7 @@
                         <flux:tooltip :content="__('Edit feed')">
                             <flux:button
                                 type="button"
-                                icon="pencil-square"
+                                icon="pencil"
                                 icon:variant="outline"
                                 variant="ghost"
                                 class="text-zinc-500! disabled:text-zinc-400! disabled:opacity-100! dark:text-zinc-400! dark:disabled:text-zinc-600!"

@@ -23,15 +23,15 @@ new #[Layout('layouts::kiosk-configure')] class extends Component
     x-data="{ available: 0, get scale() { return this.available ? Math.min(1, this.available / $wire.width) : 1 } }"
     x-resize="available = $width"
 >
-    <div class="mb-6 flex flex-wrap items-end gap-4">
-        <flux:field>
+    <div class="mb-6 flex flex-wrap items-end gap-3">
+        <flux:field class="w-52">
             <flux:label>{{ __('Width') }}</flux:label>
             <flux:input.group>
                 <flux:input wire:model.live.debounce.250ms="width" step="5" type="number" />
                 <flux:input.group.suffix>px</flux:input.group.suffix>
             </flux:input.group>
         </flux:field>
-        <flux:field>
+        <flux:field class="w-52">
             <flux:label>{{ __('Height') }}</flux:label>
             <flux:input.group>
                 <flux:input wire:model.live.debounce.250ms="height" step="5" type="number" />
@@ -40,9 +40,10 @@ new #[Layout('layouts::kiosk-configure')] class extends Component
         </flux:field>
         <flux:button wire:click="swap" icon="arrow-path-rounded-square" square />
         <flux:button :href="route('kiosk.calendar')" variant="primary" target="_blank" icon="arrow-top-right-on-square">{{ __('Open preview') }}</flux:button>
+        <flux:badge size="sm" icon="magnifying-glass" class="mb-2.5">
+            <span x-text="`{{ __('Shown at') }} ${Math.round(scale * 100)}%`">{{ __('Shown at') }} 100%</span>
+        </flux:badge>
     </div>
-
-    <flux:badge size="sm" class="mb-3" x-text="`{{ __('Shown at') }} ${Math.round(scale * 100)}%`">{{ __('Shown at') }} 100%</flux:badge>
 
     <div class="overflow-hidden" :style="`width: ${$wire.width * scale}px; height: ${$wire.height * scale}px`" style="width: {{ $width }}px; height: {{ $height }}px;">
         <div
