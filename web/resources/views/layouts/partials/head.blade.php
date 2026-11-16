@@ -18,5 +18,9 @@
 @endproduction
 
 @vite(['resources/css/app.css', 'resources/js/app.js'])
-@fluxAppearance
+@isset($kioskAppearance)
+    <x-kiosk.appearance :appearance="$kioskAppearance" />
+@else
+    @fluxAppearance
+@endisset
 @stack('head')

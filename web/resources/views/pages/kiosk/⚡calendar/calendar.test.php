@@ -32,21 +32,24 @@ test('kiosk layout follows the team appearance setting', function () {
     actingAs($user)
         ->get(route('kiosk.calendar'))
         ->assertSeeHtml('class="dark"')
-        ->assertSeeHtml("window.localStorage.setItem('flux.appearance', 'dark')");
+        ->assertSeeHtml("const appearance = 'dark'")
+        ->assertDontSeeHtml('flux.appearance');
 
     $team->update(['appearance' => Appearance::Light]);
 
     actingAs($user)
         ->get(route('kiosk.calendar'))
         ->assertDontSeeHtml('class="dark"')
-        ->assertSeeHtml("window.localStorage.setItem('flux.appearance', 'light')");
+        ->assertSeeHtml("const appearance = 'light'")
+        ->assertDontSeeHtml('flux.appearance');
 
     $team->update(['appearance' => Appearance::System]);
 
     actingAs($user)
         ->get(route('kiosk.calendar'))
         ->assertDontSeeHtml('class="dark"')
-        ->assertSeeHtml("window.localStorage.setItem('flux.appearance', 'system')");
+        ->assertSeeHtml("const appearance = 'system'")
+        ->assertDontSeeHtml('flux.appearance');
 });
 
 test('kiosk layout follows the team rotation setting', function () {

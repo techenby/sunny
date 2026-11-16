@@ -2,11 +2,6 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark' => $kioskTeam->appearance === \App\Enums\Appearance::Dark])>
     <head>
-        {{-- Must run before @fluxAppearance so Flux applies the team's appearance instead of the device preference --}}
-        <script>
-            window.localStorage.setItem('flux.appearance', @js($kioskTeam->appearance->value));
-        </script>
-
         <x-kiosk.recovery />
 
         @if ($kioskTeam->rotation !== 0)
@@ -28,7 +23,7 @@
             </style>
         @endif
 
-        @include('layouts.partials.head')
+        @include('layouts.partials.head', ['kioskAppearance' => $kioskTeam->appearance])
 
         {{-- Rotates the display for devices whose browser ignores the OS orientation setting --}}
         <style>
