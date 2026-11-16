@@ -54,7 +54,8 @@ down](#keep-costs-down) for how a kiosk affects this.
 
 Photos of recipes and inventory items are stored as files, and Cloud's servers
 don't keep files between deployments. Select **Add bucket**, create a
-**Laravel Object Storage** bucket, and make it the default disk.
+**Laravel Object Storage** bucket, name its disk `private`, and make it the
+default disk.
 
 Make the bucket **private**. SunnyHome shows photos through links that
 expire after 30 minutes, so the files never need to be public.
@@ -71,6 +72,7 @@ variables you add take priority over the ones it sets.
 | `APP_ENV` | `production` |
 | `APP_DEBUG` | `false` |
 | `SESSION_DRIVER` | `database` |
+| `LIVEWIRE_TEMPORARY_FILE_UPLOAD_DISK` | `private`, the bucket's disk name. |
 | `PASSPORT_PRIVATE_KEY` | See [create the AI assistant keys](#create-the-ai-assistant-keys). |
 | `PASSPORT_PUBLIC_KEY` | See [create the AI assistant keys](#create-the-ai-assistant-keys). |
 | `FLUX_USERNAME` | The email address on your Flux license. |
@@ -83,6 +85,10 @@ If the environment doesn't already have an `APP_KEY`, create one by running
 `php artisan key:generate --show` in a local copy of SunnyHome and add the
 result as `APP_KEY`. Keep it the same from then on: changing it signs everyone
 out and breaks two-factor authentication.
+
+`LIVEWIRE_TEMPORARY_FILE_UPLOAD_DISK` keeps a photo in the bucket between
+choosing it and saving the form, so it isn't lost if Cloud replaces the
+server in between.
 
 `SESSION_DRIVER` must be `database`. With cookie sessions, the page where you
 allow an AI assistant to connect stores more than a browser cookie can hold,
