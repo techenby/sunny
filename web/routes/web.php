@@ -36,6 +36,7 @@ Route::prefix('{current_team}')
     ->middleware(['auth', 'verified', EnsureTeamMembership::class])
     ->group(function () {
         Route::livewire('dashboard', 'pages::dashboard')->name('dashboard')->withHead(title: 'Dashboard');
+        Route::livewire('welcome', 'pages::onboarding')->name('onboarding')->withHead(title: 'Set up your home');
     });
 
 require __DIR__ . '/admin.php';

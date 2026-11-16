@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -75,4 +76,19 @@ function fakeRecipeHtml(array $schema): string
     <script type="application/ld+json">{$json}</script>
     </head><body></body></html>
     HTML;
+}
+
+function fakeSampleRecipe(): void
+{
+    Http::fake([
+        'safelydelish.com/*' => Http::response(fakeRecipeHtml([
+            '@context' => 'https://schema.org',
+            '@type' => 'Recipe',
+            'name' => 'Apple Cider Donuts',
+            'recipeYield' => '12',
+            'totalTime' => 'PT18M',
+            'recipeIngredient' => ['1/4 cup granulated sugar', '1 cup apple cider'],
+            'recipeInstructions' => [['@type' => 'HowToStep', 'text' => 'Preheat oven to 375F.']],
+        ])),
+    ]);
 }

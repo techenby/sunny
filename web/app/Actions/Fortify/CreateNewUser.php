@@ -7,10 +7,13 @@ namespace App\Actions\Fortify;
 use App\Actions\Teams\CreateTeam;
 use App\Concerns\PasswordValidationRules;
 use App\Concerns\ProfileValidationRules;
+use App\Models\TeamInvitation;
 use App\Models\User;
 use Bentonow\BentoLaravel\Facades\Bento;
+use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
 
 class CreateNewUser implements CreatesNewUsers
@@ -28,10 +31,14 @@ class CreateNewUser implements CreatesNewUsers
         ])->validate();
 
         return DB::transaction(function () use ($input) {
+            $invited = $this->hasPendingInvitation($input['email']) ? now() : null;
+
             $user = User::create([
                 'name' => $input['name'],
                 'email' => $input['email'],
                 'password' => $input['password'],
+                'onboarded_at' => $invited,
+                'onboarding_dismissed_at' => $invited,
             ]);
 
             $this->createTeam->handle($user, $user->name . "'s Team", isPersonal: true);
@@ -48,5 +55,14 @@ class CreateNewUser implements CreatesNewUsers
 
             return $user;
         });
+    }
+
+    private function hasPendingInvitation(string $email): bool
+    {
+        return TeamInvitation::query()
+            ->whereRaw('LOWER(email) = ?', [Str::lower($email)])
+            ->whereNull('accepted_at')
+            ->where(fn (Builder $query) => $query->whereNull('expires_at')->orWhere('expires_at', '>=', now()))
+            ->exists();
     }
 }
