@@ -26,12 +26,14 @@ use App\NativeComponents\Register;
 use App\NativeComponents\RoutineDetail;
 use App\NativeComponents\Routines;
 use App\NativeComponents\ScanInventory;
+use App\NativeComponents\SetUpHome;
 use App\NativeComponents\Today;
 use Illuminate\Support\Facades\Route;
 
 Route::native('/', Home::class);
 Route::native('/login', Login::class);
 Route::native('/register', Register::class);
+Route::native('/setup', SetUpHome::class);
 Route::nativeGroup(TabsLayout::class, function () {
     Route::native('/dashboard', Dashboard::class);
     Route::native('/preferences', Preferences::class);

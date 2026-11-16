@@ -1,0 +1,102 @@
+<?php
+
+namespace App\Models;
+
+use App\Http\Integrations\Sunny\Requests\MarkOnboardedRequest;
+use App\Http\Integrations\Sunny\SunnyAuth;
+use App\Http\Integrations\Sunny\SunnyStore;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
+use Throwable;
+
+class Onboarding extends Model
+{
+    protected $table = 'sunny_onboarding';
+
+    protected $guarded = [];
+
+    /** @return array<string, string> */
+    protected function casts(): array
+    {
+        return [
+            'starters' => 'array',
+            'set_up_at' => 'immutable_datetime',
+            'skipped_at' => 'immutable_datetime',
+            'reported_at' => 'immutable_datetime',
+            'invited_at' => 'immutable_datetime',
+            'hidden_at' => 'immutable_datetime',
+        ];
+    }
+
+    public static function current(): ?self
+    {
+        $userId = DB::table('sunny_accounts')->where('server', SunnyStore::server())->value('user_id');
+
+        return $userId === null ? null : self::query()->where('server', SunnyStore::server())->where('user_id', $userId)->first();
+    }
+
+    public static function begin(int $userId, ?string $name = null): self
+    {
+        return self::query()->firstOrCreate(
+            ['server' => SunnyStore::server(), 'user_id' => $userId],
+            ['first_name' => $name === null ? null : (string) str($name)->trim()->before(' ')],
+        );
+    }
+
+    public static function needsSetUp(): bool
+    {
+        $onboarding = self::current();
+
+        return $onboarding !== null && $onboarding->set_up_at === null && $onboarding->skipped_at === null;
+    }
+
+    public function skip(): void
+    {
+        $this->update(['skipped_at' => now()]);
+        $this->report();
+    }
+
+    public function report(): void
+    {
+        if ($this->reported_at !== null || ($this->set_up_at === null && $this->skipped_at === null)) {
+            return;
+        }
+
+        try {
+            app(SunnyAuth::class)->authenticatedConnector()->send(new MarkOnboardedRequest);
+        } catch (Throwable) {
+            return;
+        }
+
+        $this->update(['reported_at' => now()]);
+    }
+
+    /**
+     * @return list<array{resource: string, id: int}>
+     */
+    public function starters(): array
+    {
+        return $this->starters ?? [];
+    }
+
+    public function starterRecord(string $resource, int $id): ?Model
+    {
+        return SunnyStore::model($resource)::query()
+            ->where('server', SunnyStore::server())
+            ->where(fn ($query) => $query->whereKey($id)->orWhere('local_id', $id))
+            ->first();
+    }
+
+    /**
+     * @return list<Model>
+     */
+    public function starterRecords(string $resource): array
+    {
+        return collect($this->starters())
+            ->where('resource', $resource)
+            ->map(fn (array $starter): ?Model => $this->starterRecord($resource, $starter['id']))
+            ->filter()
+            ->values()
+            ->all();
+    }
+}

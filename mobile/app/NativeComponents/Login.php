@@ -3,6 +3,7 @@
 namespace App\NativeComponents;
 
 use App\Http\Integrations\Sunny\SunnyAuth;
+use App\Models\Onboarding;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
 use JsonException;
@@ -59,7 +60,7 @@ class Login extends NativeComponent
             }
 
             $this->startOver();
-            $this->replace('/dashboard');
+            $this->replace(Onboarding::needsSetUp() ? '/setup' : '/dashboard');
         } catch (RequestException $exception) {
             $status = $exception->getResponse()->status();
             $this->error = match ($status) {
