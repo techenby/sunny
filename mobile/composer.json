@@ -20,44 +20,6 @@
             }
         },
         {
-            "name": "live-activities-laravel-13",
-            "type": "package",
-            "package": {
-                "name": "vos/nativephp-live-activities",
-                "version": "1.3.0",
-                "type": "nativephp-plugin",
-                "license": [
-                    "proprietary"
-                ],
-                "dist": {
-                    "type": "zip",
-                    "url": "https://plugins.nativephp.com/dist/vos/nativephp-live-activities/vos-nativephp-live-activities-a6984449e0994aee57b3b919fbe6d22edec1d1d4-zip-f3c68a.zip",
-                    "reference": "a6984449e0994aee57b3b919fbe6d22edec1d1d4",
-                    "shasum": "499f99386dfe8c19dfcb5801662d614af15baf0d"
-                },
-                "require": {
-                    "php": "^8.4",
-                    "illuminate/support": "^12.0 || ^13.0",
-                    "nativephp/mobile": "^4.5"
-                },
-                "autoload": {
-                    "psr-4": {
-                        "Vos\\LiveActivities\\": "src/"
-                    }
-                },
-                "extra": {
-                    "laravel": {
-                        "providers": [
-                            "Vos\\LiveActivities\\LiveActivitiesServiceProvider"
-                        ]
-                    },
-                    "nativephp": {
-                        "manifest": "nativephp.json"
-                    }
-                }
-            }
-        },
-        {
             "name": "nativephp-plugins",
             "type": "composer",
             "url": "https://plugins.nativephp.com"
@@ -84,7 +46,7 @@
         "saloonphp/saloon": "^4.3",
         "srwiez/nativephp-mobile-screen": "^2.1",
         "sunny/item-scanner": "@dev",
-        "vos/nativephp-live-activities": "1.3.0",
+        "vos/nativephp-live-activities": "^1.3",
         "zinxan/native-mobile": "^0.2"
     },
     "require-dev": {
@@ -99,6 +61,9 @@
         "pestphp/pest": "^5.2",
         "pestphp/pest-plugin-laravel": "^5.0",
         "tightenco/duster": "^3.4"
+    },
+    "provide": {
+        "illuminate/support": "12.99.0"
     },
     "autoload": {
         "psr-4": {
