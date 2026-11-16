@@ -110,8 +110,18 @@ erDiagram
 		varchar name  ""
 		json metadata  ""
 		varchar client_uuid UK "unique per team"
-		varchar photo_path  ""
 		datetime deleted_at  ""
+		datetime created_at  ""
+		datetime updated_at  ""
+	}
+
+	item_photos {
+		integer id PK ""
+		integer item_id FK ""
+		varchar path  ""
+		varchar thumb_path  ""
+		integer position  ""
+		varchar client_uuid UK "unique per item"
 		datetime created_at  ""
 		datetime updated_at  ""
 	}
@@ -330,6 +340,7 @@ erDiagram
 	teams||--o{kiosk_devices:"has"
 	recipes||--o{recipes:"remix of"
 	items||--o{items:"nested in"
+	items||--o{item_photos:"has photos"
 	checklists||--o{checklist_items:"has items"
 	routines||--o{routine_steps:"has steps"
 	routines||--o{routine_occurrences:"generates"

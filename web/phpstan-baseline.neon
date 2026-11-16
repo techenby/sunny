@@ -67,12 +67,6 @@ parameters:
 			path: app/Actions/Calendars/FetchCalendarEvents.php
 
 		-
-			message: '#^Parameter \#1 \$photoPath of method App\\Actions\\Photos\\CreateThumbnail\:\:handle\(\) expects string, string\|false given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Actions/Inventory/CreateItem.php
-
-		-
 			message: '#^Method App\\Actions\\Inventory\\GenerateItemQrCode\:\:handle\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -131,12 +125,6 @@ parameters:
 			identifier: missingType.property
 			count: 1
 			path: app/Actions/Inventory/ImportItemsFromAmazonAction.php
-
-		-
-			message: '#^Parameter \#1 \$photoPath of method App\\Actions\\Photos\\CreateThumbnail\:\:handle\(\) expects string, string\|false given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Actions/Inventory/UpdateItem.php
 
 		-
 			message: '#^Negated boolean expression is always true\.$#'
@@ -359,18 +347,6 @@ parameters:
 			identifier: return.type
 			count: 1
 			path: app/Http/Resources/ChecklistResource.php
-
-		-
-			message: '#^Access to an undefined property App\\Http\\Resources\\ItemResource\:\:\$photo_path\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Resources/ItemResource.php
-
-		-
-			message: '#^Access to an undefined property App\\Http\\Resources\\ItemResource\:\:\$thumb_path\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Resources/ItemResource.php
 
 		-
 			message: '#^Parameter \#1 \$array of static method Illuminate\\Support\\Arr\:\:except\(\) expects array, array\|Illuminate\\Contracts\\Support\\Arrayable\|JsonSerializable given\.$#'

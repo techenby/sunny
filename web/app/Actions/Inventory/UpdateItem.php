@@ -4,12 +4,9 @@ declare(strict_types=1);
 
 namespace App\Actions\Inventory;
 
-use App\Actions\Photos\CreateThumbnail;
 use App\Models\Item;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 
 class UpdateItem
 {
@@ -22,20 +19,18 @@ class UpdateItem
 
         $item->update($data);
 
-        if ($removePhoto && ! $photo instanceof UploadedFile) {
-            Storage::delete(array_filter([$item->photo_path, $item->thumb_path]));
+        if ($photo instanceof UploadedFile || $removePhoto) {
+            $primary = $item->primaryPhoto()->first();
 
-            $item->update(['photo_path' => null, 'thumb_path' => null]);
-        } elseif ($photo instanceof UploadedFile) {
-            Storage::delete(array_filter([$item->photo_path, $item->thumb_path]));
-
-            $filename = Str::slug($item->name) . '-' . $item->id . '.' . $photo->getClientOriginalExtension();
-
-            $path = $photo->storeAs("teams/{$item->team_id}/items", $filename);
-
-            $item->update(['photo_path' => $path, 'thumb_path' => (new CreateThumbnail)->handle($path)]);
+            if ($primary) {
+                (new RemoveItemPhoto)->handle($primary);
+            }
         }
 
-        return $item;
+        if ($photo instanceof UploadedFile) {
+            (new AddItemPhoto)->handle($item, $photo, position: 0);
+        }
+
+        return $item->unsetRelation('primaryPhoto')->unsetRelation('photos');
     }
 }

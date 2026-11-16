@@ -3,6 +3,7 @@
 use App\Enums\TeamRole;
 use App\Models\Checklist;
 use App\Models\Item;
+use App\Models\ItemPhoto;
 use App\Models\Recipe;
 use App\Models\Routine;
 use App\Models\Team;
@@ -17,7 +18,9 @@ test('purging a user really deletes the teams only they use', function () {
     Storage::put('items/hat.jpg', 'photo');
     Storage::put('items/hat-thumb.jpg', 'thumb');
     Storage::put('recipes/stew.jpg', 'photo');
-    $item = Item::factory()->for($spade)->create(['photo_path' => 'items/hat.jpg', 'thumb_path' => 'items/hat-thumb.jpg']);
+    $item = Item::factory()->for($spade)->withPhoto('items/hat.jpg', 'items/hat-thumb.jpg')->create();
+    Storage::put('items/trashed.jpg', 'photo');
+    Item::factory()->for($spade)->withPhoto('items/trashed.jpg')->create()->delete();
     $recipe = Recipe::factory()->for($spade)->create(['photo_path' => 'recipes/stew.jpg']);
     $trashed = Recipe::factory()->for($spade)->create();
     $trashed->delete();
@@ -30,6 +33,7 @@ test('purging a user really deletes the teams only they use', function () {
     expect($ace->fresh())->toBeNull()
         ->and(Team::withTrashed()->find($spade->id))->toBeNull()
         ->and(Item::withTrashed()->find($item->id))->toBeNull()
+        ->and(ItemPhoto::query()->count())->toBe(0)
         ->and(Recipe::withTrashed()->whereKey([$recipe->id, $trashed->id])->count())->toBe(0)
         ->and(Checklist::withTrashed()->find($checklist->id))->toBeNull()
         ->and(Routine::withTrashed()->find($routine->id))->toBeNull()

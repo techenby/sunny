@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace App\Actions\Inventory;
 
-use App\Actions\Photos\CreateThumbnail;
 use App\Models\Item;
 use App\Models\Team;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
 
 class CreateItem
 {
@@ -23,11 +21,7 @@ class CreateItem
         $item = $team->items()->create($data);
 
         if ($photo instanceof UploadedFile) {
-            $filename = Str::slug($item->name) . '-' . $item->id . '.' . $photo->getClientOriginalExtension();
-
-            $path = $photo->storeAs("teams/{$team->id}/items", $filename);
-
-            $item->update(['photo_path' => $path, 'thumb_path' => (new CreateThumbnail)->handle($path)]);
+            (new AddItemPhoto)->handle($item, $photo);
         }
 
         return $item;

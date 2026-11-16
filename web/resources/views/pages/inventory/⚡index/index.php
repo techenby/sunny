@@ -433,13 +433,8 @@ new class extends Component
             $this->authorize('update', $this->form->editingItem);
         }
 
-        if ($this->form->photo) {
-            $this->form->photo->delete();
-            $this->form->photo = null;
-        } elseif ($this->form->existingPhotoUrl) {
-            $this->form->existingPhotoUrl = null;
-            $this->form->removePhoto = true;
-        }
+        $this->form->photo?->delete();
+        $this->form->photo = null;
     }
 
     public function save(): void
