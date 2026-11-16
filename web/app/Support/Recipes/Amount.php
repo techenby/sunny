@@ -4,28 +4,11 @@ declare(strict_types=1);
 
 namespace App\Support\Recipes;
 
+use Illuminate\Support\Str;
+
 final class Amount
 {
-    private const array LABELS = [
-        'tbsp' => ['Tbsp', 'Tbsp'],
-        'cup' => ['cup', 'cups'],
-        'pint' => ['pint', 'pints'],
-        'quart' => ['quart', 'quarts'],
-        'gallon' => ['gallon', 'gallons'],
-        'pinch' => ['pinch', 'pinches'],
-        'dash' => ['dash', 'dashes'],
-        'handful' => ['handful', 'handfuls'],
-        'splash' => ['splash', 'splashes'],
-        'drizzle' => ['drizzle', 'drizzles'],
-        'clove' => ['clove', 'cloves'],
-        'can' => ['can', 'cans'],
-        'stick' => ['stick', 'sticks'],
-        'slice' => ['slice', 'slices'],
-        'sprig' => ['sprig', 'sprigs'],
-        'bunch' => ['bunch', 'bunches'],
-        'package' => ['package', 'packages'],
-        'piece' => ['piece', 'pieces'],
-    ];
+    private const array ABBREVIATIONS = ['tsp', 'oz', 'lb', 'g', 'kg', 'ml', 'l'];
 
     private const array DECIMAL_UNITS = ['g', 'kg', 'ml', 'l'];
 
@@ -91,7 +74,11 @@ final class Amount
 
     private static function label(string $unit, bool $plural): string
     {
-        return self::LABELS[$unit][$plural ? 1 : 0] ?? $unit;
+        return match (true) {
+            $unit === 'tbsp' => 'Tbsp',
+            in_array($unit, self::ABBREVIATIONS, true) => $unit,
+            default => Str::plural($unit, $plural ? 2 : 1),
+        };
     }
 
     private static function decimal(float $value, int $places): string
