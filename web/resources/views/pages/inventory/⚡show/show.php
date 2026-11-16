@@ -16,6 +16,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection as BaseCollection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
@@ -162,13 +163,20 @@ new class extends Component
             'newPhotos.max' => __('An item can have up to :count photos.', ['count' => ItemPhoto::MAX_PER_ITEM]),
         ]);
 
-        foreach ($this->newPhotos as $photo) {
-            (new AddItemPhoto)->handle($this->item, $photo);
-            $photo->delete();
-        }
+        try {
+            foreach ($this->newPhotos as $photo) {
+                (new AddItemPhoto)->handle($this->item, $photo);
+            }
+        } catch (ValidationException $exception) {
+            $this->addError('newPhotos', $exception->validator->errors()->first());
+        } finally {
+            foreach ($this->newPhotos as $photo) {
+                $photo->delete();
+            }
 
-        $this->reset('newPhotos');
-        $this->refreshPhotos();
+            $this->reset('newPhotos');
+            $this->refreshPhotos();
+        }
     }
 
     public function duplicate(): void
