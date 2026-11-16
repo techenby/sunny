@@ -2,7 +2,6 @@
 
 namespace App\Concerns;
 
-use App\Actions\UndoHomeSetUp;
 use App\Enums\ItemType;
 use App\Http\Integrations\Sunny\SunnyConnector;
 use App\Http\Integrations\Sunny\SunnyTeam;
@@ -55,15 +54,6 @@ trait ShowsGettingStarted
         ];
     }
 
-    #[Computed]
-    public function canUndoSetUp(): bool
-    {
-        $onboarding = Onboarding::current();
-
-        return $onboarding?->set_up_at !== null && collect($onboarding->starters())
-            ->contains(fn (array $starter): bool => $onboarding->starterRecord($starter['resource'], $starter['id']) !== null);
-    }
-
     public function startJob(string $key): void
     {
         $onboarding = Onboarding::current();
@@ -83,19 +73,6 @@ trait ShowsGettingStarted
         };
     }
 
-    public function undoSetUp(): void
-    {
-        $onboarding = Onboarding::current();
-
-        if ($onboarding === null || ! $this->canUndoSetUp) {
-            return;
-        }
-
-        app(UndoHomeSetUp::class)->handle($onboarding);
-        $this->refreshGettingStarted();
-        Dialog::toast('Removed what set-up made');
-    }
-
     public function hideGettingStarted(): void
     {
         Onboarding::current()?->update(['hidden_at' => now()]);
@@ -104,7 +81,7 @@ trait ShowsGettingStarted
 
     protected function refreshGettingStarted(): void
     {
-        unset($this->gettingStarted, $this->canUndoSetUp);
+        unset($this->gettingStarted);
     }
 
     private function inviteFamily(Onboarding $onboarding): void

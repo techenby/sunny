@@ -63,7 +63,7 @@
         @endunless
 
         @if ($this->gettingStarted)
-            @include('native.getting-started', ['checklist' => $this->gettingStarted, 'canUndo' => $this->canUndoSetUp])
+            @include('native.getting-started', ['checklist' => $this->gettingStarted])
         @endif
 
         @if ($this->recentRecipes || ! $this->gettingStarted)

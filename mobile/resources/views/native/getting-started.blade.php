@@ -20,20 +20,7 @@
                     <column class="h-6 w-6 items-center justify-center rounded-full bg-theme-primary">
                         <icon :ios="Ios::Checkmark" :android="Android::Check" :size="14" class="text-theme-on-primary" />
                     </column>
-                    <column class="flex-1 items-start">
-                        <text :a11y-label="$job['title'].', done'" class="text-lg text-theme-on-surface-variant line-through">{{ $job['title'] }}</text>
-                        @if ($job['key'] === 'set-up' && $canUndo)
-                            <pressable
-                                ref="getting-started-undo"
-                                a11y-label="Undo set-up"
-                                a11y-hint="Removes what set-up made"
-                                class="min-h-12 justify-center"
-                                @tap="undoSetUp"
-                            >
-                                <text font="semibold" class="text-base text-theme-primary-text">Undo</text>
-                            </pressable>
-                        @endif
-                    </column>
+                    <text :a11y-label="$job['title'].', done'" class="flex-1 text-lg text-theme-on-surface-variant line-through">{{ $job['title'] }}</text>
                 </row>
             @else
                 <pressable
