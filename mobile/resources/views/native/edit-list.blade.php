@@ -7,6 +7,7 @@
         'formRef' => 'edit-list',
         'submitLabel' => 'Update list',
         'typeOptions' => $this->typeOptions,
+        'ownerOptions' => $this->ownerOptions,
     ])
 @else
     <x-ui.not-found ref="edit-list-missing" thing="list" class="ios:bg-theme-grouped-background" />

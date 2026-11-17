@@ -8,4 +8,5 @@
     'weekdayRows' => $this->weekdayRows,
     'startsOnLabel' => $this->startsOnLabel,
     'startsOnHint' => $this->startsOnHint,
+    'ownerOptions' => $this->ownerOptions,
 ])

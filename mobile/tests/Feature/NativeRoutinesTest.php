@@ -62,12 +62,10 @@ it('lists today’s routines by time of day with their progress', function (): v
         ->assertNavTitle('Today')
         ->assertSee(now()->format('l, F j'))
         ->assertSee('Get ready')
-        ->assertSee('Morning · Household')
         ->assertSee('Bedtime')
-        ->assertSee('Evening · Sam')
         ->assertDontSee('Take out trash')
         ->assertElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-1-subtitle'
-            && ($node['props']['text'] ?? null) === 'Morning · Household · 1 of 3')
+            && ($node['props']['text'] ?? null) === 'Morning · 1 of 3')
         ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-step-11'
             && ($node['props']['a11y_label'] ?? null) === 'Done: Make bed')
         ->assertAccessible();
@@ -75,6 +73,42 @@ it('lists today’s routines by time of day with their progress', function (): v
     $routines = collect($screen->get('routines'));
     expect($routines->pluck('name')->all())->toBe(['Get ready', 'Bedtime'])
         ->and(array_column($routines->first()['steps'], 'name'))->toBe(['Make bed', 'Feed the cat', 'Water plants']);
+});
+
+it('shows who each of today’s routines is assigned to when the team has several members', function (): void {
+    seedSunnyMembers();
+
+    Native::visit('/today')
+        ->assertElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-1-subtitle'
+            && ($node['props']['text'] ?? null) === 'Morning · 1 of 3')
+        ->assertElement('column', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-1-owner'
+            && ($node['props']['a11y_label'] ?? null) === 'Household')
+        ->assertElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-2-subtitle'
+            && ($node['props']['text'] ?? null) === 'Sam’s · Evening · 0 of 2')
+        ->assertElement('column', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-2-owner'
+            && ($node['props']['a11y_label'] ?? null) === 'Sam Swick')
+        ->assertSee('SS')
+        ->assertAccessible();
+});
+
+it('shows no assignees on today’s routines for a team with one member', function (): void {
+    Team::find(1)->update(['members' => [['id' => 7, 'name' => 'Sam Swick', 'initials' => 'SS']]]);
+
+    Native::visit('/today')
+        ->assertElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-2-subtitle'
+            && ($node['props']['text'] ?? null) === 'Evening · 0 of 2')
+        ->assertMissingElement('column', fn (array $node): bool => str_ends_with($node['ref'] ?? '', '-owner'));
+});
+
+it('shows a routine assigned to someone who left the team as the household’s', function (): void {
+    seedSunnyMembers();
+    Routine::find(2)->update(['user_id' => 99]);
+
+    Native::visit('/today')
+        ->assertElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-2-subtitle'
+            && ($node['props']['text'] ?? null) === 'Evening · 0 of 2')
+        ->assertElement('column', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-2-owner'
+            && ($node['props']['a11y_label'] ?? null) === 'Household');
 });
 
 it('shows the routines due today where the team lives', function (): void {
@@ -127,7 +161,7 @@ it('ticks a step off on the phone, then sends it to Sunny', function (): void {
     Native::visit('/today')
         ->tap('routine-step-12')
         ->assertElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-1-subtitle'
-            && ($node['props']['text'] ?? null) === 'Morning · Household · 2 of 3');
+            && ($node['props']['text'] ?? null) === 'Morning · 2 of 3');
 
     Saloon::assertSent(fn (UpdateRoutineStepRequest $request): bool => $request->resolveEndpoint() === '/teams/family/routine-occurrences/1/steps/12'
         && $request->getMethod() === Method::PATCH
@@ -142,7 +176,7 @@ it('unticks a completed step', function (): void {
     Native::visit('/today')
         ->tap('routine-step-11')
         ->assertElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-1-subtitle'
-            && ($node['props']['text'] ?? null) === 'Morning · Household · 0 of 3');
+            && ($node['props']['text'] ?? null) === 'Morning · 0 of 3');
 
     Saloon::assertSent(fn (UpdateRoutineStepRequest $request): bool => $request->body()->all() === ['completed' => false]);
     expect(RoutineOccurrenceStep::find(11)->completed_at)->toBeNull();
@@ -227,13 +261,28 @@ it('downloads yesterday’s routines from Sunny', function (): void {
         ->assertSee('Get ready')
         ->assertDontSee('Bedtime')
         ->assertElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-4-subtitle'
-            && ($node['props']['text'] ?? null) === 'Morning · Household · 1 of 2')
+            && ($node['props']['text'] ?? null) === 'Morning · 1 of 2')
         ->assertAccessible();
 
     Saloon::assertSent(fn (GetRoutineOccurrencesRequest $request): bool => $request->resolveEndpoint() === '/teams/family/routine-occurrences'
         && $request->query()->all() === ['date' => now()->subDay()->toDateString()]);
     expect($screen->get('loading'))->toBeFalse()
         ->and(RoutineOccurrence::where('due_on', now()->subDay()->toDateString())->count())->toBe(1);
+});
+
+it('shows who a downloaded day’s routines are assigned to', function (): void {
+    seedSunnyMembers();
+    Routine::find(1)->update(['user_id' => 7]);
+    Saloon::fake([GetRoutineOccurrencesRequest::class => routineDayResponse(now()->subDay()->toDateString())]);
+
+    Native::visit('/today')
+        ->tap('previous-day')
+        ->assertNavTitle('Yesterday')
+        ->assertElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-4-subtitle'
+            && ($node['props']['text'] ?? null) === 'Sam’s · Morning · 1 of 2')
+        ->assertElement('column', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-4-owner'
+            && ($node['props']['a11y_label'] ?? null) === 'Sam Swick')
+        ->assertAccessible();
 });
 
 it('names the day being shown', function (string $today, int $offset, string $title, string $line): void {
@@ -376,7 +425,7 @@ it('ticks a step off on a past day straight away', function (): void {
         ->tap('previous-day')
         ->tap('routine-step-42')
         ->assertElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-4-subtitle'
-            && ($node['props']['text'] ?? null) === 'Morning · Household · 2 of 2')
+            && ($node['props']['text'] ?? null) === 'Morning · 2 of 2')
         ->assertSee('Ticked off just now');
 
     Saloon::assertSent(fn (UpdateRoutineStepRequest $request): bool => $request->resolveEndpoint() === '/teams/family/routine-occurrences/4/steps/42'
@@ -528,7 +577,7 @@ it('keeps a past day on screen when a sync finishes after ticking it', function 
         ->assertSet('loading', false)
         ->assertSee('Get ready')
         ->assertElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-4-subtitle'
-            && ($node['props']['text'] ?? null) === 'Morning · Household · 1 of 2');
+            && ($node['props']['text'] ?? null) === 'Morning · 1 of 2');
 
     expect($loading)->toBe([false]);
 });

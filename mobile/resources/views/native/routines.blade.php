@@ -15,16 +15,15 @@
     @if ($this->routines)
         <list-section :footer="trans_choice(':count routine|:count routines', count($this->routines))">
             @foreach ($this->routines as $routine)
-                <list-item
-                    :headline="$routine['name']"
-                    :supporting="$routine['summary']"
-                    :leadingIconIos="$routine['timeOfDay']->iosIcon()"
-                    :leadingIconAndroid="$routine['timeOfDay']->androidIcon()"
-                    :leadingIconColor="theme('primary')"
-                    :trailingIconIos="Ios::ChevronRight"
-                    :trailingIconAndroid="Android::ChevronRight"
-                    @navigate="'/routines/'.$routine['id']"
-                />
+                @include('native.owned-row', [
+                    'ref' => 'all-routines-'.$routine['id'],
+                    'url' => '/routines/'.$routine['id'],
+                    'headline' => $routine['name'],
+                    'supporting' => $routine['summary'],
+                    'ios' => $routine['timeOfDay']->iosIcon(),
+                    'android' => $routine['timeOfDay']->androidIcon(),
+                    'owner' => $routine['owner'],
+                ])
             @endforeach
         </list-section>
     @else

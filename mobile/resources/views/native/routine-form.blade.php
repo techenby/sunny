@@ -89,6 +89,15 @@
                 @endif
             </column>
 
+            @if ($ownerOptions)
+                @include('native.owner-picker', [
+                    'ref' => $formRef.'-owner',
+                    'label' => 'Assigned to',
+                    'members' => $ownerOptions,
+                    'selected' => $userId,
+                ])
+            @endif
+
             <toggle
                 ref="{{ $formRef }}-active"
                 label="Active"

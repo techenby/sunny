@@ -58,6 +58,20 @@ it('sends a new list, then the items added to it once it has an id', function ()
     Native::visit('/lists/'.$list)->assertSee('Nails');
 });
 
+it('sends a new list’s owner and keeps the one Sunny confirms', function (): void {
+    Saloon::fake([SaveRecordRequest::class => fn (PendingRequest $request): MockResponse => MockResponse::make(['data' => [
+        ...$request->body()->all(), 'team_id' => 1, 'id' => 100, 'created_at' => now()->toIso8601String(), 'updated_at' => now()->toIso8601String(),
+    ]], 201)]);
+
+    $list = app(SunnyOutbox::class)->queue('checklists', 1, ['name' => 'Wish list', 'type' => 'wishlist', 'user_id' => 1]);
+    expect(Checklist::find($list)->user_id)->toBe(1);
+    app(SunnyWrites::class)->push();
+
+    Saloon::assertSent(fn (SaveRecordRequest $request): bool => $request->resolveEndpoint() === '/teams/family/checklists'
+        && $request->body()->get('user_id') === 1);
+    expect(Checklist::find(100)->user_id)->toBe(1)->and(PendingWrite::count())->toBe(0);
+});
+
 it('checks off an item with a patch that leaves out the list id', function (): void {
     Saloon::fake([SaveRecordRequest::class => MockResponse::make(['data' => [...ChecklistItem::find(1)->toArray(), 'completed_at' => now()->toIso8601String(), 'completed_by' => 1]])]);
 

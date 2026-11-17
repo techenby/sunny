@@ -85,6 +85,22 @@ it('updates a routine with a patch', function (): void {
     expect(Routine::find(2)->name)->toBe('Lights out')->and(PendingWrite::count())->toBe(0);
 });
 
+it('sends a new owner, or none for the household, in a routine’s patch', function (?int $userId): void {
+    Saloon::fake([SaveRecordRequest::class => MockResponse::make(['data' => [...Routine::find(2)->toArray(), 'user_id' => $userId, 'team_id' => 1]])]);
+
+    app(SunnyOutbox::class)->queue('routines', 1, ['name' => 'Bedtime', 'user_id' => $userId], 2);
+    expect(Routine::find(2)->user_id)->toBe($userId);
+    app(SunnyWrites::class)->push();
+
+    Saloon::assertSent(fn (SaveRecordRequest $request): bool => $request->resolveEndpoint() === '/teams/family/routines/2'
+        && $request->getMethod() === Method::PATCH
+        && $request->body()->all() === ['name' => 'Bedtime', 'user_id' => $userId]);
+    expect(Routine::find(2)->user_id)->toBe($userId)->and(PendingWrite::count())->toBe(0);
+})->with([
+    'a member' => [1],
+    'the household' => [null],
+]);
+
 it('removes a step with a delete under its routine', function (): void {
     Saloon::fake([DeleteRecordRequest::class => MockResponse::make([], 204)]);
 

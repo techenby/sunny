@@ -25,7 +25,7 @@ class CreateRoutine extends Component
             return;
         }
 
-        $this->saveRecord('routines', $this->routinePayload());
+        $this->saveRecord('routines', [...$this->routinePayload(), ...$this->ownerPayload(creating: true)]);
     }
 
     public function render(): View
