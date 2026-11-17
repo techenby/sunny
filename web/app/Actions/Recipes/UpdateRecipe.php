@@ -8,7 +8,7 @@ use App\Actions\Photos\CreateThumbnail;
 use App\Models\Recipe;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class UpdateRecipe
 {
@@ -21,20 +21,33 @@ class UpdateRecipe
 
         $recipe->update($data);
 
+        $oldPaths = [$recipe->photo_path, $recipe->thumb_path];
+
         if ($removePhoto && ! $photo instanceof UploadedFile) {
-            Storage::delete(array_filter([$recipe->photo_path, $recipe->thumb_path]));
-
             $recipe->update(['photo_path' => null, 'thumb_path' => null]);
+
+            (new DeleteUnusedRecipePhotos)->handle($oldPaths);
         } elseif ($photo instanceof UploadedFile) {
-            Storage::delete(array_filter([$recipe->photo_path, $recipe->thumb_path]));
-
-            $filename = "{$recipe->slug}.{$photo->getClientOriginalExtension()}";
-
-            $path = $photo->storeAs("teams/{$recipe->team_id}/recipes", $filename);
+            $path = $photo->storeAs("teams/{$recipe->team_id}/recipes", $this->filename($recipe, $photo));
 
             $recipe->update(['photo_path' => $path, 'thumb_path' => (new CreateThumbnail)->handle($path)]);
+
+            (new DeleteUnusedRecipePhotos)->handle($oldPaths);
         }
 
         return $recipe;
+    }
+
+    private function filename(Recipe $recipe, UploadedFile $photo): string
+    {
+        $extension = $photo->getClientOriginalExtension();
+        $filename = "{$recipe->slug}.{$extension}";
+
+        $takenByAnotherRecipe = Recipe::withTrashed()
+            ->whereKeyNot($recipe->id)
+            ->where('photo_path', "teams/{$recipe->team_id}/recipes/{$filename}")
+            ->exists();
+
+        return $takenByAnotherRecipe ? "{$recipe->slug}-" . Str::lower(Str::random(8)) . ".{$extension}" : $filename;
     }
 }

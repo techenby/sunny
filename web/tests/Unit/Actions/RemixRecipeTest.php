@@ -1,7 +1,9 @@
 <?php
 
 use App\Actions\Recipes\RemixRecipe;
+use App\Actions\Recipes\UpdateRecipe;
 use App\Models\Recipe;
+use Illuminate\Support\Facades\Storage;
 
 test('it creates a remix of the recipe', function () {
     $recipe = Recipe::factory()->create([
@@ -41,4 +43,19 @@ test('it does not copy the client uuid', function () {
     $remix = (new RemixRecipe)->handle($recipe);
 
     expect($remix->client_uuid)->toBeNull();
+});
+
+test('the remix keeps its photo when the original removes its own', function () {
+    Storage::fake();
+    Storage::put('teams/1/recipes/stew.jpg', 'stew photo');
+    Storage::put('teams/1/recipes/thumbs/stew-abcd1234.jpg', 'stew thumb');
+    $recipe = Recipe::factory()->create(['name' => 'Stew', 'photo_path' => 'teams/1/recipes/stew.jpg', 'thumb_path' => 'teams/1/recipes/thumbs/stew-abcd1234.jpg']);
+    $remix = (new RemixRecipe)->handle($recipe);
+
+    (new UpdateRecipe)->handle($recipe, [], removePhoto: true);
+
+    expect($remix->fresh()->photo_path)->not->toBe('teams/1/recipes/stew.jpg')
+        ->and(Storage::get($remix->fresh()->photo_path))->toBe('stew photo')
+        ->and(Storage::get($remix->fresh()->thumb_path))->toBe('stew thumb');
+    Storage::assertMissing(['teams/1/recipes/stew.jpg', 'teams/1/recipes/thumbs/stew-abcd1234.jpg']);
 });

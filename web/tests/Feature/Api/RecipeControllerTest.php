@@ -302,6 +302,7 @@ test('recipe API rejects ingredients and instructions that are not text or a lis
 });
 
 test('copy copies a recipe and its photo to another team of the user', function () {
+    Storage::fake();
     $user = User::factory()->create();
     $team = Team::factory()->create();
     $team->members()->attach($user, ['role' => TeamRole::Member->value]);
@@ -310,6 +311,7 @@ test('copy copies a recipe and its photo to another team of the user', function 
         'photo_path' => "teams/{$user->current_team_id}/recipes/cake.png",
         'share_token' => 'abc',
     ]);
+    Storage::put($recipe->photo_path, 'cake photo');
 
     $this->actingAs($user)
         ->postJson(route('api.recipes.copy', [$user->currentTeam, $recipe]), ['team_id' => $team->id])
@@ -319,7 +321,10 @@ test('copy copies a recipe and its photo to another team of the user', function 
         ->assertJsonPath('data.name', 'Chocolate Cake')
         ->assertJsonPath('data.share_token', null);
 
-    expect($team->recipes()->sole()->photo_path)->toBe($recipe->photo_path)
+    $copy = $team->recipes()->sole();
+
+    expect($copy->photo_path)->toStartWith("teams/{$team->id}/recipes/chocolate-cake-")
+        ->and(Storage::get($copy->photo_path))->toBe('cake photo')
         ->and($recipe->fresh()->team_id)->toBe($user->current_team_id);
 });
 

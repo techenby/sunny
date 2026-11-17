@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Actions\Recipes\DeleteUnusedRecipePhotos;
 use App\Concerns\GeneratesUniqueTeamSlugs;
 use App\Enums\Appearance;
 use App\Enums\TeamRole;
@@ -131,11 +132,13 @@ class Team extends Model
 
     public function purge(): void
     {
-        $photos = ItemPhoto::query()->whereIn('item_id', $this->items()->withTrashed()->select('id'))->get(['path', 'thumb_path'])
+        $itemPhotos = ItemPhoto::query()->whereIn('item_id', $this->items()->withTrashed()->select('id'))->get(['path', 'thumb_path'])
             ->flatMap(fn (ItemPhoto $photo) => [$photo->path, $photo->thumb_path])
-            ->merge($this->recipes()->withTrashed()->get(['photo_path', 'thumb_path'])->flatMap(fn (Model $record) => [$record->photo_path, $record->thumb_path]))
             ->filter()
             ->values()
+            ->all();
+        $recipePhotos = $this->recipes()->withTrashed()->get(['photo_path', 'thumb_path'])
+            ->flatMap(fn (Recipe $recipe) => [$recipe->photo_path, $recipe->thumb_path])
             ->all();
 
         DB::transaction(function (): void {
@@ -143,7 +146,8 @@ class Team extends Model
             $this->forceDelete();
         });
 
-        Storage::delete($photos);
+        Storage::delete($itemPhotos);
+        (new DeleteUnusedRecipePhotos)->handle($recipePhotos);
     }
 
     /** @return array<string, string> */
