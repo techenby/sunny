@@ -10,6 +10,7 @@ use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Icons\Android;
 use App\Icons\Ios;
 use App\Models\PendingWrite;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -39,6 +40,9 @@ class ListDetail extends Component
     public string $linkError = '';
 
     public string $error = '';
+
+    /** @var list<int> */
+    public array $uncheckedIds = [];
 
     /**
      * @return array{id: int, team_id: int, user_id: int|null, type: ChecklistType, name: string, created_at: string, updated_at: string}|null
@@ -71,6 +75,15 @@ class ListDetail extends Component
             'completed' => $item['completed_at'] !== null,
             'error' => $errors[$item['id']] ?? null,
         ])->all();
+    }
+
+    /**
+     * @return list<array{id: int, name: string, url: string|null, domain: string|null, completed: bool, error: string|null}>
+     */
+    #[Computed]
+    public function completedItems(): array
+    {
+        return array_values(array_filter($this->items, fn (array $item): bool => $item['completed']));
     }
 
     #[Computed]
@@ -270,11 +283,67 @@ class ListDetail extends Component
         ])->id('delete-list')->show();
     }
 
+    public function confirmRemoveDone(): void
+    {
+        $names = array_column($this->completedItems, 'name');
+
+        if ($this->checklist === null || $names === []) {
+            return;
+        }
+
+        $named = count($names) > 3 ? implode(', ', array_slice($names, 0, 3)).' and '.(count($names) - 3).' more' : Arr::join($names, ', ', ' and ');
+
+        Dialog::alert(
+            trans_choice('Remove :count done item?|Remove :count done items?', count($names)),
+            $named.' will be removed from '.$this->checklist['name'].' for everyone on your team.',
+            [
+                ['label' => 'Cancel', 'style' => 'cancel'],
+                ['label' => 'Remove', 'style' => 'destructive'],
+            ],
+        )->id('remove-done')->show();
+    }
+
+    public function removeDone(): void
+    {
+        if ($this->checklist !== null && $this->completedItems !== []) {
+            $this->change(fn (SunnyOutbox $outbox) => $outbox->clearCompleted($this->checklist['team_id'], $this->checklist['id']));
+        }
+    }
+
+    public function uncheckAll(): void
+    {
+        $ids = array_column($this->completedItems, 'id');
+
+        if ($this->checklist !== null && $ids !== [] && $this->change(fn (SunnyOutbox $outbox) => $outbox->resetChecklist($this->checklist['team_id'], $this->checklist['id']))) {
+            $this->uncheckedIds = $ids;
+        }
+    }
+
+    public function undoUncheckAll(): void
+    {
+        $ids = array_values(array_intersect($this->uncheckedIds, array_column($this->items, 'id')));
+        $this->uncheckedIds = [];
+
+        if ($this->checklist === null || $ids === []) {
+            return;
+        }
+
+        $this->change(function (SunnyOutbox $outbox) use ($ids): void {
+            $outbox->discard('checklist_resets', $this->checklist['id']);
+
+            foreach ($ids as $id) {
+                $outbox->queue('checklist_items', $this->checklist['team_id'], ['completed' => true], $id);
+            }
+        });
+    }
+
     #[On(ButtonPressed::class)]
     public function onAlertButtonPressed(string $label, ?string $id = null): void
     {
         if ($id === 'delete-list' && $label === 'Delete') {
             $this->deleteList();
+        } elseif ($id === 'remove-done' && $label === 'Remove') {
+            $this->removeDone();
         } elseif ($id === 'discard-queued-change' && $label === 'Discard') {
             $this->discardQueuedChange();
         }
@@ -297,7 +366,7 @@ class ListDetail extends Component
 
     protected function refreshLocalSyncedData(): void
     {
-        unset($this->checklist, $this->items, $this->takesLinks, $this->summary, $this->queuedChange);
+        unset($this->checklist, $this->items, $this->completedItems, $this->takesLinks, $this->summary, $this->queuedChange);
     }
 
     protected function queuedResource(): string
@@ -365,6 +434,7 @@ class ListDetail extends Component
 
         app(SunnySyncCoordinator::class)->dispatch();
         $this->error = '';
+        $this->uncheckedIds = [];
         $this->refreshLocalSyncedData();
 
         return true;
