@@ -8,10 +8,12 @@ use App\Http\Controllers\Api\ItemPhotoController;
 use App\Http\Controllers\Api\OnboardingController;
 use App\Http\Controllers\Api\RecipeController;
 use App\Http\Controllers\Api\RecipeImportController;
+use App\Http\Controllers\Api\RecipeShareController;
 use App\Http\Controllers\Api\RoutineController;
 use App\Http\Controllers\Api\RoutineOccurrenceController;
 use App\Http\Controllers\Api\RoutineOccurrenceStepController;
 use App\Http\Controllers\Api\RoutineStepController;
+use App\Http\Controllers\Api\SharedRecipeController;
 use App\Http\Controllers\Api\SyncController;
 use App\Http\Controllers\Api\TokenController;
 use App\Http\Middleware\EnsureTeamMembership;
@@ -34,6 +36,9 @@ Route::middleware('auth:sanctum')
         Route::get('sync', SyncController::class)->name('sync');
         Route::post('sanctum/token/refresh', [TokenController::class, 'refresh'])->name('token.refresh');
         Route::post('logout', [TokenController::class, 'destroy'])->name('logout');
+
+        Route::get('shared-recipes/{recipe:share_token}', [SharedRecipeController::class, 'show'])->name('shared-recipes.show');
+        Route::post('shared-recipes/{recipe:share_token}/save', [SharedRecipeController::class, 'save'])->name('shared-recipes.save');
 
         Route::prefix('teams/{team}')
             ->middleware(EnsureTeamMembership::class)
@@ -59,6 +64,9 @@ Route::middleware('auth:sanctum')
                 Route::get('recipes/{recipe}', [RecipeController::class, 'show'])->name('recipes.show');
                 Route::patch('recipes/{recipe}', [RecipeController::class, 'update'])->name('recipes.update');
                 Route::delete('recipes/{recipe}', [RecipeController::class, 'destroy'])->name('recipes.destroy');
+                Route::post('recipes/{recipe}/copy', [RecipeController::class, 'copy'])->name('recipes.copy');
+                Route::put('recipes/{recipe}/share', [RecipeShareController::class, 'update'])->name('recipes.share.update');
+                Route::delete('recipes/{recipe}/share', [RecipeShareController::class, 'destroy'])->name('recipes.share.destroy');
 
                 Route::get('checklists', [ChecklistController::class, 'index'])->name('checklists.index');
                 Route::post('checklists', [ChecklistController::class, 'store'])->name('checklists.store');

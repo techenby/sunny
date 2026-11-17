@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
+use App\Models\Recipe;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
 
+/** @mixin Recipe */
 class RecipeResource extends JsonResource
 {
     /** @return array<string, mixed> */
@@ -18,6 +20,7 @@ class RecipeResource extends JsonResource
             ...Arr::except(parent::toArray($request), ['photo_path', 'thumb_path']),
             'photo_url' => $this->photo_path ? Storage::temporaryUrl($this->photo_path, now()->addMinutes(30)) : null,
             'thumb_url' => $this->thumb_path ? Storage::temporaryUrl($this->thumb_path, now()->addMinutes(30)) : null,
+            'share_url' => $this->share_token ? route('recipes.shared', $this->share_token) : null,
         ];
     }
 }

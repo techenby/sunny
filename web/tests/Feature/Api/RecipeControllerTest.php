@@ -13,6 +13,7 @@ test('guests cannot access recipes', function () {
     $this->getJson(route('api.recipes.show', ['household', 1]))->assertUnauthorized();
     $this->patchJson(route('api.recipes.update', ['household', 1]))->assertUnauthorized();
     $this->deleteJson(route('api.recipes.destroy', ['household', 1]))->assertUnauthorized();
+    $this->postJson(route('api.recipes.copy', ['household', 1]))->assertUnauthorized();
 });
 
 test('index returns recipes for the current team', function () {
@@ -298,4 +299,73 @@ test('recipe API rejects ingredients and instructions that are not text or a lis
             'instructions' => [['quantity' => 2]],
         ])
         ->assertJsonValidationErrors(['ingredients', 'instructions']);
+});
+
+test('copy copies a recipe and its photo to another team of the user', function () {
+    $user = User::factory()->create();
+    $team = Team::factory()->create();
+    $team->members()->attach($user, ['role' => TeamRole::Member->value]);
+    $recipe = Recipe::factory()->for($user->currentTeam)->create([
+        'name' => 'Chocolate Cake',
+        'photo_path' => "teams/{$user->current_team_id}/recipes/cake.png",
+        'share_token' => 'abc',
+    ]);
+
+    $this->actingAs($user)
+        ->postJson(route('api.recipes.copy', [$user->currentTeam, $recipe]), ['team_id' => $team->id])
+        ->assertCreated()
+        ->assertJsonPath('data.team_id', $team->id)
+        ->assertJsonPath('data.parent_id', $recipe->id)
+        ->assertJsonPath('data.name', 'Chocolate Cake')
+        ->assertJsonPath('data.share_token', null);
+
+    expect($team->recipes()->sole()->photo_path)->toBe($recipe->photo_path)
+        ->and($recipe->fresh()->team_id)->toBe($user->current_team_id);
+});
+
+test('copy returns the existing copy when a client uuid is retried', function () {
+    $user = User::factory()->create();
+    $team = Team::factory()->create();
+    $team->members()->attach($user, ['role' => TeamRole::Member->value]);
+    $recipe = Recipe::factory()->for($user->currentTeam)->create();
+    $uuid = '9b2f6c1e-3d4a-4f5b-8c7d-1e2f3a4b5c6d';
+
+    $first = $this->actingAs($user)
+        ->postJson(route('api.recipes.copy', [$user->currentTeam, $recipe]), ['team_id' => $team->id, 'client_uuid' => $uuid])
+        ->assertCreated()
+        ->assertJsonPath('data.client_uuid', $uuid);
+
+    $this->actingAs($user)
+        ->postJson(route('api.recipes.copy', [$user->currentTeam, $recipe]), ['team_id' => $team->id, 'client_uuid' => $uuid])
+        ->assertOk()
+        ->assertJsonPath('data.id', $first->json('data.id'));
+
+    expect($team->recipes()->count())->toBe(1);
+});
+
+test('copy validates the team', function (Closure $teamId) {
+    $user = User::factory()->create();
+    $recipe = Recipe::factory()->for($user->currentTeam)->create();
+
+    $this->actingAs($user)
+        ->postJson(route('api.recipes.copy', [$user->currentTeam, $recipe]), ['team_id' => $teamId($user), 'client_uuid' => 'nope'])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['team_id', 'client_uuid']);
+
+    expect(Recipe::count())->toBe(1);
+})->with([
+    'missing' => fn () => fn (User $user) => null,
+    'the same team' => fn () => fn (User $user) => $user->current_team_id,
+    'a team the user does not belong to' => fn () => fn (User $user) => Team::factory()->create()->id,
+]);
+
+test('copy returns 403 for a team the user does not belong to recipe', function () {
+    $user = User::factory()->create();
+    $recipe = Recipe::factory()->create();
+
+    $this->actingAs($user)
+        ->postJson(route('api.recipes.copy', [$recipe->team, $recipe]), ['team_id' => $user->current_team_id])
+        ->assertForbidden();
+
+    expect($user->currentTeam->recipes()->count())->toBe(0);
 });

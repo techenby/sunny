@@ -1,6 +1,6 @@
 <?php
 
-use App\Actions\Recipes\CreateRecipe;
+use App\Actions\Recipes\SaveSharedRecipeToTeam;
 use App\Models\Recipe;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Head\Facades\Head;
@@ -17,31 +17,13 @@ new #[Layout('layouts::guest')] class extends Component {
 
     public function addToMyTeam(): void
     {
-        $source = route('recipes.shared', $this->recipe->share_token);
-
         if (! Auth::check()) {
             $this->redirect(route('login'));
 
             return;
-        // check if user is owner of recipe
-        } else if ($this->recipe->team_id === Auth::user()->current_team_id) {
-            $this->redirect(route('recipes.show', $this->recipe), navigate: true);
-
-            return;
-        // check if user already saved it
-        } else if ($toRecipe = Auth::user()->currentTeam->recipes()->where('source', $source)->first()) {
-            $this->redirect(route('recipes.show', $toRecipe), navigate: true);
-
-            return;
         }
 
-        $recipe = (new CreateRecipe)->handle(Auth::user()->currentTeam, [
-            ...$this->recipe->only([
-                'name', 'source', 'servings', 'prep_time', 'cook_time', 'total_time',
-                'description', 'ingredients', 'instructions', 'notes', 'nutrition',
-            ]),
-            'source' => $source,
-        ]);
+        $recipe = (new SaveSharedRecipeToTeam)->handle($this->recipe, Auth::user()->currentTeam);
 
         $this->redirect(route('recipes.show', $recipe), navigate: true);
     }

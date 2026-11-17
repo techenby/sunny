@@ -355,18 +355,6 @@ parameters:
 			path: app/Http/Resources/ItemResource.php
 
 		-
-			message: '#^Access to an undefined property App\\Http\\Resources\\RecipeResource\:\:\$photo_path\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Resources/RecipeResource.php
-
-		-
-			message: '#^Access to an undefined property App\\Http\\Resources\\RecipeResource\:\:\$thumb_path\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Resources/RecipeResource.php
-
-		-
 			message: '#^Parameter \#1 \$array of static method Illuminate\\Support\\Arr\:\:except\(\) expects array, array\|Illuminate\\Contracts\\Support\\Arrayable\|JsonSerializable given\.$#'
 			identifier: argument.type
 			count: 1
