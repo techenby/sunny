@@ -2,8 +2,11 @@
 
 use App\Layouts\TabsLayout;
 use App\NativeComponents\Account;
+use App\NativeComponents\Calendar;
+use App\NativeComponents\CalendarFeeds;
 use App\NativeComponents\ChangePassword;
 use App\NativeComponents\CookRecipe;
+use App\NativeComponents\CreateCalendarFeed;
 use App\NativeComponents\CreateInventoryItem;
 use App\NativeComponents\CreateList;
 use App\NativeComponents\CreateRecipe;
@@ -11,6 +14,7 @@ use App\NativeComponents\CreateRoutine;
 use App\NativeComponents\CreateTeam;
 use App\NativeComponents\Dashboard;
 use App\NativeComponents\DeleteAccount;
+use App\NativeComponents\EditCalendarFeed;
 use App\NativeComponents\EditInventoryItem;
 use App\NativeComponents\EditList;
 use App\NativeComponents\EditRecipe;
@@ -44,6 +48,10 @@ Route::native('/register', Register::class);
 Route::native('/setup', SetUpHome::class);
 Route::nativeGroup(TabsLayout::class, function () {
     Route::native('/dashboard', Dashboard::class);
+    Route::native('/calendar', Calendar::class);
+    Route::native('/calendar/feeds', CalendarFeeds::class);
+    Route::native('/calendar/feeds/create', CreateCalendarFeed::class);
+    Route::native('/calendar/feeds/{id}/edit', EditCalendarFeed::class);
     Route::native('/preferences', Preferences::class);
     Route::native('/preferences/account', Account::class);
     Route::native('/preferences/password', ChangePassword::class);

@@ -5,13 +5,16 @@ namespace App\NativeComponents;
 use App\Actions\DestroySession;
 use App\Concerns\AnswersInvitations;
 use App\Concerns\ChecksSunnySync;
+use App\Concerns\ShowsCalendarEvents;
 use App\Enums\ItemType;
 use App\Http\Integrations\Sunny\SunnyStore;
 use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Http\Integrations\Sunny\SunnyTeam;
 use App\Models\Onboarding;
+use App\Support\CalendarAgenda;
 use App\Support\CrashReports;
 use App\Support\Toast;
+use Carbon\CarbonImmutable;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
@@ -30,6 +33,7 @@ class Dashboard extends Component
 {
     use AnswersInvitations;
     use ChecksSunnySync;
+    use ShowsCalendarEvents;
 
     public string $syncError = '';
 
@@ -44,6 +48,7 @@ class Dashboard extends Component
         Onboarding::current()?->report();
         app(SunnySyncCoordinator::class)->dispatchIfDue();
         $this->refreshLocalData();
+        $this->refreshCalendar();
     }
 
     /**
@@ -58,6 +63,7 @@ class Dashboard extends Component
     public function sync(): void
     {
         $this->syncError = '';
+        $this->refreshCalendar(force: true);
 
         try {
             app(SunnySyncCoordinator::class)->sync();
@@ -68,6 +74,7 @@ class Dashboard extends Component
         }
 
         $this->refreshLocalData();
+        $this->refreshCalendar();
     }
 
     #[On('sunny-sync-complete')]
@@ -81,6 +88,7 @@ class Dashboard extends Component
 
         $this->syncError = '';
         $this->refreshLocalData();
+        $this->refreshCalendar();
     }
 
     /**
@@ -118,6 +126,27 @@ class Dashboard extends Component
             ->all();
     }
 
+    /**
+     * @return list<array{name: string, date: string, events: list<array<string, mixed>>}>|null
+     */
+    #[Computed]
+    public function comingUp(): ?array
+    {
+        $today = app(SunnyTeam::class)->current()?->today();
+
+        if ($this->calendarSnapshot === null || $today === null) {
+            return null;
+        }
+
+        $days = CalendarAgenda::byDay($this->calendarSnapshot['events'], $today);
+
+        return array_map(fn (CarbonImmutable $day): array => [
+            'name' => CalendarAgenda::dayName($day, $today),
+            'date' => $day->format('D, M j'),
+            'events' => CalendarAgenda::rows($days[$day->toDateString()] ?? []),
+        ], [$today, $today->addDay()]);
+    }
+
     #[On(ButtonPressed::class)]
     public function onAlertButtonPressed(string $label, ?string $id = null): void
     {
@@ -147,9 +176,16 @@ class Dashboard extends Component
         ])->id('crash-reports')->show();
     }
 
+    protected function calendarRange(): ?array
+    {
+        $team = app(SunnyTeam::class)->current();
+
+        return $team === null ? null : [$team->id, $team->today()->toDateString(), 2];
+    }
+
     private function refreshLocalData(): void
     {
-        unset($this->recentRecipes, $this->recentItems, $this->teamOptions, $this->invitations);
+        unset($this->recentRecipes, $this->recentItems, $this->teamOptions, $this->invitations, $this->calendarSnapshot, $this->calendarFeeds, $this->comingUp);
     }
 
     protected function invitationsChanged(): void

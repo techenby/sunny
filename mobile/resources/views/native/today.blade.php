@@ -66,6 +66,53 @@
             <text ref="routines-date" class="text-base text-theme-on-surface-variant">{{ $this->labels['date'] }}</text>
         @endif
 
+        @if ($this->events !== null)
+            <column ref="day-events" class="w-full gap-2">
+                <row class="w-full items-center gap-3">
+                    <x-ui.heading size="lg" class="flex-1">On the calendar</x-ui.heading>
+                    <pressable ref="day-events-calendar" a11y-label="Calendar" class="min-h-12 justify-center" @navigate('/calendar')>
+                        <row class="items-center gap-1">
+                            <text font="semibold" class="text-base text-theme-primary-text">Calendar</text>
+                            <icon :ios="Ios::ChevronRight" :android="Android::ChevronRight" :size="12" class="text-theme-primary-text" />
+                        </row>
+                    </pressable>
+                </row>
+
+                @if ($calendarStatus !== '' && $this->calendarUpdatedAt)
+                    <row ref="day-events-status" class="w-full items-start gap-2">
+                        <icon :ios="Ios::WifiSlash" :android="Android::WifiOff" :size="14" class="mt-0.5 text-theme-on-surface-variant" />
+                        <x-ui.text size="sm" class="flex-1">{{ $calendarStatus === 'offline' ? 'You’re offline.' : 'Sunny couldn’t refresh events.' }} Last updated {{ $this->calendarUpdatedAt }}.</x-ui.text>
+                    </row>
+                @endif
+
+                @foreach ($this->calendarSnapshot['warnings'] as $warning)
+                    <pressable ref="day-events-warning-{{ $warning['feed_id'] }}" :a11y-label="$warning['feed_name'].' isn’t showing. Fix it in Calendars.'" class="w-full py-1" @navigate('/calendar/feeds')>
+                        <row class="w-full items-center gap-2">
+                            <icon :ios="Ios::ExclamationmarkTriangleFill" :android="Android::Warning" :size="14" class="text-theme-destructive" />
+                            <text font="medium" class="flex-1 text-sm text-theme-destructive">{{ $warning['feed_name'] }} isn’t showing</text>
+                            <text font="semibold" class="text-sm text-theme-primary-text">Fix</text>
+                        </row>
+                    </pressable>
+                @endforeach
+
+                @if ($this->events)
+                    <column class="{{ Card::classes() }} w-full py-1">
+                        @foreach ($this->events as $event)
+                            @include('native.calendar-event', ['event' => $event, 'ref' => 'day-event-'.$loop->index])
+                            @unless ($loop->last)
+                                <divider class="ml-4" />
+                            @endunless
+                        @endforeach
+                    </column>
+                @else
+                    <row ref="day-events-empty" class="w-full items-center gap-2">
+                        <icon :ios="Ios::SunMax" :android="Android::WbSunny" :size="16" class="text-theme-primary" />
+                        <x-ui.text size="sm">Nothing scheduled</x-ui.text>
+                    </row>
+                @endif
+            </column>
+        @endif
+
         @if ($loadError)
             <column ref="day-unavailable" class="w-full gap-4 rounded-xl bg-theme-destructive/10 px-4 py-4">
                 <row class="w-full items-start gap-3">
