@@ -23,7 +23,7 @@ test('rotated kiosk renders dropdowns inside the rotated page', function () {
         // not the polyfill's UA-like fallback (3px canvas border)...
         ->click('ui-dropdown:nth-of-type(1) > button')
         ->assertVisible('ui-dropdown:nth-of-type(1) > [popover]')
-        ->assertSee("Couldn't load")
+        ->assertSee("Couldn't update")
         ->assertScript('getComputedStyle(document.querySelector("ui-dropdown [popover]")).borderTopWidth', '1px');
 
     // While a popover is open Flux disables pointer events outside it (light dismiss),

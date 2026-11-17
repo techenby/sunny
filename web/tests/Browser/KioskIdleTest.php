@@ -10,6 +10,7 @@ use App\Models\Team;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 
 use function Pest\Laravel\actingAs;
 
@@ -103,6 +104,8 @@ test('the screensaver turns into a night clock during night hours', function () 
 });
 
 test('the screensaver shows the next event', function () use ($idleFor) {
+    Storage::fake();
+
     $team = Team::factory()->create(['timezone' => 'America/Chicago', 'screensaver_after' => 1, 'return_home_after' => 0]);
     $user = User::factory()->memberOf($team)->create();
     CalendarFeed::factory()->for($team)->create(['url' => 'https://example.com/family.ics']);
@@ -159,6 +162,8 @@ test('the kiosk refreshes its data when the shared clock rolls over', function (
 });
 
 test('the screensaver only refreshes its details while it is showing', function () use ($idleFor) {
+    Storage::fake();
+
     $team = Team::factory()->create(['timezone' => 'America/Chicago', 'screensaver_after' => 1, 'return_home_after' => 0]);
     $user = User::factory()->memberOf($team)->create();
 

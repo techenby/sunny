@@ -140,13 +140,16 @@ class Team extends Model
         $recipePhotos = $this->recipes()->withTrashed()->get(['photo_path', 'thumb_path'])
             ->flatMap(fn (Recipe $recipe) => [$recipe->photo_path, $recipe->thumb_path])
             ->all();
+        $calendarCopies = $this->calendarFeeds()->get(['id'])
+            ->map(fn (CalendarFeed $feed) => $feed->icsPath())
+            ->all();
 
         DB::transaction(function (): void {
             $this->memberships()->delete();
             $this->forceDelete();
         });
 
-        Storage::delete($itemPhotos);
+        Storage::delete([...$itemPhotos, ...$calendarCopies]);
         (new DeleteUnusedRecipePhotos)->handle($recipePhotos);
     }
 

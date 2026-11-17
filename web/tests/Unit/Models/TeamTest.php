@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\TeamRole;
+use App\Models\CalendarFeed;
 use App\Models\Recipe;
 use App\Models\Team;
 use App\Models\User;
@@ -45,6 +46,17 @@ test('purge keeps recipe photos another team still uses', function () {
 
     Storage::assertExists($shared);
     Storage::assertMissing("teams/{$team->id}/recipes/pie.jpg");
+});
+
+test('purge drops the team calendar feed copies', function () {
+    Storage::fake();
+
+    $user = User::factory()->create();
+    $feed = CalendarFeed::factory()->for($user->currentTeam)->withIcs('BEGIN:VCALENDAR' . "\r\n" . 'END:VCALENDAR')->create();
+
+    $user->currentTeam->purge();
+
+    Storage::assertMissing($feed->icsPath());
 });
 
 test('owner returns user with owner role', function () {

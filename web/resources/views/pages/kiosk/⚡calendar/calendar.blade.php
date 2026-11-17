@@ -9,7 +9,7 @@
 
                 <flux:popover>
                     <flux:heading>
-                        {{ __("Couldn't load :feeds.", ['feeds' => $this->failedFeeds->pluck('name')->join(', ', __(' and '))]) }}
+                        {{ __("Couldn't update :feeds.", ['feeds' => $this->failedFeeds->pluck('name')->join(', ', __(' and '))]) }}
                     </flux:heading>
                     <flux:text>
                         {{ __('Open Sunny on your phone or computer and go to Configure → Calendar to fix it.') }}

@@ -9,9 +9,14 @@ use App\Models\Team;
 use App\Models\User;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
 use function Pest\Laravel\actingAs;
+
+beforeEach(function () {
+    Storage::fake();
+});
 
 test('renders successfully', function () {
     $user = User::factory()->create();
@@ -68,13 +73,27 @@ test('kiosk layout follows the team rotation setting', function () {
 });
 
 test('can view events from feed', function () {
-    Http::allowStrayRequests(['https://calendar.google.com/calendar/ical/*']);
+    Http::fake([
+        'https://example.com/us-holidays.ics' => Http::response(<<<'ICS'
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Sunny//Tests//EN
+BEGIN:VEVENT
+UID:cinco-de-mayo
+DTSTAMP:20260501T120000Z
+DTSTART;VALUE=DATE:20260505
+DTEND;VALUE=DATE:20260506
+SUMMARY:Cinco de Mayo
+END:VEVENT
+END:VCALENDAR
+ICS),
+    ]);
 
     $this->travelTo(Date::parse('2026-05-08'));
 
     $team = Team::factory()
         ->has(CalendarFeed::factory()->state([
-            'url' => 'https://calendar.google.com/calendar/ical/en.usa%23holiday%40group.v.calendar.google.com/public/basic.ics',
+            'url' => 'https://example.com/us-holidays.ics',
             'name' => 'US Holidays',
             'color' => CalendarColor::Green,
         ]))
@@ -321,7 +340,7 @@ ICS),
 
     Livewire::actingAs($user)
         ->test('pages::kiosk.calendar')
-        ->assertSee("Couldn't load Work Calendar.")
+        ->assertSee("Couldn't update Work Calendar.")
         ->assertSee('Open Sunny on your phone or computer')
         ->assertSee('Morning Standup');
 
@@ -350,7 +369,7 @@ ICS),
 
     Livewire::actingAs($user)
         ->test('pages::kiosk.calendar')
-        ->assertDontSee("Couldn't load");
+        ->assertDontSee("Couldn't update");
 });
 
 test('can hide feed from calendar', function () {

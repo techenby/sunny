@@ -5,7 +5,12 @@ use App\Models\Team;
 use App\Models\User;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
+
+beforeEach(function () {
+    Storage::fake();
+});
 
 test('it keeps the three day columns and prompts to connect a calendar when the team has no feeds', function () {
     Date::setTestNow('2026-05-08 08:00:00');

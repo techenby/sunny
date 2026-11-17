@@ -9,8 +9,6 @@ use Carbon\CarbonImmutable;
 use DateTimeInterface;
 use DateTimeZone;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Http;
 use Sabre\VObject\Component\VEvent;
 use Sabre\VObject\DateTimeParser;
 use Sabre\VObject\Reader;
@@ -169,42 +167,14 @@ class FetchCalendarEvents
         return $feed->team?->timezone ?? 'America/Chicago';
     }
 
-    /**
-     * Fetch the feed body, caching successful responses for 15 minutes and
-     * failures for 5 minutes so a broken feed doesn't slow every render.
-     */
     private function body(CalendarFeed $feed): ?string
     {
-        $cacheKey = "calendar-feed:{$feed->id}:" . md5($feed->url);
+        $ics = $feed->storedIcs();
 
-        /** @var string|false|null $cached */
-        $cached = Cache::get($cacheKey);
-
-        if ($cached === null) {
-            $cached = $this->fetch($feed, $cacheKey);
+        if ($ics !== null || $feed->isFailing()) {
+            return $ics;
         }
 
-        return $cached === false ? null : $cached;
-    }
-
-    private function fetch(CalendarFeed $feed, string $cacheKey): string|false
-    {
-        try {
-            $body = Http::withHeaders([
-                'Accept' => 'text/calendar,text/plain,*/*',
-                'User-Agent' => 'SunnyCalendar/1.0',
-            ])->timeout(10)->get($feed->url)->throw()->body();
-        } catch (Throwable $exception) {
-            $feed->fetched($exception);
-            Cache::put($cacheKey, false, now()->addMinutes(5));
-
-            return false;
-        }
-
-        $feed->fetched();
-
-        Cache::put($cacheKey, $body, now()->addMinutes(15));
-
-        return $body;
+        return (new RefreshCalendarFeed)->handle($feed);
     }
 }

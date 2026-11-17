@@ -7,6 +7,11 @@ use App\Models\Team;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
+
+beforeEach(function () {
+    Storage::fake();
+});
 
 test('it checks attendee response status against team member emails', function () {
     $team = Team::factory()->create();
@@ -65,7 +70,7 @@ test('it records a failure and returns no events when the feed cannot be fetched
         ->and($feed->last_error)->toBe('The calendar server responded with HTTP 401.');
 });
 
-test('it caches failures so a broken feed is not fetched on every render', function () {
+test('it does not retry a failed download on every render', function () {
     Http::fake([
         'https://example.com/broken.ics' => Http::response('', 401),
     ]);
@@ -78,30 +83,51 @@ test('it caches failures so a broken feed is not fetched on every render', funct
     Http::assertSentCount(1);
 });
 
-test('it clears the failure state after a successful fetch', function () {
+test('it downloads a new feed once and reads the stored copy after that', function () {
     Http::fake([
-        'https://example.com/fixed.ics' => Http::response(<<<'ICS'
-BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//Sunny//Calendar Test//EN
-BEGIN:VEVENT
-UID:crew-meeting@example.com
-DTSTAMP:20260501T120000Z
-DTSTART:20260505T150000Z
-DTEND:20260505T160000Z
-SUMMARY:Crew Meeting
-END:VEVENT
-END:VCALENDAR
-ICS),
+        'https://example.com/crew.ics' => Http::response(file_get_contents(base_path('tests/Fixtures/ics/events.ics'))),
     ]);
 
-    $feed = CalendarFeed::factory()->failing()->create(['url' => 'https://example.com/fixed.ics']);
+    $feed = CalendarFeed::factory()->create(['url' => 'https://example.com/crew.ics']);
+    $from = CarbonImmutable::parse('2026-05-05', 'America/Chicago');
 
-    resolve(FetchCalendarEvents::class)->handle($feed);
+    $first = resolve(FetchCalendarEvents::class)->handle($feed, 2, $from);
+    $second = resolve(FetchCalendarEvents::class)->handle($feed->fresh(), 2, $from);
 
-    $feed->refresh();
+    Http::assertSentCount(1);
+    Storage::assertExists($feed->icsPath());
 
-    expect($feed->isFailing())->toBeFalse()
-        ->and($feed->last_error)->toBeNull()
-        ->and($feed->last_fetched_at)->not->toBeNull();
+    expect($first->pluck('title')->all())->toBe(['Crew Meeting', 'Shore Leave'])
+        ->and($second->pluck('title')->all())->toBe(['Crew Meeting', 'Shore Leave'])
+        ->and($feed->fresh()->ics_fetched_at)->not->toBeNull();
+});
+
+test('it reads the stored copy without downloading the feed', function () {
+    Http::fake();
+
+    $feed = CalendarFeed::factory()
+        ->withIcs(file_get_contents(base_path('tests/Fixtures/ics/events.ics')))
+        ->create(['url' => 'https://example.com/crew.ics']);
+
+    $events = resolve(FetchCalendarEvents::class)->handle($feed, 2, CarbonImmutable::parse('2026-05-05', 'America/Chicago'));
+
+    Http::assertNothingSent();
+
+    expect($events->pluck('title')->all())->toBe(['Crew Meeting', 'Shore Leave']);
+});
+
+test('it shows events from the stored copy while the feed is failing', function () {
+    Http::fake();
+
+    $feed = CalendarFeed::factory()
+        ->failing()
+        ->withIcs(file_get_contents(base_path('tests/Fixtures/ics/events.ics')))
+        ->create(['url' => 'https://example.com/crew.ics']);
+
+    $events = resolve(FetchCalendarEvents::class)->handle($feed, 2, CarbonImmutable::parse('2026-05-05', 'America/Chicago'));
+
+    Http::assertNothingSent();
+
+    expect($events->pluck('title')->all())->toBe(['Crew Meeting', 'Shore Leave'])
+        ->and($feed->fresh()->isFailing())->toBeTrue();
 });

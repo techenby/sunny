@@ -7,9 +7,14 @@ use App\Models\Team;
 use App\Models\User;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Saloon\Http\Faking\MockResponse;
 use Saloon\Laravel\Saloon;
+
+beforeEach(function () {
+    Storage::fake();
+});
 
 $calendar = fn (string $events): string => <<<ICS
 BEGIN:VCALENDAR

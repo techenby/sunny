@@ -4,6 +4,8 @@ use App\Enums\CalendarColor;
 use App\Models\CalendarFeed;
 use App\Models\Team;
 use App\Models\User;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
 use function Pest\Laravel\actingAs;
@@ -31,6 +33,9 @@ test('renders successfully', function () {
 })->group('smoke');
 
 test('can add a calendar feed', function () {
+    Storage::fake();
+    Http::fake(['https://worldpublicholiday.com/*' => Http::response(file_get_contents(base_path('tests/Fixtures/ics/events.ics')))]);
+
     $team = Team::factory()->create();
     $user = User::factory()->memberOf($team)->create();
 
@@ -54,6 +59,9 @@ test('can add a calendar feed', function () {
 });
 
 test('can edit a team calendar feed', function () {
+    Storage::fake();
+    Http::fake(['https://example.com/american.ics' => Http::response(file_get_contents(base_path('tests/Fixtures/ics/events.ics')))]);
+
     $team = Team::factory()
         ->has(CalendarFeed::factory()->state([
             'name' => 'US Holidays',
@@ -168,7 +176,10 @@ test('does not show the failing notice when every feed is healthy', function () 
         ->assertDontSee('Secret address in iCal format');
 });
 
-test('updating a feed url clears its failure state', function () {
+test('updating a feed url clears its failure state once the new url loads', function () {
+    Storage::fake();
+    Http::fake(['https://example.com/work-fixed.ics' => Http::response(file_get_contents(base_path('tests/Fixtures/ics/events.ics')))]);
+
     $team = Team::factory()
         ->has(CalendarFeed::factory()->failing()->state([
             'name' => 'Work Calendar',

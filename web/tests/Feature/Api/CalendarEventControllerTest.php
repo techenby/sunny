@@ -6,9 +6,11 @@ use App\Models\Team;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 
 beforeEach(function () {
     Http::preventStrayRequests();
+    Storage::fake();
     $this->travelTo(CarbonImmutable::parse('2026-05-05 08:00', 'America/Chicago'));
 });
 
