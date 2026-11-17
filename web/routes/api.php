@@ -9,9 +9,11 @@ use App\Http\Controllers\Api\InvitationController;
 use App\Http\Controllers\Api\ItemController;
 use App\Http\Controllers\Api\ItemPhotoController;
 use App\Http\Controllers\Api\OnboardingController;
+use App\Http\Controllers\Api\PasswordResetLinkController;
 use App\Http\Controllers\Api\RecipeController;
 use App\Http\Controllers\Api\RecipeImportController;
 use App\Http\Controllers\Api\RecipeShareController;
+use App\Http\Controllers\Api\RegisteredUserController;
 use App\Http\Controllers\Api\RoutineController;
 use App\Http\Controllers\Api\RoutineOccurrenceController;
 use App\Http\Controllers\Api\RoutineOccurrenceStepController;
@@ -32,6 +34,9 @@ Route::post('sanctum/token', [TokenController::class, 'store'])->name('api.token
 Route::post('sanctum/token/two-factor', [TokenController::class, 'twoFactor'])
     ->middleware('throttle:api-two-factor')
     ->name('api.token.two-factor');
+
+Route::post('register', RegisteredUserController::class)->middleware('throttle:6,1,register')->name('api.register');
+Route::post('forgot-password', PasswordResetLinkController::class)->middleware('throttle:6,1,forgot-password')->name('api.password.email');
 
 Route::middleware('auth:sanctum')
     ->name('api.')
