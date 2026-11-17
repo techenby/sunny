@@ -35,6 +35,10 @@
 
                 @include('native.queued-change', ['refPrefix' => 'recipe', 'queuedChange' => $this->queuedChange])
 
+                @if ($error !== '')
+                    <text ref="recipe-error" class="text-base text-theme-destructive">{{ $error }}</text>
+                @endif
+
                 @if ($recipe['description'])
                     <text ref="recipe-description" class="text-base text-theme-on-surface-variant">{{ $recipe['description'] }}</text>
                 @endif
@@ -210,6 +214,15 @@
                     </column>
                 @endif
             @endforeach
+
+            <pressable
+                ref="delete-recipe"
+                a11y-label="Delete {{ $recipe['name'] }}"
+                class="min-h-12 w-full items-center justify-center"
+                @tap="confirmDeleteRecipe"
+            >
+                <text font="semibold" class="text-center text-lg text-theme-destructive">Delete {{ $recipe['name'] }}</text>
+            </pressable>
         </column>
     </scroll-view>
 @else
