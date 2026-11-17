@@ -99,7 +99,7 @@ class SunnyStore
             'timezone' => $team['timezone'] ?? null,
             'is_personal' => (bool) ($team['is_personal'] ?? false),
             'week_start' => $team['week_start'] ?? null,
-            ...(is_array($team['members'] ?? null) ? ['members' => $team['members']] : []),
+            'members' => self::members($team['members'] ?? []),
         ]);
     }
 
@@ -311,12 +311,12 @@ class SunnyStore
         return hash('sha256', rtrim((string) config('services.sunny.api_url'), '/'));
     }
 
-    /** @return list<array{id: int, name: string, initials: string}> */
+    /** @return list<array{id: int, name: string, initials: string, role?: string}> */
     private static function members(array $members): array
     {
         return collect($members)
             ->filter(fn (mixed $member): bool => is_array($member) && is_int($member['id'] ?? null))
-            ->map(fn (array $member): array => Arr::only($member, ['id', 'name', 'initials']))
+            ->map(fn (array $member): array => Arr::only($member, ['id', 'name', 'initials', 'role']))
             ->values()
             ->all();
     }

@@ -11,7 +11,6 @@ return new class extends Migration
         Schema::table('teams', function (Blueprint $table): void {
             $table->boolean('is_personal')->default(false);
             $table->unsignedTinyInteger('week_start')->nullable();
-            $table->json('members')->nullable();
             $table->json('invitations')->nullable();
             $table->timestamp('invitations_fetched_at')->nullable();
         });
@@ -32,7 +31,7 @@ return new class extends Migration
         Schema::dropIfExists('invitations');
 
         Schema::table('teams', function (Blueprint $table): void {
-            $table->dropColumn(['is_personal', 'week_start', 'members', 'invitations', 'invitations_fetched_at']);
+            $table->dropColumn(['is_personal', 'week_start', 'invitations', 'invitations_fetched_at']);
         });
     }
 };

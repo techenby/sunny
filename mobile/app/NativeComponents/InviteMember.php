@@ -83,7 +83,7 @@ class InviteMember extends Component
         return collect($this->team()?->memberList() ?? [])
             ->filter(fn (array $member): bool => $member['role']->canInvite())
             ->sortBy(fn (array $member): string => ($member['role'] === TeamRole::Owner ? '0' : '1').mb_strtolower($member['name']))
-            ->map(fn (array $member): array => [...$member, 'initials' => $member['initials'] !== '' ? $member['initials'] : Preferences::initials($member['name'])])
+            ->map(fn (array $member): array => [...$member, 'initials' => ($member['initials'] ?? '') !== '' ? $member['initials'] : Preferences::initials($member['name'])])
             ->values()
             ->all();
     }

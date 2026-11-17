@@ -106,7 +106,7 @@ class TeamSettings extends Component
             ->sortBy(fn (array $member): string => ($member['role'] === TeamRole::Owner ? '0' : '1').mb_strtolower($member['name']))
             ->map(fn (array $member): array => [
                 ...$member,
-                'initials' => $member['initials'] !== '' ? $member['initials'] : Preferences::initials($member['name']),
+                'initials' => ($member['initials'] ?? '') !== '' ? $member['initials'] : Preferences::initials($member['name']),
                 'you' => $member['id'] === $userId,
                 'tappable' => $this->canManageMembers() && $member['role'] !== TeamRole::Owner && $member['id'] !== $userId,
             ])
