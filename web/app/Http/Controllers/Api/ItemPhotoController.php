@@ -26,7 +26,12 @@ class ItemPhotoController extends Controller
             return ItemPhotoResource::make($existing)->response();
         }
 
-        $photo = $action->handle($item, $request->file('photo'), $request->validated('position'), $request->validated('client_uuid'));
+        $photo = $action->handle(
+            $item,
+            $request->file('photo'),
+            $request->filled('position') ? $request->integer('position') : null,
+            $request->validated('client_uuid'),
+        );
 
         return ItemPhotoResource::make($photo)
             ->response()
