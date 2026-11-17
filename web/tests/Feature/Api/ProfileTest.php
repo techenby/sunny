@@ -65,10 +65,11 @@ test('profile changes are validated like the web', function (array $payload, str
     'email taken by someone else' => [['email' => 'taken@example.com'], 'email'],
 ]);
 
-test('a user can change their password with their current password', function () {
+test('a user can change their password with their current password using a bearer token', function () {
     $user = User::factory()->create();
+    $token = $user->createToken('iPhone')->plainTextToken;
 
-    $this->actingAs($user)
+    $this->withToken($token)
         ->putJson(route('api.user.password.update'), [
             'current_password' => 'password',
             'password' => 'new-password',
@@ -79,10 +80,23 @@ test('a user can change their password with their current password', function ()
     expect(Hash::check('new-password', $user->fresh()->password))->toBeTrue();
 });
 
-test('the password is kept when the change is invalid', function (array $payload, string $error) {
+test('a password change needs a token', function () {
     $user = User::factory()->create();
 
-    $this->actingAs($user)
+    $this->putJson(route('api.user.password.update'), [
+        'current_password' => 'password',
+        'password' => 'new-password',
+        'password_confirmation' => 'new-password',
+    ])->assertUnauthorized();
+
+    expect(Hash::check('password', $user->fresh()->password))->toBeTrue();
+});
+
+test('the password is kept when the change is invalid', function (array $payload, string $error) {
+    $user = User::factory()->create();
+    $token = $user->createToken('iPhone')->plainTextToken;
+
+    $this->withToken($token)
         ->putJson(route('api.user.password.update'), $payload)
         ->assertUnprocessable()
         ->assertJsonValidationErrors($error);
@@ -96,12 +110,13 @@ test('the password is kept when the change is invalid', function (array $payload
 
 test('password changes are throttled', function () {
     $user = User::factory()->create();
+    $token = $user->createToken('iPhone')->plainTextToken;
 
     foreach (range(1, 6) as $attempt) {
-        $this->actingAs($user)->putJson(route('api.user.password.update'), ['current_password' => 'wrong-password']);
+        $this->withToken($token)->putJson(route('api.user.password.update'), ['current_password' => 'wrong-password']);
     }
 
-    $this->actingAs($user)
+    $this->withToken($token)
         ->putJson(route('api.user.password.update'), ['current_password' => 'wrong-password'])
         ->assertTooManyRequests();
 });
