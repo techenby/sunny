@@ -73,13 +73,13 @@ class SettingsForm extends Form
 
     public function save()
     {
-        if ($this->householdChanged()) {
+        if ($this->teamSettingsChanged()) {
             Gate::authorize('update', $this->editingTeam);
         }
 
         $rules = Gate::allows('update', $this->editingTeam)
             ? $this->getRules()
-            : Arr::except($this->getRules(), ['timezone', 'week_start', 'address', 'address.*']);
+            : Arr::except($this->getRules(), ['timezone', 'week_start', 'appearance', 'rotation', 'address', 'address.*']);
 
         $data = $this->validate($rules);
 
@@ -90,10 +90,12 @@ class SettingsForm extends Form
         ]);
     }
 
-    private function householdChanged(): bool
+    private function teamSettingsChanged(): bool
     {
         return $this->timezone !== $this->editingTeam->timezone
             || $this->week_start !== $this->editingTeam->week_start
+            || $this->appearance !== $this->editingTeam->getRawOriginal('appearance')
+            || $this->rotation !== $this->editingTeam->rotation
             || collect($this->address)->contains(fn (mixed $value, int|string $key): bool => $value != data_get($this->editingTeam->address, $key));
     }
 }

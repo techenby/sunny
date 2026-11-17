@@ -27,6 +27,8 @@ new #[Layout('layouts::kiosk-configure')] class extends Component
 
     public function forget(int $deviceId): void
     {
+        $this->authorize('update', $this->team);
+
         KioskDevice::query()
             ->whereBelongsTo($this->team)
             ->whereKey($deviceId)
@@ -36,7 +38,7 @@ new #[Layout('layouts::kiosk-configure')] class extends Component
     }
 
     #[Computed]
-    public function canUpdateHousehold(): bool
+    public function canUpdateTeam(): bool
     {
         return Gate::allows('update', $this->team);
     }
