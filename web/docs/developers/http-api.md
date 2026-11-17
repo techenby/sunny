@@ -163,7 +163,7 @@ user belongs to.
 | `GET` | `/api/teams/{team}/routines` | List the team's routines and their steps. |
 | `POST` | `/api/teams/{team}/routines` | Create a routine. |
 | `GET` | `/api/teams/{team}/routines/{routine}` | Read a routine and its steps. |
-| `PATCH` | `/api/teams/{team}/routines/{routine}` | Update a routine. |
+| `PATCH` | `/api/teams/{team}/routines/{routine}` | Update a routine or reorder its steps. |
 | `DELETE` | `/api/teams/{team}/routines/{routine}` | Delete a routine. |
 | `POST` | `/api/teams/{team}/routines/{routine}/steps` | Add a step to the end of a routine. |
 | `PATCH` | `/api/teams/{team}/routines/{routine}/steps/{step}` | Rename a routine step. |
@@ -306,6 +306,10 @@ household routine.
 
 Add a step with a `name`; it goes to the end of the routine. Removing a step
 stops it from appearing on future days but keeps it on days already generated.
+
+Send `step_order`, a list of step ids, on update to put a routine's steps in
+that order. Ids that aren't the routine's steps are ignored, and steps left out
+keep their order after the ones listed. Each step's `position` starts at `1`.
 
 Each day a routine is due gets an
 *occurrence* with a row for each of the routine's steps, and those rows are

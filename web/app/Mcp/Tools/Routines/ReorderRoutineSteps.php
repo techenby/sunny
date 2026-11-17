@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools\Routines;
 
+use App\Actions\Routines\OrderRoutineSteps;
 use App\Mcp\Tools\Routines\Concerns\FormatsRoutines;
+use App\Models\RoutineStep;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use Laravel\Mcp\Request;
@@ -22,7 +23,7 @@ class ReorderRoutineSteps extends Tool
 {
     use FormatsRoutines;
 
-    public function handle(Request $request): Response|ResponseFactory
+    public function handle(Request $request, OrderRoutineSteps $action): Response|ResponseFactory
     {
         $validated = $request->validate([
             'routine_id' => ['required', 'integer'],
@@ -52,16 +53,12 @@ class ReorderRoutineSteps extends Tool
             ]);
         }
 
-        DB::transaction(function () use ($stepIds, $steps): void {
-            foreach ($stepIds as $index => $stepId) {
-                $steps[$stepId]->update(['position' => $index + 1]);
-            }
-        });
+        $action->handle($routine, $stepIds);
 
         return Response::structured([
             'routine_id' => $routine->id,
-            'steps' => collect($stepIds)
-                ->map(fn (int $stepId): array => $this->stepPayload($steps[$stepId]))
+            'steps' => $routine->steps()->get()
+                ->map(fn (RoutineStep $step): array => $this->stepPayload($step))
                 ->all(),
         ]);
     }

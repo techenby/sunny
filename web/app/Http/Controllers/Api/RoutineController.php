@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
+use App\Actions\Routines\OrderRoutineSteps;
 use App\Enums\RoutineFrequency;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\StoreRoutineRequest;
@@ -50,9 +51,13 @@ class RoutineController extends Controller
         return RoutineResource::make($routine->load(['user', 'steps']));
     }
 
-    public function update(UpdateRoutineRequest $request, Team $team, Routine $routine): RoutineResource
+    public function update(UpdateRoutineRequest $request, Team $team, Routine $routine, OrderRoutineSteps $action): RoutineResource
     {
-        $routine->update($this->schedule($request->validated()));
+        $routine->update($this->schedule($request->safe()->except('step_order')));
+
+        if ($request->has('step_order')) {
+            $action->handle($routine, array_map(intval(...), $request->validated('step_order')));
+        }
 
         return RoutineResource::make($routine->load(['user', 'steps']));
     }

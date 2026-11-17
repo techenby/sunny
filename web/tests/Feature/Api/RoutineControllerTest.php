@@ -229,6 +229,64 @@ test('update returns 403 for a team the user does not belong to', function () {
         ->assertForbidden();
 });
 
+test('update puts the steps in the order given', function () {
+    $user = User::factory()->create();
+    $routine = Routine::factory()->for($user->currentTeam)->create(['name' => 'Bedtime']);
+    [$bath, $pajamas, $teeth, $story] = RoutineStep::factory()->for($routine)->count(4)->sequence(fn ($sequence) => ['position' => $sequence->index + 1])->create();
+    $elsewhere = RoutineStep::factory()->create(['position' => 1]);
+
+    $this->actingAs($user)
+        ->patchJson(route('api.routines.update', [$user->currentTeam, $routine]), ['step_order' => [$teeth->id, 999, $elsewhere->id, $bath->id]])
+        ->assertOk()
+        ->assertJsonPath('data.name', 'Bedtime')
+        ->assertJsonPath('data.steps.0.id', $teeth->id)
+        ->assertJsonPath('data.steps.1.id', $bath->id)
+        ->assertJsonPath('data.steps.2.id', $pajamas->id)
+        ->assertJsonPath('data.steps.3.id', $story->id);
+
+    expect($routine->steps()->pluck('position')->all())->toBe([1, 2, 3, 4])
+        ->and($elsewhere->fresh()->position)->toBe(1);
+});
+
+test('reordered steps are sent again in an incremental sync', function () {
+    $user = User::factory()->create();
+    $routine = Routine::factory()->for($user->currentTeam)->create(['updated_at' => now()->subWeek()]);
+    [$first, $second] = RoutineStep::factory()->for($routine)->count(2)->sequence(fn ($sequence) => ['position' => $sequence->index + 1])->create(['updated_at' => now()->subWeek()]);
+
+    $this->actingAs($user)
+        ->patchJson(route('api.routines.update', [$user->currentTeam, $routine]), ['step_order' => [$second->id, $first->id]])
+        ->assertOk();
+
+    $steps = $this->actingAs($user)
+        ->getJson(route('api.sync', ['since' => now()->subDay()->toIso8601String()]))
+        ->assertOk()
+        ->json('routine_steps');
+
+    expect(collect($steps)->pluck('position', 'id')->all())->toEqual([$first->id => 2, $second->id => 1]);
+});
+
+test('update validates the step order', function () {
+    $user = User::factory()->create();
+    $routine = Routine::factory()->for($user->currentTeam)->create();
+
+    $this->actingAs($user)
+        ->patchJson(route('api.routines.update', [$user->currentTeam, $routine]), ['step_order' => ['brush teeth']])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['step_order.0' => 'The step_order.0 field must be an integer.']);
+});
+
+test('update does not reorder steps on a routine from another team', function () {
+    $user = User::factory()->create();
+    $routine = Routine::factory()->create();
+    [$first, $second] = RoutineStep::factory()->for($routine)->count(2)->sequence(fn ($sequence) => ['position' => $sequence->index + 1])->create();
+
+    $this->actingAs($user)
+        ->patchJson(route('api.routines.update', [$routine->team, $routine]), ['step_order' => [$second->id, $first->id]])
+        ->assertForbidden();
+
+    expect($routine->steps()->pluck('id')->all())->toBe([$first->id, $second->id]);
+});
+
 test('destroy deletes a routine', function () {
     $user = User::factory()->create();
     $routine = Routine::factory()->for($user->currentTeam)->create();

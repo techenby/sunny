@@ -33,6 +33,8 @@ class UpdateRoutineRequest extends FormRequest
             'day_of_month' => [Rule::requiredIf($this->input('frequency') === RoutineFrequency::Monthly->value), 'nullable', 'integer', 'between:1,31'],
             'starts_on' => ['sometimes', 'required', 'date'],
             'is_active' => ['sometimes', 'boolean'],
+            'step_order' => ['sometimes', 'array'],
+            'step_order.*' => ['integer'],
         ];
     }
 }
