@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\Appearance;
+use App\Enums\TeamRole;
 use App\Models\KioskDevice;
 use App\Models\Team;
 use App\Models\User;
@@ -36,17 +37,20 @@ test('renders successfully', function () {
         ->assertSet('form.rotation', 90);
 })->group('smoke');
 
-test('can change kiosk settings', function () {
+test('owners and admins can change kiosk settings', function (TeamRole $role) {
     $team = Team::factory()->create([
         'name' => 'Straw Hats',
         'timezone' => 'Asia/Tokyo',
         'week_start' => Carbon::MONDAY,
     ]);
 
-    $user = User::factory()->memberOf($team)->create();
+    $user = User::factory()->create();
+    $team->members()->attach($user, ['role' => $role->value]);
+    $user->switchTeam($team);
 
     Livewire::actingAs($user)
         ->test('pages::kiosk.configure.settings')
+        ->assertDontSeeHtml('data-test="team-settings-read-only"')
         ->set('form.timezone', 'America/Sao_Paulo')
         ->set('form.week_start', Carbon::SUNDAY)
         ->set('form.appearance', 'light')
@@ -66,8 +70,59 @@ test('can change kiosk settings', function () {
         ->timezone->toBe('America/Sao_Paulo')
         ->week_start->toBe(Carbon::SUNDAY)
         ->appearance->toBe(Appearance::Light)
-        ->rotation->toBe(270);
+        ->rotation->toBe(270)
+        ->address->toMatchArray(['address' => '123 Grand Line', 'city' => 'East Blue']);
+})->with([TeamRole::Owner, TeamRole::Admin]);
+
+test('members see the team settings as read-only', function () {
+    $team = Team::factory()->create();
+    $user = User::factory()->memberOf($team)->create();
+    KioskDevice::factory()->paired($user, $team)->create(['name' => 'Kitchen']);
+
+    Livewire::actingAs($user)
+        ->test('pages::kiosk.configure.settings')
+        ->assertSeeHtml('data-test="team-settings-read-only"')
+        ->assertSee('Only the team owner or an admin can change the timezone, week start, appearance, rotation, address, and paired displays.')
+        ->assertSee('Kitchen')
+        ->assertDontSee('Forget');
 });
+
+test('members cannot change team settings', function (array $changes) {
+    $team = Team::factory()->create([
+        'timezone' => 'Asia/Tokyo',
+        'week_start' => Carbon::MONDAY,
+        'address' => [
+            'address' => '123 Grand Line',
+            'city' => 'East Blue',
+            'state' => 'GL',
+            'zip' => '00001',
+            'lat' => '0.0',
+            'long' => '0.0',
+        ],
+    ]);
+    $user = User::factory()->memberOf($team)->create();
+
+    $component = Livewire::actingAs($user)->test('pages::kiosk.configure.settings');
+
+    foreach ($changes as $property => $value) {
+        $component->set("form.{$property}", $value);
+    }
+
+    $component->call('save')->assertForbidden();
+
+    expect($team->fresh())
+        ->timezone->toBe('Asia/Tokyo')
+        ->week_start->toBe(Carbon::MONDAY)
+        ->appearance->toBe(Appearance::Dark)
+        ->rotation->toBe(0)
+        ->address->city->toBe('East Blue');
+})->with([
+    'timezone' => [['timezone' => 'America/Sao_Paulo']],
+    'week start' => [['week_start' => Carbon::SUNDAY]],
+    'appearance' => [['appearance' => 'light']],
+    'rotation' => [['rotation' => 90]],
+    'address' => [['address.city' => 'Water 7']],
+]);
 
 test('options must be valid', function () {
     $user = User::factory()->create();
@@ -91,8 +146,8 @@ $withAddress = ['address' => [
     'long' => '0.0',
 ]];
 
-test('can change idle settings', function () use ($withAddress) {
-    $team = Team::factory()->create($withAddress);
+test('members can change idle settings without an address', function () {
+    $team = Team::factory()->create(['address' => null]);
     $user = User::factory()->memberOf($team)->create();
 
     Livewire::actingAs($user)
@@ -112,7 +167,8 @@ test('can change idle settings', function () use ($withAddress) {
         ->screensaver_after->toBe(2)
         ->return_home_after->toBe(0)
         ->night_starts_at->toBe('21:30')
-        ->night_ends_at->toBe('06:15');
+        ->night_ends_at->toBe('06:15')
+        ->address->toBeNull();
 });
 
 test('turning off night mode clears its hours', function () use ($withAddress) {
@@ -163,6 +219,19 @@ describe('device management', function () {
 
         assertModelMissing($kitchen);
         assertModelExists($bedroom);
+    });
+
+    test('members cannot forget a paired display', function () {
+        $team = Team::factory()->create();
+        $user = User::factory()->memberOf($team)->create();
+        $kitchen = KioskDevice::factory()->paired($user, $team)->create(['name' => 'Kitchen']);
+
+        Livewire::actingAs($user)
+            ->test('pages::kiosk.configure.settings')
+            ->call('forget', $kitchen->id)
+            ->assertForbidden();
+
+        assertModelExists($kitchen);
     });
 
     test('cannot forget device from another team', function () {

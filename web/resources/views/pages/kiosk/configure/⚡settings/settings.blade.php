@@ -1,12 +1,18 @@
 <div>
     <form wire:submit="save" class="space-y-6 p-6 lg:p-8">
-        <flux:select wire:model="form.timezone" :label="__('Timezone')" variant="listbox">
+        @unless ($this->canUpdateTeam)
+            <flux:callout variant="secondary" icon="lock-closed" data-test="team-settings-read-only">
+                <flux:callout.text>{{ __('Only the team owner or an admin can change the timezone, week start, appearance, rotation, address, and paired displays.') }}</flux:callout.text>
+            </flux:callout>
+        @endunless
+
+        <flux:select wire:model="form.timezone" :label="__('Timezone')" variant="listbox" :disabled="! $this->canUpdateTeam">
             @foreach (DateTimeZone::listIdentifiers() as $timezoneOption)
                 <flux:select.option value="{{ $timezoneOption }}">{{ str_replace('_', ' ', $timezoneOption) }}</flux:select.option>
             @endforeach
         </flux:select>
 
-        <flux:select wire:model="form.week_start" :label="__('Week starts on')" variant="listbox">
+        <flux:select wire:model="form.week_start" :label="__('Week starts on')" variant="listbox" :disabled="! $this->canUpdateTeam">
             <flux:select.option value="0">{{ __('Sunday') }}</flux:select.option>
             <flux:select.option value="1">{{ __('Monday') }}</flux:select.option>
             <flux:select.option value="2">{{ __('Tuesday') }}</flux:select.option>
@@ -16,13 +22,13 @@
             <flux:select.option value="6">{{ __('Saturday') }}</flux:select.option>
         </flux:select>
 
-        <flux:radio.group wire:model="form.appearance" :label="__('Appearance')" variant="segmented">
+        <flux:radio.group wire:model="form.appearance" :label="__('Appearance')" variant="segmented" :disabled="! $this->canUpdateTeam">
             <flux:radio value="light" icon="sun" :label="__('Light')" />
             <flux:radio value="dark" icon="moon" :label="__('Dark')" />
             <flux:radio value="system" icon="computer-desktop" :label="__('System')" />
         </flux:radio.group>
 
-        <flux:radio.group wire:model="form.rotation" :label="__('Rotation')" :description="__('Rotates the kiosk display for devices that ignore the browser orientation setting.')" variant="segmented">
+        <flux:radio.group wire:model="form.rotation" :label="__('Rotation')" :description="__('Rotates the kiosk display for devices that ignore the browser orientation setting.')" variant="segmented" :disabled="! $this->canUpdateTeam">
             <flux:radio value="0" label="0°" />
             <flux:radio value="90" label="90°" />
             <flux:radio value="180" label="180°" />
@@ -63,16 +69,16 @@
                 <flux:label>{{ __('Address for weather') }}</flux:label>
 
                 <mapbox-address-autofill access-token="{{ config('services.mapbox.key') }}">
-                    <flux:input wire:model="form.address.address" name="address" autocomplete="address-line1" />
+                    <flux:input wire:model="form.address.address" name="address" autocomplete="address-line1" :disabled="! $this->canUpdateTeam" />
                 </mapbox-address-autofill>
 
                 <flux:error name="form.address.address" />
             </flux:field>
 
             <div class="grid gap-4 sm:grid-cols-3">
-                <flux:input wire:model="form.address.city" :label="__('City')" name="city" autocomplete="address-level2" />
-                <flux:input wire:model="form.address.state" :label="__('State')" name="state" autocomplete="address-level1" />
-                <flux:input wire:model="form.address.zip" :label="__('ZIP')" name="postcode" autocomplete="postal-code" />
+                <flux:input wire:model="form.address.city" :label="__('City')" name="city" autocomplete="address-level2" :disabled="! $this->canUpdateTeam" />
+                <flux:input wire:model="form.address.state" :label="__('State')" name="state" autocomplete="address-level1" :disabled="! $this->canUpdateTeam" />
+                <flux:input wire:model="form.address.zip" :label="__('ZIP')" name="postcode" autocomplete="postal-code" :disabled="! $this->canUpdateTeam" />
             </div>
         </div>
 
@@ -108,14 +114,16 @@
                                 @endif
                             </flux:text>
                         </div>
-                        <flux:button
-                            size="sm"
-                            variant="ghost"
-                            wire:click="forget({{ $device->id }})"
-                            wire:confirm="{{ __('Forget this display? It will return to the QR pairing screen.') }}"
-                        >
-                            {{ __('Forget') }}
-                        </flux:button>
+                        @if ($this->canUpdateTeam)
+                            <flux:button
+                                size="sm"
+                                variant="ghost"
+                                wire:click="forget({{ $device->id }})"
+                                wire:confirm="{{ __('Forget this display? It will return to the QR pairing screen.') }}"
+                            >
+                                {{ __('Forget') }}
+                            </flux:button>
+                        @endif
                     </flux:card>
                 @endforeach
             </ul>
