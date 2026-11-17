@@ -7,10 +7,12 @@ namespace App\Http\Controllers\Api;
 use App\Actions\Inventory\CreateItem;
 use App\Actions\Inventory\DuplicateItem;
 use App\Actions\Inventory\ForceDeleteItem;
+use App\Actions\Inventory\MoveItemToTeam;
 use App\Actions\Inventory\RestoreItem;
 use App\Actions\Inventory\UpdateItem;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\DuplicateItemRequest;
+use App\Http\Requests\Api\MoveItemRequest;
 use App\Http\Requests\Api\StoreItemRequest;
 use App\Http\Requests\Api\UpdateItemRequest;
 use App\Http\Resources\ItemResource;
@@ -50,6 +52,15 @@ class ItemController extends Controller
         return ItemResource::collection($copies)
             ->response()
             ->setStatusCode(201);
+    }
+
+    public function move(MoveItemRequest $request, Team $team, Item $item, MoveItemToTeam $action): ItemResource
+    {
+        $movedItemIds = [$item->id, ...$item->descendantIds()];
+
+        $item = $action->handle($item, Team::findOrFail($request->integer('team_id')));
+
+        return ItemResource::make($item)->additional(['moved_item_ids' => $movedItemIds]);
     }
 
     public function show(Team $team, Item $item): ItemResource
