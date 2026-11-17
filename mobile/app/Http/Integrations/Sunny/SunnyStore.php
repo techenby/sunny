@@ -156,8 +156,34 @@ class SunnyStore
             Team::query()->whereNotIn('id', $pending->pluck('team_id'))->delete();
             DB::table('sunny_sync_states')->delete();
         });
+        DB::table('sunny_accounts')->update(['name' => null, 'email' => null, 'email_verified_at' => null]);
         app(SunnyOutbox::class)->prunePhotos();
         app(SunnyThumbnails::class)->prune();
+    }
+
+    /** @return array{name: string, email: string, verified: bool}|null */
+    public function profile(): ?array
+    {
+        $account = DB::table('sunny_accounts')->where('server', self::server())->first();
+
+        if (! is_string($account?->name) || ! is_string($account->email)) {
+            return null;
+        }
+
+        return ['name' => $account->name, 'email' => $account->email, 'verified' => $account->email_verified_at !== null];
+    }
+
+    public function rememberProfile(mixed $user): void
+    {
+        if (! is_array($user) || ! is_string($user['name'] ?? null) || ! is_string($user['email'] ?? null)) {
+            return;
+        }
+
+        DB::table('sunny_accounts')->where('server', self::server())->update([
+            'name' => $user['name'],
+            'email' => $user['email'],
+            'email_verified_at' => is_string($user['email_verified_at'] ?? null) ? CarbonImmutable::parse($user['email_verified_at']) : null,
+        ]);
     }
 
     /**
