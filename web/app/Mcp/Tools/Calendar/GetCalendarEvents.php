@@ -73,7 +73,9 @@ class GetCalendarEvents extends Tool
                 $events = $fetchCalendarEvents->handle($feed, $days, $from);
 
                 if ($feed->isFailing()) {
-                    $warnings->push("Could not fetch events from \"{$feed->name}\": {$feed->last_error}");
+                    $warnings->push($feed->ics_fetched_at
+                        ? "Could not refresh \"{$feed->name}\": {$feed->last_error} Its events are from the copy fetched at {$feed->ics_fetched_at->toIso8601String()}."
+                        : "Could not fetch events from \"{$feed->name}\": {$feed->last_error}");
                 }
 
                 return $events;

@@ -6,9 +6,11 @@ use App\Models\CalendarFeed;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Testing\Fluent\AssertableJson;
 
 beforeEach(function () {
+    Storage::fake();
     $this->travelTo(CarbonImmutable::parse('2026-05-05 08:00', 'America/Chicago'));
 });
 
@@ -122,4 +124,24 @@ test('it warns about a failing feed and still returns events from other feeds', 
         ->assertStructuredContent(fn (AssertableJson $json) => $json
             ->where('warnings', ['Could not fetch events from "Broken Calendar": The calendar server responded with HTTP 401.'])
             ->etc());
+});
+
+test('it returns events from the stored copy of a failing feed with a warning', function () {
+    Http::fake();
+
+    $user = User::factory()->create();
+    CalendarFeed::factory()->for($user->currentTeam)->failing()->withIcs(file_get_contents(base_path('tests/Fixtures/ics/events.ics')))->create([
+        'name' => 'Crew Calendar',
+        'url' => 'https://example.com/crew.ics',
+    ]);
+
+    SunnyServer::actingAs($user)
+        ->tool(GetCalendarEvents::class)
+        ->assertOk()
+        ->assertSee('Crew Meeting')
+        ->assertStructuredContent(fn (AssertableJson $json) => $json
+            ->where('warnings', ['Could not refresh "Crew Calendar": The calendar server responded with HTTP 401. Its events are from the copy fetched at 2026-05-05T13:00:00+00:00.'])
+            ->etc());
+
+    Http::assertNothingSent();
 });

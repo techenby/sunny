@@ -661,12 +661,6 @@ parameters:
 			path: app/Mcp/Tools/Calendar/ListCalendarFeeds.php
 
 		-
-			message: '#^Cannot call method toIso8601String\(\) on string\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: app/Mcp/Tools/Calendar/ListCalendarFeeds.php
-
-		-
 			message: '#^Method App\\Mcp\\Tools\\Calendar\\ListCalendarFeeds\:\:outputSchema\(\) should return array\<string, Illuminate\\Contracts\\JsonSchema\\JsonSchema\> but returns array\<string, Illuminate\\JsonSchema\\Types\\ArrayType\|Illuminate\\JsonSchema\\Types\\StringType\>\.$#'
 			identifier: return.type
 			count: 1

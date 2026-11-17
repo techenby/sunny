@@ -3,9 +3,14 @@
 use App\Enums\CalendarColor;
 use App\Mcp\Tools\Calendar\CreateCalendarFeed;
 use App\Models\User;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use Tests\Feature\Mcp\SunnyTestServer;
 
 test('it creates a calendar feed for the current team', function () {
+    Storage::fake();
+    Http::fake(['https://example.com/crew.ics' => Http::response(file_get_contents(base_path('tests/Fixtures/ics/events.ics')))]);
+
     $user = User::factory()->create();
 
     SunnyTestServer::actingAs($user)
@@ -23,6 +28,11 @@ test('it creates a calendar feed for the current team', function () {
         'url' => 'https://example.com/crew.ics',
         'color' => CalendarColor::Green->value,
     ]);
+
+    $feed = $user->currentTeam->calendarFeeds()->sole();
+
+    Storage::assertExists($feed->icsPath());
+    expect($feed->isFailing())->toBeFalse();
 });
 
 test('it requires a name, url, and color', function () {

@@ -8,6 +8,7 @@ use App\Enums\CalendarColor;
 use App\Models\CalendarFeed;
 use App\Models\Team;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * @extends Factory<CalendarFeed>
@@ -31,5 +32,11 @@ class CalendarFeedFactory extends Factory
             'last_failed_at' => now(),
             'last_error' => 'The calendar server responded with HTTP 401.',
         ]);
+    }
+
+    public function withIcs(string $ics): static
+    {
+        return $this->state(['ics_fetched_at' => now()])
+            ->afterCreating(fn (CalendarFeed $feed) => Storage::put($feed->icsPath(), $ics));
     }
 }
