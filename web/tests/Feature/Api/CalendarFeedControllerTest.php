@@ -7,6 +7,8 @@ use App\Models\Team;
 use App\Models\User;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 
 test('guests cannot access calendar feeds', function () {
     $this->getJson(route('api.calendar-feeds.index', 'household'))->assertUnauthorized();
@@ -44,6 +46,9 @@ test('index returns 403 for a team the user does not belong to', function () {
 });
 
 test('store creates a calendar feed and returns it', function () {
+    Storage::fake();
+    Http::fake(['https://example.com/*' => Http::response(file_get_contents(base_path('tests/Fixtures/ics/events.ics')))]);
+
     $user = User::factory()->create();
 
     $this->actingAs($user)
@@ -66,6 +71,9 @@ test('store creates a calendar feed and returns it', function () {
 });
 
 test('store returns the existing calendar feed when a client uuid is retried', function () {
+    Storage::fake();
+    Http::fake(['https://example.com/*' => Http::response(file_get_contents(base_path('tests/Fixtures/ics/events.ics')))]);
+
     $user = User::factory()->create();
     $uuid = '9b2f6c1e-3d4a-4f5b-8c7d-1e2f3a4b5c6d';
     $payload = ['name' => 'Family', 'url' => 'https://example.com/family.ics', 'color' => CalendarColor::Blue->value, 'client_uuid' => $uuid];
@@ -80,6 +88,7 @@ test('store returns the existing calendar feed when a client uuid is retried', f
         ->assertOk()
         ->assertJsonPath('data.id', $first->json('data.id'));
 
+    Http::assertSentCount(1);
     expect(CalendarFeed::where('client_uuid', $uuid)->count())->toBe(1);
 });
 
@@ -131,6 +140,9 @@ test('store validates the calendar feed', function () {
 });
 
 test('store creates the calendar feed in the team from the url', function () {
+    Storage::fake();
+    Http::fake(['https://example.com/*' => Http::response(file_get_contents(base_path('tests/Fixtures/ics/events.ics')))]);
+
     $user = User::factory()->create();
     $team = Team::factory()->create();
     $team->members()->attach($user, ['role' => TeamRole::Member->value]);
@@ -198,6 +210,9 @@ test('update modifies a calendar feed', function () {
 });
 
 test('update clears the failing status when the url changes', function () {
+    Storage::fake();
+    Http::fake(['https://example.com/*' => Http::response(file_get_contents(base_path('tests/Fixtures/ics/events.ics')))]);
+
     $user = User::factory()->create();
     $feed = CalendarFeed::factory()->for($user->currentTeam)->failing()->create();
 
