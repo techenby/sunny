@@ -24,6 +24,22 @@ test('it restores a deleted item', function () {
     expect($item->fresh()->trashed())->toBeFalse();
 });
 
+test('it moves the item to the top level when its parent is still deleted', function () {
+    $user = User::factory()->create();
+    $bin = Item::factory()->bin()->for($user->currentTeam)->create();
+    $item = Item::factory()->childOf($bin)->create();
+    $item->delete();
+    $bin->purge();
+
+    SunnyTestServer::actingAs($user)
+        ->tool(RestoreItem::class, ['id' => $item->id])
+        ->assertOk()
+        ->assertStructuredContent(fn (AssertableJson $json) => $json
+            ->where('id', $item->id)
+            ->where('parent_id', null)
+            ->etc());
+});
+
 test('it requires an id', function () {
     $user = User::factory()->create();
 
