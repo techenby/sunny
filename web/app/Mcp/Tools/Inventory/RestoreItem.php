@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools\Inventory;
 
+use App\Actions\Inventory\RestoreItem as RestoreItemAction;
 use App\Enums\ItemType;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\Support\Facades\Gate;
@@ -15,10 +16,10 @@ use Laravel\Mcp\Server\Tool;
 use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 
 #[IsIdempotent]
-#[Description('Restore a deleted inventory item of the current team by id. Use search-items with trashed: true to find the ids of deleted items. Children that were detached when the item was deleted stay top-level; use update-item to move them back.')]
+#[Description('Restore a deleted inventory item of the current team by id. Use search-items with trashed: true to find the ids of deleted items. Children that were detached when the item was deleted stay top-level; use update-item to move them back. If the parent of the item is still deleted, the item comes back top-level.')]
 class RestoreItem extends Tool
 {
-    public function handle(Request $request): Response|ResponseFactory
+    public function handle(Request $request, RestoreItemAction $action): Response|ResponseFactory
     {
         $validated = $request->validate([
             'id' => ['required', 'integer'],
@@ -32,7 +33,7 @@ class RestoreItem extends Tool
 
         Gate::forUser($request->user())->authorize('restore', $item);
 
-        $item->restore();
+        $action->handle($item);
 
         return Response::structured([
             'id' => $item->id,

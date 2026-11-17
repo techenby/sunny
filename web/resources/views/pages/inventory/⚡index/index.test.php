@@ -538,6 +538,23 @@ describe('can view and restore deleted items', function () {
             ->trashed()->toBeFalse();
     });
 
+    test('restoring an item whose place is still deleted moves it to the top level', function () {
+        $user = User::factory()->create();
+        $place = Item::factory()->location()->for($user->currentTeam)->create();
+        $item = Item::factory()->childOf($place)->create(['name' => 'Lost Widget']);
+        $item->delete();
+        $place->purge();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->set('filters.showTrashed', true)
+            ->call('restore', $item->id)
+            ->set('filters.showTrashed', false)
+            ->assertSeeHtml('<span>Lost Widget</span>');
+
+        expect($item->fresh()->parent_id)->toBeNull();
+    });
+
     test('cannot restore an item from another team', function () {
         $user = User::factory()->create();
         $item = Item::factory()->create();
@@ -563,6 +580,21 @@ describe('can permanently delete items', function () {
             ->call('forceDelete', $item->id);
 
         expect($item->fresh())->toBeNull();
+    });
+
+    test('force deleting removes the item\'s photo files', function () {
+        Storage::fake();
+        Storage::put('teams/1/items/front.jpg', 'front');
+        $user = User::factory()->create();
+        $item = Item::factory()->for($user->currentTeam)->withPhoto('teams/1/items/front.jpg')->create();
+        $item->delete();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->set('filters.showTrashed', true)
+            ->call('forceDelete', $item->id);
+
+        Storage::assertMissing('teams/1/items/front.jpg');
     });
 
     test('cannot force delete an item from another team', function () {

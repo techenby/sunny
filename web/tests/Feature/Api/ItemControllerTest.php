@@ -15,6 +15,8 @@ test('guests cannot access items', function () {
     $this->getJson(route('api.items.show', ['household', 1]))->assertUnauthorized();
     $this->patchJson(route('api.items.update', ['household', 1]))->assertUnauthorized();
     $this->deleteJson(route('api.items.destroy', ['household', 1]))->assertUnauthorized();
+    $this->postJson(route('api.items.restore', ['household', 1]))->assertUnauthorized();
+    $this->deleteJson(route('api.items.force-destroy', ['household', 1]))->assertUnauthorized();
 });
 
 test('index returns items for the current team', function () {
@@ -261,6 +263,199 @@ test('destroy returns 403 for a team the user does not belong to item', function
     $this->actingAs($user)
         ->deleteJson(route('api.items.destroy', [$item->team, $item]))
         ->assertForbidden();
+});
+
+test('restore brings back a deleted item', function () {
+    $user = User::factory()->create();
+    $item = Item::factory()->for($user->currentTeam)->create(['name' => 'Hammer']);
+    $item->delete();
+
+    $this->actingAs($user)
+        ->postJson(route('api.items.restore', [$user->currentTeam, $item]))
+        ->assertOk()
+        ->assertJsonPath('data.id', $item->id)
+        ->assertJsonPath('data.name', 'Hammer')
+        ->assertJsonPath('data.deleted_at', null);
+
+    expect($item->fresh()->trashed())->toBeFalse();
+});
+
+test('restore puts an item back inside its place', function () {
+    $user = User::factory()->create();
+    $place = Item::factory()->location()->for($user->currentTeam)->create();
+    $item = Item::factory()->childOf($place)->create();
+    $item->delete();
+
+    $this->actingAs($user)
+        ->postJson(route('api.items.restore', [$user->currentTeam, $item]))
+        ->assertOk()
+        ->assertJsonPath('data.parent_id', $place->id);
+});
+
+test('restore moves an item to the top level when its place is still deleted', function () {
+    $user = User::factory()->create();
+    $place = Item::factory()->location()->for($user->currentTeam)->create();
+    $item = Item::factory()->childOf($place)->create();
+    $item->delete();
+    $place->purge();
+
+    $this->actingAs($user)
+        ->postJson(route('api.items.restore', [$user->currentTeam, $item]))
+        ->assertOk()
+        ->assertJsonPath('data.parent_id', null);
+
+    expect($item->fresh())->trashed()->toBeFalse()->parent_id->toBeNull()
+        ->and($place->fresh()->trashed())->toBeTrue();
+});
+
+test('restoring a container leaves what was inside it at the top level', function () {
+    $user = User::factory()->create();
+    $bin = Item::factory()->bin()->for($user->currentTeam)->create();
+    $child = Item::factory()->childOf($bin)->create();
+    $bin->purge();
+
+    $this->actingAs($user)
+        ->postJson(route('api.items.restore', [$user->currentTeam, $bin]))
+        ->assertOk();
+
+    expect($child->fresh()->parent_id)->toBeNull();
+});
+
+test('restore leaves an item that is not deleted as it is', function () {
+    $user = User::factory()->create();
+    $place = Item::factory()->location()->for($user->currentTeam)->create();
+    $item = Item::factory()->childOf($place)->create(['updated_at' => now()->subDay()]);
+    $before = $this->actingAs($user)->getJson(route('api.items.show', [$user->currentTeam, $item]))->json('data');
+
+    $this->actingAs($user)
+        ->postJson(route('api.items.restore', [$user->currentTeam, $item]))
+        ->assertOk()
+        ->assertJsonPath('data', $before)
+        ->assertJsonPath('data.parent_id', $place->id);
+
+    expect($item->fresh()->updated_at->toIso8601String())->toBe($item->updated_at->toIso8601String());
+});
+
+test('a retried restore returns the item again without changing it', function () {
+    $user = User::factory()->create();
+    $place = Item::factory()->location()->for($user->currentTeam)->create();
+    $item = Item::factory()->childOf($place)->create();
+    $item->delete();
+    $place->purge();
+
+    $first = $this->actingAs($user)
+        ->postJson(route('api.items.restore', [$user->currentTeam, $item]))
+        ->assertOk()
+        ->json('data');
+    $place->restore();
+
+    $this->travel(1)->minute();
+
+    $retry = $this->actingAs($user)
+        ->postJson(route('api.items.restore', [$user->currentTeam, $item]))
+        ->assertOk()
+        ->json('data');
+
+    expect($retry)->toEqual($first)
+        ->and($item->fresh()->parent_id)->toBeNull();
+});
+
+test('restore returns 404 for an item that was permanently deleted', function () {
+    $user = User::factory()->create();
+    $item = Item::factory()->for($user->currentTeam)->create();
+    $item->forceDelete();
+
+    $this->actingAs($user)
+        ->postJson(route('api.items.restore', [$user->currentTeam, $item->id]))
+        ->assertNotFound();
+});
+
+test('restore returns 403 for a team the user does not belong to item', function () {
+    $user = User::factory()->create();
+    $item = Item::factory()->create();
+    $item->delete();
+
+    $this->actingAs($user)
+        ->postJson(route('api.items.restore', [$item->team, $item]))
+        ->assertForbidden();
+
+    expect($item->fresh()->trashed())->toBeTrue();
+});
+
+test('restore returns 404 when the deleted item belongs to a different team than the url', function () {
+    $user = User::factory()->create();
+    $team = Team::factory()->create();
+    $team->members()->attach($user, ['role' => TeamRole::Member->value]);
+    $item = Item::factory()->for($team)->create();
+    $item->delete();
+
+    $this->actingAs($user)
+        ->postJson(route('api.items.restore', [$user->currentTeam, $item]))
+        ->assertNotFound();
+
+    expect($item->fresh()->trashed())->toBeTrue();
+});
+
+test('force destroy permanently deletes a deleted item and its photo files', function () {
+    Storage::fake();
+    Storage::put('teams/1/items/front.jpg', 'front');
+    Storage::put('teams/1/items/thumbs/front.jpg', 'thumb');
+    Storage::put('teams/1/items/back.jpg', 'back');
+    $user = User::factory()->create();
+    $item = Item::factory()->for($user->currentTeam)->create();
+    $front = ItemPhoto::factory()->for($item)->create(['path' => 'teams/1/items/front.jpg', 'thumb_path' => 'teams/1/items/thumbs/front.jpg', 'position' => 0]);
+    $back = ItemPhoto::factory()->for($item)->create(['path' => 'teams/1/items/back.jpg', 'position' => 1]);
+    $item->delete();
+
+    $this->actingAs($user)
+        ->deleteJson(route('api.items.force-destroy', [$user->currentTeam, $item]))
+        ->assertNoContent();
+
+    expect(Item::withTrashed()->find($item->id))->toBeNull()
+        ->and($front->fresh())->toBeNull()
+        ->and($back->fresh())->toBeNull();
+    Storage::assertMissing(['teams/1/items/front.jpg', 'teams/1/items/thumbs/front.jpg', 'teams/1/items/back.jpg']);
+});
+
+test('force destroy moves deleted things that were inside the item to the top level', function () {
+    $user = User::factory()->create();
+    $bin = Item::factory()->bin()->for($user->currentTeam)->create();
+    $child = Item::factory()->childOf($bin)->create();
+    $child->delete();
+    $bin->purge();
+
+    $this->actingAs($user)
+        ->deleteJson(route('api.items.force-destroy', [$user->currentTeam, $bin]))
+        ->assertNoContent();
+
+    expect($child->fresh())->trashed()->toBeTrue()->parent_id->toBeNull();
+});
+
+test('force destroy returns 404 for an item that is not deleted', function () {
+    Storage::fake();
+    Storage::put('teams/1/items/front.jpg', 'front');
+    $user = User::factory()->create();
+    $item = Item::factory()->for($user->currentTeam)->create();
+    ItemPhoto::factory()->for($item)->create(['path' => 'teams/1/items/front.jpg']);
+
+    $this->actingAs($user)
+        ->deleteJson(route('api.items.force-destroy', [$user->currentTeam, $item]))
+        ->assertNotFound();
+
+    expect($item->fresh())->not->toBeNull();
+    Storage::assertExists('teams/1/items/front.jpg');
+});
+
+test('force destroy returns 403 for a team the user does not belong to item', function () {
+    $user = User::factory()->create();
+    $item = Item::factory()->create();
+    $item->delete();
+
+    $this->actingAs($user)
+        ->deleteJson(route('api.items.force-destroy', [$item->team, $item]))
+        ->assertForbidden();
+
+    expect(Item::withTrashed()->find($item->id))->not->toBeNull();
 });
 
 test('index returns items for another team the user belongs to without switching teams', function () {

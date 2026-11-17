@@ -175,6 +175,21 @@ test('includes soft-deleted records', function () {
         ->assertJsonPath('recipes.0.deleted_at', fn ($value) => $value !== null);
 });
 
+test('includes deleted items with their photos', function () {
+    $user = User::factory()->create();
+    $item = Item::factory()->for($user->currentTeam)->create();
+    $photo = ItemPhoto::factory()->for($item)->create();
+    $item->delete();
+
+    $this->actingAs($user)
+        ->getJson(route('api.sync'))
+        ->assertOk()
+        ->assertJsonCount(1, 'items')
+        ->assertJsonPath('items.0.id', $item->id)
+        ->assertJsonPath('items.0.deleted_at', fn ($value) => $value !== null)
+        ->assertJsonPath('items.0.photos.0.id', $photo->id);
+});
+
 test('includes data from all user teams', function () {
     $user = User::factory()->create();
     $secondTeam = Team::factory()->create();
