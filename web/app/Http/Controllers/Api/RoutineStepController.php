@@ -11,6 +11,7 @@ use App\Http\Resources\RoutineStepResource;
 use App\Models\Routine;
 use App\Models\RoutineStep;
 use App\Models\Team;
+use App\Support\ClientUuid;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Gate;
@@ -19,13 +20,15 @@ class RoutineStepController extends Controller
 {
     public function store(StoreRoutineStepRequest $request, Team $team, Routine $routine): JsonResponse
     {
-        $existing = $request->filled('client_uuid')
-            ? $routine->steps()->withTrashed()->firstWhere('client_uuid', $request->validated('client_uuid'))
-            : null;
+        $step = ClientUuid::firstOrCreate(
+            $routine->steps()->withTrashed(),
+            $request->validated('client_uuid'),
+            fn (): RoutineStep => $routine->steps()->create($request->validated()),
+        );
 
-        return RoutineStepResource::make($existing ?? $routine->steps()->create($request->validated()))
+        return RoutineStepResource::make($step)
             ->response()
-            ->setStatusCode($existing ? 200 : 201);
+            ->setStatusCode($step->wasRecentlyCreated ? 201 : 200);
     }
 
     public function update(UpdateRoutineStepRequest $request, Team $team, Routine $routine, RoutineStep $step): RoutineStepResource

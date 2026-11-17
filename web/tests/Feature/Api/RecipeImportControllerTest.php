@@ -57,6 +57,20 @@ test('import returns the existing recipe when a client uuid is retried', functio
     Http::assertSentCount(1);
 });
 
+test('import returns the existing recipe when a retry wins the race to insert it', function () {
+    $user = User::factory()->create();
+    $uuid = '9b2f6c1e-3d4a-4f5b-8c7d-1e2f3a4b5c6d';
+    $raced = createAfterLookup('recipes', 'client_uuid', fn () => Recipe::factory()->for($user->currentTeam)->create(['name' => 'Apple Cider Donuts', 'client_uuid' => $uuid]), lookup: 2);
+
+    $this->actingAs($user)
+        ->postJson(route('api.recipes.import', $user->currentTeam), ['url' => 'https://example.com/apple-cider-donuts', 'client_uuid' => $uuid])
+        ->assertOk()
+        ->assertJsonPath('data.id', $raced->model->id);
+
+    expect(Recipe::count())->toBe(1);
+    Http::assertSentCount(1);
+});
+
 test('import explains when a page has no recipe', function (string $url) {
     $user = User::factory()->create();
 

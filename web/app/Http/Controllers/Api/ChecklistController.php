@@ -10,6 +10,7 @@ use App\Http\Requests\Api\UpdateChecklistRequest;
 use App\Http\Resources\ChecklistResource;
 use App\Models\Checklist;
 use App\Models\Team;
+use App\Support\ClientUuid;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
@@ -28,13 +29,15 @@ class ChecklistController extends Controller
 
     public function store(StoreChecklistRequest $request, Team $team): JsonResponse
     {
-        $existing = $request->filled('client_uuid')
-            ? $team->checklists()->withTrashed()->firstWhere('client_uuid', $request->validated('client_uuid'))
-            : null;
+        $checklist = ClientUuid::firstOrCreate(
+            $team->checklists()->withTrashed(),
+            $request->validated('client_uuid'),
+            fn (): Checklist => $team->checklists()->create($request->validated()),
+        );
 
-        return ChecklistResource::make($existing ?? $team->checklists()->create($request->validated()))
+        return ChecklistResource::make($checklist)
             ->response()
-            ->setStatusCode($existing ? 200 : 201);
+            ->setStatusCode($checklist->wasRecentlyCreated ? 201 : 200);
     }
 
     public function show(Team $team, Checklist $checklist): ChecklistResource

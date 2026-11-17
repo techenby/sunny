@@ -42,6 +42,23 @@ test('store returns the existing step when a client uuid is retried', function (
     expect(RoutineStep::where('client_uuid', $uuid)->count())->toBe(1);
 });
 
+test('store returns the existing step when a retry wins the race to insert it', function () {
+    $user = User::factory()->create();
+    $routine = Routine::factory()->for($user->currentTeam)->create();
+    RoutineStep::factory()->for($routine)->create(['position' => 1]);
+    $uuid = '9b2f6c1e-3d4a-4f5b-8c7d-1e2f3a4b5c6d';
+    $raced = createAfterLookup('routine_steps', 'client_uuid', fn () => RoutineStep::factory()->for($routine)->create(['name' => 'Brush teeth', 'client_uuid' => $uuid, 'position' => 2]));
+
+    $this->actingAs($user)
+        ->postJson(route('api.routines.steps.store', [$user->currentTeam, $routine]), ['name' => 'Brush teeth', 'client_uuid' => $uuid])
+        ->assertOk()
+        ->assertJsonPath('data.id', $raced->model->id)
+        ->assertJsonPath('data.position', 2);
+
+    expect(RoutineStep::where('client_uuid', $uuid)->count())->toBe(1)
+        ->and($routine->steps()->count())->toBe(2);
+});
+
 test('store validates the step name', function () {
     $user = User::factory()->create();
     $routine = Routine::factory()->for($user->currentTeam)->create();

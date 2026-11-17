@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Database\Events\QueryExecuted;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -91,4 +93,23 @@ function fakeSampleRecipe(): void
             'recipeInstructions' => [['@type' => 'HowToStep', 'text' => 'Preheat oven to 375F.']],
         ])),
     ]);
+}
+
+function createAfterLookup(string $table, string $column, Closure $create, int $lookup = 1): stdClass
+{
+    $raced = new stdClass;
+    $raced->model = null;
+    $seen = 0;
+
+    DB::listen(function (QueryExecuted $query) use ($table, $column, $create, $lookup, $raced, &$seen) {
+        if (! str_starts_with($query->sql, 'select') || ! str_contains($query->sql, "from \"{$table}\"") || ! str_contains($query->sql, "\"{$column}\"")) {
+            return;
+        }
+
+        if (++$seen === $lookup) {
+            $raced->model = $create();
+        }
+    });
+
+    return $raced;
 }

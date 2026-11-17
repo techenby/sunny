@@ -115,6 +115,19 @@ test('store returns the existing routine when a client uuid is retried', functio
     expect(Routine::where('client_uuid', $uuid)->count())->toBe(1);
 });
 
+test('store returns the existing routine when a retry wins the race to insert it', function () {
+    $user = User::factory()->create();
+    $uuid = '9b2f6c1e-3d4a-4f5b-8c7d-1e2f3a4b5c6d';
+    $raced = createAfterLookup('routines', 'client_uuid', fn () => Routine::factory()->for($user->currentTeam)->create(['name' => 'Bedtime', 'client_uuid' => $uuid]));
+
+    $this->actingAs($user)
+        ->postJson(route('api.routines.store', $user->currentTeam), ['name' => 'Bedtime', 'time_of_day' => 'evening', 'frequency' => 'daily', 'client_uuid' => $uuid])
+        ->assertOk()
+        ->assertJsonPath('data.id', $raced->model->id);
+
+    expect(Routine::where('client_uuid', $uuid)->count())->toBe(1);
+});
+
 test('store drops schedule fields the frequency does not use', function () {
     $user = User::factory()->create();
 

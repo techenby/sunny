@@ -11,6 +11,7 @@ use App\Http\Resources\ChecklistItemResource;
 use App\Models\Checklist;
 use App\Models\ChecklistItem;
 use App\Models\Team;
+use App\Support\ClientUuid;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
@@ -27,23 +28,23 @@ class ChecklistItemController extends Controller
 
     public function store(StoreChecklistItemRequest $request, Team $team, Checklist $checklist): JsonResponse
     {
-        $existing = $request->filled('client_uuid')
-            ? $checklist->items()->firstWhere('client_uuid', $request->validated('client_uuid'))
-            : null;
+        $item = ClientUuid::firstOrCreate(
+            $checklist->items(),
+            $request->validated('client_uuid'),
+            function () use ($request, $checklist): ChecklistItem {
+                $item = $checklist->items()->create($request->safe()->except('completed'));
 
-        if ($existing) {
-            return ChecklistItemResource::make($existing)->response();
-        }
+                if ($request->boolean('completed')) {
+                    $item->complete($request->user());
+                }
 
-        $item = $checklist->items()->create($request->safe()->except('completed'));
-
-        if ($request->boolean('completed')) {
-            $item->complete($request->user());
-        }
+                return $item;
+            },
+        );
 
         return ChecklistItemResource::make($item)
             ->response()
-            ->setStatusCode(201);
+            ->setStatusCode($item->wasRecentlyCreated ? 201 : 200);
     }
 
     public function show(Team $team, Checklist $checklist, ChecklistItem $item): ChecklistItemResource

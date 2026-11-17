@@ -30,7 +30,7 @@ class ItemPhotoController extends Controller
 
         return ItemPhotoResource::make($photo)
             ->response()
-            ->setStatusCode(201);
+            ->setStatusCode($photo->wasRecentlyCreated ? 201 : 200);
     }
 
     public function update(UpdateItemPhotoRequest $request, Team $team, Item $item, ItemPhoto $photo, MoveItemPhoto $action): ItemPhotoResource

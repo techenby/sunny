@@ -64,6 +64,21 @@ test('store returns the existing recipe when a client uuid is retried', function
     expect(Recipe::where('client_uuid', $uuid)->count())->toBe(1);
 });
 
+test('store returns the existing recipe when a retry wins the race to insert it', function () {
+    Storage::fake();
+    $user = User::factory()->create();
+    $uuid = '9b2f6c1e-3d4a-4f5b-8c7d-1e2f3a4b5c6d';
+    $raced = createAfterLookup('recipes', 'client_uuid', fn () => Recipe::factory()->for($user->currentTeam)->create(['name' => 'Soup', 'client_uuid' => $uuid]));
+
+    $this->actingAs($user)
+        ->postJson(route('api.recipes.store', $user->currentTeam), ['name' => 'Soup', 'photo' => UploadedFile::fake()->image('soup.jpg'), 'client_uuid' => $uuid])
+        ->assertOk()
+        ->assertJsonPath('data.id', $raced->model->id);
+
+    expect(Recipe::where('client_uuid', $uuid)->count())->toBe(1)
+        ->and(Storage::allFiles())->toBeEmpty();
+});
+
 test('store validates required fields', function () {
     $user = User::factory()->create();
 
@@ -344,6 +359,22 @@ test('copy returns the existing copy when a client uuid is retried', function ()
         ->postJson(route('api.recipes.copy', [$user->currentTeam, $recipe]), ['team_id' => $team->id, 'client_uuid' => $uuid])
         ->assertOk()
         ->assertJsonPath('data.id', $first->json('data.id'));
+
+    expect($team->recipes()->count())->toBe(1);
+});
+
+test('copy returns the existing copy when a retry wins the race to insert it', function () {
+    $user = User::factory()->create();
+    $team = Team::factory()->create();
+    $team->members()->attach($user, ['role' => TeamRole::Member->value]);
+    $recipe = Recipe::factory()->for($user->currentTeam)->create();
+    $uuid = '9b2f6c1e-3d4a-4f5b-8c7d-1e2f3a4b5c6d';
+    $raced = createAfterLookup('recipes', 'client_uuid', fn () => Recipe::factory()->for($team)->create(['name' => $recipe->name, 'parent_id' => $recipe->id, 'client_uuid' => $uuid]));
+
+    $this->actingAs($user)
+        ->postJson(route('api.recipes.copy', [$user->currentTeam, $recipe]), ['team_id' => $team->id, 'client_uuid' => $uuid])
+        ->assertOk()
+        ->assertJsonPath('data.id', $raced->model->id);
 
     expect($team->recipes()->count())->toBe(1);
 });
