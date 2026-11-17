@@ -172,7 +172,7 @@ class SunnyStore
             'items' => ['parent_id', 'type', 'name', 'metadata'],
             'checklists' => ['type', 'name'],
             'item_photos' => ['item_id'],
-            'checklist_items' => ['checklist_id', 'name'],
+            'checklist_items' => ['checklist_id', 'name', 'url'],
             'routines' => ['name', 'time_of_day', 'frequency', 'weekdays', 'day_of_month', 'starts_on', 'is_active'],
             'routine_steps' => ['routine_id', 'name'],
         };
@@ -186,7 +186,7 @@ class SunnyStore
             'items' => ['team_id', ...self::editableFields($type), 'photo_url', 'thumb_url', 'created_at', 'updated_at', 'deleted_at'],
             'item_photos' => [...self::editableFields($type), 'url', 'thumb_url', 'position', 'created_at', 'updated_at'],
             'checklists' => ['team_id', 'user_id', ...self::editableFields($type), 'created_at', 'updated_at'],
-            'checklist_items' => [...self::editableFields($type), 'url', 'position', 'completed_at', 'completed_by', 'created_at', 'updated_at'],
+            'checklist_items' => [...self::editableFields($type), 'position', 'completed_at', 'completed_by', 'created_at', 'updated_at'],
             'routines' => ['team_id', 'user_id', ...self::editableFields($type), 'created_at', 'updated_at'],
             'routine_steps' => [...self::editableFields($type), 'position', 'created_at', 'updated_at'],
         };

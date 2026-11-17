@@ -72,12 +72,36 @@ it('checks off an item with a patch that leaves out the list id', function (): v
 it('renames an item with a patch that carries only the new name', function (): void {
     Saloon::fake([SaveRecordRequest::class => MockResponse::make(['data' => [...ChecklistItem::find(1)->toArray(), 'name' => 'Oat milk']])]);
 
-    Native::visit('/lists/1')->tap('list-item-1-edit')->submit('list-item-1-name', 'Oat milk');
+    Native::visit('/lists/1')->press('editItem(1)')->submit('list-edit-name', 'Oat milk');
 
     Saloon::assertSent(fn (SaveRecordRequest $request): bool => $request->resolveEndpoint() === '/teams/family/checklists/1/items/1'
         && $request->getMethod() === Method::PATCH
         && $request->body()->all() === ['name' => 'Oat milk']);
     expect(ChecklistItem::find(1)->name)->toBe('Oat milk')->and(PendingWrite::count())->toBe(0);
+});
+
+it('sends a new item’s link to Sunny', function (): void {
+    Saloon::fake([SaveRecordRequest::class => fn (PendingRequest $request): MockResponse => MockResponse::make(['data' => [
+        ...$request->body()->all(), 'id' => 50, 'checklist_id' => 3, 'position' => 1, 'completed_at' => null,
+    ]], 201)]);
+
+    app(SunnyOutbox::class)->queue('checklist_items', 1, ['checklist_id' => 3, 'name' => 'Wool slippers', 'url' => 'https://www.llbean.com/wicked-good-slippers']);
+    app(SunnyWrites::class)->push();
+
+    Saloon::assertSent(fn (SaveRecordRequest $request): bool => $request->resolveEndpoint() === '/teams/family/checklists/3/items'
+        && $request->body()->get('url') === 'https://www.llbean.com/wicked-good-slippers');
+    expect(ChecklistItem::find(50)->url)->toBe('https://www.llbean.com/wicked-good-slippers');
+});
+
+it('removes an item’s link with a patch that clears it', function (): void {
+    Saloon::fake([SaveRecordRequest::class => MockResponse::make(['data' => [...ChecklistItem::find(1)->toArray(), 'url' => null]])]);
+
+    Native::visit('/lists/1')->press('editItem(1)')->tap('list-edit-remove-link');
+
+    Saloon::assertSent(fn (SaveRecordRequest $request): bool => $request->resolveEndpoint() === '/teams/family/checklists/1/items/1'
+        && $request->getMethod() === Method::PATCH
+        && $request->body()->all() === ['url' => null]);
+    expect(ChecklistItem::find(1)->url)->toBeNull()->and(PendingWrite::count())->toBe(0);
 });
 
 it('creates an item already checked off when it was ticked before reaching Sunny', function (): void {
