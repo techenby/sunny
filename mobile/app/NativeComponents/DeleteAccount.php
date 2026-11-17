@@ -4,8 +4,11 @@ namespace App\NativeComponents;
 
 use App\Actions\DestroySession;
 use App\Http\Integrations\Sunny\SunnyAuth;
+use App\Http\Integrations\Sunny\SunnyConnector;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\View\View;
+use Native\Mobile\Facades\Browser;
+use Native\Mobile\Facades\Dialog;
 use RuntimeException;
 use Saloon\Exceptions\Request\FatalRequestException;
 use Saloon\Exceptions\Request\RequestException;
@@ -16,9 +19,13 @@ class DeleteAccount extends Component
 
     public string $error = '';
 
+    /** @var array<string, string> */
+    public array $blockingTeams = [];
+
     public function submit(): void
     {
         $this->error = '';
+        $this->blockingTeams = [];
 
         if ($this->password === '') {
             $this->error = 'Enter your password to delete your account.';
@@ -48,6 +55,13 @@ class DeleteAccount extends Component
                 default => 'Sunny is unavailable right now. Your account was not deleted.',
             };
 
+            if ($response->status() === 422) {
+                $this->blockingTeams = collect($response->json('blocking_teams') ?? [])
+                    ->filter(fn (mixed $team): bool => is_array($team) && is_string($team['slug'] ?? null) && is_string($team['name'] ?? null))
+                    ->mapWithKeys(fn (array $team): array => [$team['slug'] => $team['name']])
+                    ->all();
+            }
+
             return;
         } catch (FatalRequestException) {
             $this->error = 'Unable to connect to Sunny. Your account was not deleted.';
@@ -62,6 +76,17 @@ class DeleteAccount extends Component
         }
 
         $this->replace('/');
+    }
+
+    public function openTeamSettings(string $slug): void
+    {
+        if (! array_key_exists($slug, $this->blockingTeams)) {
+            return;
+        }
+
+        if (! Browser::inApp(app(SunnyConnector::class)->siteUrl().'/settings/teams/'.rawurlencode($slug))) {
+            Dialog::toast('Unable to open the Sunny website. Please try again.');
+        }
     }
 
     public function render(): View

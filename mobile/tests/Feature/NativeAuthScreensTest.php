@@ -27,13 +27,31 @@ it('binds the login fields', function () {
         ->assertSet('password', 'secret-password');
 });
 
-it('opens registration in the browser without authenticating', function () {
-    Browser::shouldReceive('open')->once()->with('https://sunny.example/register')->andReturn(true);
+it('opens registration in the in-app browser without authenticating', function () {
+    Browser::shouldReceive('inApp')->once()->with('https://sunny.example/register')->andReturn(true);
 
     Native::visit('/register')
         ->assertScreen(Register::class)
-        ->assertSee('Create your account on the Sunny website, then return here to log in.')
+        ->assertSee('Sign up on the Sunny website without leaving the app.')
         ->tap('register-submit')
+        ->assertNoNavigation();
+});
+
+it('opens password reset in the in-app browser', function () {
+    Browser::shouldReceive('inApp')->once()->with('https://sunny.example/forgot-password')->andReturn(true);
+
+    Native::visit('/login')
+        ->tap('login-forgot-password')
+        ->assertSet('error', '')
+        ->assertNoNavigation();
+});
+
+it('says so when password reset cannot open', function () {
+    Browser::shouldReceive('inApp')->once()->andReturn(false);
+
+    Native::visit('/login')
+        ->tap('login-forgot-password')
+        ->assertSee('Unable to open password reset. Please try again.')
         ->assertNoNavigation();
 });
 

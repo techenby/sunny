@@ -29,6 +29,17 @@
                     :android-leading-icon="Android::Lock"
                     native:model="password"
                 />
+                <row class="w-full justify-end">
+                    <button
+                        ref="login-forgot-password"
+                        variant="ghost"
+                        font="semibold"
+                        a11y-hint="Opens password reset on the Sunny website"
+                        @tap="forgotPassword"
+                    >
+                        Forgot password?
+                    </button>
+                </row>
             </column>
         @else
             <text class="text-base text-theme-on-surface-variant">{{ $useRecoveryCode ? 'Enter one of your recovery codes.' : 'Enter the code from your authenticator app.' }}</text>

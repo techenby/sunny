@@ -13,7 +13,7 @@ class Register extends Component
     public function register(): void
     {
         $url = app(SunnyConnector::class)->siteUrl().'/register';
-        $this->error = Browser::open($url) ? '' : 'Unable to open registration. Please try again.';
+        $this->error = Browser::inApp($url) ? '' : 'Unable to open registration. Please try again.';
     }
 
     public function render(): View

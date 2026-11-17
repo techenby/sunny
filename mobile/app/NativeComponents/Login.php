@@ -3,10 +3,12 @@
 namespace App\NativeComponents;
 
 use App\Http\Integrations\Sunny\SunnyAuth;
+use App\Http\Integrations\Sunny\SunnyConnector;
 use App\Models\Onboarding;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
 use JsonException;
+use Native\Mobile\Facades\Browser;
 use RuntimeException;
 use Saloon\Exceptions\Request\FatalRequestException;
 use Saloon\Exceptions\Request\RequestException;
@@ -79,6 +81,12 @@ class Login extends Component
             $this->password = '';
             $this->code = '';
         }
+    }
+
+    public function forgotPassword(): void
+    {
+        $url = app(SunnyConnector::class)->siteUrl().'/forgot-password';
+        $this->error = Browser::inApp($url) ? '' : 'Unable to open password reset. Please try again.';
     }
 
     public function toggleRecoveryCode(): void

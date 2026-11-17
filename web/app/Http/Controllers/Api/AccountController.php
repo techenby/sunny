@@ -9,9 +9,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\UpdatePasswordRequest;
 use App\Http\Requests\Api\UpdateProfileRequest;
 use App\Http\Resources\UserResource;
+use App\Models\Team;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Validation\ValidationException;
 
 class AccountController extends Controller
 {
@@ -40,7 +41,7 @@ class AccountController extends Controller
         return response()->noContent(202);
     }
 
-    public function destroy(Request $request): Response
+    public function destroy(Request $request): Response|JsonResponse
     {
         $request->validate([
             'password' => ['required', 'string', 'current_password'],
@@ -49,7 +50,14 @@ class AccountController extends Controller
         $user = $request->user();
 
         if ($message = $user->deletionBlockedMessage()) {
-            throw ValidationException::withMessages(['teams' => [$message]]);
+            return response()->json([
+                'message' => $message,
+                'errors' => ['teams' => [$message]],
+                'blocking_teams' => $user->teamsBlockingDeletion()->map(fn (Team $team): array => [
+                    'name' => $team->name,
+                    'slug' => $team->slug,
+                ]),
+            ], 422);
         }
 
         $user->purge();
