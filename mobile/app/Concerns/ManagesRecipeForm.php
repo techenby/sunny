@@ -192,6 +192,32 @@ trait ManagesRecipeForm
     }
 
     /**
+     * @return array{url: string, host: string, path: string, initial: string}|null
+     */
+    protected function sourceLink(): ?array
+    {
+        $url = trim($this->source);
+
+        if (mb_strlen($url) > 500 || filter_var($url, FILTER_VALIDATE_URL) === false
+            || ! in_array(mb_strtolower((string) parse_url($url, PHP_URL_SCHEME)), ['http', 'https'], true)) {
+            return null;
+        }
+
+        $host = (string) preg_replace('/^www\./i', '', (string) parse_url($url, PHP_URL_HOST));
+
+        if ($host === '') {
+            return null;
+        }
+
+        return [
+            'url' => $url,
+            'host' => $host,
+            'path' => rtrim((string) parse_url($url, PHP_URL_PATH), '/'),
+            'initial' => mb_strtoupper(mb_substr($host, 0, 1)),
+        ];
+    }
+
+    /**
      * Mirrors the web form's rules: a required name, plus the column limits
      * that would otherwise only fail once the API rejected the request.
      */

@@ -4,4 +4,5 @@
     'formRef' => 'create-recipe',
     'submitLabel' => 'Save recipe',
     'tagRows' => $this->tagRows,
+    'importCard' => $this->importCard,
 ])

@@ -6,7 +6,8 @@
     @include('native.recipe-form', [
         'formRef' => 'edit-recipe',
         'submitLabel' => 'Update recipe',
-    'tagRows' => $this->tagRows,
+        'tagRows' => $this->tagRows,
+        'importCard' => $this->importCard,
     ])
 @else
     <x-ui.not-found ref="edit-recipe-missing" thing="recipe" class="ios:bg-theme-grouped-background" />
