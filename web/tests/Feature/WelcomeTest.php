@@ -17,7 +17,8 @@ test('displays the landing page for guests', function () {
         ->assertSee('Built by Andy Swick')
         ->assertSee('https://github.com/techenby/sunny')
         ->assertSee(route('privacy'))
-        ->assertSee(route('terms'));
+        ->assertSee(route('terms'))
+        ->assertSee(route('delete-account'));
 });
 
 test('includes a description and preview image for link previews', function () {
@@ -70,13 +71,33 @@ test('displays the privacy policy', function () {
         ->assertSee('<title>Privacy Policy - ' . config('app.name') . '</title>', false)
         ->assertSee('Privacy Policy')
         ->assertSee('Crash reports are kept by NativeWatch for up to 90 days.')
+        ->assertSee('is not directed to children under 13')
+        ->assertSee(route('delete-account'))
         ->assertSee(route('terms'));
+});
+
+test('explains how to delete an account to guests', function () {
+    $this->get(route('delete-account'))
+        ->assertOk()
+        ->assertSee('<title>Delete your account - ' . config('app.name') . '</title>', false)
+        ->assertSee('SunnyHome')
+        ->assertSee('TechEnby')
+        ->assertSeeInOrder(['Preferences', 'Delete account', 'Delete my account'])
+        ->assertSee(route('profile.edit'))
+        ->assertSee('mailto:' . config('mail.from.address'), false)
+        ->assertSee('If you own a team other people use')
+        ->assertSee('Make owner')
+        ->assertSee('What we delete')
+        ->assertSee('What we keep')
+        ->assertSee('NativeWatch keeps them for up to 90 days')
+        ->assertSee(route('privacy'));
 });
 
 test('displays the terms of service', function () {
     $this->get(route('terms'))
         ->assertOk()
         ->assertSee('Terms of Service')
+        ->assertSee(route('delete-account'))
         ->assertSee(route('privacy'));
 });
 

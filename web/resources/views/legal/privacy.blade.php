@@ -55,19 +55,27 @@
 
         <flux:heading level="2" size="lg" class="mt-10">Keeping and deleting your data</flux:heading>
         <flux:text size="lg" class="mt-4">
-            We keep your information for as long as your account is active. You can delete your account at any time from
-            your profile settings, which removes your account information. Content you shared with a team may remain
-            available to that team's other members.
+            We keep your information for as long as your account is active. You can delete your account at any time in
+            the mobile app under Preferences → Delete account, or on the website under Settings → Profile. Deleting it
+            removes your account, the teams only you use and everything in them, and your own lists and routines in
+            teams you share. Content you added to a shared team stays with that team for its other members.
         </flux:text>
         <flux:text size="lg" class="mt-4">
             Crash reports are kept by NativeWatch for up to 90 days. Turning off Share crash reports deletes any reports
             still waiting on your device. To delete reports that were already sent, email us.
         </flux:text>
+        <flux:text size="lg" class="mt-4">
+            <flux:link :href="route('delete-account')">How to delete your account</flux:link> has the full steps,
+            including what to do if you can't log in or you own a team other people use, and lists what we delete and
+            what we keep.
+        </flux:text>
 
         <flux:heading level="2" size="lg" class="mt-10">Children</flux:heading>
         <flux:text size="lg" class="mt-4">
-            SunnyHome accounts are meant for adults managing a household. We don't knowingly collect information from
-            children under 13 without a parent's involvement.
+            SunnyHome is for adults managing a household and is not directed to children under 13. We don't knowingly
+            collect personal information from children under 13. If you believe a child has created an account, email
+            us at <flux:link href="mailto:{{ config('mail.from.address') }}">{{ config('mail.from.address') }}</flux:link>
+            and we'll delete it.
         </flux:text>
 
         <flux:heading level="2" size="lg" class="mt-10">Changes</flux:heading>

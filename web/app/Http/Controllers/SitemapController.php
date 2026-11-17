@@ -10,7 +10,7 @@ class SitemapController extends Controller
 {
     public function __invoke(): Response
     {
-        $urls = collect(['home', 'costs', 'privacy', 'terms'])
+        $urls = collect(['home', 'costs', 'privacy', 'terms', 'delete-account'])
             ->map(fn (string $name): string => '    <url><loc>' . e(route($name)) . '</loc></url>')
             ->implode("\n");
 
