@@ -74,7 +74,7 @@ Route::middleware('auth:sanctum')
                 Route::patch('items/{item}', [ItemController::class, 'update'])->name('items.update');
                 Route::delete('items/{item}', [ItemController::class, 'destroy'])->name('items.destroy');
                 Route::post('items/{item}/restore', [ItemController::class, 'restore'])->withTrashed()->name('items.restore');
-                Route::delete('items/{item}/force', [ItemController::class, 'forceDestroy'])->withTrashed()->name('items.force-destroy');
+                Route::delete('items/{item}/force', [ItemController::class, 'forceDestroy'])->withTrashed()->missing(ItemController::forceDestroyMissing(...))->name('items.force-destroy');
 
                 Route::post('items/{item}/photos', [ItemPhotoController::class, 'store'])->name('items.photos.store');
                 Route::patch('items/{item}/photos/{photo}', [ItemPhotoController::class, 'update'])->name('items.photos.update');

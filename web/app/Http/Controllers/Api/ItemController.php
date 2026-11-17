@@ -18,13 +18,32 @@ use App\Http\Requests\Api\UpdateItemRequest;
 use App\Http\Resources\ItemResource;
 use App\Models\Item;
 use App\Models\Team;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Gate;
 
 class ItemController extends Controller
 {
+    /** @param  ModelNotFoundException<Model>  $exception */
+    public static function forceDestroyMissing(Request $request, ModelNotFoundException $exception): Response
+    {
+        $team = $request->route('team');
+
+        throw_unless(
+            $exception->getModel() === Item::class
+                && $team instanceof Team
+                && $request->user()?->belongsToTeam($team)
+                && Item::withTrashed()->whereKey($exception->getIds())->doesntExist(),
+            $exception,
+        );
+
+        return response()->noContent();
+    }
+
     public function index(Team $team): AnonymousResourceCollection
     {
         Gate::authorize('viewAny', Item::class);

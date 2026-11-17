@@ -153,6 +153,8 @@ user belongs to.
 | `GET` | `/api/teams/{team}/items/{item}` | Read an inventory entry. |
 | `PATCH` | `/api/teams/{team}/items/{item}` | Update an inventory entry. |
 | `DELETE` | `/api/teams/{team}/items/{item}` | Delete an inventory entry. |
+| `POST` | `/api/teams/{team}/items/{item}/restore` | Bring back a deleted inventory entry. |
+| `DELETE` | `/api/teams/{team}/items/{item}/force` | Delete a deleted inventory entry forever. |
 | `POST` | `/api/teams/{team}/items/{item}/duplicate` | Create 1–25 copies. |
 | `POST` | `/api/teams/{team}/items/{item}/photos` | Add a photo to an inventory entry. |
 | `PATCH` | `/api/teams/{team}/items/{item}/photos/{photo}` | Move a photo to another position. |
@@ -268,6 +270,18 @@ Duplicate an entry with an optional count:
   "count": 3
 }
 ```
+
+Deleting an entry moves anything inside it to the top level. Deleted entries
+still come back from `GET /api/sync` with `deleted_at` set, so a client can
+show them in a trash view. Restoring one returns it with `200`. If the place it
+was in is still deleted, it comes back at the top level. Restoring an entry
+that isn't deleted changes nothing and also returns `200`, so retrying a
+restore is safe.
+
+The force endpoint only works on deleted entries; an entry that isn't deleted
+returns `404`. It deletes the entry for good, along with its photos, and
+returns `204`. It also returns `204` when the entry is already gone, so
+retrying a permanent delete is safe.
 
 ## Recipe payloads
 
