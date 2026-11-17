@@ -317,3 +317,17 @@ test('reset returns 403 for a team the user does not belong to', function () {
 
     expect($item->fresh()->isCompleted())->toBeTrue();
 });
+
+test('reset returns 404 when the checklist belongs to a different team than the url', function () {
+    $user = User::factory()->create();
+    $team = Team::factory()->create();
+    $team->members()->attach($user, ['role' => TeamRole::Member->value]);
+    $checklist = Checklist::factory()->for($team)->create();
+    $item = ChecklistItem::factory()->for($checklist)->completed()->create();
+
+    $this->actingAs($user)
+        ->postJson(route('api.checklists.reset', [$user->currentTeam, $checklist]))
+        ->assertNotFound();
+
+    expect($item->fresh()->isCompleted())->toBeTrue();
+});
