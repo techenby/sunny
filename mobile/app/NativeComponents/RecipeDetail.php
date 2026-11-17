@@ -4,9 +4,11 @@ namespace App\NativeComponents;
 
 use App\Casts\RecipeLines;
 use App\Concerns\ChecksSunnySync;
+use App\Concerns\CopiesRecipeToTeam;
 use App\Concerns\ShowsQueuedChange;
 use App\Http\Integrations\Sunny\SunnyOutbox;
 use App\Http\Integrations\Sunny\SunnySyncCoordinator;
+use App\Http\Integrations\Sunny\SunnyTeam;
 use App\Icons\Android;
 use App\Icons\Ios;
 use Illuminate\Support\Arr;
@@ -22,6 +24,7 @@ use Native\Mobile\Facades\Dialog;
 class RecipeDetail extends Component
 {
     use ChecksSunnySync;
+    use CopiesRecipeToTeam;
     use ShowsQueuedChange;
 
     public string $error = '';
@@ -216,9 +219,17 @@ class RecipeDetail extends Component
      */
     public function moreMenu(): array
     {
-        return [
+        return array_values(array_filter([
             NavAction::make('recipe-remix')->label('Remix')->icon(ios: Ios::DocOnDoc->value, android: Android::ContentCopy->value)->press('remix'),
-        ];
+            $this->copyTeams() === [] ? null : NavAction::make('recipe-copy-to-team')->label('Copy to another team')->icon(ios: Ios::SquareOnSquare->value, android: Android::FileCopy->value)->press('openCopy'),
+        ]));
+    }
+
+    public function teamName(): ?string
+    {
+        $teamId = $this->recipe['team_id'] ?? null;
+
+        return $teamId === null ? null : (app(SunnyTeam::class)->choices()[$teamId] ?? null);
     }
 
     public function remix(): void
