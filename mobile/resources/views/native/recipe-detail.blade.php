@@ -9,40 +9,39 @@
 
 @if ($recipe)
     <native:bottom-bar>
-        <row class="w-full items-center justify-end gap-3 px-4 pb-2">
-            <pressable
-                ref="edit-recipe"
-                a11y-label="Edit"
-                class="h-12 w-12 items-center justify-center rounded-full glass android:bg-theme-surface"
-                @navigate('/recipes/'.$recipe['id'].'/edit')
-            >
-                <native:icon :ios="Ios::Pencil" :android="Android::Edit" :size="22" class="text-theme-on-surface" />
-            </pressable>
-            <pressable
-                ref="remix-recipe"
-                a11y-label="Remix"
-                class="min-h-12 items-center justify-center rounded-full px-4 glass android:bg-theme-surface"
-                @tap="remix"
-            >
-                <row class="items-center gap-2">
-                    <native:icon :ios="Ios::DocOnDoc" :android="Android::ContentCopy" :size="18" class="text-theme-primary" />
-                    <text font="semibold" class="text-lg text-theme-on-surface">Remix</text>
-                </row>
-            </pressable>
-            @if ($this->ingredients || $this->instructions)
+        <column class="w-full gap-3 px-4 pb-2">
+            <row class="w-full items-center justify-end gap-3">
                 <pressable
-                    ref="cook-recipe"
-                    a11y-label="Cook"
-                    class="min-h-12 flex-1 items-center justify-center rounded-full bg-theme-primary px-5"
-                    @navigate('/recipes/'.$recipe['id'].'/cook')
+                    ref="edit-recipe"
+                    a11y-label="Edit"
+                    class="h-12 w-12 items-center justify-center rounded-full glass android:bg-theme-surface"
+                    @navigate('/recipes/'.$recipe['id'].'/edit')
                 >
-                    <row class="items-center gap-2">
-                        <native:icon :ios="Ios::Flame" :android="Android::LocalFireDepartment" :size="18" class="text-theme-on-primary" />
-                        <text font="semibold" class="text-lg text-theme-on-primary">Cook</text>
-                    </row>
+                    <native:icon :ios="Ios::Pencil" :android="Android::Edit" :size="22" class="text-theme-on-surface" />
                 </pressable>
-            @endif
-        </row>
+                @if ($this->ingredients || $this->instructions)
+                    <pressable
+                        ref="cook-recipe"
+                        a11y-label="Cook"
+                        class="min-h-12 flex-1 items-center justify-center rounded-full bg-theme-primary px-5"
+                        @navigate('/recipes/'.$recipe['id'].'/cook')
+                    >
+                        <row class="items-center gap-2">
+                            <native:icon :ios="Ios::Flame" :android="Android::LocalFireDepartment" :size="18" class="text-theme-on-primary" />
+                            <text font="semibold" class="text-lg text-theme-on-primary">Cook</text>
+                        </row>
+                    </pressable>
+                @endif
+                <pressable
+                    ref="recipe-more"
+                    a11y-label="More"
+                    class="h-12 w-12 items-center justify-center rounded-full glass android:bg-theme-surface"
+                    :menu="$this->moreMenu()"
+                >
+                    <native:icon :ios="Ios::Ellipsis" :android="Android::MoreHoriz" :size="22" class="text-theme-on-surface" />
+                </pressable>
+            </row>
+        </column>
     </native:bottom-bar>
 
     <scroll-view ref="recipe-detail" fill class="bg-theme-background">

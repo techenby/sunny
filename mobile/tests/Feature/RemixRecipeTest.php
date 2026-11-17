@@ -28,20 +28,19 @@ function bottomBarRefs(array $tree): array
     return $refs;
 }
 
-it('puts Edit, Remix and Cook in the bottom bar, in that order', function () {
+it('puts Edit, Cook and More in the bottom bar, with Remix in the More menu', function () {
     $screen = Native::visit('/recipes/1')
-        ->assertSee('Remix')
         ->assertSee('Cook')
-        ->assertMissingElement('top_bar_action')
+        ->assertElement('top_bar_action', fn (array $node): bool => $node['props']['id'] === 'recipe-remix' && $node['props']['label'] === 'Remix')
         ->assertAccessible();
 
-    expect(bottomBarRefs($screen->tree()))->toBe(['edit-recipe', 'remix-recipe', 'cook-recipe']);
+    expect(bottomBarRefs($screen->tree()))->toBe(['edit-recipe', 'cook-recipe', 'recipe-more']);
 });
 
-it('offers Remix without Cook when a recipe has no ingredients or steps', function () {
+it('offers More without Cook when a recipe has no ingredients or steps', function () {
     Recipe::find(1)->update(['ingredients' => null, 'instructions' => null]);
 
-    expect(bottomBarRefs(Native::visit('/recipes/1')->tree()))->toBe(['edit-recipe', 'remix-recipe']);
+    expect(bottomBarRefs(Native::visit('/recipes/1')->tree()))->toBe(['edit-recipe', 'recipe-more']);
 });
 
 it('opens cook mode from the bottom bar', function () {
@@ -55,7 +54,7 @@ it('saves a remix with the original’s fields and opens it for editing', functi
     $original = Recipe::find(1);
 
     Native::visit('/recipes/1')
-        ->tap('remix-recipe')
+        ->tap('Remix')
         ->assertNavigatedTo('/recipes/-1/edit')
         ->follow()
         ->assertScreen(EditRecipe::class)
@@ -94,7 +93,7 @@ it('saves a remix with the original’s fields and opens it for editing', functi
 });
 
 it('lists the new remix under the original', function () {
-    Native::visit('/recipes/1')->tap('remix-recipe');
+    Native::visit('/recipes/1')->tap('Remix');
 
     Native::visit('/recipes/1')
         ->assertSee('Remixes')
@@ -109,7 +108,7 @@ it('sends the remix to Sunny as a new recipe with its parent', function () {
     $saved = [...Recipe::find(1)->toArray(), 'id' => 90, 'parent_id' => 1, 'name' => 'Buttermilk Pancakes (Remix)'];
     Saloon::fake([SaveRecordRequest::class => MockResponse::make(['data' => $saved], 201), SyncRequest::class => MockResponse::make([], 503)]);
 
-    Native::visit('/recipes/1')->tap('remix-recipe')->assertNavigatedTo('/recipes/-1/edit');
+    Native::visit('/recipes/1')->tap('Remix')->assertNavigatedTo('/recipes/-1/edit');
 
     Saloon::assertSent(fn (SaveRecordRequest $request): bool => $request->resolveEndpoint() === '/teams/family/recipes'
         && $request->getMethod() === Method::POST
@@ -126,7 +125,7 @@ it('remixes a recipe while Sunny is unreachable', function () {
     Saloon::fake([SaveRecordRequest::class => MockResponse::make([], 503)]);
 
     Native::visit('/recipes/1')
-        ->tap('remix-recipe')
+        ->tap('Remix')
         ->assertSet('error', '')
         ->assertNavigatedTo('/recipes/-1/edit')
         ->follow()
@@ -139,7 +138,7 @@ it('remixes a recipe while Sunny is unreachable', function () {
 
 it('shows the original on Edit right after remixing', function () {
     Native::visit('/recipes/1')
-        ->tap('remix-recipe')
+        ->tap('Remix')
         ->follow()
         ->assertNavTitle('Edit recipe')
         ->assertSee('Remix of')
@@ -160,7 +159,7 @@ it('leaves the remix card off when editing a remix later', function () {
 
 it('opens the remix after saving it, leaving the original under it', function () {
     Native::visit('/recipes/1')
-        ->tap('remix-recipe')
+        ->tap('Remix')
         ->follow()
         ->input('recipe-name', 'Blueberry Pancakes')
         ->tap('edit-recipe-submit')

@@ -7,11 +7,14 @@ use App\Concerns\ChecksSunnySync;
 use App\Concerns\ShowsQueuedChange;
 use App\Http\Integrations\Sunny\SunnyOutbox;
 use App\Http\Integrations\Sunny\SunnySyncCoordinator;
+use App\Icons\Android;
+use App\Icons\Ios;
 use Illuminate\Support\Arr;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
 use Native\Mobile\Attributes\On;
+use Native\Mobile\Edge\Layouts\Builders\NavAction;
 use Native\Mobile\Events\Alert\ButtonPressed;
 use Native\Mobile\Facades\Browser;
 use Native\Mobile\Facades\Dialog;
@@ -206,6 +209,16 @@ class RecipeDetail extends Component
 
         app(SunnySyncCoordinator::class)->dispatch();
         $this->back();
+    }
+
+    /**
+     * @return list<NavAction>
+     */
+    public function moreMenu(): array
+    {
+        return [
+            NavAction::make('recipe-remix')->label('Remix')->icon(ios: Ios::DocOnDoc->value, android: Android::ContentCopy->value)->press('remix'),
+        ];
     }
 
     public function remix(): void
