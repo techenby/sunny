@@ -31,6 +31,9 @@ Route::middleware('auth:sanctum')
     ->name('api.')
     ->group(function (): void {
         Route::get('user', fn (Request $request): UserResource => UserResource::make($request->user()))->name('user');
+        Route::patch('user', [AccountController::class, 'update'])->name('user.update');
+        Route::put('user/password', [AccountController::class, 'updatePassword'])->middleware('throttle:6,1')->name('user.password.update');
+        Route::post('user/email/verification-notification', [AccountController::class, 'sendVerificationNotification'])->middleware('throttle:6,1')->name('user.verification.send');
         Route::delete('user', [AccountController::class, 'destroy'])->middleware('throttle:6,1')->name('user.destroy');
         Route::post('user/onboarding', OnboardingController::class)->name('user.onboarding');
         Route::get('sync', SyncController::class)->name('sync');

@@ -272,3 +272,30 @@ test('guests get a JSON 401 from the API even without a JSON accept header', fun
         ->assertUnauthorized()
         ->assertJson(['message' => 'Unauthenticated.']);
 });
+
+test('includes each team member with their role but not their email', function () {
+    $user = User::factory()->create(['name' => 'Zoro Roronoa']);
+    $team = $user->currentTeam;
+    $nami = User::factory()->create(['name' => 'Nami']);
+    $team->memberships()->create(['user_id' => $nami->id, 'role' => TeamRole::Admin]);
+    User::factory()->create();
+
+    $this->actingAs($user)
+        ->getJson(route('api.sync'))
+        ->assertOk()
+        ->assertJsonCount(2, 'teams.0.members')
+        ->assertJsonPath('teams.0.members.0', ['id' => $nami->id, 'name' => 'Nami', 'initials' => 'N', 'role' => 'admin'])
+        ->assertJsonPath('teams.0.members.1', ['id' => $user->id, 'name' => 'Zoro Roronoa', 'initials' => 'ZR', 'role' => 'owner']);
+});
+
+test('sends every team when syncing incrementally so member changes arrive', function () {
+    $user = User::factory()->create();
+    $user->currentTeam->update(['updated_at' => now()->subWeek()]);
+    $user->currentTeam->memberships()->create(['user_id' => User::factory()->create()->id, 'role' => TeamRole::Member]);
+
+    $this->actingAs($user)
+        ->getJson(route('api.sync', ['since' => now()->subDay()->toIso8601String()]))
+        ->assertOk()
+        ->assertJsonCount(1, 'teams')
+        ->assertJsonCount(2, 'teams.0.members');
+});

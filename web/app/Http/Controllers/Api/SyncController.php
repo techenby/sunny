@@ -37,7 +37,7 @@ class SyncController extends Controller
         $user = Auth::user();
         $teamIds = $user->teams()->pluck('teams.id');
 
-        $teamsQuery = $user->teams()->withTrashed();
+        $teamsQuery = $user->teams()->withTrashed()->with(['members' => fn (Builder $query) => $query->orderBy('name')]);
         $recipesQuery = Recipe::query()->withTrashed()->whereIn('team_id', $teamIds);
         $itemsQuery = Item::query()->with('photos')->withTrashed()->whereIn('team_id', $teamIds);
         $checklistsQuery = Checklist::query()->withTrashed()->whereIn('team_id', $teamIds);
@@ -46,7 +46,6 @@ class SyncController extends Controller
         $routineStepsQuery = RoutineStep::query()->withTrashed()->whereHas('routine', fn (Builder $query) => $query->whereIn('team_id', $teamIds));
 
         if ($since = $request->date('since')) {
-            $teamsQuery->where('teams.updated_at', '>=', $since);
             $recipesQuery->where('updated_at', '>=', $since);
             $itemsQuery->where('updated_at', '>=', $since);
             $checklistsQuery->where('updated_at', '>=', $since);
