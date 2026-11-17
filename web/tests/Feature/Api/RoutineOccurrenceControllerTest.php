@@ -68,6 +68,21 @@ test('index returns the routines for a given date', function () {
         ->assertJsonCount(0, 'data');
 });
 
+test('index returns nothing for a date before the routine starts', function () {
+    $user = User::factory()->create();
+    $routine = Routine::factory()->for($user->currentTeam)->daily()->create(['starts_on' => '2026-10-05']);
+    RoutineOccurrence::factory()->for($routine)->create(['due_on' => '2026-10-03']);
+
+    foreach (['2026-10-03', '2026-10-04'] as $date) {
+        $this->actingAs($user)
+            ->getJson(route('api.routine-occurrences.index', [$user->currentTeam, 'date' => $date]))
+            ->assertOk()
+            ->assertJsonCount(0, 'data');
+    }
+
+    expect(RoutineOccurrence::pluck('due_on')->map->toDateString()->all())->toBe(['2026-10-03']);
+});
+
 test('index validates the date', function () {
     $user = User::factory()->create();
 

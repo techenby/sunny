@@ -92,6 +92,9 @@ class GenerateRoutineOccurrences
             ->whereHas('routine', fn (Builder $query) => $query
                 ->where('team_id', $team->id)
                 ->unless($isPast, fn ($query) => $query->where('is_active', true)))
+            ->where(fn (Builder $query) => $query
+                ->whereHas('routine', fn (Builder $query) => $query->whereDate('starts_on', '<=', $date))
+                ->orWhereHas('steps', fn (Builder $query) => $query->whereNotNull('completed_at')))
             ->with(['routine.user', 'steps.step'])
             ->due($date)
             ->get()
