@@ -1,8 +1,10 @@
 <?php
 
 use App\Actions\Inventory\DuplicateItem;
+use App\Actions\Inventory\ForceDeleteItem;
 use App\Actions\Inventory\GenerateItemQrCode;
 use App\Actions\Inventory\MoveItemToTeam;
+use App\Actions\Inventory\RestoreItem;
 use App\Enums\ItemType;
 use App\Livewire\Forms\Inventory\ImportItemsForm;
 use App\Livewire\Forms\Inventory\ItemForm;
@@ -370,7 +372,7 @@ new class extends Component
 
         foreach ($items as $item) {
             $this->authorize('restore', $item);
-            $item->restore();
+            (new RestoreItem)->handle($item);
         }
 
         $this->reset('selected');
@@ -386,7 +388,7 @@ new class extends Component
 
         $this->authorize('restore', $item);
 
-        $item->restore();
+        (new RestoreItem)->handle($item);
 
         unset($this->items, $this->parentItems);
     }
@@ -397,7 +399,7 @@ new class extends Component
 
         $this->authorize('forceDelete', $item);
 
-        $item->forceDelete();
+        (new ForceDeleteItem)->handle($item);
 
         unset($this->items, $this->parentItems);
     }

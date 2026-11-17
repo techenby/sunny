@@ -54,8 +54,9 @@
 
         <flux:heading level="2" size="lg" class="mt-10">Ending your account</flux:heading>
         <flux:text size="lg" class="mt-4">
-            You can delete your account at any time from your profile settings. Content you shared with a team may
-            remain available to that team's other members.
+            You can delete your account at any time from your profile settings or the mobile app's Preferences. Content
+            you shared with a team may remain available to that team's other members. See
+            <flux:link :href="route('delete-account')">how to delete your account</flux:link>.
         </flux:text>
 
         <flux:heading level="2" size="lg" class="mt-10">Disclaimers</flux:heading>

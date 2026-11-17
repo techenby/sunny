@@ -8,7 +8,8 @@ test('lists the public pages in the sitemap', function () {
         ->assertSee('<loc>' . route('home') . '</loc>', false)
         ->assertSee('<loc>' . route('costs') . '</loc>', false)
         ->assertSee('<loc>' . route('privacy') . '</loc>', false)
-        ->assertSee('<loc>' . route('terms') . '</loc>', false);
+        ->assertSee('<loc>' . route('terms') . '</loc>', false)
+        ->assertSee('<loc>' . route('delete-account') . '</loc>', false);
 });
 
 test('robots.txt points crawlers at the sitemaps', function () {
