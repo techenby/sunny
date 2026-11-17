@@ -16,6 +16,7 @@ class SunnyConnector extends Connector
     public function __construct(
         private readonly string $baseUrl,
         private readonly ?string $caBundle = null,
+        private readonly bool $isBackgroundTask = false,
     ) {
         throw_if(
             ! filter_var($baseUrl, FILTER_VALIDATE_URL) || ! in_array(parse_url($baseUrl, PHP_URL_SCHEME), ['http', 'https'], true),
@@ -51,8 +52,8 @@ class SunnyConnector extends Connector
     protected function defaultConfig(): array
     {
         return [
-            'connect_timeout' => 10,
-            'timeout' => 30,
+            'connect_timeout' => $this->isBackgroundTask ? 5 : 10,
+            'timeout' => $this->isBackgroundTask ? 20 : 30,
             'allow_redirects' => false,
             'verify' => $this->caBundle ?? true,
         ];

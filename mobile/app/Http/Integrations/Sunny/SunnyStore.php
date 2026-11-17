@@ -133,6 +133,13 @@ class SunnyStore
         DB::table('sunny_accounts')->updateOrInsert(['server' => self::server()], ['user_id' => $userId]);
     }
 
+    public function rememberedAccount(): ?int
+    {
+        $userId = DB::table('sunny_accounts')->where('server', self::server())->value('user_id');
+
+        return $userId === null ? null : (int) $userId;
+    }
+
     /**
      * Forget downloaded data, keeping changes that haven't reached Sunny yet. The next download drops any for teams the signed-in account can't reach.
      */

@@ -7,6 +7,7 @@ use App\Http\Integrations\Sunny\Requests\RefreshTokenRequest;
 use App\Http\Integrations\Sunny\Requests\SyncRequest;
 use App\Http\Integrations\Sunny\Requests\VerifyTwoFactorRequest;
 use App\Http\Integrations\Sunny\SunnyConnector;
+use NativePHP\BackgroundTasks\BackgroundTasks;
 use Saloon\Exceptions\Request\RequestException;
 use Saloon\Exceptions\StrayRequestException;
 use Saloon\Http\Auth\TokenAuthenticator;
@@ -143,6 +144,26 @@ it('fails instead of disabling verification when the development CA is missing',
 
     expect(fn () => app(SunnyConnector::class))->toThrow(InvalidArgumentException::class, 'readable PEM file');
 });
+
+it('gives up sooner in a background task, which holds up an app launch until it finishes', function (?string $task, int $connectTimeout, int $timeout): void {
+    app()->instance(BackgroundTasks::class, new class($task) extends BackgroundTasks
+    {
+        public function __construct(private readonly ?string $task) {}
+
+        public function currentTask(): ?string
+        {
+            return $this->task;
+        }
+    });
+
+    expect(app(SunnyConnector::class)->config()->all())->toMatchArray([
+        'connect_timeout' => $connectTimeout,
+        'timeout' => $timeout,
+    ]);
+})->with([
+    'in the app' => [null, 10, 30],
+    'in a background task' => ['sunny:sync', 5, 20],
+]);
 
 it('blocks requests that no test has faked', function (): void {
     expect(fn () => app(SunnyConnector::class)->send(new GetUserRequest))->toThrow(StrayRequestException::class);

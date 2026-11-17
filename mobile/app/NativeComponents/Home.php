@@ -29,7 +29,15 @@ class Home extends Component
 
         try {
             try {
-                $userId = app(SunnyAuth::class)->authenticatedConnector()->send(new GetUserRequest)->json('data.id');
+                $connector = app(SunnyAuth::class)->authenticatedConnector();
+
+                if (app(SunnyStore::class)->lastSyncedAt() && app(SunnyStore::class)->rememberedAccount() !== null) {
+                    $this->replace(Onboarding::needsSetUp() ? '/setup' : '/dashboard');
+
+                    return;
+                }
+
+                $userId = $connector->send(new GetUserRequest)->json('data.id');
                 if (is_int($userId)) {
                     app(SunnyStore::class)->rememberAccount($userId);
                 }

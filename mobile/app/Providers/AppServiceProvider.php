@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use NativePHP\BackgroundTasks\BackgroundTasks;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -21,6 +22,7 @@ class AppServiceProvider extends ServiceProvider
             app()->environment('local') && config('services.sunny.dev_ca_bundle')
                 ? base_path(config('services.sunny.dev_ca_bundle'))
                 : null,
+            app(BackgroundTasks::class)->runningAsBackgroundTask(),
         ));
     }
 
