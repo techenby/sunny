@@ -138,11 +138,11 @@ user belongs to.
 | `POST` | `/api/teams/{team}/leave` | Leave a team. |
 | `PATCH` | `/api/teams/{team}/members/{user}` | Change a member's role. |
 | `DELETE` | `/api/teams/{team}/members/{user}` | Remove a member. |
-| `GET` | `/api/teams/{team}/invitations` | List the team's invitations that haven't been accepted. |
+| `GET` | `/api/teams/{team}/invitations` | List the team's pending invitations. |
 | `POST` | `/api/teams/{team}/invitations` | Invite someone by email. |
 | `DELETE` | `/api/teams/{team}/invitations/{code}` | Cancel an invitation. |
 | `GET` | `/api/invitations` | List the pending invitations sent to the user's email. |
-| `POST` | `/api/invitations/{code}/accept` | Join the team. |
+| `POST` | `/api/invitations/{code}/accept` | Join the team and delete the invitation. |
 | `POST` | `/api/invitations/{code}/decline` | Decline and delete the invitation. |
 | `GET` | `/api/sync` | Synchronize all accessible teams, recipes, items, lists, and routines. |
 | `POST` | `/api/sanctum/token/two-factor` | Complete a two-factor challenge. |
@@ -217,9 +217,9 @@ settings, and they need a connection: don't queue them for later.
   `role`), which emails a link, and cancel. Invitations expire after 3 days.
 - Accepting or declining an invitation sent to another email address, or one
   that has expired, fails with a `422` on `invitation`.
-- Retrying is safe. Accepting an invitation that's already accepted returns
-  the team if the user is a member, and declining one that's already gone
-  returns `204`. Accepting one that was declined returns `404`.
+- Accepting or declining deletes the invitation. Retrying is safe: accepting
+  one that's gone returns the team if the user is now a member (and `404`
+  otherwise), and declining one that's gone returns `204`.
 
 Team responses are the team as in `GET /api/sync`, with its `members`.
 Invitations have `code`, `email`, `role`, `expires_at` and `created_at`, and

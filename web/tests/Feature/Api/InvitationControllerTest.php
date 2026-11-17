@@ -39,7 +39,6 @@ test('guests cannot see or answer invitations', function () {
 test('a user sees the pending invitations sent to their email', function () {
     $invitation = TeamInvitation::factory()->for($this->crew)->create(['email' => 'Zoro@StrawHat.Pirates', 'invited_by' => $this->luffy->id]);
     TeamInvitation::factory()->expired()->create(['email' => 'zoro@strawhat.pirates']);
-    TeamInvitation::factory()->accepted()->create(['email' => 'zoro@strawhat.pirates']);
     TeamInvitation::factory()->for($this->crew)->create(['email' => 'nami@strawhat.pirates']);
 
     $this->actingAs($this->zoro)
@@ -64,7 +63,7 @@ test('accepting an invitation joins the team with its role without changing the 
     expect($this->zoro->fresh())
         ->teamRole($this->crew)->toBe(TeamRole::Admin)
         ->current_team_id->toBe($this->zoro->personalTeam()->id)
-        ->and($invitation->fresh()->accepted_at)->not->toBeNull();
+        ->and($invitation->fresh())->toBeNull();
 });
 
 test('accepting an invitation to a team the user already belongs to keeps one membership', function () {
@@ -104,8 +103,9 @@ test('someone else\'s or an expired invitation cannot be answered', function (st
     'expired' => [['email' => 'zoro@strawhat.pirates', 'expires_at' => now()->subDay()]],
 ]);
 
-test('an accepted invitation cannot be answered again', function (string $action) {
-    $invitation = TeamInvitation::factory()->for($this->crew)->accepted()->create(['email' => 'zoro@strawhat.pirates']);
+test('an invitation that is gone cannot be answered by its code', function (string $action) {
+    $invitation = TeamInvitation::factory()->for($this->crew)->create(['email' => 'zoro@strawhat.pirates']);
+    $invitation->delete();
 
     $this->actingAs($this->zoro)
         ->postJson(route("api.invitations.{$action}", $invitation))
@@ -123,7 +123,7 @@ test('accepting an invitation someone already accepted for the user succeeds wit
 
     expect($this->crew->memberships()->where('user_id', $this->zoro->id)->count())->toBe(1)
         ->and($this->zoro->teamRole($this->crew))->toBe(TeamRole::Admin)
-        ->and(TeamInvitation::query()->pendingFor($this->zoro)->exists())->toBeFalse();
+        ->and($invitation->fresh())->toBeNull();
 });
 
 test('accepting an invitation declined in the meantime is not found', function () {
@@ -148,16 +148,16 @@ test('declining an invitation declined in the meantime succeeds', function () {
     expect($invitation->fresh())->toBeNull();
 });
 
-test('declining an invitation accepted in the meantime keeps the membership', function () {
+test('declining an invitation accepted in the meantime succeeds and keeps the membership', function () {
     $invitation = TeamInvitation::factory()->for($this->crew)->create(['email' => 'zoro@strawhat.pirates']);
     answerInvitationAfterLookup(fn () => resolve(AcceptTeamInvitation::class)->handle($this->zoro, $invitation->fresh()));
 
     $this->actingAs($this->zoro)
         ->postJson(route('api.invitations.decline', $invitation))
-        ->assertNotFound();
+        ->assertNoContent();
 
     expect($this->zoro->belongsToTeam($this->crew))->toBeTrue()
-        ->and($invitation->fresh()->accepted_at)->not->toBeNull();
+        ->and($invitation->fresh())->toBeNull();
 });
 
 test('the accept action re-checks the invitation instead of trusting the model it was given', function () {

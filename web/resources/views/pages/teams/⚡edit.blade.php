@@ -119,7 +119,6 @@ new class extends Component
         ])->all();
 
         $this->invitations = $team->invitations()
-            ->whereNull('accepted_at')
             ->get()
             ->map(fn ($invitation) => [
                 'code' => $invitation->code,

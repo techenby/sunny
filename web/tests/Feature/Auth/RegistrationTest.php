@@ -5,6 +5,7 @@ use App\Models\TeamInvitation;
 use App\Models\User;
 use Bentonow\BentoLaravel\Facades\Bento;
 use Illuminate\Support\Facades\Http;
+use Livewire\Livewire;
 
 test('registration screen can be rendered', function () {
     $response = $this->get(route('register'));
@@ -93,6 +94,28 @@ test('people who register with a pending invitation skip onboarding', function (
 
     expect($user->needsOnboarding())->toBeFalse()
         ->and($user->currentTeam->checklists()->exists())->toBeFalse();
+});
+
+test('someone who registers with a pending invitation can accept it, which joins the team and deletes it', function () {
+    $luffy = User::factory()->create();
+    $invitation = TeamInvitation::factory()->for($luffy->currentTeam)->create(['email' => 'Zoro@Example.com']);
+
+    $this->post(route('register.store'), [
+        'name' => 'Roronoa Zoro',
+        'email' => 'zoro@example.com',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+    ]);
+
+    $user = User::where('email', 'zoro@example.com')->sole();
+
+    Livewire::actingAs($user)
+        ->test('pages::teams.pending-invitations-modal')
+        ->call('acceptInvitation', $invitation->code)
+        ->assertHasNoErrors();
+
+    expect($user->fresh()->belongsToTeam($luffy->currentTeam))->toBeTrue()
+        ->and($invitation->fresh())->toBeNull();
 });
 
 test('an expired invitation does not skip onboarding', function () {

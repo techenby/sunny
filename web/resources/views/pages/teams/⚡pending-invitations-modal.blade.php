@@ -57,7 +57,6 @@ new class extends Component {
     {
         return TeamInvitation::query()
             ->where('code', $code)
-            ->whereNull('accepted_at')
             ->firstOrFail();
     }
 }; ?>
