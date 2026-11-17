@@ -29,7 +29,7 @@ trait SavesSunnyRecord
         $this->recordTeamId = $id ?? app(SunnyTeam::class)->current()?->id;
     }
 
-    protected function saveRecord(string $resource, array $payload, ?int $id = null, ?Closure $afterQueue = null): void
+    protected function saveRecord(string $resource, array $payload, ?int $id = null, ?Closure $afterQueue = null, bool $openAfterSaving = false): void
     {
         if ($this->saving || $this->savedId !== null) {
             return;
@@ -49,7 +49,7 @@ trait SavesSunnyRecord
             $this->savedId = app(SunnyOutbox::class)->queue($resource, $this->teamId, $payload, $id, $this->photoPath ?? null);
             $afterQueue?->__invoke($this->savedId, $this->teamId);
             app(SunnySyncCoordinator::class)->dispatch();
-            if ($id !== null) {
+            if ($id !== null && ! $openAfterSaving) {
                 $this->back();
 
                 return;

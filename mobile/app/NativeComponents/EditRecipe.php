@@ -14,10 +14,13 @@ class EditRecipe extends Component
 
     public bool $justImported = false;
 
+    public bool $justRemixed = false;
+
     public function mount(): void
     {
         if ($this->recipe !== null) {
             $this->fillFromRecipe($this->recipe);
+            $this->justRemixed = (bool) $this->data('remixed', false);
         }
 
         $this->justImported = (bool) $this->data('imported', false);
@@ -48,6 +51,17 @@ class EditRecipe extends Component
         $this->justImported = false;
     }
 
+    /**
+     * @return array{id: int, name: string}|null
+     */
+    #[Computed]
+    public function remixOf(): ?array
+    {
+        $parentId = $this->recipe['parent_id'] ?? null;
+
+        return $this->justRemixed && $parentId !== null ? Recipes::find($parentId) : null;
+    }
+
     public function save(): void
     {
         if ($this->recipe === null) {
@@ -62,7 +76,7 @@ class EditRecipe extends Component
             return;
         }
 
-        $this->saveRecord('recipes', $this->recipePayload(), $this->recipe['id']);
+        $this->saveRecord('recipes', $this->recipePayload(), $this->recipe['id'], openAfterSaving: $this->justRemixed);
     }
 
     public function render(): View

@@ -2,10 +2,12 @@
 
 namespace App\NativeComponents;
 
+use App\Casts\RecipeLines;
 use App\Concerns\ChecksSunnySync;
 use App\Concerns\ShowsQueuedChange;
 use App\Http\Integrations\Sunny\SunnyOutbox;
 use App\Http\Integrations\Sunny\SunnySyncCoordinator;
+use Illuminate\Support\Arr;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
@@ -204,6 +206,34 @@ class RecipeDetail extends Component
 
         app(SunnySyncCoordinator::class)->dispatch();
         $this->back();
+    }
+
+    public function remix(): void
+    {
+        $recipe = $this->recipe;
+
+        if ($recipe === null) {
+            return;
+        }
+
+        try {
+            $id = app(SunnyOutbox::class)->queue('recipes', $recipe['team_id'], [
+                ...Arr::only($recipe, ['source', 'servings', 'prep_time', 'cook_time', 'total_time', 'description', 'notes', 'nutrition']),
+                'parent_id' => $recipe['id'],
+                'name' => $recipe['name'].' (Remix)',
+                'tags' => $recipe['tags'] ?? [],
+                'ingredients' => RecipeLines::toText($recipe['ingredients']) ?: null,
+                'instructions' => RecipeLines::toText($recipe['instructions']) ?: null,
+            ]);
+        } catch (ValidationException $exception) {
+            $this->error = collect($exception->errors())->flatten()->first() ?? 'Unable to save on this phone. Try again.';
+
+            return;
+        }
+
+        app(SunnySyncCoordinator::class)->dispatch();
+        $this->error = '';
+        $this->navigate('/recipes/'.$id.'/edit', ['remixed' => true]);
     }
 
     protected function queuedResource(): string

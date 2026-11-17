@@ -8,12 +8,42 @@
 <native:top-bar :title="$recipe ? '' : 'Recipe'" back />
 
 @if ($recipe)
-    @include('native.action-bottom-bar', ['actions' => array_filter([
-        $this->ingredients || $this->instructions
-            ? ['ref' => 'cook-recipe', 'label' => 'Cook', 'ios' => Ios::Flame, 'android' => Android::LocalFireDepartment, 'url' => '/recipes/'.$recipe['id'].'/cook']
-            : null,
-        ['ref' => 'edit-recipe', 'label' => 'Edit', 'ios' => Ios::Pencil, 'android' => Android::Edit, 'url' => '/recipes/'.$recipe['id'].'/edit'],
-    ])])
+    <native:bottom-bar>
+        <row class="w-full items-center justify-end gap-3 px-4 pb-2">
+            <pressable
+                ref="edit-recipe"
+                a11y-label="Edit"
+                class="h-12 w-12 items-center justify-center rounded-full glass android:bg-theme-surface"
+                @navigate('/recipes/'.$recipe['id'].'/edit')
+            >
+                <native:icon :ios="Ios::Pencil" :android="Android::Edit" :size="22" class="text-theme-on-surface" />
+            </pressable>
+            <pressable
+                ref="remix-recipe"
+                a11y-label="Remix"
+                class="min-h-12 items-center justify-center rounded-full px-4 glass android:bg-theme-surface"
+                @tap="remix"
+            >
+                <row class="items-center gap-2">
+                    <native:icon :ios="Ios::DocOnDoc" :android="Android::ContentCopy" :size="18" class="text-theme-primary" />
+                    <text font="semibold" class="text-lg text-theme-on-surface">Remix</text>
+                </row>
+            </pressable>
+            @if ($this->ingredients || $this->instructions)
+                <pressable
+                    ref="cook-recipe"
+                    a11y-label="Cook"
+                    class="min-h-12 flex-1 items-center justify-center rounded-full bg-theme-primary px-5"
+                    @navigate('/recipes/'.$recipe['id'].'/cook')
+                >
+                    <row class="items-center gap-2">
+                        <native:icon :ios="Ios::Flame" :android="Android::LocalFireDepartment" :size="18" class="text-theme-on-primary" />
+                        <text font="semibold" class="text-lg text-theme-on-primary">Cook</text>
+                    </row>
+                </pressable>
+            @endif
+        </row>
+    </native:bottom-bar>
 
     <scroll-view ref="recipe-detail" fill class="bg-theme-background">
         <column class="w-full gap-6 px-4 pt-2 pb-8">

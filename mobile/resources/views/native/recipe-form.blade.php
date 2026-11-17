@@ -1,14 +1,37 @@
 @use('App\Icons\Android')
 @use('App\Icons\Ios')
+@use('App\Ui\Card')
 @use('Illuminate\Support\Str')
 
 {{-- Shared by the create and edit screens. Expects $formRef, $submitLabel,
-     $tagRows and $importCard; the remaining state comes from the including component's
+     $tagRows and $importCard, plus an optional $remixOf; the remaining state comes from the including component's
      ManagesRecipeForm properties. Computed values have to be passed in
      because an @include is not bound to $this. --}}
 
 <scroll-view ref="{{ $formRef }}-screen" fill class="bg-theme-background ios:bg-theme-grouped-background">
     <column class="w-full gap-6 px-6 py-6">
+        @if ($remixOf ?? null)
+            <pressable
+                ref="recipe-remix-of"
+                @navigate('/recipes/'.$remixOf['id'])
+                :a11y-label="'Remix of '.$remixOf['name'].'. The original stays as it is.'"
+                a11y-hint="Opens the original recipe"
+                class="{{ Card::classes() }} w-full px-3 py-3"
+            >
+                <row class="w-full items-center gap-3">
+                    <column class="h-11 w-11 items-center justify-center rounded-[12] bg-theme-primary/15">
+                        <icon :ios="Ios::DocOnDoc" :android="Android::ContentCopy" :size="20" class="text-theme-primary" />
+                    </column>
+                    <column class="flex-1 gap-0.5">
+                        <text font="medium" class="text-xs text-theme-on-surface-variant">Remix of</text>
+                        <x-ui.heading>{{ $remixOf['name'] }}</x-ui.heading>
+                        <x-ui.text size="sm">The original stays as it is.</x-ui.text>
+                    </column>
+                    <icon :ios="Ios::ChevronRight" :android="Android::ChevronRight" :size="14" class="text-theme-on-surface-variant" />
+                </row>
+            </pressable>
+        @endif
+
         <column class="w-full gap-4">
             <outlined-text-input
                 ref="recipe-name"
