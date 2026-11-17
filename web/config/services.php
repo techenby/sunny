@@ -14,6 +14,10 @@ return [
     |
     */
 
+    'app_review' => [
+        'password' => env('APP_REVIEW_PASSWORD'),
+    ],
+
     'mapbox' => [
         'key' => env('MAPBOX_API_KEY'),
     ],
