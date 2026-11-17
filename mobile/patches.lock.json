@@ -1,5 +1,5 @@
 {
-    "_hash": "48ba72f2fd7b2fbc744d60a9221f78440f277723b2b36231a642f171b76157f3",
+    "_hash": "4eac48c75660365bec90d54e5f882a99096bbf5b062e33cd879f8cffebebf05b",
     "patches": {
         "nativephp/mobile-camera": [
             {
@@ -157,6 +157,16 @@
                 "description": "iOS: give a :menu pressable's Menu its a11y-label and a11y-hint, so icon-only menus aren't read as a bare pop up button (upstream NativePHP/mobile-ui#202)",
                 "url": "patches/nativephp-mobile-ui-menu-accessibility-label.patch",
                 "sha256": "fd08506f375af9982f5bf5240028fb772ecf333e171cf4b7c44f6cef19d496bc",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
+            },
+            {
+                "package": "nativephp/mobile-ui",
+                "description": "Android: center a :menu pressable's content, so items-center and justify-center work like they do without a menu",
+                "url": "patches/nativephp-mobile-ui-android-menu-pressable-alignment.patch",
+                "sha256": "e203a03144cbca6adcf71a496961ec59b796f4383dc7ef198654670a9dbc6ba6",
                 "depth": 1,
                 "extra": {
                     "provenance": "root"

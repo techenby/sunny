@@ -66,7 +66,7 @@
             <x-ui.heading size="lg">Recent recipes</x-ui.heading>
             @if ($this->recentRecipes)
                 {{-- iOS insets the carousel's content by 16pt, so let it bleed to the screen edges to line up with the heading. --}}
-                <carousel ref="recent-recipes" :item-width="180" :item-spacing="12" :class="System::isIos() ? '-mx-4' : null">
+                <carousel ref="recent-recipes" variant="uncontained" :item-width="180" :item-spacing="12" :class="System::isIos() ? '-mx-4' : null">
                     @foreach ($this->recentRecipes as $recipe)
                         <pressable
                             ref="dashboard-recipes-{{ $recipe['id'] }}"

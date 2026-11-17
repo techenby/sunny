@@ -1,0 +1,12 @@
+diff --git a/resources/android/ContainerRenderers.kt b/resources/android/ContainerRenderers.kt
+--- a/resources/android/ContainerRenderers.kt
++++ b/resources/android/ContainerRenderers.kt
+@@ -137,7 +137,7 @@
+             // wins). On platforms with Liquid Glass equivalents, the
+             // theme's surface tokens give the menu its translucent look.
+             var expanded by remember { mutableStateOf(false) }
+-            Box(modifier = modifier.clickable { expanded = true }) {
++            Box(modifier = modifier.clickable { expanded = true }, propagateMinConstraints = true) {
+                 DefaultContainerNode(node, Modifier)
+                 ExpressiveMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                     node.children
