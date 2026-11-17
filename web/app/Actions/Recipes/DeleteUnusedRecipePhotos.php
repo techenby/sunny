@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Recipes;
 
+use Illuminate\Contracts\Database\Query\Builder;
 use App\Models\Recipe;
 use Illuminate\Support\Facades\Storage;
 
@@ -19,7 +20,7 @@ class DeleteUnusedRecipePhotos
         }
 
         $used = Recipe::withTrashed()
-            ->where(fn ($query) => $query->whereIn('photo_path', $paths)->orWhereIn('thumb_path', $paths))
+            ->where(fn (Builder $query) => $query->whereIn('photo_path', $paths)->orWhereIn('thumb_path', $paths))
             ->get(['photo_path', 'thumb_path'])
             ->flatMap(fn (Recipe $recipe) => [$recipe->photo_path, $recipe->thumb_path])
             ->filter()
