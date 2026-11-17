@@ -51,7 +51,7 @@ return [
         'id' => env('SUNNY_APP_ID', 'com.techenby.sunnyhome'),
         'apple_team_id' => env('SUNNY_APP_APPLE_TEAM_ID', '9R65F2QT3W'),
         'android_sha256_cert_fingerprints' => array_values(array_filter(explode(',', (string) env('SUNNY_APP_ANDROID_SHA256_CERT_FINGERPRINTS', '')))),
-        'link_paths' => ['/i/*'],
+        'link_paths' => ['/i/*', '/recipes/shared/*'],
     ],
 
 ];

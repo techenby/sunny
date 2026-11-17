@@ -1,6 +1,6 @@
 <?php
 
-test('serves the apple app site association for item links', function () {
+test('serves the apple app site association for item and shared recipe links', function () {
     $this->get('/.well-known/apple-app-site-association')
         ->assertOk()
         ->assertHeader('Content-Type', 'application/json')
@@ -8,7 +8,7 @@ test('serves the apple app site association for item links', function () {
             'applinks' => [
                 'details' => [[
                     'appIDs' => ['9R65F2QT3W.com.techenby.sunnyhome'],
-                    'components' => [['/' => '/i/*']],
+                    'components' => [['/' => '/i/*'], ['/' => '/recipes/shared/*']],
                 ]],
             ],
         ]);

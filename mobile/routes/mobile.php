@@ -28,6 +28,7 @@ use App\NativeComponents\RoutineDetail;
 use App\NativeComponents\Routines;
 use App\NativeComponents\ScanInventory;
 use App\NativeComponents\SetUpHome;
+use App\NativeComponents\SharedRecipe;
 use App\NativeComponents\Today;
 use Illuminate\Support\Facades\Route;
 
@@ -46,6 +47,7 @@ Route::nativeGroup(TabsLayout::class, function () {
     Route::native('/routines/{id}/edit', EditRoutine::class);
     Route::native('/recipes', Recipes::class);
     Route::native('/recipes/create', CreateRecipe::class);
+    Route::native('/recipes/shared/{token}', SharedRecipe::class);
     Route::native('/recipes/{id}', RecipeDetail::class);
     Route::native('/recipes/{id}/cook', CookRecipe::class);
     Route::native('/recipes/{id}/edit', EditRecipe::class);
