@@ -6,6 +6,7 @@ use App\Actions\DuplicateItem;
 use App\Concerns\ChecksSunnySync;
 use App\Concerns\ChoosesInventoryParent;
 use App\Concerns\MovesItemToTeam;
+use App\Concerns\SelectsInventoryItems;
 use App\Concerns\ShowsQueuedChange;
 use App\Enums\ItemType;
 use App\Http\Integrations\Sunny\SunnyOutbox;
@@ -39,6 +40,7 @@ class InventoryItemDetail extends Component
         selectTopLevel as protected chooseTopLevel;
     }
     use MovesItemToTeam;
+    use SelectsInventoryItems;
     use ShowsQueuedChange;
 
     public string $error = '';
@@ -372,6 +374,8 @@ class InventoryItemDetail extends Component
             return;
         }
 
+        $this->movingSelected = false;
+        unset($this->parentChoices, $this->parentPickerRows, $this->selectedParent, $this->browsedParent, $this->parentTrail);
         $this->parentId = $this->parentChoice($this->item['parent_id']) === null ? null : $this->item['parent_id'];
         $this->openParentPicker();
     }
@@ -379,12 +383,26 @@ class InventoryItemDetail extends Component
     public function selectParent(int $id): void
     {
         $this->chooseParent($id);
+
+        if ($this->movingSelected) {
+            $this->moveSelected();
+
+            return;
+        }
+
         $this->moveItem();
     }
 
     public function selectTopLevel(): void
     {
         $this->chooseTopLevel();
+
+        if ($this->movingSelected) {
+            $this->moveSelected();
+
+            return;
+        }
+
         $this->moveItem();
     }
 
@@ -457,6 +475,8 @@ class InventoryItemDetail extends Component
     {
         if ($id === 'delete-item' && $label === 'Delete') {
             $this->deleteItem();
+        } elseif ($id === 'delete-selected' && $label === 'Delete') {
+            $this->deleteSelected();
         } elseif ($id === 'discard-queued-change' && $label === 'Discard') {
             $this->discardQueuedChange();
         }
@@ -520,7 +540,7 @@ class InventoryItemDetail extends Component
 
     protected function refreshLocalSyncedData(): void
     {
-        unset($this->item, $this->photos, $this->parent, $this->path, $this->children, $this->starterStorage, $this->queuedChange, $this->parentChoices, $this->selectedParent, $this->browsedParent, $this->parentPickerRows, $this->parentTrail);
+        unset($this->item, $this->photos, $this->parent, $this->path, $this->children, $this->starterStorage, $this->queuedChange, $this->parentChoices, $this->selectedParent, $this->browsedParent, $this->parentPickerRows, $this->parentTrail, $this->selectedItems, $this->selectedAll, $this->selectedMoveCopy);
     }
 
     /**
@@ -544,6 +564,10 @@ class InventoryItemDetail extends Component
      */
     protected function unselectableParentIds(): array
     {
+        if ($this->movingSelected) {
+            return $this->selectedWithContentsIds();
+        }
+
         if ($this->item === null) {
             return [];
         }

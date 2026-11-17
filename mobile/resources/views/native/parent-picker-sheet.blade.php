@@ -6,7 +6,8 @@
 
 {{-- The destination picker sheet. Expects $refPrefix, $selectedParent,
      $browsedParent, $parentPickerRows and $parentTrail, and optionally
-     $topLevelLabel for the button at Home; the remaining state
+     $topLevelLabel for the button at Home, $title, $subtitle,
+     $choosePrefix, and $hereId with $hereLabel; the remaining state
      and actions come from the including component's ChoosesInventoryParent
      trait. Computed values have to be passed in because an @include is not
      bound to $this. Tapping a row only ever looks inside it; the button at
@@ -28,9 +29,12 @@
                     <pressable ref="{{ $refPrefix }}-parent-cancel" class="min-h-12 w-20 justify-center" @tap="closeParentPicker">
                         <text class="text-lg text-theme-primary-text">Cancel</text>
                     </pressable>
-                    <text font="semibold" class="flex-1 text-center text-lg text-theme-on-surface">Where does it go?</text>
+                    <text font="semibold" class="flex-1 text-center text-lg text-theme-on-surface">{{ $title ?? 'Where does it go?' }}</text>
                     <column class="w-20" />
                 </row>
+                @isset($subtitle)
+                    <text ref="{{ $refPrefix }}-parent-subtitle" class="w-full text-center text-sm text-theme-on-surface-variant">{{ $subtitle }}</text>
+                @endisset
                 <outlined-text-input
                     ref="{{ $refPrefix }}-parent-search"
                     placeholder="Find a place, shelf or box"
@@ -118,7 +122,11 @@
                                                 <x-ui.avatar :color="$choice['type']->color()" :ios="$choice['type']->iosIcon()" :android="$choice['type']->androidIcon()" />
                                                 <column class="flex-1 gap-0.5">
                                                     <x-ui.heading size="lg">{{ $choice['name'] }}</x-ui.heading>
-                                                    <x-ui.text>{{ Inventory::summary($choice) }}</x-ui.text>
+                                                    @if ($choice['id'] === ($hereId ?? null))
+                                                        <text font="semibold" class="text-base text-theme-primary-text">{{ $hereLabel }}</text>
+                                                    @else
+                                                        <x-ui.text>{{ Inventory::summary($choice) }}</x-ui.text>
+                                                    @endif
                                                 </column>
                                                 <icon :ios="Ios::ChevronRight" :android="Android::ChevronRight" :size="14" class="self-center text-theme-on-surface-variant" />
                                             </row>
@@ -153,7 +161,7 @@
                             class="w-full"
                             @tap="selectParent({{ $browsedParent['id'] }})"
                         >
-                            Put it in {{ $browsedParent['name'] }}
+                            {{ $choosePrefix ?? 'Put it in' }} {{ $browsedParent['name'] }}
                         </button>
                     @else
                         <button
