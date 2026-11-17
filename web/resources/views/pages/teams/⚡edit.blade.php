@@ -1,5 +1,7 @@
 <?php
 
+use App\Actions\Teams\UpdateTeam;
+use App\Actions\Teams\UpdateTeamMemberRole;
 use App\Enums\TeamRole;
 use App\Models\Team;
 use App\Rules\TeamName;
@@ -38,7 +40,7 @@ new class extends Component
         $this->populateTeamData();
     }
 
-    public function updateTeam(): void
+    public function updateTeam(UpdateTeam $updateTeam): void
     {
         Gate::authorize('update', $this->teamModel);
 
@@ -46,15 +48,7 @@ new class extends Component
             'teamName' => ['required', 'string', 'max:255', new TeamName],
         ]);
 
-        $team = DB::transaction(function () use ($validated) {
-            $team = Team::whereKey($this->teamModel->id)->lockForUpdate()->firstOrFail();
-
-            $team->update(['name' => $validated['teamName']]);
-
-            return $team;
-        });
-
-        $this->teamModel = $team;
+        $this->teamModel = $updateTeam->handle($this->teamModel, ['name' => $validated['teamName']]);
 
         $this->populateTeamData();
 
@@ -63,7 +57,7 @@ new class extends Component
         $this->redirectRoute('teams.edit', ['team' => $this->teamModel->fresh()->slug], navigate: true);
     }
 
-    public function updateMember(int $userId, string $role): void
+    public function updateMember(UpdateTeamMemberRole $updateTeamMemberRole, int $userId, string $role): void
     {
         Gate::authorize('updateMember', $this->teamModel);
 
@@ -71,11 +65,7 @@ new class extends Component
             'role' => ['required', 'string', Rule::in(array_column(TeamRole::assignable(), 'value'))],
         ])->validate();
 
-        $this->teamModel->memberships()
-            ->where('user_id', $userId)
-            ->where('role', '!=', TeamRole::Owner)
-            ->firstOrFail()
-            ->update(['role' => TeamRole::from($validated['role'])]);
+        $updateTeamMemberRole->handle($this->teamModel, $userId, TeamRole::from($validated['role']));
 
         $this->populateTeamData();
 

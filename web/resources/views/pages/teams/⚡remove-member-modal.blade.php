@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\Teams\RemoveTeamMember;
 use App\Models\Team;
 use App\Models\User;
 use Flux\Flux;
@@ -27,7 +28,7 @@ new class extends Component {
         $this->modalName = $modalName ?? ($memberId ? "remove-member-{$memberId}" : 'remove-member');
     }
 
-    public function removeMember(): void
+    public function removeMember(RemoveTeamMember $removeTeamMember): void
     {
         Gate::authorize('removeMember', $this->team);
 
@@ -37,13 +38,7 @@ new class extends Component {
             $this->memberName = $user->name;
         }
 
-        $this->team->memberships()
-            ->where('user_id', $user->id)
-            ->delete();
-
-        if ($user->isCurrentTeam($this->team)) {
-            $user->switchTeam($user->personalTeam());
-        }
+        $removeTeamMember->handle($this->team, $user);
 
         $this->dispatch('close-modal', name: $this->modalName);
 

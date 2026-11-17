@@ -374,3 +374,16 @@ test('a member cannot be made an owner by changing their role', function () {
 
     expect($member->fresh()->teamRole($team))->toBe(TeamRole::Member);
 });
+
+test('the owner cannot be removed from their team', function () {
+    $owner = User::factory()->create();
+    $team = Team::factory()->create();
+    $team->members()->attach($owner, ['role' => TeamRole::Owner->value]);
+
+    Livewire::actingAs($owner)
+        ->test('pages::teams.remove-member-modal', ['team' => $team, 'memberId' => $owner->id])
+        ->call('removeMember')
+        ->assertNotFound();
+
+    expect($owner->fresh()->teamRole($team))->toBe(TeamRole::Owner);
+});

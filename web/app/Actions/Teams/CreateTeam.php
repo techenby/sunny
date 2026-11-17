@@ -11,9 +11,9 @@ use Illuminate\Support\Facades\DB;
 
 class CreateTeam
 {
-    public function handle(User $user, string $name, bool $isPersonal = false): Team
+    public function handle(User $user, string $name, bool $isPersonal = false, bool $switchTeam = true): Team
     {
-        return DB::transaction(function () use ($user, $name, $isPersonal) {
+        return DB::transaction(function () use ($user, $name, $isPersonal, $switchTeam) {
             $team = Team::create([
                 'name' => $name,
                 'is_personal' => $isPersonal,
@@ -24,7 +24,9 @@ class CreateTeam
                 'role' => TeamRole::Owner,
             ]);
 
-            $user->switchTeam($team);
+            if ($switchTeam) {
+                $user->switchTeam($team);
+            }
 
             return $team;
         });

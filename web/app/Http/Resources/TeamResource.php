@@ -5,12 +5,18 @@ declare(strict_types=1);
 namespace App\Http\Resources;
 
 use App\Models\Team;
+use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /** @mixin Team */
 class TeamResource extends JsonResource
 {
+    public static function withMembers(Team $team): self
+    {
+        return self::make($team->load(['members' => fn (Builder $query) => $query->orderBy('name')]));
+    }
+
     /** @return array<string, mixed> */
     public function toArray(Request $request): array
     {

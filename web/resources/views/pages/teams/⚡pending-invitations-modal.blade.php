@@ -1,12 +1,11 @@
 <?php
 
+use App\Actions\Teams\AcceptTeamInvitation;
+use App\Actions\Teams\DeclineTeamInvitation;
 use App\Models\TeamInvitation;
 use Flux\Flux;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
-use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
@@ -26,11 +25,7 @@ new class extends Component {
     {
         return TeamInvitation::query()
             ->with(['inviter', 'team'])
-            ->whereRaw('LOWER(email) = ?', [Str::lower(Auth::user()->email)])
-            ->whereNull('accepted_at')
-            ->where(fn (\Illuminate\Contracts\Database\Query\Builder $query) => $query
-                ->whereNull('expires_at')
-                ->orWhere('expires_at', '>=', now()))
+            ->pendingFor(Auth::user())
             ->latest()
             ->get()
             ->map(fn (TeamInvitation $invitation) => [
@@ -40,56 +35,30 @@ new class extends Component {
             ]);
     }
 
-    public function acceptInvitation(string $code): void
+    public function acceptInvitation(AcceptTeamInvitation $acceptInvitation, string $code): void
     {
-        $invitation = $this->findPendingInvitation($code);
         $user = Auth::user();
 
-        DB::transaction(function () use ($user, $invitation) {
-            $team = $invitation->team;
-
-            $team->memberships()->firstOrCreate(
-                ['user_id' => $user->id],
-                ['role' => $invitation->role]
-            );
-
-            $invitation->update(['accepted_at' => now()]);
-
-            $user->switchTeam($team);
-        });
+        $user->switchTeam($acceptInvitation->handle($user, $this->findPendingInvitation($code)));
 
         session()->flash('team-invitation-accepted', true);
 
         $this->redirectRoute('dashboard', navigate: true);
     }
 
-    public function declineInvitation(string $code): void
+    public function declineInvitation(DeclineTeamInvitation $declineInvitation, string $code): void
     {
-        $this->findPendingInvitation($code)->delete();
+        $declineInvitation->handle(Auth::user(), $this->findPendingInvitation($code));
 
         Flux::toast(variant: 'success', text: __('Invitation declined.'));
     }
 
     private function findPendingInvitation(string $code): TeamInvitation
     {
-        $invitation = TeamInvitation::query()
+        return TeamInvitation::query()
             ->where('code', $code)
             ->whereNull('accepted_at')
             ->firstOrFail();
-
-        if ($invitation->isExpired()) {
-            throw ValidationException::withMessages([
-                'invitation' => [__('This invitation has expired.')],
-            ]);
-        }
-
-        if (Str::lower($invitation->email) !== Str::lower(Auth::user()->email)) {
-            throw ValidationException::withMessages([
-                'invitation' => [__('This invitation was sent to a different email address.')],
-            ]);
-        }
-
-        return $invitation;
     }
 }; ?>
 
