@@ -123,3 +123,9 @@ it('navigates to the native authentication screens', function (string $button, s
     'log in' => ['login-button', '/login', Login::class],
     'register' => ['register-button', '/register', Register::class],
 ]);
+
+it('paints a placeholder before checking the saved session', function () {
+    Native::visit('/');
+
+    expect(json_encode(Native::fakeBridge()->publishes[0]))->toContain('activity_indicator');
+});
