@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Actions\Recipes;
 
-use Illuminate\Contracts\Database\Query\Builder;
 use App\Models\Recipe;
+use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Support\Facades\Storage;
 
 class DeleteUnusedRecipePhotos
