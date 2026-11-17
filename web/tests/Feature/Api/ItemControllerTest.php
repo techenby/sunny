@@ -459,6 +459,66 @@ test('force destroy returns 403 for a team the user does not belong to item', fu
     expect(Item::withTrashed()->find($item->id))->not->toBeNull();
 });
 
+test('a retried force destroy succeeds once the item is gone', function () {
+    $user = User::factory()->create();
+    $item = Item::factory()->for($user->currentTeam)->create();
+    $item->delete();
+
+    $this->actingAs($user)
+        ->deleteJson(route('api.items.force-destroy', [$user->currentTeam, $item]))
+        ->assertNoContent();
+
+    $this->actingAs($user)
+        ->deleteJson(route('api.items.force-destroy', [$user->currentTeam, $item]))
+        ->assertNoContent();
+});
+
+test('force destroy succeeds for an item that never existed', function () {
+    $user = User::factory()->create();
+    $kept = Item::factory()->for($user->currentTeam)->create();
+    $kept->delete();
+
+    $this->actingAs($user)
+        ->deleteJson(route('api.items.force-destroy', [$user->currentTeam, 999999]))
+        ->assertNoContent();
+
+    expect(Item::withTrashed()->count())->toBe(1);
+});
+
+test('force destroy returns 404 for a deleted item that belongs to a different team than the url', function () {
+    $user = User::factory()->create();
+    $team = Team::factory()->create();
+    $team->members()->attach($user, ['role' => TeamRole::Member->value]);
+    $item = Item::factory()->for($team)->create();
+    $item->delete();
+    $stranger = Item::factory()->create();
+    $stranger->delete();
+
+    $this->actingAs($user)
+        ->deleteJson(route('api.items.force-destroy', [$user->currentTeam, $item]))
+        ->assertNotFound();
+
+    $this->actingAs($user)
+        ->deleteJson(route('api.items.force-destroy', [$user->currentTeam, $stranger]))
+        ->assertNotFound();
+
+    expect(Item::withTrashed()->find($item->id))->not->toBeNull()
+        ->and(Item::withTrashed()->find($stranger->id))->not->toBeNull();
+});
+
+test('force destroy does not answer for a missing item on a team the user does not belong to', function () {
+    $user = User::factory()->create();
+    $team = Team::factory()->create();
+
+    $this->actingAs($user)
+        ->deleteJson(route('api.items.force-destroy', [$team, 999999]))
+        ->assertNotFound();
+
+    $this->actingAs($user)
+        ->deleteJson(route('api.items.force-destroy', ['no-such-team', 999999]))
+        ->assertNotFound();
+});
+
 test('index returns items for another team the user belongs to without switching teams', function () {
     $user = User::factory()->create();
     $team = Team::factory()->create();
