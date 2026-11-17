@@ -321,12 +321,52 @@ test('restoring a container leaves what was inside it at the top level', functio
     expect($child->fresh()->parent_id)->toBeNull();
 });
 
-test('restore returns 404 for an item that is not deleted', function () {
+test('restore leaves an item that is not deleted as it is', function () {
     $user = User::factory()->create();
-    $item = Item::factory()->for($user->currentTeam)->create();
+    $place = Item::factory()->location()->for($user->currentTeam)->create();
+    $item = Item::factory()->childOf($place)->create(['updated_at' => now()->subDay()]);
+    $before = $this->actingAs($user)->getJson(route('api.items.show', [$user->currentTeam, $item]))->json('data');
 
     $this->actingAs($user)
         ->postJson(route('api.items.restore', [$user->currentTeam, $item]))
+        ->assertOk()
+        ->assertJsonPath('data', $before)
+        ->assertJsonPath('data.parent_id', $place->id);
+
+    expect($item->fresh()->updated_at->toIso8601String())->toBe($item->updated_at->toIso8601String());
+});
+
+test('a retried restore returns the item again without changing it', function () {
+    $user = User::factory()->create();
+    $place = Item::factory()->location()->for($user->currentTeam)->create();
+    $item = Item::factory()->childOf($place)->create();
+    $item->delete();
+    $place->purge();
+
+    $first = $this->actingAs($user)
+        ->postJson(route('api.items.restore', [$user->currentTeam, $item]))
+        ->assertOk()
+        ->json('data');
+    $place->restore();
+
+    $this->travel(1)->minute();
+
+    $retry = $this->actingAs($user)
+        ->postJson(route('api.items.restore', [$user->currentTeam, $item]))
+        ->assertOk()
+        ->json('data');
+
+    expect($retry)->toEqual($first)
+        ->and($item->fresh()->parent_id)->toBeNull();
+});
+
+test('restore returns 404 for an item that was permanently deleted', function () {
+    $user = User::factory()->create();
+    $item = Item::factory()->for($user->currentTeam)->create();
+    $item->forceDelete();
+
+    $this->actingAs($user)
+        ->postJson(route('api.items.restore', [$user->currentTeam, $item->id]))
         ->assertNotFound();
 });
 

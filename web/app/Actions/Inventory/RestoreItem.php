@@ -10,6 +10,10 @@ class RestoreItem
 {
     public function handle(Item $item): Item
     {
+        if (! $item->trashed()) {
+            return $item;
+        }
+
         if ($item->parent_id !== null && $item->parent()->doesntExist()) {
             $item->parent_id = null;
         }

@@ -79,8 +79,6 @@ class ItemController extends Controller
     {
         Gate::authorize('restore', $item);
 
-        abort_unless($item->trashed(), 404);
-
         return ItemResource::make($action->handle($item));
     }
 
