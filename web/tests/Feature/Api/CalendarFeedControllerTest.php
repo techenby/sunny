@@ -5,6 +5,8 @@ use App\Enums\TeamRole;
 use App\Models\CalendarFeed;
 use App\Models\Team;
 use App\Models\User;
+use Illuminate\Database\Events\QueryExecuted;
+use Illuminate\Support\Facades\DB;
 
 test('guests cannot access calendar feeds', function () {
     $this->getJson(route('api.calendar-feeds.index', 'household'))->assertUnauthorized();
@@ -77,6 +79,41 @@ test('store returns the existing calendar feed when a client uuid is retried', f
         ->postJson(route('api.calendar-feeds.store', $user->currentTeam), $payload)
         ->assertOk()
         ->assertJsonPath('data.id', $first->json('data.id'));
+
+    expect(CalendarFeed::where('client_uuid', $uuid)->count())->toBe(1);
+});
+
+test('store returns the existing calendar feed when a retry wins the race to insert it', function () {
+    $user = User::factory()->create();
+    $uuid = '9b2f6c1e-3d4a-4f5b-8c7d-1e2f3a4b5c6d';
+    $racedId = null;
+
+    DB::listen(function (QueryExecuted $query) use ($user, $uuid, &$racedId) {
+        if ($racedId !== null || ! str_starts_with($query->sql, 'select') || ! str_contains($query->sql, 'calendar_feeds')) {
+            return;
+        }
+
+        $racedId = 0;
+        $racedId = DB::table('calendar_feeds')->insertGetId([
+            'team_id' => $user->current_team_id,
+            'name' => 'Family',
+            'url' => 'https://example.com/family.ics',
+            'color' => CalendarColor::Blue->value,
+            'client_uuid' => $uuid,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    });
+
+    $this->actingAs($user)
+        ->postJson(route('api.calendar-feeds.store', $user->currentTeam), [
+            'name' => 'Family',
+            'url' => 'https://example.com/family.ics',
+            'color' => CalendarColor::Blue->value,
+            'client_uuid' => $uuid,
+        ])
+        ->assertOk()
+        ->assertJsonPath('data.id', $racedId);
 
     expect(CalendarFeed::where('client_uuid', $uuid)->count())->toBe(1);
 });

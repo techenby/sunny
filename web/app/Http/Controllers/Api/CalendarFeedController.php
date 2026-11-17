@@ -28,13 +28,11 @@ class CalendarFeedController extends Controller
 
     public function store(StoreCalendarFeedRequest $request, Team $team, CreateFeed $createFeed): JsonResponse
     {
-        $existing = $request->filled('client_uuid')
-            ? $team->calendarFeeds()->firstWhere('client_uuid', $request->validated('client_uuid'))
-            : null;
+        $feed = $createFeed->handle($team, $request->validated());
 
-        return CalendarFeedResource::make($existing ?? $createFeed->handle($team, $request->validated()))
+        return CalendarFeedResource::make($feed)
             ->response()
-            ->setStatusCode($existing ? 200 : 201);
+            ->setStatusCode($feed->wasRecentlyCreated ? 201 : 200);
     }
 
     public function show(Team $team, CalendarFeed $calendarFeed): CalendarFeedResource
