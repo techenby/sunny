@@ -4,6 +4,7 @@ use App\Enums\TeamRole;
 use App\Models\Recipe;
 use App\Models\Team;
 use App\Models\User;
+use Illuminate\Support\Facades\Storage;
 
 test('purge deletes team and clears current team references', function () {
     $user = User::factory()->create();
@@ -28,6 +29,22 @@ test('purge deletes recipes from team', function () {
     $user->currentTeam->purge();
 
     expect(Recipe::where('team_id', $teamId)->count())->toBe(0);
+});
+
+test('purge keeps recipe photos another team still uses', function () {
+    Storage::fake();
+    $team = Team::factory()->create();
+    $shared = "teams/{$team->id}/recipes/stew.jpg";
+    Storage::put($shared, 'stew photo');
+    Storage::put("teams/{$team->id}/recipes/pie.jpg", 'pie photo');
+    Recipe::factory()->for($team)->create(['photo_path' => $shared]);
+    Recipe::factory()->for($team)->create(['photo_path' => "teams/{$team->id}/recipes/pie.jpg"]);
+    Recipe::factory()->create(['photo_path' => $shared]);
+
+    $team->purge();
+
+    Storage::assertExists($shared);
+    Storage::assertMissing("teams/{$team->id}/recipes/pie.jpg");
 });
 
 test('owner returns user with owner role', function () {

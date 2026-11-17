@@ -267,6 +267,21 @@ test('includes todays routines even when syncing incrementally', function () {
         ->assertJsonCount(2, 'routine_occurrences');
 });
 
+test('leaves out today\'s routine after its start moves later', function () {
+    Date::setTestNow('2026-09-30 12:00:00');
+    $user = User::factory()->create();
+    $routine = Routine::factory()->for($user->currentTeam)->daily()->create();
+
+    $this->actingAs($user)->getJson(route('api.sync'))->assertJsonCount(2, 'routine_occurrences');
+
+    $this->patchJson(route('api.routines.update', [$user->currentTeam, $routine]), ['starts_on' => '2026-10-01'])->assertOk();
+
+    $this->getJson(route('api.sync'))
+        ->assertOk()
+        ->assertJsonCount(1, 'routine_occurrences')
+        ->assertJsonPath('routine_occurrences.0.due_on', '2026-10-01');
+});
+
 test('guests get a JSON 401 from the API even without a JSON accept header', function () {
     $this->get(route('api.sync'))
         ->assertUnauthorized()

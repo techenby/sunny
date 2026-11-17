@@ -14,7 +14,7 @@ use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Tool;
 
-#[Description('Move an inventory item from the current team to another team the user belongs to. The item becomes a top-level item in the target team; its children stay in the current team. After the move the item is no longer visible through this server until the user switches teams.')]
+#[Description('Move an inventory item from the current team to another team the user belongs to. The item becomes a top-level item in the target team, and everything inside it (including trashed contents) moves along with it, keeping its nesting. After the move the item and its contents are no longer visible through this server until the user switches teams.')]
 class MoveItemToTeam extends Tool
 {
     public function handle(Request $request, MoveItemToTeamAction $action): Response|ResponseFactory

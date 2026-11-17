@@ -2,6 +2,7 @@
 
 use App\Actions\Routines\GenerateRoutineOccurrences;
 use App\Models\Routine;
+use App\Models\RoutineOccurrence;
 use App\Models\RoutineOccurrenceStep;
 use App\Models\RoutineStep;
 use App\Models\User;
@@ -95,4 +96,25 @@ test('it caps the routines shown and says how many more there are', function () 
     $component
         ->assertSee('2 more routines')
         ->assertSee('Showing 3 of 5 routines');
+});
+
+test('it drops today\'s routine once its start moves later, unless a step is done', function () {
+    $user = User::factory()->create();
+    $started = Routine::factory()->for($user->currentTeam)->daily()->household()->create(['name' => 'Water plants']);
+    RoutineStep::factory()->for($started)->create();
+    $done = Routine::factory()->for($user->currentTeam)->daily()->household()->create(['name' => 'Feed the cat']);
+    RoutineStep::factory()->for($done)->create();
+
+    $component = Livewire::actingAs($user)->test('dashboard.routines')->assertSee('Water plants');
+    $component->call('toggle', RoutineOccurrenceStep::whereRelation('occurrence', 'routine_id', $done->id)->sole()->id);
+
+    $started->update(['starts_on' => $user->currentTeam->today()->addDay()]);
+    $done->update(['starts_on' => $user->currentTeam->today()->addDay()]);
+
+    Livewire::actingAs($user)
+        ->test('dashboard.routines')
+        ->assertDontSee('Water plants')
+        ->assertSee('Feed the cat');
+
+    expect(RoutineOccurrence::where('routine_id', $done->id)->exists())->toBeTrue();
 });

@@ -699,4 +699,18 @@ describe('move to team feature', function () {
             ->call('moveToTeam')
             ->assertHasErrors('moveToTeamId');
     });
+
+    test('cannot move item to the team it is already in', function () {
+        $user = User::factory()->create();
+        $item = Item::factory()->for($user->currentTeam)->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.show', ['item' => $item])
+            ->set('moveToTeamId', $item->team_id)
+            ->call('moveToTeam')
+            ->assertHasErrors(['moveToTeamId' => 'not_in'])
+            ->assertSee('The selected team is invalid.');
+
+        expect($item->fresh()->team_id)->toBe($user->current_team_id);
+    });
 });
