@@ -141,6 +141,12 @@ class Inventory extends Component
         return array_values(array_filter($this->items, fn (array $item): bool => $item['type'] !== ItemType::Location));
     }
 
+    #[Computed]
+    public function deletedCount(): int
+    {
+        return Item::onlyTrashed()->forActiveTeam()->count();
+    }
+
     /**
      * @return list<array{id: int, parent_id: int|null, type: ItemType, name: string, metadata: array<string, string>|null, photo_url: string|null, thumb_path: string|null, created_at: string, updated_at: string, where: string}>
      */
@@ -239,7 +245,7 @@ class Inventory extends Component
 
     protected function refreshLocalSyncedData(): void
     {
-        unset($this->items, $this->places, $this->unplaced, $this->searchResults);
+        unset($this->items, $this->places, $this->unplaced, $this->deletedCount, $this->searchResults);
     }
 
     /**

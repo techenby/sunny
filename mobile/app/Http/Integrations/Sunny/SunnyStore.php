@@ -16,6 +16,7 @@ use App\Models\ScanDraft;
 use App\Models\Team;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -59,8 +60,8 @@ class SunnyStore
                 $pendingUuids = $pending->where('resource', $type)->pluck('client_uuid')->filter();
                 $owner = self::owner($type);
                 [$ownerKey, $ownerIds] = $owner !== null ? [$owner[1], self::model($owner[0])::query()->pluck('id')] : ['team_id', $teamIds];
-                $records = collect($snapshot[$type])->filter(fn (array $record): bool => empty($record['deleted_at']) && $ownerIds->contains($record[$ownerKey]));
-                $model::query()->whereNotIn('id', $records->pluck('id')->merge($pendingIds))->delete();
+                $records = collect($snapshot[$type])->filter(fn (array $record): bool => ($type === 'items' || empty($record['deleted_at'])) && $ownerIds->contains($record[$ownerKey]));
+                self::stored($type)->whereNotIn('id', $records->pluck('id')->merge($pendingIds))->forceDelete();
                 $records = $records->reject(fn (array $record): bool => $pendingIds->contains($record['id']) || $pendingUuids->contains($record['client_uuid'] ?? null));
                 foreach ($records as $record) {
                     $this->saveRecord($type, $record);
@@ -69,7 +70,7 @@ class SunnyStore
 
             foreach (['item_photos', 'checklist_items', 'routine_steps'] as $type) {
                 [$ownerType, $ownerKey] = self::owner($type);
-                $orphans = self::model($type)::query()->whereNotIn($ownerKey, self::model($ownerType)::query()->select('id'))->pluck('id');
+                $orphans = self::model($type)::query()->whereNotIn($ownerKey, self::stored($ownerType)->select('id'))->pluck('id');
                 PendingWrite::query()->where('resource', $type)->whereIn('record_id', $orphans)->delete();
                 self::model($type)::query()->whereKey($orphans)->delete();
             }
@@ -89,7 +90,7 @@ class SunnyStore
     public function saveRecord(string $type, array $record): void
     {
         $fields = self::storedFields($type);
-        self::model($type)::query()->updateOrCreate(['id' => $record['id']], ['server' => self::server(), ...array_fill_keys($fields, null), ...Arr::only($record, $fields)]);
+        self::stored($type)->updateOrCreate(['id' => $record['id']], ['server' => self::server(), ...array_fill_keys($fields, null), ...Arr::only($record, $fields)]);
 
         if ($type === 'items' && is_array($record['photos'] ?? null)) {
             $this->savePhotos($record['id'], $record['photos']);
@@ -142,8 +143,8 @@ class SunnyStore
             $pending = PendingWrite::query()->get();
             RoutineOccurrenceStep::query()->delete();
             RoutineOccurrence::query()->delete();
-            Item::query()->whereNotIn('id', $pending->where('resource', 'items')->pluck('record_id')
-                ->merge($pending->where('resource', 'item_photos')->pluck('payload.item_id')))->delete();
+            Item::withTrashed()->whereNotIn('id', $pending->where('resource', 'items')->pluck('record_id')
+                ->merge($pending->where('resource', 'item_photos')->pluck('payload.item_id')))->forceDelete();
             ItemPhoto::query()->whereNotIn('id', $pending->where('resource', 'item_photos')->pluck('record_id'))->delete();
             Recipe::query()->whereNotIn('id', $pending->where('resource', 'recipes')->pluck('record_id'))->delete();
             ChecklistItem::query()->whereNotIn('id', $pending->where('resource', 'checklist_items')->pluck('record_id'))->delete();
@@ -182,7 +183,7 @@ class SunnyStore
     {
         return match ($type) {
             'recipes' => ['team_id', ...self::editableFields($type), 'photo_url', 'thumb_url', 'share_url', 'created_at', 'updated_at'],
-            'items' => ['team_id', ...self::editableFields($type), 'photo_url', 'thumb_url', 'created_at', 'updated_at'],
+            'items' => ['team_id', ...self::editableFields($type), 'photo_url', 'thumb_url', 'created_at', 'updated_at', 'deleted_at'],
             'item_photos' => [...self::editableFields($type), 'url', 'thumb_url', 'position', 'created_at', 'updated_at'],
             'checklists' => ['team_id', 'user_id', ...self::editableFields($type), 'created_at', 'updated_at'],
             'checklist_items' => [...self::editableFields($type), 'url', 'position', 'completed_at', 'completed_by', 'created_at', 'updated_at'],
@@ -225,6 +226,11 @@ class SunnyStore
             'routines' => ['routine_steps', 'routine_id'],
             default => null,
         };
+    }
+
+    public static function stored(string $type): Builder
+    {
+        return self::model($type)::query()->withoutGlobalScope(SoftDeletingScope::class);
     }
 
     public static function inTeam(string $type, int $teamId): Builder

@@ -110,6 +110,22 @@
                     <x-ui.text>Tap Add to start with a room, like Garage. If you've added things on the website, pull down on the Summary tab to bring them in.</x-ui.text>
                 </column>
             @endif
+
+            @if ($this->deletedCount > 0)
+                <pressable
+                    ref="inventory-recently-deleted"
+                    a11y-label="Recently deleted, {{ $this->deletedCount }}"
+                    class="{{ Card::classes() }} min-h-12 w-full justify-center px-4 py-2"
+                    @navigate('/inventory/deleted')
+                >
+                    <row class="w-full items-center gap-3">
+                        <icon :ios="Ios::Trash" :android="Android::DeleteOutline" :size="20" class="text-theme-on-surface-variant" />
+                        <text class="flex-1 text-base text-theme-on-surface">Recently deleted</text>
+                        <text class="text-base text-theme-on-surface-variant">{{ $this->deletedCount }}</text>
+                        <icon :ios="Ios::ChevronRight" :android="Android::ChevronRight" :size="14" class="text-theme-on-surface-variant" />
+                    </row>
+                </pressable>
+            @endif
         @endif
     </column>
 </scroll-view>

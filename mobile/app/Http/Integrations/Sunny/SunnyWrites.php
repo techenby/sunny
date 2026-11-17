@@ -3,6 +3,8 @@
 namespace App\Http\Integrations\Sunny;
 
 use App\Http\Integrations\Sunny\Requests\DeleteRecordRequest;
+use App\Http\Integrations\Sunny\Requests\ForceDeleteItemRequest;
+use App\Http\Integrations\Sunny\Requests\RestoreItemRequest;
 use App\Http\Integrations\Sunny\Requests\SaveRecordRequest;
 use App\Http\Integrations\Sunny\Requests\UpdateRoutineStepRequest;
 use App\Models\PendingWrite;
@@ -11,6 +13,7 @@ use App\Models\Team;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Saloon\Exceptions\Request\RequestException;
+use Saloon\Http\Request;
 use UnexpectedValueException;
 
 class SunnyWrites
@@ -94,8 +97,18 @@ class SunnyWrites
         $owner = SunnyStore::owner($write->resource);
         $collection = $owner !== null ? $owner[0].'/'.$write->payload[$owner[1]].'/'.$owner[2] : $write->resource;
 
+        if ($write->resource === 'items' && ($write->payload['restore'] ?? false)) {
+            $this->sendRestore($write, $connector, new RestoreItemRequest($team->slug, $write->record_id));
+
+            return;
+        }
+
         if ($write->deletes) {
-            $this->sendDelete($write, $connector, new DeleteRecordRequest($team->slug, $collection, $write->record_id));
+            $this->sendDelete($write, $connector, ...match (true) {
+                ! ($write->payload['forever'] ?? false) => [new DeleteRecordRequest($team->slug, $collection, $write->record_id)],
+                $write->payload['delete_first'] ?? false => [new DeleteRecordRequest($team->slug, $collection, $write->record_id), new ForceDeleteItemRequest($team->slug, $write->record_id)],
+                default => [new ForceDeleteItemRequest($team->slug, $write->record_id)],
+            });
 
             return;
         }
@@ -144,15 +157,49 @@ class SunnyWrites
         });
     }
 
-    private function sendDelete(PendingWrite $write, SunnyConnector $connector, DeleteRecordRequest $request): void
+    private function sendDelete(PendingWrite $write, SunnyConnector $connector, Request ...$requests): void
     {
-        try {
-            $connector->send($request);
-        } catch (RequestException $exception) {
-            throw_if($this->rejectionMessage($exception) === null, $exception);
+        foreach ($requests as $request) {
+            try {
+                $connector->send($request);
+            } catch (RequestException $exception) {
+                throw_if($this->rejectionMessage($exception) === null, $exception);
+            }
         }
 
-        $write->delete();
+        PendingWrite::query()->whereKey($write->id)->where('version', $write->version)->delete();
+    }
+
+    private function sendRestore(PendingWrite $write, SunnyConnector $connector, RestoreItemRequest $request): void
+    {
+        try {
+            $record = $connector->send($request)->json('data');
+        } catch (RequestException $exception) {
+            throw_if($this->rejectionMessage($exception) === null, $exception);
+            $record = null;
+        }
+
+        DB::transaction(function () use ($write, $record): void {
+            $current = PendingWrite::query()->whereKey($write->id)->where('version', $write->version)->first();
+
+            if ($current === null) {
+                return;
+            }
+
+            $edits = Arr::except($current->payload, 'restore');
+
+            if ($edits !== []) {
+                $current->update(['payload' => $edits]);
+
+                return;
+            }
+
+            $current->delete();
+
+            if (is_array($record) && ($record['id'] ?? null) === $write->record_id && ($record['team_id'] ?? null) === $write->team_id) {
+                $this->store->saveRecord('items', $record);
+            }
+        });
     }
 
     private function sendRoutineStep(PendingWrite $write, Team $team, SunnyConnector $connector): void

@@ -9,9 +9,12 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Item extends Model
 {
+    use SoftDeletes;
+
     public $incrementing = false;
 
     public $timestamps = false;
@@ -21,7 +24,7 @@ class Item extends Model
     /** @return array<string, string> */
     protected function casts(): array
     {
-        return ['metadata' => 'array', 'type' => ItemType::class, 'created_at' => 'immutable_datetime', 'updated_at' => 'immutable_datetime'];
+        return ['metadata' => 'array', 'type' => ItemType::class, 'created_at' => 'immutable_datetime', 'updated_at' => 'immutable_datetime', 'deleted_at' => 'immutable_datetime'];
     }
 
     public function scopeForCurrentServer(Builder $query): void
