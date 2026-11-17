@@ -26,6 +26,7 @@ Route::view('/', 'welcome')->name('home')->withHead(schema: [
 ]);
 Route::view('privacy', 'legal.privacy')->name('privacy')->withHead(title: 'Privacy Policy');
 Route::view('terms', 'legal.terms')->name('terms')->withHead(title: 'Terms of Service');
+Route::view('delete-account', 'legal.delete-account')->name('delete-account')->withHead(title: 'Delete your account');
 Route::get('sitemap.xml', SitemapController::class)->name('sitemap');
 Route::get('costs', CostsController::class)->name('costs')->withHead(title: 'What it costs');
 
