@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\Appearance;
+use App\Enums\TeamRole;
 use App\Models\KioskDevice;
 use App\Models\Team;
 use App\Models\User;
@@ -36,17 +37,20 @@ test('renders successfully', function () {
         ->assertSet('form.rotation', 90);
 })->group('smoke');
 
-test('can change kiosk settings', function () {
+test('owners and admins can change kiosk settings', function (TeamRole $role) {
     $team = Team::factory()->create([
         'name' => 'Straw Hats',
         'timezone' => 'Asia/Tokyo',
         'week_start' => Carbon::MONDAY,
     ]);
 
-    $user = User::factory()->memberOf($team)->create();
+    $user = User::factory()->create();
+    $team->members()->attach($user, ['role' => $role->value]);
+    $user->switchTeam($team);
 
     Livewire::actingAs($user)
         ->test('pages::kiosk.configure.settings')
+        ->assertDontSeeHtml('data-test="household-read-only"')
         ->set('form.timezone', 'America/Sao_Paulo')
         ->set('form.week_start', Carbon::SUNDAY)
         ->set('form.appearance', 'light')
@@ -66,7 +70,70 @@ test('can change kiosk settings', function () {
         ->timezone->toBe('America/Sao_Paulo')
         ->week_start->toBe(Carbon::SUNDAY)
         ->appearance->toBe(Appearance::Light)
-        ->rotation->toBe(270);
+        ->rotation->toBe(270)
+        ->address->toMatchArray(['address' => '123 Grand Line', 'city' => 'East Blue']);
+})->with([TeamRole::Owner, TeamRole::Admin]);
+
+test('members see the household settings as read-only', function () {
+    $team = Team::factory()->create();
+    $user = User::factory()->memberOf($team)->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::kiosk.configure.settings')
+        ->assertSeeHtml('data-test="household-read-only"')
+        ->assertSee('Only the team owner or an admin can change the timezone, week start, and address.');
+});
+
+test('members cannot change household settings', function (array $changes) {
+    $team = Team::factory()->create([
+        'timezone' => 'Asia/Tokyo',
+        'week_start' => Carbon::MONDAY,
+        'address' => [
+            'address' => '123 Grand Line',
+            'city' => 'East Blue',
+            'state' => 'GL',
+            'zip' => '00001',
+            'lat' => '0.0',
+            'long' => '0.0',
+        ],
+    ]);
+    $user = User::factory()->memberOf($team)->create();
+
+    $component = Livewire::actingAs($user)->test('pages::kiosk.configure.settings');
+
+    foreach ($changes as $property => $value) {
+        $component->set("form.{$property}", $value);
+    }
+
+    $component->call('save')->assertForbidden();
+
+    expect($team->fresh())
+        ->timezone->toBe('Asia/Tokyo')
+        ->week_start->toBe(Carbon::MONDAY)
+        ->address->city->toBe('East Blue');
+})->with([
+    'timezone' => [['timezone' => 'America/Sao_Paulo']],
+    'week start' => [['week_start' => Carbon::SUNDAY]],
+    'address' => [['address.city' => 'Water 7']],
+]);
+
+test('members can change display settings without an address', function () {
+    $team = Team::factory()->create(['address' => null]);
+    $user = User::factory()->memberOf($team)->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::kiosk.configure.settings')
+        ->set('form.appearance', 'light')
+        ->set('form.rotation', 90)
+        ->set('form.screensaver_after', 2)
+        ->call('save')
+        ->assertHasNoErrors();
+
+    expect($team->fresh())
+        ->appearance->toBe(Appearance::Light)
+        ->rotation->toBe(90)
+        ->screensaver_after->toBe(2)
+        ->address->toBeNull();
 });
 
 test('options must be valid', function () {

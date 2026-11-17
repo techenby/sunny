@@ -1,12 +1,18 @@
 <div>
     <form wire:submit="save" class="space-y-6 p-6 lg:p-8">
-        <flux:select wire:model="form.timezone" :label="__('Timezone')" variant="listbox">
+        @unless ($this->canUpdateHousehold)
+            <flux:callout variant="secondary" icon="lock-closed" data-test="household-read-only">
+                <flux:callout.text>{{ __('Only the team owner or an admin can change the timezone, week start, and address.') }}</flux:callout.text>
+            </flux:callout>
+        @endunless
+
+        <flux:select wire:model="form.timezone" :label="__('Timezone')" variant="listbox" :disabled="! $this->canUpdateHousehold">
             @foreach (DateTimeZone::listIdentifiers() as $timezoneOption)
                 <flux:select.option value="{{ $timezoneOption }}">{{ str_replace('_', ' ', $timezoneOption) }}</flux:select.option>
             @endforeach
         </flux:select>
 
-        <flux:select wire:model="form.week_start" :label="__('Week starts on')" variant="listbox">
+        <flux:select wire:model="form.week_start" :label="__('Week starts on')" variant="listbox" :disabled="! $this->canUpdateHousehold">
             <flux:select.option value="0">{{ __('Sunday') }}</flux:select.option>
             <flux:select.option value="1">{{ __('Monday') }}</flux:select.option>
             <flux:select.option value="2">{{ __('Tuesday') }}</flux:select.option>
@@ -63,16 +69,16 @@
                 <flux:label>{{ __('Address for weather') }}</flux:label>
 
                 <mapbox-address-autofill access-token="{{ config('services.mapbox.key') }}">
-                    <flux:input wire:model="form.address.address" name="address" autocomplete="address-line1" />
+                    <flux:input wire:model="form.address.address" name="address" autocomplete="address-line1" :disabled="! $this->canUpdateHousehold" />
                 </mapbox-address-autofill>
 
                 <flux:error name="form.address.address" />
             </flux:field>
 
             <div class="grid gap-4 sm:grid-cols-3">
-                <flux:input wire:model="form.address.city" :label="__('City')" name="city" autocomplete="address-level2" />
-                <flux:input wire:model="form.address.state" :label="__('State')" name="state" autocomplete="address-level1" />
-                <flux:input wire:model="form.address.zip" :label="__('ZIP')" name="postcode" autocomplete="postal-code" />
+                <flux:input wire:model="form.address.city" :label="__('City')" name="city" autocomplete="address-level2" :disabled="! $this->canUpdateHousehold" />
+                <flux:input wire:model="form.address.state" :label="__('State')" name="state" autocomplete="address-level1" :disabled="! $this->canUpdateHousehold" />
+                <flux:input wire:model="form.address.zip" :label="__('ZIP')" name="postcode" autocomplete="postal-code" :disabled="! $this->canUpdateHousehold" />
             </div>
         </div>
 

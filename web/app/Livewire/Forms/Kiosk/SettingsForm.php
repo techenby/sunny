@@ -6,7 +6,9 @@ namespace App\Livewire\Forms\Kiosk;
 
 use App\Enums\Appearance;
 use App\Models\Team;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rules\Enum;
 use Livewire\Attributes\Validate;
 use Livewire\Form;
@@ -71,12 +73,27 @@ class SettingsForm extends Form
 
     public function save()
     {
-        $data = $this->validate();
+        if ($this->householdChanged()) {
+            Gate::authorize('update', $this->editingTeam);
+        }
+
+        $rules = Gate::allows('update', $this->editingTeam)
+            ? $this->getRules()
+            : Arr::except($this->getRules(), ['timezone', 'week_start', 'address', 'address.*']);
+
+        $data = $this->validate($rules);
 
         $this->editingTeam->update([
             ...$data,
             'night_starts_at' => $this->night_mode ? $data['night_starts_at'] : null,
             'night_ends_at' => $this->night_mode ? $data['night_ends_at'] : null,
         ]);
+    }
+
+    private function householdChanged(): bool
+    {
+        return $this->timezone !== $this->editingTeam->timezone
+            || $this->week_start !== $this->editingTeam->week_start
+            || collect($this->address)->contains(fn (mixed $value, int|string $key): bool => $value != data_get($this->editingTeam->address, $key));
     }
 }

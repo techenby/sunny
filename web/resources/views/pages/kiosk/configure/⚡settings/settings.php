@@ -4,6 +4,7 @@ use App\Livewire\Forms\Kiosk\SettingsForm;
 use App\Livewire\Traits\WithKioskTeam;
 use App\Models\KioskDevice;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -32,6 +33,12 @@ new #[Layout('layouts::kiosk-configure')] class extends Component
             ->delete();
 
         unset($this->pairedDevices);
+    }
+
+    #[Computed]
+    public function canUpdateHousehold(): bool
+    {
+        return Gate::allows('update', $this->team);
     }
 
     /** @return Collection<int, KioskDevice> */
