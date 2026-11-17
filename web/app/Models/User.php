@@ -6,6 +6,8 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Concerns\HasTeams;
+use App\Http\Integrations\Bento\Requests\CreateDataDeletionRequest;
+use Bentonow\BentoLaravel\Facades\Bento;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -94,6 +96,10 @@ class User extends Authenticatable implements PasskeyUser
 
             $this->delete();
         });
+
+        if (app()->isProduction() && filled(config('bentonow.secret_key'))) {
+            rescue(fn () => Bento::send(new CreateDataDeletionRequest($this->email)));
+        }
     }
 
     /** @return array<string, string> */
