@@ -153,6 +153,8 @@ user belongs to.
 | `GET` | `/api/teams/{team}/checklists/{checklist}` | Read a list with its items. |
 | `PATCH` | `/api/teams/{team}/checklists/{checklist}` | Update a list. |
 | `DELETE` | `/api/teams/{team}/checklists/{checklist}` | Delete a list. |
+| `POST` | `/api/teams/{team}/checklists/{checklist}/clear-completed` | Remove a list's checked items. |
+| `POST` | `/api/teams/{team}/checklists/{checklist}/reset` | Uncheck every item on a list. |
 | `GET` | `/api/teams/{team}/checklists/{checklist}/items` | List a list's items in order. |
 | `POST` | `/api/teams/{team}/checklists/{checklist}/items` | Add an item to the end of a list. |
 | `GET` | `/api/teams/{team}/checklists/{checklist}/items/{item}` | Read a list item. |
@@ -161,7 +163,7 @@ user belongs to.
 | `GET` | `/api/teams/{team}/routines` | List the team's routines and their steps. |
 | `POST` | `/api/teams/{team}/routines` | Create a routine. |
 | `GET` | `/api/teams/{team}/routines/{routine}` | Read a routine and its steps. |
-| `PATCH` | `/api/teams/{team}/routines/{routine}` | Update a routine. |
+| `PATCH` | `/api/teams/{team}/routines/{routine}` | Update a routine or reorder its steps. |
 | `DELETE` | `/api/teams/{team}/routines/{routine}` | Delete a routine. |
 | `POST` | `/api/teams/{team}/routines/{routine}/steps` | Add a step to the end of a routine. |
 | `PATCH` | `/api/teams/{team}/routines/{routine}/steps/{step}` | Rename a routine step. |
@@ -266,6 +268,10 @@ SunnyHome records when the item was checked and by whom in `completed_at` and
 that isn't, leaves it unchanged, so a client can safely send the same change
 again.
 
+`clear-completed` permanently removes a list's checked items, and `reset`
+unchecks every item so the list can be used again. Neither takes a body. Both
+return the list with its remaining items, and both can safely be sent again.
+
 ## Retrying creates
 
 Item, recipe, list, list item, routine, and routine step creates accept an
@@ -300,6 +306,10 @@ household routine.
 
 Add a step with a `name`; it goes to the end of the routine. Removing a step
 stops it from appearing on future days but keeps it on days already generated.
+
+Send `step_order`, a list of step ids, on update to put a routine's steps in
+that order. Ids that aren't the routine's steps are ignored, and steps left out
+keep their order after the ones listed. Each step's `position` starts at `1`.
 
 Each day a routine is due gets an
 *occurrence* with a row for each of the routine's steps, and those rows are

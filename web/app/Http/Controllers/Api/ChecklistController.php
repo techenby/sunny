@@ -51,6 +51,24 @@ class ChecklistController extends Controller
         return ChecklistResource::make($checklist);
     }
 
+    public function clearCompleted(Team $team, Checklist $checklist): ChecklistResource
+    {
+        Gate::authorize('update', $checklist);
+
+        $checklist->clearCompleted();
+
+        return ChecklistResource::make($checklist->load('items'));
+    }
+
+    public function reset(Team $team, Checklist $checklist): ChecklistResource
+    {
+        Gate::authorize('update', $checklist);
+
+        $checklist->reset();
+
+        return ChecklistResource::make($checklist->load('items'));
+    }
+
     public function destroy(Team $team, Checklist $checklist): Response
     {
         Gate::authorize('delete', $checklist);

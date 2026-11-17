@@ -85,7 +85,7 @@ new class extends Component
     {
         $this->authorize('update', $this->checklist);
 
-        $this->checklist->items()->completed()->delete();
+        $this->checklist->clearCompleted();
 
         unset($this->items);
     }

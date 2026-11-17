@@ -73,6 +73,8 @@ Route::middleware('auth:sanctum')
                 Route::get('checklists/{checklist}', [ChecklistController::class, 'show'])->name('checklists.show');
                 Route::patch('checklists/{checklist}', [ChecklistController::class, 'update'])->name('checklists.update');
                 Route::delete('checklists/{checklist}', [ChecklistController::class, 'destroy'])->name('checklists.destroy');
+                Route::post('checklists/{checklist}/clear-completed', [ChecklistController::class, 'clearCompleted'])->name('checklists.clear-completed');
+                Route::post('checklists/{checklist}/reset', [ChecklistController::class, 'reset'])->name('checklists.reset');
 
                 Route::get('checklists/{checklist}/items', [ChecklistItemController::class, 'index'])->name('checklists.items.index');
                 Route::post('checklists/{checklist}/items', [ChecklistItemController::class, 'store'])->name('checklists.items.store');

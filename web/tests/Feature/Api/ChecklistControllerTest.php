@@ -13,6 +13,8 @@ test('guests cannot access checklists', function () {
     $this->getJson(route('api.checklists.show', ['household', 1]))->assertUnauthorized();
     $this->patchJson(route('api.checklists.update', ['household', 1]))->assertUnauthorized();
     $this->deleteJson(route('api.checklists.destroy', ['household', 1]))->assertUnauthorized();
+    $this->postJson(route('api.checklists.clear-completed', ['household', 1]))->assertUnauthorized();
+    $this->postJson(route('api.checklists.reset', ['household', 1]))->assertUnauthorized();
 });
 
 test('index returns checklists for the team with their items', function () {
@@ -190,4 +192,142 @@ test('destroy returns 403 for a team the user does not belong to', function () {
     $this->actingAs($user)
         ->deleteJson(route('api.checklists.destroy', [$checklist->team, $checklist]))
         ->assertForbidden();
+});
+
+test('clear completed removes the completed items and returns the list', function () {
+    $user = User::factory()->create();
+    $checklist = Checklist::factory()->for($user->currentTeam)->create();
+    $milk = ChecklistItem::factory()->for($checklist)->create(['position' => 1]);
+    $eggs = ChecklistItem::factory()->for($checklist)->completed($user)->create(['position' => 2]);
+    $bread = ChecklistItem::factory()->for($checklist)->completed($user)->create(['position' => 3]);
+    $elsewhere = ChecklistItem::factory()->completed()->create();
+
+    $this->actingAs($user)
+        ->postJson(route('api.checklists.clear-completed', [$user->currentTeam, $checklist]))
+        ->assertOk()
+        ->assertJsonPath('data.id', $checklist->id)
+        ->assertJsonCount(1, 'data.items')
+        ->assertJsonPath('data.items.0.id', $milk->id);
+
+    $this->assertModelMissing($eggs);
+    $this->assertModelMissing($bread);
+    $this->assertModelExists($elsewhere);
+});
+
+test('clear completed can be sent again', function () {
+    $user = User::factory()->create();
+    $checklist = Checklist::factory()->for($user->currentTeam)->create();
+    ChecklistItem::factory()->for($checklist)->completed()->create();
+    $milk = ChecklistItem::factory()->for($checklist)->create();
+
+    $this->actingAs($user)->postJson(route('api.checklists.clear-completed', [$user->currentTeam, $checklist]))->assertOk();
+
+    $this->actingAs($user)
+        ->postJson(route('api.checklists.clear-completed', [$user->currentTeam, $checklist]))
+        ->assertOk()
+        ->assertJsonCount(1, 'data.items')
+        ->assertJsonPath('data.items.0.id', $milk->id);
+});
+
+test('cleared items drop out of the next sync', function () {
+    $user = User::factory()->create();
+    $checklist = Checklist::factory()->for($user->currentTeam)->create();
+    ChecklistItem::factory()->for($checklist)->completed()->create();
+    $kept = ChecklistItem::factory()->for($checklist)->create();
+
+    $this->actingAs($user)->postJson(route('api.checklists.clear-completed', [$user->currentTeam, $checklist]))->assertOk();
+
+    $this->actingAs($user)
+        ->getJson(route('api.sync'))
+        ->assertOk()
+        ->assertJsonCount(1, 'checklist_items')
+        ->assertJsonPath('checklist_items.0.id', $kept->id);
+});
+
+test('clear completed returns 403 for a team the user does not belong to', function () {
+    $user = User::factory()->create();
+    $checklist = Checklist::factory()->create();
+    $item = ChecklistItem::factory()->for($checklist)->completed()->create();
+
+    $this->actingAs($user)
+        ->postJson(route('api.checklists.clear-completed', [$checklist->team, $checklist]))
+        ->assertForbidden();
+
+    $this->assertModelExists($item);
+});
+
+test('clear completed returns 404 when the checklist belongs to a different team than the url', function () {
+    $user = User::factory()->create();
+    $team = Team::factory()->create();
+    $team->members()->attach($user, ['role' => TeamRole::Member->value]);
+    $checklist = Checklist::factory()->for($team)->create();
+    $item = ChecklistItem::factory()->for($checklist)->completed()->create();
+
+    $this->actingAs($user)
+        ->postJson(route('api.checklists.clear-completed', [$user->currentTeam, $checklist]))
+        ->assertNotFound();
+
+    $this->assertModelExists($item);
+});
+
+test('reset unticks every item and returns the list', function () {
+    $user = User::factory()->create();
+    $checklist = Checklist::factory()->for($user->currentTeam)->create();
+    $socks = ChecklistItem::factory()->for($checklist)->completed($user)->create(['position' => 1]);
+    $charger = ChecklistItem::factory()->for($checklist)->create(['position' => 2]);
+    $elsewhere = ChecklistItem::factory()->completed()->create();
+
+    $this->actingAs($user)
+        ->postJson(route('api.checklists.reset', [$user->currentTeam, $checklist]))
+        ->assertOk()
+        ->assertJsonPath('data.id', $checklist->id)
+        ->assertJsonCount(2, 'data.items')
+        ->assertJsonPath('data.items.0.id', $socks->id)
+        ->assertJsonPath('data.items.0.completed_at', null)
+        ->assertJsonPath('data.items.0.completed_by', null)
+        ->assertJsonPath('data.items.1.id', $charger->id);
+
+    expect($socks->fresh()->isCompleted())->toBeFalse()
+        ->and($elsewhere->fresh()->isCompleted())->toBeTrue();
+});
+
+test('reset items are sent again in an incremental sync', function () {
+    $user = User::factory()->create();
+    $checklist = Checklist::factory()->for($user->currentTeam)->create();
+    $item = ChecklistItem::factory()->for($checklist)->completed()->create(['updated_at' => now()->subWeek()]);
+
+    $this->actingAs($user)->postJson(route('api.checklists.reset', [$user->currentTeam, $checklist]))->assertOk();
+
+    $this->actingAs($user)
+        ->getJson(route('api.sync', ['since' => now()->subDay()->toIso8601String()]))
+        ->assertOk()
+        ->assertJsonCount(1, 'checklist_items')
+        ->assertJsonPath('checklist_items.0.id', $item->id)
+        ->assertJsonPath('checklist_items.0.completed_at', null);
+});
+
+test('reset returns 403 for a team the user does not belong to', function () {
+    $user = User::factory()->create();
+    $checklist = Checklist::factory()->create();
+    $item = ChecklistItem::factory()->for($checklist)->completed()->create();
+
+    $this->actingAs($user)
+        ->postJson(route('api.checklists.reset', [$checklist->team, $checklist]))
+        ->assertForbidden();
+
+    expect($item->fresh()->isCompleted())->toBeTrue();
+});
+
+test('reset returns 404 when the checklist belongs to a different team than the url', function () {
+    $user = User::factory()->create();
+    $team = Team::factory()->create();
+    $team->members()->attach($user, ['role' => TeamRole::Member->value]);
+    $checklist = Checklist::factory()->for($team)->create();
+    $item = ChecklistItem::factory()->for($checklist)->completed()->create();
+
+    $this->actingAs($user)
+        ->postJson(route('api.checklists.reset', [$user->currentTeam, $checklist]))
+        ->assertNotFound();
+
+    expect($item->fresh()->isCompleted())->toBeTrue();
 });
