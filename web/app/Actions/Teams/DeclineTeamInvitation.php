@@ -7,6 +7,7 @@ namespace App\Actions\Teams;
 use App\Actions\Teams\Concerns\AnswersTeamInvitations;
 use App\Models\TeamInvitation;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 class DeclineTeamInvitation
 {
@@ -14,8 +15,16 @@ class DeclineTeamInvitation
 
     public function handle(User $user, TeamInvitation $invitation): void
     {
-        $this->ensureInvitationIsPendingFor($invitation, $user);
+        DB::transaction(function () use ($user, $invitation): void {
+            $locked = $this->lockInvitation($invitation);
 
-        $invitation->delete();
+            if ($locked === null) {
+                return;
+            }
+
+            $this->ensureInvitationIsPendingFor($locked, $user);
+
+            $locked->delete();
+        });
     }
 }

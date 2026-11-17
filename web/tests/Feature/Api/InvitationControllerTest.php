@@ -1,9 +1,27 @@
 <?php
 
+use App\Actions\Teams\AcceptTeamInvitation;
 use App\Enums\TeamRole;
 use App\Models\Team;
 use App\Models\TeamInvitation;
 use App\Models\User;
+use Illuminate\Database\Events\QueryExecuted;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
+
+function answerInvitationAfterLookup(Closure $competingRequest): void
+{
+    $answered = false;
+
+    DB::listen(function (QueryExecuted $query) use (&$answered, $competingRequest): void {
+        if ($answered || ! str_contains($query->sql, 'from "team_invitations" where "code"')) {
+            return;
+        }
+
+        $answered = true;
+        $competingRequest();
+    });
+}
 
 beforeEach(function () {
     $this->luffy = User::factory()->create(['name' => 'Luffy']);
@@ -93,3 +111,77 @@ test('an accepted invitation cannot be answered again', function (string $action
         ->postJson(route("api.invitations.{$action}", $invitation))
         ->assertNotFound();
 })->with(['accept', 'decline']);
+
+test('accepting an invitation someone already accepted for the user succeeds without a second membership', function () {
+    $invitation = TeamInvitation::factory()->for($this->crew)->create(['email' => 'zoro@strawhat.pirates', 'role' => TeamRole::Admin]);
+    answerInvitationAfterLookup(fn () => resolve(AcceptTeamInvitation::class)->handle($this->zoro, $invitation->fresh()));
+
+    $this->actingAs($this->zoro)
+        ->postJson(route('api.invitations.accept', $invitation))
+        ->assertOk()
+        ->assertJsonPath('data.id', $this->crew->id);
+
+    expect($this->crew->memberships()->where('user_id', $this->zoro->id)->count())->toBe(1)
+        ->and($this->zoro->teamRole($this->crew))->toBe(TeamRole::Admin)
+        ->and(TeamInvitation::query()->pendingFor($this->zoro)->exists())->toBeFalse();
+});
+
+test('accepting an invitation declined in the meantime is not found', function () {
+    $invitation = TeamInvitation::factory()->for($this->crew)->create(['email' => 'zoro@strawhat.pirates']);
+    answerInvitationAfterLookup(fn () => $invitation->delete());
+
+    $this->actingAs($this->zoro)
+        ->postJson(route('api.invitations.accept', $invitation))
+        ->assertNotFound();
+
+    expect($this->zoro->belongsToTeam($this->crew))->toBeFalse();
+});
+
+test('declining an invitation declined in the meantime succeeds', function () {
+    $invitation = TeamInvitation::factory()->for($this->crew)->create(['email' => 'zoro@strawhat.pirates']);
+    answerInvitationAfterLookup(fn () => $invitation->delete());
+
+    $this->actingAs($this->zoro)
+        ->postJson(route('api.invitations.decline', $invitation))
+        ->assertNoContent();
+
+    expect($invitation->fresh())->toBeNull();
+});
+
+test('declining an invitation accepted in the meantime keeps the membership', function () {
+    $invitation = TeamInvitation::factory()->for($this->crew)->create(['email' => 'zoro@strawhat.pirates']);
+    answerInvitationAfterLookup(fn () => resolve(AcceptTeamInvitation::class)->handle($this->zoro, $invitation->fresh()));
+
+    $this->actingAs($this->zoro)
+        ->postJson(route('api.invitations.decline', $invitation))
+        ->assertNotFound();
+
+    expect($this->zoro->belongsToTeam($this->crew))->toBeTrue()
+        ->and($invitation->fresh()->accepted_at)->not->toBeNull();
+});
+
+test('the accept action re-checks the invitation instead of trusting the model it was given', function () {
+    $invitation = TeamInvitation::factory()->for($this->crew)->create(['email' => 'zoro@strawhat.pirates']);
+    $stale = $invitation->fresh();
+    $accept = resolve(AcceptTeamInvitation::class);
+
+    $accept->handle($this->zoro, $invitation);
+    $team = $accept->handle($this->zoro, $stale);
+
+    expect($team->is($this->crew))->toBeTrue()
+        ->and($this->crew->memberships()->where('user_id', $this->zoro->id)->count())->toBe(1);
+});
+
+test('the accept action re-checks expiry and email on the locked invitation', function (array $change) {
+    $invitation = TeamInvitation::factory()->for($this->crew)->create(['email' => 'zoro@strawhat.pirates']);
+    $stale = $invitation->fresh();
+    $invitation->update($change);
+
+    expect(fn () => resolve(AcceptTeamInvitation::class)->handle($this->zoro, $stale))
+        ->toThrow(ValidationException::class);
+
+    expect($this->zoro->belongsToTeam($this->crew))->toBeFalse();
+})->with([
+    'expired' => [['expires_at' => now()->subMinute()]],
+    'sent to someone else' => [['email' => 'nami@strawhat.pirates']],
+]);

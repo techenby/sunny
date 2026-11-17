@@ -8,6 +8,7 @@ use App\Actions\Teams\Concerns\AnswersTeamInvitations;
 use App\Models\Team;
 use App\Models\TeamInvitation;
 use App\Models\User;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
 
 class AcceptTeamInvitation
@@ -16,17 +17,28 @@ class AcceptTeamInvitation
 
     public function handle(User $user, TeamInvitation $invitation): Team
     {
-        $this->ensureInvitationIsPendingFor($invitation, $user);
-
         return DB::transaction(function () use ($user, $invitation) {
-            $invitation->team->memberships()->firstOrCreate(
+            $locked = $this->lockInvitation($invitation);
+            $team = Team::query()->findOrFail($invitation->team_id);
+
+            if (($locked === null || $locked->isAccepted()) && $user->belongsToTeam($team)) {
+                return $team;
+            }
+
+            if ($locked === null) {
+                throw (new ModelNotFoundException)->setModel(TeamInvitation::class, [$invitation->code]);
+            }
+
+            $this->ensureInvitationIsPendingFor($locked, $user);
+
+            $team->memberships()->firstOrCreate(
                 ['user_id' => $user->id],
-                ['role' => $invitation->role],
+                ['role' => $locked->role],
             );
 
-            $invitation->update(['accepted_at' => now()]);
+            $locked->update(['accepted_at' => now()]);
 
-            return $invitation->team;
+            return $team;
         });
     }
 }

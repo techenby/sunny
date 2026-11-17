@@ -215,6 +215,9 @@ settings, and they need a connection: don't queue them for later.
   `role`), which emails a link, and cancel. Invitations expire after 3 days.
 - Accepting or declining an invitation sent to another email address, or one
   that has expired, fails with a `422` on `invitation`.
+- Retrying is safe. Accepting an invitation that's already accepted returns
+  the team if the user is a member, and declining one that's already gone
+  returns `204`. Accepting one that was declined returns `404`.
 
 Team responses are the team as in `GET /api/sync`, with its `members`.
 Invitations have `code`, `email`, `role`, `expires_at` and `created_at`, and

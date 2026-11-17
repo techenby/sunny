@@ -12,6 +12,11 @@ use Illuminate\Validation\ValidationException;
 
 trait AnswersTeamInvitations
 {
+    protected function lockInvitation(TeamInvitation $invitation): ?TeamInvitation
+    {
+        return TeamInvitation::query()->whereKey($invitation->id)->lockForUpdate()->first();
+    }
+
     protected function ensureInvitationIsPendingFor(TeamInvitation $invitation, User $user): void
     {
         if ($invitation->isAccepted()) {
