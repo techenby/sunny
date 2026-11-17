@@ -469,12 +469,6 @@ parameters:
 			path: app/Http/Resources/RoutineStepResource.php
 
 		-
-			message: '#^Method App\\Http\\Resources\\TeamResource\:\:toArray\(\) should return array\<string, mixed\> but returns array\|Illuminate\\Contracts\\Support\\Arrayable\|JsonSerializable\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Http/Resources/TeamResource.php
-
-		-
 			message: '#^Method App\\Livewire\\Forms\\Inventory\\ImportItemsForm\:\:process\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1

@@ -130,6 +130,9 @@ user belongs to.
 | Method | Endpoint | Purpose |
 | --- | --- | --- |
 | `GET` | `/api/user` | Return the authenticated user, wrapped in `data`, with the same fields as the token response. |
+| `PATCH` | `/api/user` | Change the user's `name` and/or `email`. Returns the user. |
+| `PUT` | `/api/user/password` | Change the password with `current_password`, `password` and `password_confirmation`. |
+| `POST` | `/api/user/email/verification-notification` | Send the email verification link again. |
 | `GET` | `/api/sync` | Synchronize all accessible teams, recipes, items, lists, and routines. |
 | `POST` | `/api/sanctum/token/two-factor` | Complete a two-factor challenge. |
 | `POST` | `/api/sanctum/token/refresh` | Exchange the current token for a new one. |
@@ -173,6 +176,15 @@ user belongs to.
 
 Successful creates return `201`; successful deletes return `204`.
 Collections and single resources use Laravel's standard `data` wrapper.
+
+## Account
+
+Profile changes use the same rules as Settings on the web. Fields left out of
+`PATCH /api/user` are unchanged. Changing the email clears `email_verified_at`.
+`POST /api/user/email/verification-notification` returns `202` when it sends
+the link and `204` when the email is already verified. Password changes return
+`204`, and password changes and verification emails are limited to 6 requests
+a minute.
 
 ## Item payloads
 
@@ -353,6 +365,10 @@ copies to find removed ones.
 `routine_occurrences` ignores `since`: it always contains every routine due
 today and tomorrow in each team's timezone, shaped like the
 `routine-occurrences` endpoint's response.
+
+`teams` also ignores `since`, so member changes always arrive. Each team has
+`members`, ordered by name, with each person's `id`, `name`, `initials` and
+`role` (`owner`, `admin` or `member`). Email addresses aren't included.
 
 ## Errors
 

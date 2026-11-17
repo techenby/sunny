@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\Fortify\UpdateUserProfileInformation;
 use App\Concerns\ProfileValidationRules;
 use Flux\Flux;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -20,19 +21,11 @@ new class extends Component {
         $this->email = Auth::user()->email;
     }
 
-    public function updateProfileInformation(): void
+    public function updateProfileInformation(UpdateUserProfileInformation $updateProfile): void
     {
         $user = Auth::user();
 
-        $validated = $this->validate($this->profileRules($user->id));
-
-        $user->fill($validated);
-
-        if ($user->isDirty('email')) {
-            $user->email_verified_at = null;
-        }
-
-        $user->save();
+        $updateProfile->handle($user, $this->validate($this->profileRules($user->id)));
 
         Flux::toast(variant: 'success', text: __('Profile updated.'));
     }
