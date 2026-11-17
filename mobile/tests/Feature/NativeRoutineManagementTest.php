@@ -136,6 +136,94 @@ it('removes a step that never reached Sunny without queueing anything', function
     expect(RoutineStep::find(-1))->toBeNull()->and(PendingWrite::count())->toBe(0);
 });
 
+it('starts and stops reordering a routine’s steps', function () {
+    Native::visit('/routines/1')
+        ->assertSee('Steps (3)')
+        ->tap('routine-reorder')
+        ->assertSet('reordering', true)
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-step-12-up')
+        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-step-12-remove')
+        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-reorder')
+        ->assertAccessible()
+        ->tap('routine-reorder-done')
+        ->assertSet('reordering', false)
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-step-12-remove');
+
+    expect(PendingWrite::count())->toBe(0);
+});
+
+it('offers reordering only when a routine has two or more steps', function () {
+    Native::visit('/routines/3')->assertSee('Steps')->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-reorder');
+    Native::visit('/routines/2')->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-reorder');
+});
+
+it('moves steps up and down without moving past either end', function () {
+    $screen = Native::visit('/routines/1')
+        ->tap('routine-reorder')
+        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-step-11-up')
+        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-step-13-down')
+        ->tap('routine-step-13-up')
+        ->assertSet('movedStepId', 13);
+
+    expect(array_column($screen->get('steps'), 'name'))->toBe(['Make bed', 'Water plants', 'Feed the cat']);
+
+    $screen->call('moveStepUp', 11)->call('moveStepDown', 12)->tap('routine-step-13-up');
+
+    expect(array_column($screen->get('steps'), 'name'))->toBe(['Water plants', 'Make bed', 'Feed the cat'])
+        ->and(RoutineStep::find(13)->position)->toBe(3)
+        ->and(PendingWrite::count())->toBe(0);
+});
+
+it('saves the new order once, when Done is tapped', function () {
+    $screen = Native::visit('/routines/1')
+        ->tap('routine-reorder')
+        ->tap('routine-step-13-up')
+        ->tap('routine-step-13-up')
+        ->tap('routine-step-11-down')
+        ->tap('routine-step-12-down')
+        ->tap('routine-reorder-done')
+        ->assertSet('reordering', false);
+
+    expect(array_column($screen->get('steps'), 'name'))->toBe(['Water plants', 'Make bed', 'Feed the cat'])
+        ->and(RoutineStep::whereIn('id', [11, 12, 13])->orderBy('position')->pluck('position', 'id')->all())->toBe([13 => 1, 11 => 2, 12 => 3])
+        ->and(PendingWrite::sole()->only('resource', 'record_id', 'payload'))->toBe(['resource' => 'routines', 'record_id' => 1, 'payload' => ['step_order' => [13, 11, 12]]]);
+    expect(array_column(Native::visit('/routines/1')->get('steps'), 'name'))->toBe(['Water plants', 'Make bed', 'Feed the cat']);
+});
+
+it('saves nothing when the steps end up in their original order', function () {
+    Native::visit('/routines/1')
+        ->tap('routine-reorder')
+        ->tap('routine-step-12-up')
+        ->tap('routine-step-12-down')
+        ->tap('routine-reorder-done');
+
+    expect(PendingWrite::count())->toBe(0);
+});
+
+it('discards moves when leaving without tapping Done', function () {
+    Native::visit('/routines/1')
+        ->tap('routine-reorder')
+        ->tap('routine-step-13-up')
+        ->tap('routine-step-13-up')
+        ->call('back')
+        ->assertWentBack();
+
+    expect(array_column(Native::visit('/routines/1')->assertSet('reordering', false)->get('steps'), 'name'))->toBe(['Make bed', 'Feed the cat', 'Water plants'])
+        ->and(RoutineStep::find(13)->position)->toBe(3)
+        ->and(PendingWrite::count())->toBe(0);
+});
+
+it('keeps a step added while reordering at the end, and saves its place in the order', function () {
+    $screen = Native::visit('/routines/2')
+        ->tap('routine-reorder')
+        ->submit('routine-new-step', 'Read a story')
+        ->tap('routine-step--1-up')
+        ->tap('routine-reorder-done');
+
+    expect(array_column($screen->get('steps'), 'name'))->toBe(['Pajamas', 'Read a story', 'Brush teeth'])
+        ->and(PendingWrite::where('resource', 'routines')->sole()->payload)->toBe(['step_order' => [21, -1, 22]]);
+});
+
 it('asks before deleting a routine', function () {
     Native::visit('/routines/1')
         ->tap('delete-routine')

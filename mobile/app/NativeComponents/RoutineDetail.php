@@ -9,6 +9,7 @@ use App\Enums\TimeOfDay;
 use App\Http\Integrations\Sunny\SunnyOutbox;
 use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Models\PendingWrite;
+use App\Models\RoutineStep;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -29,6 +30,13 @@ class RoutineDetail extends Component
     public ?int $editingStepId = null;
 
     public string $editingName = '';
+
+    public bool $reordering = false;
+
+    /** @var list<int> */
+    public array $stepOrder = [];
+
+    public ?int $movedStepId = null;
 
     /**
      * @return array{id: int, team_id: int, user_id: int|null, name: string, time_of_day: TimeOfDay, frequency: RoutineFrequency, weekdays: list<int>|null, day_of_month: int|null, is_active: bool, summary: string}|null
@@ -53,11 +61,16 @@ class RoutineDetail extends Component
         $errors = PendingWrite::query()->forCurrentServer()->where('resource', 'routine_steps')
             ->whereIn('record_id', $steps->pluck('id'))->whereNotNull('error')->pluck('error', 'record_id');
 
+        if ($this->reordering) {
+            $order = array_flip($this->stepOrder);
+            $steps = $steps->sortBy(fn (array $step, int $index): array => [$order[$step['id']] ?? count($order), $index]);
+        }
+
         return $steps->map(fn (array $step): array => [
             'id' => $step['id'],
             'name' => $step['name'],
             'error' => $errors[$step['id']] ?? null,
-        ])->all();
+        ])->values()->all();
     }
 
     public function addStep(string $text = ''): void
@@ -104,6 +117,47 @@ class RoutineDetail extends Component
         if (collect($this->steps)->contains('id', $id)) {
             $this->change(fn (SunnyOutbox $outbox) => $outbox->delete('routine_steps', $this->routine['team_id'], $id));
         }
+    }
+
+    public function startReordering(): void
+    {
+        if (count($this->steps) < 2) {
+            return;
+        }
+
+        $this->cancelEdit();
+        $this->stepOrder = array_column($this->steps, 'id');
+        $this->movedStepId = null;
+        $this->reordering = true;
+        unset($this->steps);
+    }
+
+    public function moveStepUp(int $id): void
+    {
+        $this->moveStep($id, -1);
+    }
+
+    public function moveStepDown(int $id): void
+    {
+        $this->moveStep($id, 1);
+    }
+
+    public function finishReordering(): void
+    {
+        $order = array_column($this->steps, 'id');
+        $this->stopReordering();
+
+        if ($this->routine === null || $order === array_column($this->steps, 'id')) {
+            return;
+        }
+
+        $this->change(function (SunnyOutbox $outbox) use ($order): void {
+            $outbox->queue('routines', $this->routine['team_id'], ['step_order' => $order], $this->routine['id']);
+
+            foreach ($order as $index => $id) {
+                RoutineStep::query()->whereKey($id)->update(['position' => $index + 1]);
+            }
+        });
     }
 
     public function confirmDeleteRoutine(): void
@@ -173,6 +227,29 @@ class RoutineDetail extends Component
 
             $outbox->queue('routine_steps', $this->routine['team_id'], $payload, $id);
         });
+    }
+
+    private function moveStep(int $id, int $offset): void
+    {
+        $order = array_column($this->steps, 'id');
+        $from = array_search($id, $order, true);
+
+        if (! $this->reordering || $from === false || ! isset($order[$from + $offset])) {
+            return;
+        }
+
+        [$order[$from], $order[$from + $offset]] = [$order[$from + $offset], $order[$from]];
+        $this->stepOrder = $order;
+        $this->movedStepId = $id;
+        unset($this->steps);
+    }
+
+    private function stopReordering(): void
+    {
+        $this->reordering = false;
+        $this->stepOrder = [];
+        $this->movedStepId = null;
+        unset($this->steps);
     }
 
     private function change(callable $callback): bool
