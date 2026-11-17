@@ -161,6 +161,12 @@
                     "url": "patches/nativephp-mobile-ios-icon-composer.patch"
                 }
             ],
+            "nativephp/mobile-secure-storage": [
+                {
+                    "description": "Android: declare the secure storage functions as context-only so a cold-boot background task (sunny:sync) can read the Sunny token",
+                    "url": "patches/nativephp-mobile-secure-storage-android-context-only.patch"
+                }
+            ],
             "nativephp/mobile-scanner": [
                 {
                     "description": "Android: depend on Guava so ScannerActivity compiles once mobile-ui's emoji picker pulls Guava in at runtime only",
