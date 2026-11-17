@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Api\AccountController;
+use App\Http\Controllers\Api\CalendarEventController;
+use App\Http\Controllers\Api\CalendarFeedController;
 use App\Http\Controllers\Api\ChecklistController;
 use App\Http\Controllers\Api\ChecklistItemController;
 use App\Http\Controllers\Api\ItemController;
@@ -97,5 +99,12 @@ Route::middleware('auth:sanctum')
 
                 Route::get('routine-occurrences', [RoutineOccurrenceController::class, 'index'])->name('routine-occurrences.index');
                 Route::patch('routine-occurrences/{routineOccurrence}/steps/{step}', [RoutineOccurrenceStepController::class, 'update'])->name('routine-occurrences.steps.update');
+
+                Route::get('calendar-feeds', [CalendarFeedController::class, 'index'])->name('calendar-feeds.index');
+                Route::post('calendar-feeds', [CalendarFeedController::class, 'store'])->name('calendar-feeds.store');
+                Route::get('calendar-feeds/{calendarFeed}', [CalendarFeedController::class, 'show'])->name('calendar-feeds.show');
+                Route::patch('calendar-feeds/{calendarFeed}', [CalendarFeedController::class, 'update'])->name('calendar-feeds.update');
+                Route::delete('calendar-feeds/{calendarFeed}', [CalendarFeedController::class, 'destroy'])->name('calendar-feeds.destroy');
+                Route::get('calendar-events', [CalendarEventController::class, 'index'])->name('calendar-events.index');
             });
     });

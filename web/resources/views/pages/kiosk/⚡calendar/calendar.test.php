@@ -408,7 +408,7 @@ ICS),
         )
         ->create();
     $user = User::factory()->memberOf($team)->create();
-    [$brazilianHolidays, $usHolidays] = $team->calendarFeeds;
+    [$brazilianHolidays, $usHolidays] = $team->calendarFeeds()->orderBy('name')->get();
 
     Livewire::actingAs($user)
         ->test('pages::kiosk.calendar')
