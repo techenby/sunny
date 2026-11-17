@@ -5,8 +5,6 @@ use App\Enums\TeamRole;
 use App\Models\CalendarFeed;
 use App\Models\Team;
 use App\Models\User;
-use Illuminate\Database\Events\QueryExecuted;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 
@@ -93,26 +91,16 @@ test('store returns the existing calendar feed when a client uuid is retried', f
 });
 
 test('store returns the existing calendar feed when a retry wins the race to insert it', function () {
+    Storage::fake();
+    Http::fake();
     $user = User::factory()->create();
     $uuid = '9b2f6c1e-3d4a-4f5b-8c7d-1e2f3a4b5c6d';
-    $racedId = null;
-
-    DB::listen(function (QueryExecuted $query) use ($user, $uuid, &$racedId) {
-        if ($racedId !== null || ! str_starts_with($query->sql, 'select') || ! str_contains($query->sql, 'calendar_feeds')) {
-            return;
-        }
-
-        $racedId = 0;
-        $racedId = DB::table('calendar_feeds')->insertGetId([
-            'team_id' => $user->current_team_id,
-            'name' => 'Family',
-            'url' => 'https://example.com/family.ics',
-            'color' => CalendarColor::Blue->value,
-            'client_uuid' => $uuid,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-    });
+    $raced = createAfterLookup('calendar_feeds', 'client_uuid', fn () => CalendarFeed::factory()->for($user->currentTeam)->create([
+        'name' => 'Family',
+        'url' => 'https://example.com/family.ics',
+        'color' => CalendarColor::Blue,
+        'client_uuid' => $uuid,
+    ]));
 
     $this->actingAs($user)
         ->postJson(route('api.calendar-feeds.store', $user->currentTeam), [
@@ -122,9 +110,10 @@ test('store returns the existing calendar feed when a retry wins the race to ins
             'client_uuid' => $uuid,
         ])
         ->assertOk()
-        ->assertJsonPath('data.id', $racedId);
+        ->assertJsonPath('data.id', $raced->model->id);
 
     expect(CalendarFeed::where('client_uuid', $uuid)->count())->toBe(1);
+    Http::assertNothingSent();
 });
 
 test('store validates the calendar feed', function () {

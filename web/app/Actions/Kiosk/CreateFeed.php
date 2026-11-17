@@ -7,21 +7,23 @@ namespace App\Actions\Kiosk;
 use App\Actions\Calendars\RefreshCalendarFeed;
 use App\Models\CalendarFeed;
 use App\Models\Team;
-use Illuminate\Support\Arr;
+use App\Support\ClientUuid;
 
 class CreateFeed
 {
     /** @param  array<string, mixed>  $data */
     public function handle(Team $team, array $data): CalendarFeed
     {
-        $feed = filled($data['client_uuid'] ?? null)
-            ? $team->calendarFeeds()->firstOrCreate(Arr::only($data, 'client_uuid'), $data)
-            : $team->calendarFeeds()->create($data);
+        return ClientUuid::firstOrCreate(
+            $team->calendarFeeds(),
+            $data['client_uuid'] ?? null,
+            function () use ($team, $data): CalendarFeed {
+                $feed = $team->calendarFeeds()->create($data);
 
-        if ($feed->wasRecentlyCreated) {
-            (new RefreshCalendarFeed)->handle($feed);
-        }
+                (new RefreshCalendarFeed)->handle($feed);
 
-        return $feed;
+                return $feed;
+            },
+        );
     }
 }
