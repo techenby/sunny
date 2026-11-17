@@ -12,6 +12,7 @@ use App\Http\Requests\Api\UpdateRoutineRequest;
 use App\Http\Resources\RoutineResource;
 use App\Models\Routine;
 use App\Models\Team;
+use App\Support\ClientUuid;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
@@ -30,18 +31,18 @@ class RoutineController extends Controller
 
     public function store(StoreRoutineRequest $request, Team $team): JsonResponse
     {
-        $existing = $request->filled('client_uuid')
-            ? $team->routines()->withTrashed()->firstWhere('client_uuid', $request->validated('client_uuid'))
-            : null;
-
-        $routine = $existing ?? $team->routines()->create([
-            ...$this->schedule($request->validated()),
-            'starts_on' => $request->validated('starts_on') ?? $team->today()->toDateString(),
-        ]);
+        $routine = ClientUuid::firstOrCreate(
+            $team->routines()->withTrashed(),
+            $request->validated('client_uuid'),
+            fn (): Routine => $team->routines()->create([
+                ...$this->schedule($request->validated()),
+                'starts_on' => $request->validated('starts_on') ?? $team->today()->toDateString(),
+            ]),
+        );
 
         return RoutineResource::make($routine->load(['user', 'steps']))
             ->response()
-            ->setStatusCode($existing ? 200 : 201);
+            ->setStatusCode($routine->wasRecentlyCreated ? 201 : 200);
     }
 
     public function show(Team $team, Routine $routine): RoutineResource

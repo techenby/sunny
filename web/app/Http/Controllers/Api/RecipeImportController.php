@@ -9,7 +9,9 @@ use App\Actions\Recipes\ImportRecipeFromUrl;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\ImportRecipeRequest;
 use App\Http\Resources\RecipeResource;
+use App\Models\Recipe;
 use App\Models\Team;
+use App\Support\ClientUuid;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\ValidationException;
 use Throwable;
@@ -33,8 +35,14 @@ class RecipeImportController extends Controller
 
         throw_if(blank($data['name'] ?? null), ValidationException::withMessages(['url' => 'Sunny couldn’t find a recipe at that address.']));
 
-        return RecipeResource::make($create->handle($team, [...array_filter($data, fn (mixed $value): bool => $value !== null), 'client_uuid' => $uuid]))
+        $recipe = ClientUuid::firstOrCreate(
+            $team->recipes()->withTrashed(),
+            $uuid,
+            fn (): Recipe => $create->handle($team, [...array_filter($data, fn (mixed $value): bool => $value !== null), 'client_uuid' => $uuid]),
+        );
+
+        return RecipeResource::make($recipe)
             ->response()
-            ->setStatusCode(201);
+            ->setStatusCode($recipe->wasRecentlyCreated ? 201 : 200);
     }
 }

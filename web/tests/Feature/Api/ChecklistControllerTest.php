@@ -70,6 +70,19 @@ test('store returns the existing checklist when a client uuid is retried', funct
     expect(Checklist::where('client_uuid', $uuid)->count())->toBe(1);
 });
 
+test('store returns the existing checklist when a retry wins the race to insert it', function () {
+    $user = User::factory()->create();
+    $uuid = '9b2f6c1e-3d4a-4f5b-8c7d-1e2f3a4b5c6d';
+    $raced = createAfterLookup('checklists', 'client_uuid', fn () => Checklist::factory()->for($user->currentTeam)->create(['name' => 'Groceries', 'type' => ChecklistType::Shopping, 'client_uuid' => $uuid]));
+
+    $this->actingAs($user)
+        ->postJson(route('api.checklists.store', $user->currentTeam), ['name' => 'Groceries', 'type' => 'shopping', 'client_uuid' => $uuid])
+        ->assertOk()
+        ->assertJsonPath('data.id', $raced->model->id);
+
+    expect(Checklist::where('client_uuid', $uuid)->count())->toBe(1);
+});
+
 test('store validates the checklist', function () {
     $user = User::factory()->create();
 

@@ -15,6 +15,7 @@ use App\Http\Requests\Api\UpdateRecipeRequest;
 use App\Http\Resources\RecipeResource;
 use App\Models\Recipe;
 use App\Models\Team;
+use App\Support\ClientUuid;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
@@ -33,26 +34,30 @@ class RecipeController extends Controller
 
     public function store(StoreRecipeRequest $request, Team $team, CreateRecipe $action): JsonResponse
     {
-        $existing = $request->filled('client_uuid')
-            ? $team->recipes()->withTrashed()->firstWhere('client_uuid', $request->validated('client_uuid'))
-            : null;
+        $recipe = ClientUuid::firstOrCreate(
+            $team->recipes()->withTrashed(),
+            $request->validated('client_uuid'),
+            fn (): Recipe => $action->handle($team, $request->validated()),
+        );
 
-        return RecipeResource::make($existing ?? $action->handle($team, $request->validated()))
+        return RecipeResource::make($recipe)
             ->response()
-            ->setStatusCode($existing ? 200 : 201);
+            ->setStatusCode($recipe->wasRecentlyCreated ? 201 : 200);
     }
 
     public function copy(CopyRecipeRequest $request, Team $team, Recipe $recipe, CopyRecipeToTeam $action): JsonResponse
     {
         $target = $request->user()->teams()->findOrFail($request->integer('team_id'));
 
-        $existing = $request->filled('client_uuid')
-            ? $target->recipes()->withTrashed()->firstWhere('client_uuid', $request->validated('client_uuid'))
-            : null;
+        $copy = ClientUuid::firstOrCreate(
+            $target->recipes()->withTrashed(),
+            $request->validated('client_uuid'),
+            fn (): Recipe => $action->handle($recipe, $target, $request->validated('client_uuid')),
+        );
 
-        return RecipeResource::make($existing ?? $action->handle($recipe, $target, $request->validated('client_uuid')))
+        return RecipeResource::make($copy)
             ->response()
-            ->setStatusCode($existing ? 200 : 201);
+            ->setStatusCode($copy->wasRecentlyCreated ? 201 : 200);
     }
 
     public function show(Team $team, Recipe $recipe): RecipeResource

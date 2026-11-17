@@ -10,6 +10,7 @@ use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Validator;
 
 class StoreItemPhotoRequest extends FormRequest
@@ -33,7 +34,7 @@ class StoreItemPhotoRequest extends FormRequest
 
     public function existingPhoto(): ?ItemPhoto
     {
-        return $this->filled('client_uuid')
+        return Str::isUuid($this->input('client_uuid'))
             ? $this->item()->photos()->firstWhere('client_uuid', $this->input('client_uuid'))
             : null;
     }

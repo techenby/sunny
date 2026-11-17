@@ -18,6 +18,7 @@ use App\Http\Requests\Api\UpdateItemRequest;
 use App\Http\Resources\ItemResource;
 use App\Models\Item;
 use App\Models\Team;
+use App\Support\ClientUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
@@ -55,13 +56,15 @@ class ItemController extends Controller
 
     public function store(StoreItemRequest $request, Team $team, CreateItem $action): JsonResponse
     {
-        $existing = $request->filled('client_uuid')
-            ? $team->items()->withTrashed()->firstWhere('client_uuid', $request->validated('client_uuid'))
-            : null;
+        $item = ClientUuid::firstOrCreate(
+            $team->items()->withTrashed(),
+            $request->validated('client_uuid'),
+            fn (): Item => $action->handle($team, $request->validated()),
+        );
 
-        return ItemResource::make($existing ?? $action->handle($team, $request->validated()))
+        return ItemResource::make($item)
             ->response()
-            ->setStatusCode($existing ? 200 : 201);
+            ->setStatusCode($item->wasRecentlyCreated ? 201 : 200);
     }
 
     public function duplicate(DuplicateItemRequest $request, Team $team, Item $item, DuplicateItem $action): JsonResponse

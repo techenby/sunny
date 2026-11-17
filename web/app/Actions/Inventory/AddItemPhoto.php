@@ -26,8 +26,14 @@ class AddItemPhoto
 
         $thumbPath = (new CreateThumbnail)->handle($path);
 
-        $created = DB::transaction(function () use ($item, $path, $thumbPath, $clientUuid): ?ItemPhoto {
+        $saved = DB::transaction(function () use ($item, $path, $thumbPath, $clientUuid): ?ItemPhoto {
             Item::withTrashed()->whereKey($item->id)->lockForUpdate()->first();
+
+            $existing = filled($clientUuid) ? $item->photos()->firstWhere('client_uuid', $clientUuid) : null;
+
+            if ($existing !== null) {
+                return $existing;
+            }
 
             $count = $item->photos()->count();
 
@@ -43,7 +49,7 @@ class AddItemPhoto
             ]);
         });
 
-        if ($created === null) {
+        if ($saved === null) {
             Storage::delete(array_filter([$path, $thumbPath]));
 
             throw ValidationException::withMessages([
@@ -51,10 +57,16 @@ class AddItemPhoto
             ]);
         }
 
-        if ($position !== null) {
-            (new MoveItemPhoto)->handle($created, $position);
+        if (! $saved->wasRecentlyCreated) {
+            Storage::delete(array_filter([$path, $thumbPath]));
+
+            return $saved;
         }
 
-        return $created->refresh();
+        if ($position !== null) {
+            (new MoveItemPhoto)->handle($saved, $position);
+        }
+
+        return $saved->refresh();
     }
 }

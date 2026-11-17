@@ -51,6 +51,23 @@ test('store can put the new photo first', function () {
     expect($item->photos()->pluck('id')->all())->toBe([$response->json('data.id'), $front->id]);
 });
 
+test('store reads the position of a multipart upload', function () {
+    Storage::fake();
+    $user = User::factory()->create();
+    $item = Item::factory()->for($user->currentTeam)->create();
+    [$first, $second] = ItemPhoto::factory()->for($item)->count(2)->sequence(['position' => 0], ['position' => 1])->create();
+
+    $response = $this->actingAs($user)
+        ->post(route('api.items.photos.store', [$user->currentTeam, $item]), [
+            'photo' => UploadedFile::fake()->image('new.jpg'),
+            'position' => '1',
+        ], ['Accept' => 'application/json'])
+        ->assertCreated()
+        ->assertJsonPath('data.position', 1);
+
+    expect($item->photos()->pluck('id')->all())->toBe([$first->id, $response->json('data.id'), $second->id]);
+});
+
 test('store returns the existing photo when a client uuid is retried', function () {
     Storage::fake();
     $user = User::factory()->create();
@@ -71,6 +88,26 @@ test('store returns the existing photo when a client uuid is retried', function 
         ->assertJsonPath('data.client_uuid', $uuid);
 
     expect($item->photos()->count())->toBe(1);
+});
+
+test('store returns the existing photo and drops the upload when a retry wins the race to insert it', function () {
+    Storage::fake();
+    $user = User::factory()->create();
+    $item = Item::factory()->for($user->currentTeam)->create();
+    $other = ItemPhoto::factory()->for($item)->create(['position' => 0]);
+    $uuid = (string) Str::uuid();
+    $raced = createAfterLookup('item_photos', 'client_uuid', fn () => ItemPhoto::factory()->for($item)->create(['position' => 1, 'client_uuid' => $uuid]), lookup: 2);
+
+    $this->actingAs($user)
+        ->post(route('api.items.photos.store', [$user->currentTeam, $item]), [
+            'photo' => UploadedFile::fake()->image('one.jpg'), 'position' => 0, 'client_uuid' => $uuid,
+        ], ['Accept' => 'application/json'])
+        ->assertOk()
+        ->assertJsonPath('data.id', $raced->model->id)
+        ->assertJsonPath('data.position', 1);
+
+    expect($item->photos()->pluck('id')->all())->toBe([$other->id, $raced->model->id])
+        ->and(Storage::allFiles())->toBeEmpty();
 });
 
 test('store allows up to ten photos', function () {
