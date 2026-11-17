@@ -70,7 +70,7 @@
                 variant="ghost"
                 font="semibold"
                 a11y-hint="Opens the registration screen"
-                @navigate.replace='/register'
+                @tap="showRegister"
             >
                 Sign up
             </button>

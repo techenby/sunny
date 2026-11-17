@@ -55,13 +55,18 @@ it('says so when password reset cannot open', function () {
         ->assertNoNavigation();
 });
 
-it('switches between the login and register screens without stacking them', function (string $from, string $link, string $to) {
+it('switches between the login and register screens without stacking them', function (string $from, string $link, string $to, string $returnLink, string $screen) {
     Native::visit($from)
         ->tap($link)
-        ->assertReplacedWith($to);
+        ->assertNavigatedTo($to)
+        ->follow()
+        ->tap($returnLink)
+        ->assertWentBack()
+        ->goBack()
+        ->assertScreen($screen);
 })->with([
-    'login to register' => ['/login', 'login-register-link', '/register'],
-    'register to login' => ['/register', 'register-login-link', '/login'],
+    'login to register' => ['/login', 'login-register-link', '/register', 'register-login-link', Login::class],
+    'register to login' => ['/register', 'register-login-link', '/login', 'login-register-link', Register::class],
 ]);
 
 it('validates login before contacting the API', function () {

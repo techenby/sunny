@@ -11,7 +11,7 @@
         <button ref="register-submit" variant="primary" size="lg" font="semibold" class="w-full" @tap="register">
             Create account
         </button>
-        <button ref="register-login-link" variant="ghost" font="semibold" @navigate.replace='/login'>
+        <button ref="register-login-link" variant="ghost" font="semibold" @tap="showLogin">
             Log in
         </button>
     </column>

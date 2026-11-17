@@ -16,6 +16,17 @@ class Register extends Component
         $this->error = Browser::inApp($url) ? '' : 'Unable to open registration. Please try again.';
     }
 
+    public function showLogin(): void
+    {
+        if ($this->data('from') === 'login') {
+            $this->back();
+
+            return;
+        }
+
+        $this->navigate('/login', ['from' => 'register']);
+    }
+
     public function render(): View
     {
         return view('native.register');
