@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
+use App\Actions\Recipes\CopyRecipeToTeam;
 use App\Actions\Recipes\CreateRecipe;
 use App\Actions\Recipes\DeleteRecipe;
 use App\Actions\Recipes\UpdateRecipe;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\CopyRecipeRequest;
 use App\Http\Requests\Api\StoreRecipeRequest;
 use App\Http\Requests\Api\UpdateRecipeRequest;
 use App\Http\Resources\RecipeResource;
@@ -36,6 +38,19 @@ class RecipeController extends Controller
             : null;
 
         return RecipeResource::make($existing ?? $action->handle($team, $request->validated()))
+            ->response()
+            ->setStatusCode($existing ? 200 : 201);
+    }
+
+    public function copy(CopyRecipeRequest $request, Team $team, Recipe $recipe, CopyRecipeToTeam $action): JsonResponse
+    {
+        $target = $request->user()->teams()->findOrFail($request->integer('team_id'));
+
+        $existing = $request->filled('client_uuid')
+            ? $target->recipes()->withTrashed()->firstWhere('client_uuid', $request->validated('client_uuid'))
+            : null;
+
+        return RecipeResource::make($existing ?? $action->handle($recipe, $target, $request->validated('client_uuid')))
             ->response()
             ->setStatusCode($existing ? 200 : 201);
     }
