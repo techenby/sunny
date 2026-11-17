@@ -250,6 +250,26 @@ class SunnyStore
 
     /**
      * @param  Collection<int, array>  $occurrences
+     */
+    public function saveRoutineDay(int $teamId, string $date, Collection $occurrences): void
+    {
+        DB::transaction(function () use ($teamId, $date, $occurrences): void {
+            $pending = PendingWrite::query()->forCurrentServer()->where('resource', 'routine_occurrence_steps')->get()->keyBy('record_id');
+            $existing = RoutineOccurrence::query()->where('team_id', $teamId)->where('due_on', $date)->pluck('id');
+            $localTicks = RoutineOccurrenceStep::query()->whereIn('routine_occurrence_id', $existing)->whereIn('id', $pending->keys())->pluck('completed_at', 'id');
+            RoutineOccurrenceStep::query()->whereIn('routine_occurrence_id', $existing)->delete();
+            RoutineOccurrence::query()->whereKey($existing)->delete();
+
+            $pendingTicks = $pending->map(fn (PendingWrite $write, int $id): mixed => $write->payload['completed'] ? ($localTicks[$id] ?? now()) : null);
+
+            $occurrences
+                ->filter(fn (array $occurrence): bool => $occurrence['routine']['team_id'] === $teamId && $occurrence['due_on'] === $date)
+                ->each(fn (array $occurrence) => $this->createRoutineOccurrence($occurrence, $pendingTicks));
+        });
+    }
+
+    /**
+     * @param  Collection<int, array>  $occurrences
      * @param  Collection<int, int>  $pendingStepIds
      */
     private function saveRoutineOccurrences(Collection $occurrences, Collection $pendingStepIds): void
@@ -259,27 +279,35 @@ class SunnyStore
         RoutineOccurrence::query()->delete();
 
         foreach ($occurrences as $occurrence) {
-            RoutineOccurrence::query()->create([
-                'id' => $occurrence['id'],
-                'server' => self::server(),
-                'team_id' => $occurrence['routine']['team_id'],
-                'routine_id' => $occurrence['routine_id'],
-                'due_on' => $occurrence['due_on'],
-                'name' => $occurrence['routine']['name'],
-                'time_of_day' => $occurrence['routine']['time_of_day'],
-                'assignee' => $occurrence['routine']['user']['name'] ?? null,
-            ]);
+            $this->createRoutineOccurrence($occurrence, $pendingTicks);
+        }
+    }
 
-            foreach ($occurrence['steps'] as $step) {
-                RoutineOccurrenceStep::query()->create([
-                    'id' => $step['id'],
-                    'server' => self::server(),
-                    'routine_occurrence_id' => $occurrence['id'],
-                    'name' => $step['name'],
-                    'position' => $step['position'] ?? null,
-                    'completed_at' => $pendingTicks->has($step['id']) ? $pendingTicks[$step['id']] : $step['completed_at'],
-                ]);
-            }
+    /**
+     * @param  Collection<int, mixed>  $pendingTicks
+     */
+    private function createRoutineOccurrence(array $occurrence, Collection $pendingTicks): void
+    {
+        RoutineOccurrence::query()->create([
+            'id' => $occurrence['id'],
+            'server' => self::server(),
+            'team_id' => $occurrence['routine']['team_id'],
+            'routine_id' => $occurrence['routine_id'],
+            'due_on' => $occurrence['due_on'],
+            'name' => $occurrence['routine']['name'],
+            'time_of_day' => $occurrence['routine']['time_of_day'],
+            'assignee' => $occurrence['routine']['user']['name'] ?? null,
+        ]);
+
+        foreach ($occurrence['steps'] as $step) {
+            RoutineOccurrenceStep::query()->create([
+                'id' => $step['id'],
+                'server' => self::server(),
+                'routine_occurrence_id' => $occurrence['id'],
+                'name' => $step['name'],
+                'position' => $step['position'] ?? null,
+                'completed_at' => $pendingTicks->has($step['id']) ? $pendingTicks[$step['id']] : $step['completed_at'],
+            ]);
         }
     }
 }

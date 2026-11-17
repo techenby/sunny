@@ -6,7 +6,9 @@ use App\Enums\ChecklistType;
 use App\Enums\ItemType;
 use App\Enums\RoutineFrequency;
 use App\Enums\TimeOfDay;
+use App\Http\Integrations\Sunny\Requests\GetRoutineOccurrencesRequest;
 use App\Http\Integrations\Sunny\Requests\SyncRequest;
+use App\Models\Team;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use UnexpectedValueException;
@@ -90,25 +92,47 @@ class SunnySync
             $rules['recipes.*.'.$field.'.*.text'] = ['required', 'string'];
         }
 
-        $rules['routine_occurrences'] = ['present', 'array', 'list'];
-        $rules['routine_occurrences.*.id'] = ['required', 'integer', 'min:1', 'distinct'];
-        $rules['routine_occurrences.*.routine_id'] = ['required', 'integer', 'min:1'];
-        $rules['routine_occurrences.*.due_on'] = ['required', 'date_format:Y-m-d'];
-        $rules['routine_occurrences.*.routine'] = ['required', 'array'];
-        $rules['routine_occurrences.*.routine.team_id'] = ['required', 'integer', 'min:1'];
-        $rules['routine_occurrences.*.routine.name'] = ['required', 'string'];
-        $rules['routine_occurrences.*.routine.time_of_day'] = ['required', Rule::enum(TimeOfDay::class)];
-        $rules['routine_occurrences.*.routine.user'] = ['nullable', 'array'];
-        $rules['routine_occurrences.*.routine.user.name'] = ['required_with:routine_occurrences.*.routine.user', 'string'];
-        $rules['routine_occurrences.*.steps'] = ['present', 'array', 'list'];
-        $rules['routine_occurrences.*.steps.*.id'] = ['required', 'integer', 'min:1', 'distinct'];
-        $rules['routine_occurrences.*.steps.*.name'] = ['required', 'string'];
-        $rules['routine_occurrences.*.steps.*.position'] = ['nullable', 'integer'];
-        $rules['routine_occurrences.*.steps.*.completed_at'] = ['nullable', 'date'];
+        $rules = [...$rules, ...$this->routineOccurrenceRules('routine_occurrences')];
 
         Validator::make($snapshot, $rules)->validate();
 
         $this->store->applySnapshot($snapshot);
         $this->thumbnails->refresh();
+    }
+
+    public function fetchRoutineDay(int $teamId, string $date, #[\SensitiveParameter] ?string $token = null): void
+    {
+        $team = Team::query()->where('server', SunnyStore::server())->findOrFail($teamId);
+        throw_unless($team->slug, UnexpectedValueException::class, 'Sync with Sunny before loading other days.');
+        $response = $this->auth->authenticatedConnector($token)->send(new GetRoutineOccurrencesRequest($team->slug, $date))->json();
+        throw_unless(is_array($response), UnexpectedValueException::class, 'Invalid routines response.');
+
+        Validator::make($response, $this->routineOccurrenceRules('data'))->validate();
+
+        $this->store->saveRoutineDay($team->id, $date, collect($response['data']));
+    }
+
+    /**
+     * @return array<string, list<mixed>>
+     */
+    private function routineOccurrenceRules(string $key): array
+    {
+        return [
+            $key => ['present', 'array', 'list'],
+            $key.'.*.id' => ['required', 'integer', 'min:1', 'distinct'],
+            $key.'.*.routine_id' => ['required', 'integer', 'min:1'],
+            $key.'.*.due_on' => ['required', 'date_format:Y-m-d'],
+            $key.'.*.routine' => ['required', 'array'],
+            $key.'.*.routine.team_id' => ['required', 'integer', 'min:1'],
+            $key.'.*.routine.name' => ['required', 'string'],
+            $key.'.*.routine.time_of_day' => ['required', Rule::enum(TimeOfDay::class)],
+            $key.'.*.routine.user' => ['nullable', 'array'],
+            $key.'.*.routine.user.name' => ['required_with:'.$key.'.*.routine.user', 'string'],
+            $key.'.*.steps' => ['present', 'array', 'list'],
+            $key.'.*.steps.*.id' => ['required', 'integer', 'min:1', 'distinct'],
+            $key.'.*.steps.*.name' => ['required', 'string'],
+            $key.'.*.steps.*.position' => ['nullable', 'integer'],
+            $key.'.*.steps.*.completed_at' => ['nullable', 'date'],
+        ];
     }
 }
