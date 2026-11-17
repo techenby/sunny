@@ -31,6 +31,22 @@ test('it moves an item to another team of the user', function () {
         ->and($item->parent_id)->toBeNull();
 });
 
+test('it moves a container together with its contents', function () {
+    $user = User::factory()->create();
+    $otherTeam = Team::factory()->create();
+    $user->teams()->attach($otherTeam, ['role' => TeamRole::Member]);
+    $toolbox = Item::factory()->bin()->for($user->currentTeam)->create();
+    $tray = Item::factory()->bin()->childOf($toolbox)->create();
+    $hammer = Item::factory()->item()->childOf($tray)->create();
+
+    SunnyTestServer::actingAs($user)
+        ->tool(MoveItemToTeam::class, ['id' => $toolbox->id, 'team_id' => $otherTeam->id])
+        ->assertOk();
+
+    expect($tray->fresh())->team_id->toBe($otherTeam->id)->parent_id->toBe($toolbox->id)
+        ->and($hammer->fresh())->team_id->toBe($otherTeam->id)->parent_id->toBe($tray->id);
+});
+
 test('it requires an id and team_id', function () {
     $user = User::factory()->create();
 
