@@ -1,0 +1,73 @@
+diff --git a/nativephp.json b/nativephp.json
+index e22fe79..e68a385 100644
+--- a/nativephp.json
++++ b/nativephp.json
+@@ -63,8 +63,6 @@
+         "min_version": 26,
+         "permissions": [
+             "android.permission.POST_NOTIFICATIONS",
+-            "android.permission.SCHEDULE_EXACT_ALARM",
+-            "android.permission.USE_EXACT_ALARM",
+             "android.permission.RECEIVE_BOOT_COMPLETED"
+         ],
+         "dependencies": {
+diff --git a/resources/android/LocalNotificationFunctions.kt b/resources/android/LocalNotificationFunctions.kt
+index 42abab9..095e745 100644
+--- a/resources/android/LocalNotificationFunctions.kt
++++ b/resources/android/LocalNotificationFunctions.kt
+@@ -194,23 +194,19 @@ object LocalNotificationFunctions {
+             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+         )
+ 
++        setAlarm(context, triggerAtMillis, pendingIntent)
++
++        Log.d(TAG, "Recurring alarm scheduled: id=$id, frequency=$frequency, triggerAt=$triggerAtMillis")
++    }
++
++    private fun setAlarm(context: Context, triggerAtMillis: Long, pendingIntent: PendingIntent) {
+         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+ 
+-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+-            alarmManager.setExactAndAllowWhileIdle(
+-                AlarmManager.RTC_WAKEUP,
+-                triggerAtMillis,
+-                pendingIntent
+-            )
++        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S || alarmManager.canScheduleExactAlarms()) {
++            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent)
+         } else {
+-            alarmManager.setExact(
+-                AlarmManager.RTC_WAKEUP,
+-                triggerAtMillis,
+-                pendingIntent
+-            )
++            alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent)
+         }
+-
+-        Log.d(TAG, "Recurring alarm scheduled: id=$id, frequency=$frequency, triggerAt=$triggerAtMillis")
+     }
+ 
+     /**
+@@ -663,21 +659,7 @@ object LocalNotificationFunctions {
+                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                 )
+ 
+-                val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+-
+-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+-                    alarmManager.setExactAndAllowWhileIdle(
+-                        AlarmManager.RTC_WAKEUP,
+-                        triggerAtMillis,
+-                        pendingIntent
+-                    )
+-                } else {
+-                    alarmManager.setExact(
+-                        AlarmManager.RTC_WAKEUP,
+-                        triggerAtMillis,
+-                        pendingIntent
+-                    )
+-                }
++                setAlarm(context, triggerAtMillis, pendingIntent)
+ 
+                 Log.d(TAG, "Notification scheduled successfully: $id")
+                 mapOf("success" to true, "id" to id)
