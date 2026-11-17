@@ -153,6 +153,8 @@ user belongs to.
 | `GET` | `/api/teams/{team}/checklists/{checklist}` | Read a list with its items. |
 | `PATCH` | `/api/teams/{team}/checklists/{checklist}` | Update a list. |
 | `DELETE` | `/api/teams/{team}/checklists/{checklist}` | Delete a list. |
+| `POST` | `/api/teams/{team}/checklists/{checklist}/clear-completed` | Remove a list's checked items. |
+| `POST` | `/api/teams/{team}/checklists/{checklist}/reset` | Uncheck every item on a list. |
 | `GET` | `/api/teams/{team}/checklists/{checklist}/items` | List a list's items in order. |
 | `POST` | `/api/teams/{team}/checklists/{checklist}/items` | Add an item to the end of a list. |
 | `GET` | `/api/teams/{team}/checklists/{checklist}/items/{item}` | Read a list item. |
@@ -265,6 +267,10 @@ SunnyHome records when the item was checked and by whom in `completed_at` and
 `completed_by`. Checking an item that is already checked, or unchecking one
 that isn't, leaves it unchanged, so a client can safely send the same change
 again.
+
+`clear-completed` permanently removes a list's checked items, and `reset`
+unchecks every item so the list can be used again. Neither takes a body. Both
+return the list with its remaining items, and both can safely be sent again.
 
 ## Retrying creates
 

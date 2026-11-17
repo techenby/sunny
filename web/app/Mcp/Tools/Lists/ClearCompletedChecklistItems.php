@@ -30,7 +30,7 @@ class ClearCompletedChecklistItems extends Tool
 
         Gate::forUser($request->user())->authorize('update', $checklist);
 
-        $count = $checklist->items()->completed()->delete();
+        $count = $checklist->clearCompleted();
 
         return Response::text(sprintf(
             'Removed %d completed %s from the list "%s".',

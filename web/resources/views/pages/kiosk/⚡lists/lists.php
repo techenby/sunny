@@ -111,7 +111,7 @@ new #[Layout('layouts::kiosk')] class extends Component
 
         $this->authorize('update', $list);
 
-        $list->items()->completed()->delete();
+        $list->clearCompleted();
 
         unset($this->lists, $this->list);
     }

@@ -57,6 +57,11 @@ class Checklist extends Model
         return (int) round($this->items()->whereNotNull('completed_at')->count() / $total * 100);
     }
 
+    public function clearCompleted(): int
+    {
+        return $this->items()->completed()->delete();
+    }
+
     public function reset(): void
     {
         $this->items()->update([
