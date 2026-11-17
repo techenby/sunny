@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\CalendarEventController;
 use App\Http\Controllers\Api\CalendarFeedController;
 use App\Http\Controllers\Api\ChecklistController;
 use App\Http\Controllers\Api\ChecklistItemController;
+use App\Http\Controllers\Api\InvitationController;
 use App\Http\Controllers\Api\ItemController;
 use App\Http\Controllers\Api\ItemPhotoController;
 use App\Http\Controllers\Api\OnboardingController;
@@ -17,6 +18,9 @@ use App\Http\Controllers\Api\RoutineOccurrenceStepController;
 use App\Http\Controllers\Api\RoutineStepController;
 use App\Http\Controllers\Api\SharedRecipeController;
 use App\Http\Controllers\Api\SyncController;
+use App\Http\Controllers\Api\TeamController;
+use App\Http\Controllers\Api\TeamInvitationController;
+use App\Http\Controllers\Api\TeamMemberController;
 use App\Http\Controllers\Api\TokenController;
 use App\Http\Middleware\EnsureTeamMembership;
 use App\Http\Resources\UserResource;
@@ -45,10 +49,23 @@ Route::middleware('auth:sanctum')
         Route::get('shared-recipes/{recipe:share_token}', [SharedRecipeController::class, 'show'])->name('shared-recipes.show');
         Route::post('shared-recipes/{recipe:share_token}/save', [SharedRecipeController::class, 'save'])->name('shared-recipes.save');
 
+        Route::post('teams', [TeamController::class, 'store'])->name('teams.store');
+        Route::get('invitations', [InvitationController::class, 'index'])->name('invitations.index');
+        Route::post('invitations/{invitation}/accept', [InvitationController::class, 'accept'])->name('invitations.accept');
+        Route::post('invitations/{invitation}/decline', [InvitationController::class, 'decline'])->name('invitations.decline');
+
         Route::prefix('teams/{team}')
             ->middleware(EnsureTeamMembership::class)
             ->scopeBindings()
             ->group(function (): void {
+                Route::patch('/', [TeamController::class, 'update'])->name('teams.update');
+                Route::post('leave', [TeamController::class, 'leave'])->name('teams.leave');
+                Route::patch('members/{member}', [TeamMemberController::class, 'update'])->name('teams.members.update');
+                Route::delete('members/{member}', [TeamMemberController::class, 'destroy'])->name('teams.members.destroy');
+                Route::get('invitations', [TeamInvitationController::class, 'index'])->name('teams.invitations.index');
+                Route::post('invitations', [TeamInvitationController::class, 'store'])->name('teams.invitations.store');
+                Route::delete('invitations/{invitation}', [TeamInvitationController::class, 'destroy'])->name('teams.invitations.destroy');
+
                 Route::get('items', [ItemController::class, 'index'])->name('items.index');
                 Route::post('items', [ItemController::class, 'store'])->name('items.store');
                 Route::post('items/{item}/duplicate', [ItemController::class, 'duplicate'])->name('items.duplicate');

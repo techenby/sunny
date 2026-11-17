@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\Teams\CreateTeam;
+use App\Actions\Teams\LeaveTeam;
 use App\Models\Team;
 use App\Rules\TeamName;
 use App\Data\UserTeam;
@@ -31,20 +32,13 @@ new class extends Component {
         $this->redirectRoute('teams.edit', ['team' => $team->slug], navigate: true);
     }
 
-    public function leaveTeam(int $teamId): void
+    public function leaveTeam(LeaveTeam $leaveTeam, int $teamId): void
     {
         $team = Team::findOrFail($teamId);
-        $user = Auth::user();
 
         Gate::authorize('leave', $team);
 
-        $fallbackTeam = $user->isCurrentTeam($team) ? $user->fallbackTeam($team) : null;
-
-        $team->memberships()->where('user_id', $user->id)->delete();
-
-        if ($fallbackTeam) {
-            $user->switchTeam($fallbackTeam);
-        }
+        $leaveTeam->handle(Auth::user(), $team);
 
         $this->dispatch('close-modal', name: "leave-team-{$teamId}");
 

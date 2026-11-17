@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools\Teams;
 
+use App\Actions\Teams\UpdateTeam as UpdateTeamAction;
 use App\Mcp\Tools\Teams\Concerns\FormatsTeams;
-use App\Models\Team;
 use App\Rules\TeamName;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
@@ -23,7 +22,7 @@ class UpdateTeam extends Tool
 {
     use FormatsTeams;
 
-    public function handle(Request $request): Response|ResponseFactory
+    public function handle(Request $request, UpdateTeamAction $updateTeam): Response|ResponseFactory
     {
         $user = $request->user();
         $currentTeam = $user->currentTeam;
@@ -40,13 +39,7 @@ class UpdateTeam extends Tool
             'name.required' => 'You must provide a new name for the team.',
         ]);
 
-        $team = DB::transaction(function () use ($currentTeam, $validated) {
-            $team = Team::whereKey($currentTeam->id)->lockForUpdate()->firstOrFail();
-
-            $team->update(['name' => $validated['name']]);
-
-            return $team;
-        });
+        $team = $updateTeam->handle($currentTeam, ['name' => $validated['name']]);
 
         return Response::structured($this->teamData($team, $user->teamRole($team), true));
     }

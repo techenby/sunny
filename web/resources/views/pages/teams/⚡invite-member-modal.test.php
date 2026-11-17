@@ -61,3 +61,15 @@ test('a pending invitation blocks a second one', function () {
     expect($pending->fresh())->not->toBeNull();
     Notification::assertNothingSent();
 });
+
+test('nobody can be invited as an owner', function () {
+    Livewire::actingAs($this->nami)
+        ->test('pages::teams.invite-member-modal', ['team' => $this->crew])
+        ->set('inviteEmail', 'zoro@strawhat.pirates')
+        ->set('inviteRole', 'owner')
+        ->call('createInvitation')
+        ->assertHasErrors('inviteRole');
+
+    expect($this->crew->invitations()->exists())->toBeFalse();
+    Notification::assertNothingSent();
+});

@@ -133,6 +133,17 @@ user belongs to.
 | `PATCH` | `/api/user` | Change the user's `name` and/or `email`. Returns the user. |
 | `PUT` | `/api/user/password` | Change the password with `current_password`, `password` and `password_confirmation`. |
 | `POST` | `/api/user/email/verification-notification` | Send the email verification link again. |
+| `POST` | `/api/teams` | Create a team the user owns. |
+| `PATCH` | `/api/teams/{team}` | Rename a team or change its timezone, week start or address. |
+| `POST` | `/api/teams/{team}/leave` | Leave a team. |
+| `PATCH` | `/api/teams/{team}/members/{user}` | Change a member's role. |
+| `DELETE` | `/api/teams/{team}/members/{user}` | Remove a member. |
+| `GET` | `/api/teams/{team}/invitations` | List the team's invitations that haven't been accepted. |
+| `POST` | `/api/teams/{team}/invitations` | Invite someone by email. |
+| `DELETE` | `/api/teams/{team}/invitations/{code}` | Cancel an invitation. |
+| `GET` | `/api/invitations` | List the pending invitations sent to the user's email. |
+| `POST` | `/api/invitations/{code}/accept` | Join the team. |
+| `POST` | `/api/invitations/{code}/decline` | Decline and delete the invitation. |
 | `GET` | `/api/sync` | Synchronize all accessible teams, recipes, items, lists, and routines. |
 | `POST` | `/api/sanctum/token/two-factor` | Complete a two-factor challenge. |
 | `POST` | `/api/sanctum/token/refresh` | Exchange the current token for a new one. |
@@ -185,6 +196,33 @@ Profile changes use the same rules as Settings on the web. Fields left out of
 the link and `204` when the email is already verified. Password changes return
 `204`, and password changes and verification emails are limited to 6 requests
 a minute.
+
+## Teams
+
+Team endpoints follow the same rules and permissions as the web's team
+settings, and they need a connection: don't queue them for later.
+
+- Anyone can create a team (`name`). Creating or joining a team doesn't change
+  the user's current team in SunnyHome.
+- Owners and admins can update a team with any of `name`, `timezone`,
+  `week_start` (0 is Sunday) and `address` (all of `address`, `city`, `state`,
+  `zip`, `lat`, `long`). Renaming a team changes its `slug`.
+- Admins and members can leave. Owners can't leave, and nobody can leave a
+  personal team.
+- Only the owner can change roles (`admin` or `member`) and remove members. The
+  owner can't be changed or removed (`404`).
+- Every member can list invitations. Owners and admins can invite (`email`,
+  `role`), which emails a link, and cancel. Invitations expire after 3 days.
+- Accepting or declining an invitation sent to another email address, or one
+  that has expired, fails with a `422` on `invitation`.
+- Retrying is safe. Accepting an invitation that's already accepted returns
+  the team if the user is a member, and declining one that's already gone
+  returns `204`. Accepting one that was declined returns `404`.
+
+Team responses are the team as in `GET /api/sync`, with its `members`.
+Invitations have `code`, `email`, `role`, `expires_at` and `created_at`, and
+`GET /api/invitations` adds `team` (`id`, `name`, `slug`) and `inviter`
+(`id`, `name`). Deleting a team and transferring ownership are web only.
 
 ## Item payloads
 
@@ -375,7 +413,7 @@ today and tomorrow in each team's timezone, shaped like the
 Expect standard Laravel JSON errors:
 
 - `401` when the token is missing, invalid, or expired.
-- `403` when the user doesn't belong to the team in the URL.
+- `403` when the user doesn't belong to the team in the URL or isn't allowed to do something.
 - `404` when the record doesn't exist or belongs to a different team.
 - `422` when validation fails.
 - `429` when too many token or two-factor requests are made.
