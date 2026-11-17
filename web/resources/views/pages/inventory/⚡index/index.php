@@ -296,8 +296,13 @@ new class extends Component
     {
         $this->validate([
             'moveItemId' => ['required', 'integer'],
-            'moveToTeamId' => ['required', 'integer', Rule::exists('team_members', 'team_id')->where('user_id', Auth::id())],
-        ]);
+            'moveToTeamId' => [
+                'required',
+                'integer',
+                Rule::notIn([Auth::user()->current_team_id]),
+                Rule::exists('team_members', 'team_id')->where('user_id', Auth::id()),
+            ],
+        ], attributes: ['moveToTeamId' => __('team')]);
 
         $item = Auth::user()->currentTeam->items()->findOrFail($this->moveItemId);
         $this->authorize('move', $item);
