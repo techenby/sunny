@@ -35,6 +35,7 @@ new #[Layout('layouts::kiosk')] class extends Component
     {
         return $this->team
             ->calendarFeeds()
+            ->orderBy('name')
             ->get();
     }
 

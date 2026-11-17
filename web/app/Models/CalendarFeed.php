@@ -14,7 +14,7 @@ use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
 use Throwable;
 
-#[Fillable(['team_id', 'name', 'url', 'color'])]
+#[Fillable(['team_id', 'name', 'url', 'color', 'client_uuid'])]
 class CalendarFeed extends Model
 {
     /** @use HasFactory<CalendarFeedFactory> */
