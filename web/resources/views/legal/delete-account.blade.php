@@ -59,7 +59,7 @@
         <ul class="mt-4 list-disc space-y-2 ps-5 text-base text-zinc-500 dark:text-white/70 [&_strong]:font-medium [&_strong]:text-zinc-800 dark:[&_strong]:text-white">
             <li><strong>Shared team content:</strong> recipes, inventory, photos, lists, routines, and anything else you added to a team you share stays with that team, so its other members can keep using it.</li>
             <li><strong>Crash reports:</strong> if you chose to share crash reports from the mobile app, NativeWatch keeps them for up to 90 days. Email us to have them deleted sooner.</li>
-            <li><strong>Email records:</strong> Bento, the service we use to send email, keeps your name and email address until you ask us to remove them.</li>
+            <li><strong>Email records:</strong> when you delete your account, we ask Bento, the service we use to send email, to delete your name and email address. Bento may keep some records it needs for legal or security reasons.</li>
         </ul>
 
         <flux:text size="lg" class="mt-10">
