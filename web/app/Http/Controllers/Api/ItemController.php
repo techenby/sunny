@@ -6,6 +6,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Actions\Inventory\CreateItem;
 use App\Actions\Inventory\DuplicateItem;
+use App\Actions\Inventory\ForceDeleteItem;
+use App\Actions\Inventory\RestoreItem;
 use App\Actions\Inventory\UpdateItem;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\DuplicateItemRequest;
@@ -69,6 +71,26 @@ class ItemController extends Controller
         Gate::authorize('delete', $item);
 
         $item->purge();
+
+        return response()->noContent();
+    }
+
+    public function restore(Team $team, Item $item, RestoreItem $action): ItemResource
+    {
+        Gate::authorize('restore', $item);
+
+        abort_unless($item->trashed(), 404);
+
+        return ItemResource::make($action->handle($item));
+    }
+
+    public function forceDestroy(Team $team, Item $item, ForceDeleteItem $action): Response
+    {
+        Gate::authorize('forceDelete', $item);
+
+        abort_unless($item->trashed(), 404);
+
+        $action->handle($item);
 
         return response()->noContent();
     }
