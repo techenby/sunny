@@ -83,3 +83,24 @@ test('it copies the thumbnail to a new file for each duplicate', function () {
 
     expect($copies->map(fn (Item $copy) => $copy->photos()->first()->thumb_path)->unique())->toHaveCount(2);
 });
+
+test('a failure part-way leaves no copies and no copied photo files', function () {
+    Storage::fake();
+    $item = Item::factory()->create(['name' => 'Guitar']);
+    $photo = "teams/{$item->team_id}/items/guitar.jpg";
+    $thumb = "teams/{$item->team_id}/items/thumbs/guitar-abcd1234.jpg";
+    Storage::put($photo, 'photo');
+    Storage::put($thumb, 'thumb');
+    ItemPhoto::factory()->for($item)->create(['path' => $photo, 'thumb_path' => $thumb]);
+
+    $created = 0;
+    ItemPhoto::creating(function () use (&$created): void {
+        throw_if(++$created === 2, RuntimeException::class, 'Disk full');
+    });
+
+    expect(fn () => (new DuplicateItem)->handle($item, 3))->toThrow(RuntimeException::class, 'Disk full');
+
+    expect(Item::count())->toBe(1)
+        ->and(ItemPhoto::count())->toBe(1)
+        ->and(Storage::allFiles())->toEqualCanonicalizing([$photo, $thumb]);
+});
