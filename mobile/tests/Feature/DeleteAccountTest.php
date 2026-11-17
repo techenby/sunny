@@ -4,8 +4,10 @@ use App\Http\Integrations\Sunny\Requests\DeleteAccountRequest;
 use App\Http\Integrations\Sunny\SunnyConnector;
 use App\Http\Integrations\Sunny\SunnyOutbox;
 use App\Http\Integrations\Sunny\SunnyStore;
+use App\Http\Integrations\Sunny\SunnyTeam;
 use App\Models\PendingWrite;
 use App\Models\Recipe;
+use App\Models\Team;
 use Native\Mobile\Testing\Native;
 use Saloon\Http\Faking\MockResponse;
 use Saloon\Http\Request;
@@ -70,24 +72,43 @@ it('keeps the account and its data when Sunny refuses', function (int $status, a
     'server error' => [500, [], 'Sunny is unavailable right now. Your account was not deleted.'],
 ]);
 
-it('opens the settings of a shared team that blocks deletion', function (): void {
+it('opens the team screen for a shared team that blocks deletion', function (): void {
+    Team::create(['id' => 2, 'server' => SunnyStore::server(), 'name' => 'Lake Cabin', 'slug' => 'lake-cabin']);
     Saloon::fake([DeleteAccountRequest::class => MockResponse::make([
-        'message' => 'Other people still use Family.',
-        'errors' => ['teams' => ['Other people still use Family.']],
-        'blocking_teams' => [['name' => 'Family', 'slug' => 'family']],
+        'message' => 'Other people still use Lake Cabin.',
+        'errors' => ['teams' => ['Other people still use Lake Cabin.']],
+        'blocking_teams' => [['name' => 'Lake Cabin', 'slug' => 'lake-cabin']],
     ], 422)]);
     Native::fakeBridge()->respondTo('Browser.OpenInApp', ['success' => true]);
 
     Native::visit('/preferences/delete-account', platform: 'ios')
         ->input('delete-account-password', 'secret')
         ->tap('delete-account-submit')
-        ->assertSee('Other people still use Family.')
-        ->assertSee('Open Family settings')
+        ->assertSee('Other people still use Lake Cabin.')
+        ->assertSee('Open Lake Cabin settings')
         ->assertAccessible()
-        ->tap('delete-account-team-family')
+        ->tap('delete-account-team-lake-cabin')
+        ->assertNavigatedTo('/preferences/team');
+
+    expect(app(SunnyTeam::class)->current()->id)->toBe(2);
+    Native::fakeBridge()->assertNotCalled('Browser.OpenInApp');
+});
+
+it('opens the team’s settings on the website when the team isn’t on the phone yet', function (): void {
+    Saloon::fake([DeleteAccountRequest::class => MockResponse::make([
+        'message' => 'Other people still use Lake Cabin.',
+        'errors' => ['teams' => ['Other people still use Lake Cabin.']],
+        'blocking_teams' => [['name' => 'Lake Cabin', 'slug' => 'lake-cabin']],
+    ], 422)]);
+    Native::fakeBridge()->respondTo('Browser.OpenInApp', ['success' => true]);
+
+    Native::visit('/preferences/delete-account')
+        ->input('delete-account-password', 'secret')
+        ->tap('delete-account-submit')
+        ->tap('delete-account-team-lake-cabin')
         ->assertNoNavigation();
 
-    Native::fakeBridge()->assertCalled('Browser.OpenInApp', fn (array $params): bool => $params['url'] === app(SunnyConnector::class)->siteUrl().'/settings/teams/family');
+    Native::fakeBridge()->assertCalled('Browser.OpenInApp', fn (array $params): bool => $params['url'] === app(SunnyConnector::class)->siteUrl().'/settings/teams/lake-cabin');
 });
 
 it('only opens settings for a team that blocked deletion', function (): void {

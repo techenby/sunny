@@ -3,6 +3,7 @@
 namespace App\NativeComponents;
 
 use App\Actions\DestroySession;
+use App\Concerns\AnswersInvitations;
 use App\Concerns\ChecksSunnySync;
 use App\Enums\ItemType;
 use App\Http\Integrations\Sunny\SunnyStore;
@@ -27,6 +28,7 @@ use Saloon\Exceptions\Request\Statuses\UnauthorizedException;
 
 class Dashboard extends Component
 {
+    use AnswersInvitations;
     use ChecksSunnySync;
 
     public string $syncError = '';
@@ -147,7 +149,12 @@ class Dashboard extends Component
 
     private function refreshLocalData(): void
     {
-        unset($this->recentRecipes, $this->recentItems, $this->teamOptions);
+        unset($this->recentRecipes, $this->recentItems, $this->teamOptions, $this->invitations);
+    }
+
+    protected function invitationsChanged(): void
+    {
+        $this->refreshLocalData();
     }
 
     protected function refreshLocalSyncedData(): void

@@ -40,7 +40,7 @@
                 variant="secondary"
                 size="lg"
                 font="semibold"
-                a11y-hint="Opens the team’s settings on the Sunny website"
+                a11y-hint="Opens the team’s settings"
                 class="w-full"
                 @tap="openTeamSettings('{{ $slug }}')"
             >

@@ -2,6 +2,7 @@
 
 namespace App\NativeComponents;
 
+use App\Concerns\AnswersInvitations;
 use App\Http\Integrations\Sunny\SunnyAccount;
 use App\Http\Integrations\Sunny\SunnyAuth;
 use App\Http\Integrations\Sunny\SunnyConnector;
@@ -24,6 +25,8 @@ use Saloon\Exceptions\Request\RequestException;
 
 class Preferences extends Component
 {
+    use AnswersInvitations;
+
     /** @var array{name: string, email: string, verified: bool}|null */
     public ?array $profile = null;
 
@@ -48,6 +51,37 @@ class Preferences extends Component
     public function onResume(): void
     {
         $this->profile = app(SunnyStore::class)->profile() ?? $this->profile;
+        $this->activeTeamId = app(SunnyTeam::class)->current()?->id;
+        unset($this->teamOptions, $this->currentTeam, $this->invitations);
+    }
+
+    /**
+     * @return array{name: string, summary: string}|null
+     */
+    #[Computed]
+    public function currentTeam(): ?array
+    {
+        $team = app(SunnyTeam::class)->current();
+
+        if ($team === null) {
+            return null;
+        }
+
+        $members = count($team->memberList());
+        $invitations = count($team->invitationList());
+
+        return [
+            'name' => $team->name,
+            'summary' => collect([
+                $members > 0 ? $members.' '.str('member')->plural($members) : null,
+                $invitations > 0 ? $invitations.' '.str('invitation')->plural($invitations) : null,
+            ])->filter()->implode(' · ') ?: 'Members, invitations and household settings',
+        ];
+    }
+
+    protected function invitationsChanged(): void
+    {
+        unset($this->invitations, $this->teamOptions, $this->currentTeam);
     }
 
     public static function initials(string $name): string
@@ -77,6 +111,7 @@ class Preferences extends Component
         if (array_key_exists($id, $this->teamOptions)) {
             app(SunnyTeam::class)->select($id);
             $this->activeTeamId = $id;
+            unset($this->currentTeam);
         }
     }
 
