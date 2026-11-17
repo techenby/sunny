@@ -38,8 +38,38 @@ It can't change anything compiled into the app. These need a new store build:
 - the patches in `mobile/patches/`, when they touch native code
 - the OTA mode, for phones that haven't installed an update yet
 
-Big redesigns, new features, or changes to what the store listing describes should go through review as a store build
-even when they'd technically fit in an update.
+## Store rules
+
+Google Play only lets an app update itself outside Play when the update is interpreted code that reaches Android APIs
+indirectly, and App Review has a similar rule for code downloaded at runtime. An OTA payload is PHP, Blade and web
+assets run by the app's embedded interpreter, so it fits, as long as it doesn't change what the app does:
+
+- **OTA:** bug fixes and small UI, copy or content changes.
+- **Store build:** new features, new plugins or permissions, and anything that changes what data the app collects or
+  sends. Play Data safety and App Privacy describe the reviewed build, so these changes go through review to keep those
+  answers accurate.
+
+To tell which one a change needs, check the diff. It needs a store build if any of these is true:
+
+- It adds, removes or updates a NativePHP plugin, `nativephp/mobile` or `nativephp/mobile-ui`, or touches
+  `NativeServiceProvider::plugins()`, `config/nativephp.php` or a native patch in `mobile/patches/`.
+- It collects or sends data the app didn't before (a new field, upload, SDK or third-party service), so Data safety or
+  App Privacy would need a new answer.
+- It's a feature you'd mention in the store listing or release notes, not a fix.
+
+### What the fingerprint enforces
+
+Bifrost records a fingerprint of each store build's native setup and signs every release for one project, Arc and
+fingerprint. Before an update reaches the app, the plugin's native code checks Bifrost's signature against the
+fingerprint the app was built with, using a key compiled into the app, and throws away anything signed for a different
+fingerprint. A build with no fingerprint never checks for updates. The fingerprint comes from the store build's `.env`,
+which the app keeps when it applies an update. Keep `config/nativephp-ota.php` reading the fingerprint, Arc and project
+from the environment, and never hard-code them there.
+
+Bifrost works out the fingerprint itself and doesn't publish exactly what goes into it. Its docs list plugins,
+`nativephp/mobile`, `nativephp/mobile-ui` and the native settings in `config/nativephp.php` (permissions included) as
+changes that need a store build. The fingerprint keeps native changes out of an update. It can't tell a fix from a
+feature, so the list above is still on us.
 
 ## Arcs
 
@@ -53,7 +83,7 @@ TestFlight first: an OTA release goes to everyone running a matching Production 
 
 1. Make sure a store build with the plugin has passed review and reached phones. Phones running a build without the
    plugin can't receive updates.
-2. Merge the change to `main`. Check it doesn't touch anything in the "can't change" list above.
+2. Merge the change to `main`. Check it against the [store rules](#store-rules) above.
 3. In Bifrost, click **Ship It!**, pick the mobile project and `main`, choose the **OTA** build type and the
    Production Arc. If the commit's native setup doesn't match a shipped build, Bifrost says what changed and you need
    a store build instead.
