@@ -1,5 +1,7 @@
 <?php
 
+use App\Actions\Teams\AcceptTeamInvitation;
+use App\Actions\Teams\LeaveTeam;
 use App\Enums\TeamRole;
 use App\Models\Team;
 use App\Models\TeamInvitation;
@@ -24,12 +26,12 @@ test('owners can invite someone to the team', function () {
         ->call('createInvitation')
         ->assertHasNoErrors();
 
-    expect($this->crew->invitations()->where('email', 'zoro@strawhat.pirates')->whereNull('accepted_at')->exists())->toBeTrue();
+    expect($this->crew->invitations()->where('email', 'zoro@strawhat.pirates')->exists())->toBeTrue();
     Notification::assertSentTo(new AnonymousNotifiable, TeamInvitationNotification::class);
 });
 
-test('someone who left the team can be invited again', function (string $state, string $oldEmail) {
-    $old = TeamInvitation::factory()->for($this->crew)->{$state}()->create(['email' => $oldEmail]);
+test('an expired invitation is replaced by a new one', function (string $oldEmail) {
+    $old = TeamInvitation::factory()->for($this->crew)->expired()->create(['email' => $oldEmail]);
 
     Livewire::actingAs($this->nami)
         ->test('pages::teams.invite-member-modal', ['team' => $this->crew])
@@ -41,13 +43,26 @@ test('someone who left the team can be invited again', function (string $state, 
 
     expect($old->fresh())->toBeNull()
         ->and($invitations)->toHaveCount(1)
-        ->and($invitations->first()->accepted_at)->toBeNull()
         ->and($invitations->first()->isExpired())->toBeFalse();
 })->with([
-    'accepted' => ['accepted', 'zoro@strawhat.pirates'],
-    'expired' => ['expired', 'zoro@strawhat.pirates'],
-    'accepted with different casing' => ['accepted', 'Zoro@StrawHat.Pirates'],
+    'same casing' => ['zoro@strawhat.pirates'],
+    'different casing' => ['Zoro@StrawHat.Pirates'],
 ]);
+
+test('someone who accepted an invitation and left the team can be invited again', function () {
+    $zoro = User::factory()->create(['email' => 'zoro@strawhat.pirates']);
+    $invitation = TeamInvitation::factory()->for($this->crew)->create(['email' => 'zoro@strawhat.pirates']);
+    resolve(AcceptTeamInvitation::class)->handle($zoro, $invitation);
+    resolve(LeaveTeam::class)->handle($zoro, $this->crew);
+
+    Livewire::actingAs($this->nami)
+        ->test('pages::teams.invite-member-modal', ['team' => $this->crew])
+        ->set('inviteEmail', 'zoro@strawhat.pirates')
+        ->call('createInvitation')
+        ->assertHasNoErrors();
+
+    expect($this->crew->invitations()->where('email', 'zoro@strawhat.pirates')->count())->toBe(1);
+});
 
 test('a pending invitation blocks a second one', function () {
     $pending = TeamInvitation::factory()->for($this->crew)->create(['email' => 'zoro@strawhat.pirates']);

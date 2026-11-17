@@ -30,12 +30,10 @@ test('it lists pending invitations for the user email', function () {
         ->assertSee("{$invitation->inviter->name} invited you to join this team.");
 });
 
-test('it hides expired, accepted, and other people\'s invitations', function () {
+test('it hides expired and other people\'s invitations', function () {
     $luffy = User::factory()->create();
-    $nami = User::factory()->create();
     $zoro = User::factory()->create();
     $expired = TeamInvitation::factory()->for($luffy->currentTeam)->expired()->create(['email' => $zoro->email]);
-    TeamInvitation::factory()->for($nami->currentTeam)->accepted()->create(['email' => $zoro->email]);
     TeamInvitation::factory()->for($luffy->currentTeam)->create(['email' => 'usopp@strawhat.pirates']);
 
     Livewire::actingAs($zoro)
@@ -57,7 +55,7 @@ test('accepting an invitation joins and switches to the team', function () {
 
     expect($luffy->currentTeam->fresh()->members->pluck('id'))->toContain($zoro->id)
         ->and($zoro->fresh()->current_team_id)->toBe($luffy->currentTeam->id)
-        ->and($invitation->fresh()->accepted_at)->not->toBeNull()
+        ->and($invitation->fresh())->toBeNull()
         ->and(session('team-invitation-accepted'))->toBeTrue();
 });
 
@@ -88,7 +86,7 @@ test('accepting an invitation to a team the user already belongs to keeps one me
         ->assertHasNoErrors();
 
     expect($luffy->currentTeam->memberships()->where('user_id', $zoro->id)->count())->toBe(1)
-        ->and($invitation->fresh()->accepted_at)->not->toBeNull();
+        ->and($invitation->fresh())->toBeNull();
 });
 
 test('an invitation sent to another email cannot be accepted', function () {
@@ -118,12 +116,17 @@ test('an expired invitation cannot be accepted', function () {
 test('an accepted invitation cannot be accepted again', function () {
     $luffy = User::factory()->create();
     $zoro = User::factory()->create();
-    $invitation = TeamInvitation::factory()->for($luffy->currentTeam)->accepted()->create(['email' => $zoro->email]);
+    $invitation = TeamInvitation::factory()->for($luffy->currentTeam)->create(['email' => $zoro->email]);
+
+    $component = Livewire::actingAs($zoro)->test('pages::teams.pending-invitations-modal');
+    $component->call('acceptInvitation', $invitation->code);
 
     Livewire::actingAs($zoro)
         ->test('pages::teams.pending-invitations-modal')
         ->call('acceptInvitation', $invitation->code)
         ->assertNotFound();
+
+    expect($luffy->currentTeam->memberships()->where('user_id', $zoro->id)->count())->toBe(1);
 });
 
 test('declining an invitation deletes it', function () {
@@ -159,7 +162,7 @@ test('invitations can no longer be accepted with a GET request', function () {
         ->get("/invitations/{$invitation->code}/accept")
         ->assertNotFound();
 
-    expect($invitation->fresh()->accepted_at)->toBeNull();
+    expect($invitation->fresh())->not->toBeNull();
 });
 
 test('the daily cleanup deletes expired invitations', function () {

@@ -22,7 +22,7 @@ class TeamInvitationController extends Controller
     {
         Gate::authorize('view', $team);
 
-        return TeamInvitationResource::collection($team->invitations()->whereNull('accepted_at')->latest()->get());
+        return TeamInvitationResource::collection($team->invitations()->latest()->get());
     }
 
     public function store(StoreTeamInvitationRequest $request, Team $team, InviteTeamMember $inviteTeamMember): JsonResponse

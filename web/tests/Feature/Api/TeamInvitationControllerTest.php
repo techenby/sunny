@@ -26,9 +26,8 @@ test('guests cannot manage invitations', function () {
     $this->deleteJson(route('api.teams.invitations.destroy', ['household', 'code']))->assertUnauthorized();
 });
 
-test('team members can see invitations that have not been accepted', function () {
+test('team members can see the team\'s invitations', function () {
     $pending = TeamInvitation::factory()->for($this->crew)->create(['email' => 'usopp@strawhat.pirates', 'role' => TeamRole::Admin]);
-    TeamInvitation::factory()->for($this->crew)->accepted()->create();
     TeamInvitation::factory()->create();
 
     $this->actingAs($this->zoro)

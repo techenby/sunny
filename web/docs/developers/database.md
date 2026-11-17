@@ -72,7 +72,6 @@ erDiagram
 		varchar role  ""
 		varchar code UK ""
 		datetime expires_at  ""
-		datetime accepted_at  ""
 		datetime created_at  ""
 		datetime updated_at  ""
 	}

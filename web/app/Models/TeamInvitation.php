@@ -24,11 +24,10 @@ use Illuminate\Support\Str;
  * @property TeamRole $role
  * @property int $invited_by
  * @property Carbon|null $expires_at
- * @property Carbon|null $accepted_at
  * @property-read Team $team
  * @property-read User $inviter
  */
-#[Fillable(['team_id', 'email', 'role', 'invited_by', 'expires_at', 'accepted_at'])]
+#[Fillable(['team_id', 'email', 'role', 'invited_by', 'expires_at'])]
 #[RouteKey('code')]
 class TeamInvitation extends Model
 {
@@ -58,11 +57,6 @@ class TeamInvitation extends Model
         return $this->belongsTo(User::class, 'invited_by');
     }
 
-    public function isAccepted(): bool
-    {
-        return $this->accepted_at !== null;
-    }
-
     public function isExpired(): bool
     {
         return $this->expires_at !== null && $this->expires_at->isPast();
@@ -73,7 +67,6 @@ class TeamInvitation extends Model
     protected function pendingFor(Builder $query, User $user): void
     {
         $query->whereRaw('LOWER(email) = ?', [Str::lower($user->email)])
-            ->whereNull('accepted_at')
             ->where(fn (Builder $query) => $query->whereNull('expires_at')->orWhere('expires_at', '>=', now()));
     }
 
@@ -83,7 +76,6 @@ class TeamInvitation extends Model
         return [
             'role' => TeamRole::class,
             'expires_at' => 'datetime',
-            'accepted_at' => 'datetime',
         ];
     }
 }

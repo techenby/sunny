@@ -24,15 +24,7 @@ class TeamInvitationFactory extends Factory
             'role' => TeamRole::Member,
             'invited_by' => User::factory(),
             'expires_at' => null,
-            'accepted_at' => null,
         ];
-    }
-
-    public function accepted(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'accepted_at' => now(),
-        ]);
     }
 
     public function expired(): static

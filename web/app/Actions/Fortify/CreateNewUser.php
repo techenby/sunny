@@ -58,7 +58,6 @@ class CreateNewUser implements CreatesNewUsers
     {
         return TeamInvitation::query()
             ->whereRaw('LOWER(email) = ?', [Str::lower($email)])
-            ->whereNull('accepted_at')
             ->where(fn (Builder $query) => $query->whereNull('expires_at')->orWhere('expires_at', '>=', now()))
             ->exists();
     }

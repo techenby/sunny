@@ -21,7 +21,7 @@ class AcceptTeamInvitation
             $locked = $this->lockInvitation($invitation);
             $team = Team::query()->findOrFail($invitation->team_id);
 
-            if (($locked === null || $locked->isAccepted()) && $user->belongsToTeam($team)) {
+            if ($locked === null && $user->belongsToTeam($team)) {
                 return $team;
             }
 
@@ -36,7 +36,7 @@ class AcceptTeamInvitation
                 ['role' => $locked->role],
             );
 
-            $locked->update(['accepted_at' => now()]);
+            $locked->delete();
 
             return $team;
         });
