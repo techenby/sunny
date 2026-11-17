@@ -67,6 +67,18 @@ parameters:
 			path: app/Actions/Calendars/FetchCalendarEvents.php
 
 		-
+			message: '#^Strict comparison using \!\=\= between string and App\\Enums\\TimeOfDay\:\:Morning will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: app/Actions/Demo/FillDemoHousehold.php
+
+		-
+			message: '#^Unreachable statement \- code above always terminates\.$#'
+			identifier: deadCode.unreachable
+			count: 1
+			path: app/Actions/Demo/FillDemoHousehold.php
+
+		-
 			message: '#^Method App\\Actions\\Inventory\\GenerateItemQrCode\:\:handle\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -233,18 +245,6 @@ parameters:
 			identifier: method.nonObject
 			count: 1
 			path: app/Actions/Routines/GenerateRoutineOccurrences.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between string and App\\Enums\\TimeOfDay\:\:Morning will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: app/Console/Commands/CreateDemoHouseholdCommand.php
-
-		-
-			message: '#^Unreachable statement \- code above always terminates\.$#'
-			identifier: deadCode.unreachable
-			count: 1
-			path: app/Console/Commands/CreateDemoHouseholdCommand.php
 
 		-
 			message: '#^Unable to resolve the template type TKey in call to function collect$#'
