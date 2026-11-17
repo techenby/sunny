@@ -6,6 +6,7 @@ use App\Http\Integrations\Sunny\SunnyOutbox;
 use App\Http\Integrations\Sunny\SunnySync;
 use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Models\PendingWrite;
+use App\Models\Routine;
 use App\Models\RoutineOccurrenceStep;
 use App\Models\Team;
 use Native\Mobile\Testing\Native;
@@ -49,6 +50,17 @@ it('shows the routines due today where the team lives', function (): void {
     Native::visit('/today')
         ->assertSee('Take out trash')
         ->assertDontSee('Get ready');
+});
+
+it('leaves out routines that start after today', function (): void {
+    Routine::find(1)->update(['starts_on' => now()->addDay()->startOfDay()->format('Y-m-d\\TH:i:s.u\\Z')]);
+    Routine::find(2)->update(['starts_on' => now()->startOfDay()->format('Y-m-d\\TH:i:s.u\\Z')]);
+
+    $screen = Native::visit('/today')
+        ->assertSee('Bedtime')
+        ->assertDontSee('Get ready');
+
+    expect(array_column($screen->get('routines'), 'name'))->toBe(['Bedtime']);
 });
 
 it('shows an empty state when nothing is due today', function (): void {

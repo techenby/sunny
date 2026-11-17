@@ -14,6 +14,7 @@ class CreateRoutine extends Component
     public function mount(): void
     {
         $this->initializeTeam();
+        $this->startsOn = $this->teamToday()->toDateString();
     }
 
     public function save(): void

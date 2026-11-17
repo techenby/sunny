@@ -6,4 +6,6 @@
     'timeOfDayOptions' => $this->timeOfDayOptions,
     'frequencyOptions' => $this->frequencyOptions,
     'weekdayRows' => $this->weekdayRows,
+    'startsOnLabel' => $this->startsOnLabel,
+    'startsOnHint' => $this->startsOnHint,
 ])
