@@ -42,6 +42,7 @@ Route::middleware('auth:sanctum')
                 Route::get('items', [ItemController::class, 'index'])->name('items.index');
                 Route::post('items', [ItemController::class, 'store'])->name('items.store');
                 Route::post('items/{item}/duplicate', [ItemController::class, 'duplicate'])->name('items.duplicate');
+                Route::post('items/{item}/move', [ItemController::class, 'move'])->name('items.move');
                 Route::get('items/{item}', [ItemController::class, 'show'])->name('items.show');
                 Route::patch('items/{item}', [ItemController::class, 'update'])->name('items.update');
                 Route::delete('items/{item}', [ItemController::class, 'destroy'])->name('items.destroy');

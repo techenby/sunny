@@ -190,6 +190,26 @@ test('includes data from all user teams', function () {
         ->assertJsonCount(2, 'recipes');
 });
 
+test('returns an item moved to another team with its contents since the given timestamp', function () {
+    $user = User::factory()->create();
+    $cabin = Team::factory()->create();
+    $user->teams()->attach($cabin, ['role' => TeamRole::Member]);
+    $tote = Item::factory()->bin()->for($user->currentTeam)->create(['updated_at' => now()->subDay()]);
+    $hammer = Item::factory()->item()->childOf($tote)->create(['updated_at' => now()->subDay()]);
+    Item::factory()->for($user->currentTeam)->create(['updated_at' => now()->subDay()]);
+
+    $this->actingAs($user)
+        ->postJson(route('api.items.move', [$user->currentTeam, $tote]), ['team_id' => $cabin->id])
+        ->assertOk();
+
+    $this->actingAs($user)
+        ->getJson(route('api.sync', ['since' => now()->subHour()->toIso8601String()]))
+        ->assertOk()
+        ->assertJsonCount(2, 'items')
+        ->assertJsonPath('items.*.team_id', [$cabin->id, $cabin->id])
+        ->assertJsonPath('items.*.id', fn (array $ids) => collect($ids)->sort()->values()->all() === [$tote->id, $hammer->id]);
+});
+
 test('validates since parameter is a valid date', function () {
     $user = User::factory()->create();
 

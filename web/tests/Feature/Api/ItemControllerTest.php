@@ -12,6 +12,7 @@ test('guests cannot access items', function () {
     $this->getJson(route('api.items.index', 'household'))->assertUnauthorized();
     $this->postJson(route('api.items.store', 'household'))->assertUnauthorized();
     $this->postJson(route('api.items.duplicate', ['household', 1]))->assertUnauthorized();
+    $this->postJson(route('api.items.move', ['household', 1]))->assertUnauthorized();
     $this->getJson(route('api.items.show', ['household', 1]))->assertUnauthorized();
     $this->patchJson(route('api.items.update', ['household', 1]))->assertUnauthorized();
     $this->deleteJson(route('api.items.destroy', ['household', 1]))->assertUnauthorized();
@@ -411,4 +412,66 @@ test('update validates the photo order', function () {
         ->patchJson(route('api.items.update', [$user->currentTeam, $item]), ['photo_order' => ['front']])
         ->assertUnprocessable()
         ->assertJsonValidationErrors('photo_order.0');
+});
+
+test('move takes the item and everything inside it to another team', function () {
+    $user = User::factory()->create();
+    $cabin = Team::factory()->create();
+    $cabin->members()->attach($user, ['role' => TeamRole::Member->value]);
+    $garage = Item::factory()->location()->for($user->currentTeam)->create();
+    $tote = Item::factory()->bin()->childOf($garage)->create();
+    $bag = Item::factory()->bin()->childOf($tote)->create();
+    $hammer = Item::factory()->item()->childOf($bag)->create();
+
+    $this->actingAs($user)
+        ->postJson(route('api.items.move', [$user->currentTeam, $tote]), ['team_id' => $cabin->id])
+        ->assertOk()
+        ->assertJsonPath('data.id', $tote->id)
+        ->assertJsonPath('data.team_id', $cabin->id)
+        ->assertJsonPath('data.parent_id', null)
+        ->assertJsonPath('moved_item_ids', fn (array $ids) => collect($ids)->sort()->values()->all() === [$tote->id, $bag->id, $hammer->id]);
+
+    expect($bag->fresh())->team_id->toBe($cabin->id)->parent_id->toBe($tote->id)
+        ->and($hammer->fresh())->team_id->toBe($cabin->id)->parent_id->toBe($bag->id)
+        ->and($garage->fresh()->team_id)->toBe($user->current_team_id);
+});
+
+test('move returns 403 for a team the user does not belong to item', function () {
+    $user = User::factory()->create();
+    $item = Item::factory()->create();
+    $originalTeamId = $item->team_id;
+
+    $this->actingAs($user)
+        ->postJson(route('api.items.move', [$item->team, $item]), ['team_id' => $user->current_team_id])
+        ->assertForbidden();
+
+    expect($item->fresh()->team_id)->toBe($originalTeamId);
+});
+
+test('move rejects a team the user does not belong to', function () {
+    $user = User::factory()->create();
+    $item = Item::factory()->for($user->currentTeam)->create();
+    $otherTeam = Team::factory()->create();
+
+    $this->actingAs($user)
+        ->postJson(route('api.items.move', [$user->currentTeam, $item]), ['team_id' => $otherTeam->id])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('team_id');
+
+    expect($item->fresh()->team_id)->toBe($user->current_team_id);
+});
+
+test('move validates the team is given and is not the item\'s own team', function () {
+    $user = User::factory()->create();
+    $item = Item::factory()->for($user->currentTeam)->create();
+
+    $this->actingAs($user)
+        ->postJson(route('api.items.move', [$user->currentTeam, $item]), [])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('team_id');
+
+    $this->actingAs($user)
+        ->postJson(route('api.items.move', [$user->currentTeam, $item]), ['team_id' => $user->current_team_id])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('team_id');
 });
