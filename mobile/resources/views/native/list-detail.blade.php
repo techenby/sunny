@@ -62,7 +62,7 @@
                                 <bare-text-input
                                     ref="list-edit-url"
                                     class="flex-1"
-                                    placeholder="https://"
+                                    placeholder="Link"
                                     a11y-label="Link"
                                     keyboard="url"
                                     native:model="editingUrl"
@@ -115,7 +115,7 @@
                         />
                     </row>
                     <row class="w-full items-center gap-2">
-                        <row class="h-10 flex-1 items-center gap-2 rounded-full border bg-theme-surface pr-1 pl-3 {{ $linkError !== '' ? 'border-theme-primary' : 'border-theme-outline' }}">
+                        <row class="h-12 flex-1 items-center gap-2 rounded-full border bg-theme-surface pr-1 pl-3 {{ $linkError !== '' ? 'border-theme-primary' : 'border-theme-outline' }}">
                             <icon :ios="Ios::Link" :android="Android::Link" :size="16" class="text-theme-primary" />
                             <bare-text-input
                                 ref="list-new-item-url"
@@ -136,10 +136,10 @@
                         <pressable
                             ref="list-add-item"
                             a11y-label="Add item"
-                            class="h-10 w-10 items-center justify-center rounded-full {{ $linkError !== '' ? 'bg-theme-primary/35' : 'bg-theme-primary' }}"
+                            class="h-12 w-12 items-center justify-center rounded-full glass android:bg-theme-surface"
                             @tap="addItem"
                         >
-                            <native:icon :ios="Ios::ArrowUp" :android="Android::ArrowUpward" :size="20" class="text-theme-on-primary" />
+                            <native:icon :ios="Ios::Plus" :android="Android::Add" :size="22" class="text-theme-on-surface" />
                         </pressable>
                     </row>
                     @if ($linkError !== '')

@@ -302,25 +302,71 @@ it('refuses a link that isn’t a web address', function (string $url) {
     Native::visit('/lists/3')
         ->set('newItem', 'Wool slippers')
         ->set('newItemUrl', $url)
-        ->assertSee('That’s not a web address. Links start with https://')
         ->tap('list-add-item')
         ->assertSet('newItem', 'Wool slippers')
-        ->assertSee('That’s not a web address. Links start with https://');
+        ->assertSee('That’s not a web address. Try one like lego.com');
 
     expect(PendingWrite::count())->toBe(0);
 })->with([
     'words' => ['llbean slippers'],
-    'a bare domain' => ['llbean.com/slippers'],
-    'another scheme' => ['javascript:alert(1)'],
+    'no dot in the host' => ['llbean'],
+    'ftp' => ['ftp://llbean.com/slippers'],
+    'mailto' => ['mailto:help@llbean.com'],
+    'javascript' => ['javascript:alert(1)'],
 ]);
+
+it('adds https:// to a link typed without one', function (string $typed, string $saved) {
+    Native::visit('/lists/3')
+        ->set('newItem', 'Lego set')
+        ->set('newItemUrl', $typed)
+        ->assertSet('linkError', '')
+        ->tap('list-add-item')
+        ->assertSee('lego.com');
+
+    expect(ChecklistItem::find(-1)->url)->toBe($saved)
+        ->and(PendingWrite::sole()->payload['url'])->toBe($saved);
+})->with([
+    'a bare domain' => ['lego.com', 'https://lego.com'],
+    'a domain with a path' => ['lego.com/product/123', 'https://lego.com/product/123'],
+    'www' => ['www.lego.com', 'https://www.lego.com'],
+    'http' => ['http://lego.com/product/123', 'http://lego.com/product/123'],
+]);
+
+it('uses the same glass add button on a wish list as on other lists', function () {
+    $button = function (string $path): array {
+        $find = function (array $node) use (&$find): ?array {
+            if (($node['ref'] ?? null) === 'list-add-item') {
+                return $node;
+            }
+
+            foreach ($node['children'] ?? [] as $child) {
+                if (($found = $find($child)) !== null) {
+                    return $found;
+                }
+            }
+
+            return null;
+        };
+        $node = $find(Native::visit($path)->tree());
+
+        return [$node['layout'], $node['style'], $node['props'], array_map(fn (array $child): array => [$child['type'], $child['props']], $node['children'])];
+    };
+
+    expect($button('/lists/3'))->toBe($button('/lists/1'))
+        ->and($button('/lists/3')[2]['glass'])->toBe(1);
+});
 
 it('waits for the rest of a web address before calling it wrong', function () {
     Native::visit('/lists/3')
         ->set('newItem', 'Wool slippers')
+        ->set('newItemUrl', 'llbean slippers')
+        ->assertSee('That’s not a web address. Try one like lego.com')
         ->set('newItemUrl', 'http')
         ->assertSet('linkError', '')
+        ->set('newItemUrl', 'llbean')
+        ->assertSet('linkError', '')
         ->tap('list-add-item')
-        ->assertSee('That’s not a web address. Links start with https://')
+        ->assertSee('That’s not a web address. Try one like lego.com')
         ->set('newItemUrl', 'https://www.llbean.com')
         ->assertSet('linkError', '');
 
@@ -345,7 +391,7 @@ it('edits an item’s name and link', function () {
         ->assertSee('Edit item')
         ->assertAccessible()
         ->set('editingName', 'Lego Botanical set')
-        ->submit('list-edit-url', 'https://www.lego.com/product/orchid-10311')
+        ->submit('list-edit-url', 'www.lego.com/product/orchid-10311')
         ->assertSet('editingItemId', null)
         ->assertSee('Lego Botanical set');
 
@@ -376,7 +422,7 @@ it('keeps editing when the new link isn’t a web address', function () {
     Native::visit('/lists/1')
         ->press('editItem(1)')
         ->set('editingUrl', 'oat milk')
-        ->assertSee('That’s not a web address. Links start with https://')
+        ->assertSee('That’s not a web address. Try one like lego.com')
         ->tap('list-edit-save')
         ->assertSet('editingItemId', 1);
 

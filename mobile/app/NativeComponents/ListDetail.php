@@ -90,7 +90,7 @@ class ListDetail extends Component
     public function addItem(string $text = ''): void
     {
         $name = trim($text !== '' ? $text : $this->newItem);
-        $url = trim($this->newItemUrl);
+        $url = self::withScheme($this->newItemUrl);
 
         if ($this->checklist === null || $name === '') {
             return;
@@ -166,7 +166,7 @@ class ListDetail extends Component
     {
         $item = collect($this->items)->firstWhere('id', $this->editingItemId);
         $name = trim($text ?? $this->editingName);
-        $url = trim($this->editingUrl);
+        $url = self::withScheme($this->editingUrl);
 
         if ($item === null) {
             $this->cancelEdit();
@@ -322,6 +322,17 @@ class ListDetail extends Component
         return is_string($host) && $host !== '' ? Str::chopStart(Str::lower($host), 'www.') : $url;
     }
 
+    private static function withScheme(string $url): string
+    {
+        $url = trim($url);
+
+        if ($url === '' || (preg_match('~^[a-z][a-z0-9+.-]*:~i', $url, $scheme) === 1 && ! str_contains($scheme[0], '.'))) {
+            return $url;
+        }
+
+        return 'https://'.$url;
+    }
+
     private function problemWithLink(string $url, bool $typing = false): string
     {
         $url = trim($url);
@@ -330,11 +341,16 @@ class ListDetail extends Component
             return '';
         }
 
+        $url = self::withScheme($url);
+
         if (mb_strlen($url) > 2048) {
             return 'The link is too long (2048 characters max).';
         }
 
-        return Validator::make(['url' => $url], ['url' => 'url:http,https'])->passes() ? '' : 'That’s not a web address. Links start with https://';
+        $isWebAddress = Validator::make(['url' => $url], ['url' => 'url:http,https'])->passes()
+            && ($typing || str_contains((string) parse_url($url, PHP_URL_HOST), '.'));
+
+        return $isWebAddress ? '' : 'That’s not a web address. Try one like lego.com';
     }
 
     private function change(callable $callback): bool
