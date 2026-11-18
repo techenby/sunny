@@ -146,6 +146,12 @@ new #[Layout('layouts::kiosk')] class extends Component
             ->all();
     }
 
+    #[Computed]
+    public function month(): CarbonImmutable
+    {
+        return $this->monthStartsAt();
+    }
+
     /** @return array<int, array<string, mixed>> */
     #[Computed]
     public function monthEvents(): array
@@ -261,7 +267,7 @@ new #[Layout('layouts::kiosk')] class extends Component
 
     private function clearCalendarState(): void
     {
-        unset($this->dayEvents, $this->day, $this->dayAllDayEvents, $this->dayTimedEvents, $this->weekEvents, $this->weekDays, $this->monthEvents, $this->monthDays, $this->failedFeeds);
+        unset($this->dayEvents, $this->day, $this->dayAllDayEvents, $this->dayTimedEvents, $this->weekEvents, $this->weekDays, $this->month, $this->monthEvents, $this->monthDays, $this->failedFeeds);
     }
 
     private function timezoneName(): string

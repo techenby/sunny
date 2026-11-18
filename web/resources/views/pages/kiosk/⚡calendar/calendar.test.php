@@ -250,6 +250,24 @@ test('can view and navigate a month calendar', function () {
         ]);
 });
 
+test('month calendar labels the month being viewed', function () {
+    $this->travelTo(Date::parse('2026-11-18'));
+
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::kiosk.calendar')
+        ->set('format', 'month')
+        ->assertSee('November')
+        ->call('next')
+        ->assertSee('December')
+        ->assertDontSee('November')
+        ->call('previous')
+        ->call('previous')
+        ->assertSee('October')
+        ->assertDontSee('November');
+});
+
 test('month calendar shows two events before overflow count', function () {
     Http::fake([
         'https://example.com/month-calendar.ics' => Http::response(<<<'ICS'
