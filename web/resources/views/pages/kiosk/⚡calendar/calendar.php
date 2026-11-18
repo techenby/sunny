@@ -147,9 +147,9 @@ new #[Layout('layouts::kiosk')] class extends Component
     }
 
     #[Computed]
-    public function month(): CarbonImmutable
+    public function monthStartsAt(): CarbonImmutable
     {
-        return $this->monthStartsAt();
+        return $this->focusedDate()->startOfMonth();
     }
 
     /** @return array<int, array<string, mixed>> */
@@ -236,11 +236,6 @@ new #[Layout('layouts::kiosk')] class extends Component
             ->startOfWeek($this->team->week_start);
     }
 
-    private function monthStartsAt(): CarbonImmutable
-    {
-        return $this->focusedDate()->startOfMonth();
-    }
-
     private function monthGridStartsAt(): CarbonImmutable
     {
         return $this->monthStartsAt()
@@ -267,7 +262,7 @@ new #[Layout('layouts::kiosk')] class extends Component
 
     private function clearCalendarState(): void
     {
-        unset($this->dayEvents, $this->day, $this->dayAllDayEvents, $this->dayTimedEvents, $this->weekEvents, $this->weekDays, $this->month, $this->monthEvents, $this->monthDays, $this->failedFeeds);
+        unset($this->dayEvents, $this->day, $this->dayAllDayEvents, $this->dayTimedEvents, $this->weekEvents, $this->weekDays, $this->monthStartsAt, $this->monthEvents, $this->monthDays, $this->failedFeeds);
     }
 
     private function timezoneName(): string
