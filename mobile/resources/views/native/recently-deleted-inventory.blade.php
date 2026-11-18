@@ -4,25 +4,6 @@
 
 <native:top-bar title="Recently deleted" back />
 
-@if ($toast = $this->toast)
-    <native:bottom-bar>
-        <row class="w-full px-4 pb-2">
-            <row ref="deleted-restored" native:poll="1s" class="{{ Card::classes() }} w-full items-center gap-3 py-2 pr-2 pl-3">
-                <icon :ios="Ios::CheckmarkCircleFill" :android="Android::CheckCircle" :size="24" class="text-theme-primary" />
-                <text font="medium" class="flex-1 text-base text-theme-on-surface">Restored {{ $toast['name'] }} to {{ $toast['place'] }}</text>
-                <pressable
-                    ref="deleted-go-there"
-                    a11y-label="Go there"
-                    class="min-h-10 items-center justify-center rounded-full bg-theme-primary/15 px-3"
-                    @tap="goThere"
-                >
-                    <text font="semibold" class="text-base text-theme-primary-text">Go there</text>
-                </pressable>
-            </row>
-        </row>
-    </native:bottom-bar>
-@endif
-
 @if ($this->items === [])
     <column ref="deleted-empty" fill center class="gap-3 bg-theme-background px-6">
         <column class="h-[72] w-[72] items-center justify-center rounded-full bg-theme-primary/15">

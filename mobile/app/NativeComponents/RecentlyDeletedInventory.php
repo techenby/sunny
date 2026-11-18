@@ -9,6 +9,8 @@ use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Http\Integrations\Sunny\SunnyTeam;
 use App\Models\Item;
 use App\Models\ItemPhoto;
+use App\Support\Toast;
+use App\Support\ToastAction;
 use Carbon\CarbonImmutable;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -21,12 +23,7 @@ class RecentlyDeletedInventory extends Component
 {
     use ChecksSunnySync;
 
-    protected const TOAST_SECONDS = 5;
-
     public string $error = '';
-
-    /** @var array{name: string, place: string, place_id: int|null, at: int}|null */
-    public ?array $restored = null;
 
     /**
      * @return list<array{id: int, name: string, type: ItemType, photo: string|null, supporting: string, deleted: string, emptied: bool}>
@@ -53,13 +50,6 @@ class RecentlyDeletedInventory extends Component
         ])->all();
     }
 
-    /** @return array{name: string, place: string, place_id: int|null}|null */
-    #[Computed]
-    public function toast(): ?array
-    {
-        return $this->restored !== null && now()->getTimestamp() - $this->restored['at'] < self::TOAST_SECONDS ? $this->restored : null;
-    }
-
     public function restore(int $id): void
     {
         $teamId = app(SunnyTeam::class)->current()?->id;
@@ -76,32 +66,29 @@ class RecentlyDeletedInventory extends Component
         $parent = $item->parent_id === null ? null : Inventory::find($item->parent_id);
 
         $this->error = '';
-        $this->restored = [
-            'name' => $item->name,
-            'place' => match (true) {
-                $parent !== null => $parent['name'],
-                $item->type === ItemType::Location => 'your home',
-                default => '“Not in a place yet”',
-            },
-            'place_id' => $parent['id'] ?? null,
-            'at' => now()->getTimestamp(),
-        ];
         $this->refreshLocalSyncedData();
+
+        $place = match (true) {
+            $parent !== null => $parent['name'],
+            $item->type === ItemType::Location => 'your home',
+            default => '“Not in a place yet”',
+        };
+
+        Toast::success("Restored {$item->name} to {$place}", action: new ToastAction('Go there', 'go-to-restored', [
+            'url' => $parent === null ? '/inventory' : '/inventory/'.$parent['id'],
+        ]));
     }
 
-    public function goThere(): void
+    #[On(Toast::ACTION_PRESSED, when: ['actionId' => 'go-to-restored'])]
+    public function goToRestored(array $data): void
     {
-        if ($this->toast === null) {
-            return;
-        }
-
-        if ($this->toast['place_id'] === null) {
+        if ($data['url'] === '/inventory') {
             $this->back();
 
             return;
         }
 
-        $this->navigate('/inventory/'.$this->toast['place_id']);
+        $this->navigate($data['url']);
     }
 
     public function confirmDeleteForever(int $id): void
@@ -155,7 +142,7 @@ class RecentlyDeletedInventory extends Component
 
     protected function refreshLocalSyncedData(): void
     {
-        unset($this->items, $this->toast);
+        unset($this->items);
     }
 
     protected function deletedOn(CarbonImmutable $deletedAt, CarbonImmutable $today): string

@@ -24,6 +24,7 @@ use Saloon\Enums\Method;
 use Saloon\Exceptions\Request\RequestException;
 use Saloon\Http\Faking\MockResponse;
 use Saloon\Http\PendingRequest;
+use Victorycodedev\ToastKit\Events\ToastActionPressed;
 
 function deletedSunnyItem(int $id, string $name, string $type, ?int $parentId, string $deletedAt, array $extra = []): array
 {
@@ -150,9 +151,10 @@ it('restores a thing to where it was on the phone, then confirms it with Sunny',
 
     Native::visit('/inventory/deleted')
         ->tap('deleted-restore-22')
-        ->assertSee('Restored Bike pump to Garage')
+        ->assertToastShown(fn (array $params): bool => $params['message'] === 'Restored Bike pump to Garage' && $params['variant'] === 'success'
+            && $params['action'] === ['id' => 'go-to-restored', 'label' => 'Go there'] && $params['data'] === ['url' => '/inventory/6'])
         ->assertDontSee('Bike pump forever')
-        ->tap('deleted-go-there')
+        ->emitNative(ToastActionPressed::class, ['toastId' => 'restored', 'actionId' => 'go-to-restored', 'data' => ['url' => '/inventory/6']])
         ->assertNavigatedTo('/inventory/6');
 
     expect(Item::find(22))->parent_id->toBe(6)->deleted_at->toBeNull()
@@ -172,7 +174,7 @@ it('restores while Sunny can’t be reached and sends it later', function () {
 
     Native::visit('/inventory/deleted')
         ->tap('deleted-restore-20')
-        ->assertSee('Restored Old lamp to Garage');
+        ->assertToastShown(fn (array $params): bool => $params['message'] === 'Restored Old lamp to Garage');
 
     expect(fn () => app(SunnyWrites::class)->push())->toThrow(RequestException::class);
     expect(PendingWrite::sole()->only('payload', 'error'))->toBe(['payload' => ['restore' => true], 'error' => null]);
@@ -194,30 +196,18 @@ it('brings a thing back to the top level when its place is still deleted, like S
     Native::visit('/inventory/deleted')
         ->assertSee('Thing · was in Toy bin')
         ->tap('deleted-restore-25')
-        ->assertSee('Restored Lego to “Not in a place yet”')
-        ->tap('deleted-go-there')
+        ->assertToastShown(fn (array $params): bool => $params['message'] === 'Restored Lego to “Not in a place yet”' && $params['data'] === ['url' => '/inventory'])
+        ->emitNative(ToastActionPressed::class, ['toastId' => 'restored', 'actionId' => 'go-to-restored', 'data' => ['url' => '/inventory']])
         ->assertWentBack();
 
     Native::visit('/inventory/deleted')
         ->tap('deleted-restore-26')
-        ->assertSee('Restored Shed to your home');
+        ->assertToastShown(fn (array $params): bool => $params['message'] === 'Restored Shed to your home');
 
     expect(Item::find(25)->parent_id)->toBeNull()->and(Item::find(26)->parent_id)->toBeNull();
     $inventory = Native::visit('/inventory')->assertSee('Lego');
     expect(array_column($inventory->get('unplaced'), 'name'))->toContain('Lego')
         ->and(array_column($inventory->get('places'), 'name'))->toContain('Shed');
-});
-
-it('hides the restored message after a few seconds', function () {
-    seedDeletedSunnyItems();
-
-    $screen = Native::visit('/inventory/deleted')
-        ->tap('deleted-restore-22')
-        ->assertSee('Restored Bike pump to Garage');
-
-    $this->travel(6)->seconds();
-
-    $screen->firePolls()->assertDontSee('Restored Bike pump to Garage');
 });
 
 it('counts a restore Sunny no longer has to do as done', function (int $status) {
