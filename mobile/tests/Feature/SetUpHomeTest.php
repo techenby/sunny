@@ -4,6 +4,7 @@ use App\Enums\ItemType;
 use App\Enums\RoutineFrequency;
 use App\Enums\TimeOfDay;
 use App\Http\Integrations\Sunny\Requests\CreateTokenRequest;
+use App\Http\Integrations\Sunny\Requests\GetUserRequest;
 use App\Http\Integrations\Sunny\Requests\ImportRecipeRequest;
 use App\Http\Integrations\Sunny\Requests\MarkOnboardedRequest;
 use App\Http\Integrations\Sunny\Requests\SaveRecordRequest;
@@ -40,19 +41,27 @@ beforeEach(function (): void {
 });
 
 it('sends a brand-new account to set-up after logging in', function (): void {
-    Saloon::fake([CreateTokenRequest::class => MockResponse::make(['id' => 42, 'name' => 'Alex Rivera', 'onboarded_at' => null, 'token' => 'test-token'])]);
+    Saloon::fake([
+        CreateTokenRequest::class => MockResponse::make(['id' => 42, 'name' => 'Alex Rivera', 'onboarded_at' => null, 'token' => 'test-token']),
+        GetUserRequest::class => MockResponse::make(['data' => ['id' => 42]]),
+    ]);
 
     Native::visit('/login')->input('login-email', 'alex@example.com')->input('login-password', 'secret')
-        ->tap('login-submit')->assertReplacedWith('/setup');
+        ->tap('login-submit')->assertReplacedWith('/')
+        ->follow()->assertReplacedWith('/setup');
 
     expect(Onboarding::current())->first_name->toBe('Alex');
 });
 
 it('sends an existing account straight to the summary', function (array $user): void {
-    Saloon::fake([CreateTokenRequest::class => MockResponse::make([...$user, 'id' => 42, 'name' => 'Alex Rivera', 'token' => 'test-token'])]);
+    Saloon::fake([
+        CreateTokenRequest::class => MockResponse::make([...$user, 'id' => 42, 'name' => 'Alex Rivera', 'token' => 'test-token']),
+        GetUserRequest::class => MockResponse::make(['data' => ['id' => 42]]),
+    ]);
 
     Native::visit('/login')->input('login-email', 'alex@example.com')->input('login-password', 'secret')
-        ->tap('login-submit')->assertReplacedWith('/dashboard');
+        ->tap('login-submit')->assertReplacedWith('/')
+        ->follow()->assertReplacedWith('/dashboard');
 
     expect(Onboarding::current())->toBeNull();
 })->with([

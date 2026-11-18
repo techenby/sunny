@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Integrations\Sunny\Requests\DeleteAccountRequest;
+use App\Http\Integrations\Sunny\SunnyConnector;
 use App\Http\Integrations\Sunny\SunnyOutbox;
 use App\Http\Integrations\Sunny\SunnyStore;
 use App\Models\PendingWrite;
@@ -68,6 +69,36 @@ it('keeps the account and its data when Sunny refuses', function (int $status, a
     'rate limited' => [429, [], 'Too many attempts. Please wait before trying again.'],
     'server error' => [500, [], 'Sunny is unavailable right now. Your account was not deleted.'],
 ]);
+
+it('opens the settings of a shared team that blocks deletion', function (): void {
+    Saloon::fake([DeleteAccountRequest::class => MockResponse::make([
+        'message' => 'Other people still use Family.',
+        'errors' => ['teams' => ['Other people still use Family.']],
+        'blocking_teams' => [['name' => 'Family', 'slug' => 'family']],
+    ], 422)]);
+    Native::fakeBridge()->respondTo('Browser.OpenInApp', ['success' => true]);
+
+    Native::visit('/preferences/delete-account', platform: 'ios')
+        ->input('delete-account-password', 'secret')
+        ->tap('delete-account-submit')
+        ->assertSee('Other people still use Family.')
+        ->assertSee('Open Family settings')
+        ->assertAccessible()
+        ->tap('delete-account-team-family')
+        ->assertNoNavigation();
+
+    Native::fakeBridge()->assertCalled('Browser.OpenInApp', fn (array $params): bool => $params['url'] === app(SunnyConnector::class)->siteUrl().'/settings/teams/family');
+});
+
+it('only opens settings for a team that blocked deletion', function (): void {
+    Native::fakeBridge()->respondTo('Browser.OpenInApp', ['success' => true]);
+
+    Native::visit('/preferences/delete-account')
+        ->call('openTeamSettings', 'someone-elses-team')
+        ->assertNoNavigation();
+
+    Native::fakeBridge()->assertNotCalled('Browser.OpenInApp');
+});
 
 it('returns to the welcome screen when the saved login has already expired', function (): void {
     Saloon::fake([DeleteAccountRequest::class => MockResponse::make([], 401)]);

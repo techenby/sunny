@@ -3,10 +3,11 @@
 namespace App\NativeComponents;
 
 use App\Http\Integrations\Sunny\SunnyAuth;
-use App\Models\Onboarding;
+use App\Http\Integrations\Sunny\SunnyConnector;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
 use JsonException;
+use Native\Mobile\Facades\Browser;
 use RuntimeException;
 use Saloon\Exceptions\Request\FatalRequestException;
 use Saloon\Exceptions\Request\RequestException;
@@ -59,7 +60,7 @@ class Login extends Component
             }
 
             $this->startOver();
-            $this->replace(Onboarding::needsSetUp() ? '/setup' : '/dashboard');
+            $this->replace('/');
         } catch (RequestException $exception) {
             $status = $exception->getResponse()->status();
             $this->error = match ($status) {
@@ -79,6 +80,23 @@ class Login extends Component
             $this->password = '';
             $this->code = '';
         }
+    }
+
+    public function forgotPassword(): void
+    {
+        $url = app(SunnyConnector::class)->siteUrl().'/forgot-password';
+        $this->error = Browser::inApp($url) ? '' : 'Unable to open password reset. Please try again.';
+    }
+
+    public function showRegister(): void
+    {
+        if ($this->data('from') === 'register') {
+            $this->back();
+
+            return;
+        }
+
+        $this->navigate('/register', ['from' => 'login']);
     }
 
     public function toggleRecoveryCode(): void

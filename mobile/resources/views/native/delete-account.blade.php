@@ -16,7 +16,7 @@
                 In teams you share, your own lists and routines are deleted. Everything else stays with the team.
             </text>
             <text class="text-base text-theme-on-surface-variant">
-                If other people use a team you own, make one of them its owner on the Sunny website first.
+                If other people use a team you own, make one of them its owner or remove them first. Sunny will show a button that opens that team’s settings.
             </text>
         </column>
 
@@ -33,6 +33,20 @@
         @if ($error)
             <text ref="delete-account-error" class="text-sm text-theme-destructive">{{ $error }}</text>
         @endif
+
+        @foreach ($blockingTeams as $slug => $name)
+            <button
+                ref="delete-account-team-{{ $slug }}"
+                variant="secondary"
+                size="lg"
+                font="semibold"
+                a11y-hint="Opens the team’s settings on the Sunny website"
+                class="w-full"
+                @tap="openTeamSettings('{{ $slug }}')"
+            >
+                Open {{ $name }} settings
+            </button>
+        @endforeach
 
         <button
             ref="delete-account-submit"

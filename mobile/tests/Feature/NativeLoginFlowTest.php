@@ -21,7 +21,7 @@ beforeEach(function (): void {
 it('logs in and clears the password after securely saving the token', function (): void {
     Saloon::fake([CreateTokenRequest::class => MockResponse::make(['token' => 'test-token'])]);
     Native::visit('/login')->input('login-email', 'person@example.com')->input('login-password', 'secret')
-        ->tap('login-submit')->assertSet('password', '')->assertReplacedWith('/dashboard');
+        ->tap('login-submit')->assertSet('password', '')->assertReplacedWith('/');
     Native::fakeBridge()->assertCalled('SecureStorage.Set', fn (array $params): bool => $params['value'] === 'test-token');
 });
 
@@ -36,7 +36,7 @@ it('completes two factor authentication with either code type', function (bool $
     if ($recovery) {
         $screen->tap('login-recovery')->assertSee('Recovery code');
     }
-    $screen->input('login-code', '012345')->tap('login-submit')->assertSet('code', '')->assertReplacedWith('/dashboard');
+    $screen->input('login-code', '012345')->tap('login-submit')->assertSet('code', '')->assertReplacedWith('/');
     Saloon::assertSent(fn (Request $request): bool => $request instanceof VerifyTwoFactorRequest
         && $request->body()->all() === ['challenge' => 'challenge', $recovery ? 'recovery_code' : 'code' => '012345']);
 })->with([false, true]);

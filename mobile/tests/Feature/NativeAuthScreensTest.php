@@ -27,23 +27,46 @@ it('binds the login fields', function () {
         ->assertSet('password', 'secret-password');
 });
 
-it('opens registration in the browser without authenticating', function () {
-    Browser::shouldReceive('open')->once()->with('https://sunny.example/register')->andReturn(true);
+it('opens registration in the in-app browser without authenticating', function () {
+    Browser::shouldReceive('inApp')->once()->with('https://sunny.example/register')->andReturn(true);
 
     Native::visit('/register')
         ->assertScreen(Register::class)
-        ->assertSee('Create your account on the Sunny website, then return here to log in.')
+        ->assertSee('Sign up on the Sunny website without leaving the app.')
         ->tap('register-submit')
         ->assertNoNavigation();
 });
 
-it('switches between the login and register screens without stacking them', function (string $from, string $link, string $to) {
+it('opens password reset in the in-app browser', function () {
+    Browser::shouldReceive('inApp')->once()->with('https://sunny.example/forgot-password')->andReturn(true);
+
+    Native::visit('/login')
+        ->tap('login-forgot-password')
+        ->assertSet('error', '')
+        ->assertNoNavigation();
+});
+
+it('says so when password reset cannot open', function () {
+    Browser::shouldReceive('inApp')->once()->andReturn(false);
+
+    Native::visit('/login')
+        ->tap('login-forgot-password')
+        ->assertSee('Unable to open password reset. Please try again.')
+        ->assertNoNavigation();
+});
+
+it('switches between the login and register screens without stacking them', function (string $from, string $link, string $to, string $returnLink, string $screen) {
     Native::visit($from)
         ->tap($link)
-        ->assertReplacedWith($to);
+        ->assertNavigatedTo($to)
+        ->follow()
+        ->tap($returnLink)
+        ->assertWentBack()
+        ->goBack()
+        ->assertScreen($screen);
 })->with([
-    'login to register' => ['/login', 'login-register-link', '/register'],
-    'register to login' => ['/register', 'register-login-link', '/login'],
+    'login to register' => ['/login', 'login-register-link', '/register', 'register-login-link', Login::class],
+    'register to login' => ['/register', 'register-login-link', '/login', 'login-register-link', Register::class],
 ]);
 
 it('validates login before contacting the API', function () {

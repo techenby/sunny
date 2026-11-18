@@ -9,11 +9,13 @@ use App\Http\Integrations\Sunny\SunnyStore;
 use App\Models\Onboarding;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\View\View;
+use Native\Mobile\Attributes\Lazy;
 use RuntimeException;
 use Saloon\Exceptions\Request\FatalRequestException;
 use Saloon\Exceptions\Request\RequestException;
 use Saloon\Exceptions\Request\Statuses\UnauthorizedException;
 
+#[Lazy]
 class Home extends Component
 {
     public string $error = '';

@@ -55,7 +55,9 @@ test('the account is kept while the user owns a team other people use', function
         ->deleteJson(route('api.user.destroy'), ['password' => 'password'])
         ->assertUnprocessable()
         ->assertJsonValidationErrors('teams')
-        ->assertJsonPath('errors.teams.0', $user->deletionBlockedMessage());
+        ->assertJsonPath('message', $user->deletionBlockedMessage())
+        ->assertJsonPath('errors.teams.0', $user->deletionBlockedMessage())
+        ->assertJsonPath('blocking_teams', [['name' => 'Straw Hats', 'slug' => $team->fresh()->slug]]);
 
     expect($user->fresh())->not->toBeNull()
         ->and($team->fresh()->members)->toHaveCount(2);
