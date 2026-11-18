@@ -209,7 +209,7 @@ it('gives every tappable control at least a 48dp touch target', function () {
 
     $walk = function (array $node) use (&$walk, &$undersized): void {
         if (in_array($node['type'] ?? '', ['button', 'pressable'], true)) {
-            $height = $node['layout']['height'] ?? null;
+            $height = $node['layout']['height'] ?? $node['layout']['min_height'] ?? null;
             $tallEnough = $height === null
                 ? ($node['props']['size'] ?? null) === 'lg'
                 : $height >= 48;
@@ -225,6 +225,10 @@ it('gives every tappable control at least a 48dp touch target', function () {
     };
 
     $walk(Native::visit('/recipes/create')->set('photoPath', '/tmp/captured.jpg')->tree());
+    $walk(Native::visit('/recipes/create')->set('source', 'https://example.com/pancakes')->tree());
+    $walk(Native::visit('/recipes/create')->set('source', 'https://example.com')->set('importProblem', 'no-recipe')->tree());
+    $walk(Native::visit('/recipes/create')->set('source', 'https://example.com/pancakes')->set('importProblem', 'offline')->tree());
+    $walk(Native::visit('/recipes/1/edit', ['imported' => true])->tree());
 
     expect($undersized)->toBe([]);
 });

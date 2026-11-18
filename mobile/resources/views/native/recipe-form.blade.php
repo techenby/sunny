@@ -3,7 +3,7 @@
 @use('Illuminate\Support\Str')
 
 {{-- Shared by the create and edit screens. Expects $formRef, $submitLabel,
-     and $tagRows; the remaining state comes from the including component's
+     $tagRows and $importCard; the remaining state comes from the including component's
      ManagesRecipeForm properties. Computed values have to be passed in
      because an @include is not bound to $this. --}}
 
@@ -26,8 +26,14 @@
                 keyboard="url"
                 :ios-leading-icon="Ios::Link"
                 :android-leading-icon="Android::Link"
-                native:model.blur="source"
+                :error="in_array($importCard['state'] ?? null, ['no-recipe', 'unreachable'], true)"
+                :disabled="$importing ?? false"
+                native:model.debounce.500ms="source"
             />
+
+            @if ($importCard)
+                @include('native.recipe-import-card', ['card' => $importCard])
+            @endif
 
             @include('native.photo-field', [
                 'photoPath' => $photoPath ?? $existingPhotoUrl,
@@ -138,7 +144,7 @@
             size="lg"
             font="semibold"
             class="w-full"
-            :disabled="$saving || $savedId !== null"
+            :disabled="$saving || $savedId !== null || ($importing ?? false)"
             @tap="save"
         >
             {{ $submitLabel }}
