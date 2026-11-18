@@ -94,7 +94,7 @@
                             </pressable>
                         @endif
                         <column class="flex-1" />
-                        <pressable ref="list-edit-save" a11y-label="Save" class="h-10 items-center justify-center rounded-full bg-theme-primary px-5" @tap="saveItem">
+                        <pressable ref="list-edit-save" a11y-label="Save" class="min-h-10 shrink-0 items-center justify-center rounded-full bg-theme-primary px-5" @tap="saveItem">
                             <text font="semibold" class="text-base text-theme-on-primary">Save</text>
                         </pressable>
                     </row>
@@ -115,7 +115,7 @@
                         />
                     </row>
                     <row class="w-full items-center gap-2">
-                        <row class="h-12 flex-1 items-center gap-2 rounded-full border bg-theme-surface pr-1 pl-3 {{ $linkError !== '' ? 'border-theme-primary' : 'border-theme-outline' }}">
+                        <row class="min-h-12 flex-1 items-center gap-2 rounded-full border bg-theme-surface pr-1 pl-3 {{ $linkError !== '' ? 'border-theme-primary' : 'border-theme-outline' }}">
                             <icon :ios="Ios::Link" :android="Android::Link" :size="16" class="text-theme-primary" />
                             <bare-text-input
                                 ref="list-new-item-url"
@@ -225,7 +225,7 @@
                                         >
                                             <row class="items-center gap-1">
                                                 <icon :ios="Ios::Link" :android="Android::Link" :size="12" :class="$item['completed'] ? 'text-theme-on-surface-variant' : 'text-theme-primary-text'" />
-                                                <text ref="list-item-{{ $item['id'] }}-domain" font="semibold" :class="$item['completed'] ? 'text-sm text-theme-on-surface-variant' : 'text-sm text-theme-primary-text'">{{ $item['domain'] }}</text>
+                                                <text ref="list-item-{{ $item['id'] }}-domain" font="semibold" max-lines="1" :class="$item['completed'] ? 'text-sm text-theme-on-surface-variant' : 'text-sm text-theme-primary-text'">{{ $item['domain'] }}</text>
                                             </row>
                                         </pressable>
                                     </row>
