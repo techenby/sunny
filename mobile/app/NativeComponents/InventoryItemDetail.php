@@ -5,6 +5,7 @@ namespace App\NativeComponents;
 use App\Actions\DuplicateItem;
 use App\Concerns\ChecksSunnySync;
 use App\Concerns\ChoosesInventoryParent;
+use App\Concerns\MovesItemToTeam;
 use App\Concerns\ShowsQueuedChange;
 use App\Enums\ItemType;
 use App\Http\Integrations\Sunny\SunnyOutbox;
@@ -37,6 +38,7 @@ class InventoryItemDetail extends Component
         selectParent as protected chooseParent;
         selectTopLevel as protected chooseTopLevel;
     }
+    use MovesItemToTeam;
     use ShowsQueuedChange;
 
     public string $error = '';
@@ -50,6 +52,17 @@ class InventoryItemDetail extends Component
     public ?string $copiesProblem = null;
 
     public string $copiesError = '';
+
+    public function mount(): void
+    {
+        $this->showMovedToTeam();
+    }
+
+    public function onResume(): void
+    {
+        $this->refreshLocalSyncedData();
+        $this->showMovedToTeam();
+    }
 
     /**
      * @return array{id: int, parent_id: int|null, type: ItemType, name: string, metadata: array<string, string>|null, created_at: string, updated_at: string}|null
@@ -185,10 +198,11 @@ class InventoryItemDetail extends Component
      */
     public function moreMenu(): array
     {
-        return [
+        return array_values(array_filter([
             NavAction::make('item-print-label')->label('Print label')->icon(ios: Ios::Qrcode->value, android: Android::QrCode2->value)->press('showQrCode'),
             NavAction::make('item-make-copies')->label('Make copies')->icon(ios: Ios::SquareOnSquare->value, android: Android::ContentCopy->value)->press('openCopies'),
-        ];
+            $this->teamMoveTeams() === [] ? null : NavAction::make('item-move-to-team')->label('Move to another team')->icon(ios: Ios::ArrowLeftArrowRight->value, android: Android::SwapHoriz->value)->press('openTeamMove'),
+        ]));
     }
 
     public function openCopies(): void
