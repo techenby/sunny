@@ -4,12 +4,12 @@ namespace App\NativeComponents;
 
 use App\Support\Amount;
 use App\Support\CookTimerAlerts;
+use App\Support\Toast;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
 use Native\Mobile\Attributes\On;
 use Native\Mobile\Attributes\Poll;
-use Native\Mobile\Facades\Dialog;
 use Native\Mobile\Facades\Haptics;
 use NativePHP\LocalNotifications\Events\PermissionGranted;
 use SRWieZ\NativePHP\Mobile\Screen\Facades\Screen;
@@ -304,7 +304,7 @@ class CookRecipe extends Component
 
         if (! $this->notifies) {
             Haptics::vibrate();
-            Dialog::toast("Step {$step} timer is done");
+            Toast::info("Step {$step} timer is done", long: true);
         }
     }
 

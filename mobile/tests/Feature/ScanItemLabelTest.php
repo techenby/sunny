@@ -30,7 +30,7 @@ it('rejects codes that are not Sunny labels', function (string $code) {
     Native::visit('/inventory')
         ->emitNative(CodeScanned::class, ['data' => $code, 'format' => 'qr', 'id' => 'item-code'])
         ->assertNoNavigation()
-        ->assertNativeCalled('Dialog.Toast', fn (array $params): bool => $params['message'] === 'That code isn’t a Sunny label.');
+        ->assertToastShown(fn (array $params): bool => $params['message'] === 'That code isn’t a Sunny label.' && $params['variant'] === 'error');
 })->with([
     'another site' => 'https://example.com/i/7',
     'a lookalike host' => 'https://sunny.example.evil.com/i/7',

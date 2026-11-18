@@ -10,6 +10,7 @@ use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Http\Integrations\Sunny\SunnyTeam;
 use App\Models\Onboarding;
 use App\Support\CrashReports;
+use App\Support\Toast;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
@@ -119,7 +120,7 @@ class Dashboard extends Component
     public function onAlertButtonPressed(string $label, ?string $id = null): void
     {
         if ($id === 'crash-reports' && $label === 'Share' && ! app(CrashReports::class)->share(true)) {
-            Dialog::toast('Unable to save your choice. You can turn on crash reports in Preferences.');
+            Toast::error('Unable to save your choice. You can turn on crash reports in Preferences.');
         }
     }
 
@@ -167,7 +168,7 @@ class Dashboard extends Component
         }
 
         if (app(SunnyStore::class)->lastSyncedAt()) {
-            Dialog::toast('Unable to sync. Your previously downloaded data is still available.');
+            Toast::info('Unable to sync. Your previously downloaded data is still available.', long: true);
         } else {
             $this->syncError = 'Unable to download your data. Check your connection and tap here to retry.';
         }

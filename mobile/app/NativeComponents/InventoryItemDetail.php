@@ -11,6 +11,7 @@ use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Icons\Android;
 use App\Icons\Ios;
 use App\Models\ItemPhoto;
+use App\Support\Toast;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
@@ -152,7 +153,7 @@ class InventoryItemDetail extends Component
         app(SunnySyncCoordinator::class)->dispatch();
         $this->error = '';
         $this->refreshLocalSyncedData();
-        Dialog::toast('Added '.$name.' to '.$this->item['name']);
+        Toast::success('Added '.$name.' to '.$this->item['name']);
     }
 
     #[Computed]
@@ -309,7 +310,7 @@ class InventoryItemDetail extends Component
         $this->error = '';
         $this->refreshLocalSyncedData();
 
-        Dialog::toast(match (true) {
+        Toast::success(match (true) {
             $this->parent !== null => 'Moved to '.$this->parent['name'],
             $this->item['type'] === ItemType::Location => 'Now one of the places in your home',
             default => 'Moved to “Not in a place yet”',

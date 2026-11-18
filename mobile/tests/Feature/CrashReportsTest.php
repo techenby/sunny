@@ -50,7 +50,7 @@ it('saves the choice to share crash reports', function (bool $share) {
     Native::visit('/preferences')
         ->toggle('setCrashReports', $share)
         ->assertSet('shareCrashReports', $share)
-        ->assertNativeNotCalled('Dialog.Toast');
+        ->assertNativeNotCalled('ToastKit.Show');
 
     expect(Storage::exists('crash-reports-asked'))->toBeTrue();
 })->with([true, false]);
@@ -61,7 +61,7 @@ it('keeps crash reports off and says so when the choice cannot be saved', functi
     Native::visit('/preferences')
         ->toggle('setCrashReports', true)
         ->assertSet('shareCrashReports', false)
-        ->assertNativeCalled('Dialog.Toast', fn (array $params): bool => $params['message'] === 'Unable to save your choice. Please try again.');
+        ->assertToastShown(fn (array $params): bool => $params['message'] === 'Unable to save your choice. Please try again.' && $params['variant'] === 'error');
 });
 
 it('asks on the dashboard whether to share crash reports', function () {
@@ -93,7 +93,7 @@ it('shares crash reports only when the user taps Share', function () {
 
     Native::visit('/dashboard')
         ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Share', 'id' => 'crash-reports'])
-        ->assertNativeNotCalled('Dialog.Toast');
+        ->assertNativeNotCalled('ToastKit.Show');
 });
 
 it('leaves crash reports off when the user taps Not now', function () {
@@ -108,5 +108,5 @@ it('says so when sharing from the prompt cannot be saved', function () {
 
     Native::visit('/dashboard')
         ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Share', 'id' => 'crash-reports'])
-        ->assertNativeCalled('Dialog.Toast', fn (array $params): bool => str_starts_with($params['message'], 'Unable to save your choice.'));
+        ->assertToastShown(fn (array $params): bool => str_starts_with($params['message'], 'Unable to save your choice.') && $params['variant'] === 'error');
 });
