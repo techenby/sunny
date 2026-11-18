@@ -191,6 +191,10 @@
                 {
                     "description": "iOS: have VoiceOver read a toast out when it appears, since it draws in its own window that VoiceOver never moves to",
                     "url": "patches/victorycodedev-toastkit-ios-voiceover-announcement.patch"
+                },
+                {
+                    "description": "iOS: move a toast's action buttons under the message at accessibility text sizes, so the message doesn't break letter by letter beside them",
+                    "url": "patches/victorycodedev-toastkit-ios-stack-actions-at-large-text.patch"
                 }
             ]
         }

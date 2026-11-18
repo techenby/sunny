@@ -1,0 +1,57 @@
+--- a/resources/ios/Sources/Presentation/ToastKitHost.swift
++++ b/resources/ios/Sources/Presentation/ToastKitHost.swift
+@@ -124,6 +124,7 @@
+ private struct ToastKitView: View {
+     let toast: ToastKitConfiguration
+     let reduceMotion: Bool
++    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+     @State private var drag: CGSize = .zero
+     @State private var dynamicExpanded = false
+     @State private var dynamicDropExtended = false
+@@ -257,9 +258,21 @@
+                 .allowsHitTesting(false)
+         }
+         .animation(dynamicAnimation, value: dynamicExpanded)
++    }
++
++    private var stacksActions: Bool {
++        dynamicTypeSize.isAccessibilitySize && !toast.actions.isEmpty
++    }
++
++    private var customActions: some View {
++        ForEach(toast.actions, id: \.id) { action in
++            Button(action.label) { ToastKitManager.shared.pressAction(toastId: toast.id, actionId: action.id) }
++                .font(.subheadline.weight(.bold)).foregroundStyle(action.color ?? toast.style.actionColor)
++        }
+     }
+ 
+     private var customContent: some View {
++        VStack(alignment: .trailing, spacing: 8) {
+         HStack(spacing: 12) {
+             if toast.progress == nil && toast.loading {
+                 ProgressView().tint(toast.style.iconColor).controlSize(.small)
+@@ -290,9 +303,8 @@
+                 .animation(contentUpdateAnimation, value: toast.message)
+         }
+         .foregroundStyle(toast.style.foreground).frame(maxWidth: .infinity, alignment: .leading)
+-            ForEach(toast.actions, id: \.id) { action in
+-                Button(action.label) { ToastKitManager.shared.pressAction(toastId: toast.id, actionId: action.id) }
+-                    .font(.subheadline.weight(.bold)).foregroundStyle(action.color ?? toast.style.actionColor)
++            if !stacksActions {
++                customActions
+             }
+             if toast.dismissible {
+                 Button { ToastKitManager.shared.dismiss(toast.id) } label: {
+@@ -301,6 +313,12 @@
+                 .foregroundStyle(toast.style.foreground).accessibilityLabel("Dismiss")
+             }
+         }
++            if stacksActions {
++                HStack(spacing: 16) {
++                    customActions
++                }
++            }
++        }
+         .padding(toast.style.padding)
+         .background(toast.style.background, in: RoundedRectangle(cornerRadius: toast.style.cornerRadius, style: .continuous))
+         .shadow(color: toast.style.shadow ? .black.opacity(0.22) : .clear, radius: 10, y: 4)

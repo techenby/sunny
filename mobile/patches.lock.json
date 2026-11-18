@@ -1,5 +1,5 @@
 {
-    "_hash": "1d97742014c9ec0e8ad63869673646bf2007a909ac6ff0ebc7db099518c4b5b9",
+    "_hash": "48ba72f2fd7b2fbc744d60a9221f78440f277723b2b36231a642f171b76157f3",
     "patches": {
         "nativephp/mobile-camera": [
             {
@@ -169,6 +169,16 @@
                 "description": "iOS: have VoiceOver read a toast out when it appears, since it draws in its own window that VoiceOver never moves to",
                 "url": "patches/victorycodedev-toastkit-ios-voiceover-announcement.patch",
                 "sha256": "26da560a509fd02726a332f8868552637dbb42a2d8dfd01cfbbf700b187e0dd8",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
+            },
+            {
+                "package": "victorycodedev/toastkit",
+                "description": "iOS: move a toast's action buttons under the message at accessibility text sizes, so the message doesn't break letter by letter beside them",
+                "url": "patches/victorycodedev-toastkit-ios-stack-actions-at-large-text.patch",
+                "sha256": "bf13eedd224b1464ecb1cf38a036d78f7e7e3befe45e77d80c63f388912b7165",
                 "depth": 1,
                 "extra": {
                     "provenance": "root"
