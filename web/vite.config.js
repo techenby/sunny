@@ -4,8 +4,12 @@ import {
 import laravel from 'laravel-vite-plugin';
 import { bunny } from 'laravel-vite-plugin/fonts';
 import tailwindcss from "@tailwindcss/vite";
+import oldWebviewColors from './vite/old-webview-colors.js';
 
 export default defineConfig({
+    build: {
+        cssTarget: 'chrome106',
+    },
     plugins: [
         laravel({
             input: [
@@ -21,6 +25,7 @@ export default defineConfig({
             ],
         }),
         tailwindcss(),
+        oldWebviewColors(),
     ],
     server: {
         cors: true,
