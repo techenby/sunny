@@ -2,10 +2,15 @@
 
 use App\Http\Integrations\Sunny\SunnyStore;
 use App\Models\Team;
+use GuzzleHttp\Exception\ConnectException;
+use GuzzleHttp\Psr7\Request as GuzzleRequest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Native\Mobile\AsyncTask;
 use Native\Mobile\Testing\FakeBridge;
 use Saloon\Config;
+use Saloon\Exceptions\Request\FatalRequestException;
+use Saloon\Http\Faking\MockResponse;
+use Saloon\Http\PendingRequest;
 use Tests\TestCase;
 
 /*
@@ -76,6 +81,11 @@ function fakeSecureStorage(): FakeBridge
 
             return ['success' => true];
         });
+}
+
+function unreachableSunny(): MockResponse
+{
+    return MockResponse::make()->throw(fn (PendingRequest $pending) => new FatalRequestException(new ConnectException('Could not resolve host', new GuzzleRequest('POST', 'https://sunny.example')), $pending));
 }
 
 function seedSunnyData(): void

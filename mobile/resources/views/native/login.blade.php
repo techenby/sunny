@@ -34,7 +34,7 @@
                         ref="login-forgot-password"
                         variant="ghost"
                         font="semibold"
-                        a11y-hint="Opens password reset on the Sunny website"
+                        a11y-hint="Opens password reset"
                         @tap="forgotPassword"
                     >
                         Forgot password?
