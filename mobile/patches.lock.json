@@ -1,5 +1,5 @@
 {
-    "_hash": "4c32cbe903eafb55d652f06bacb08bfb29b6ea7db351a817cd9ee07c98371ab5",
+    "_hash": "0f048edea3a38b150668f0d97c5dff9296ae28e6679f89b1162f0aa683612d6c",
     "patches": {
         "nativephp/mobile-camera": [
             {
@@ -113,6 +113,18 @@
                 "description": "Android: depend on Guava so ScannerActivity compiles once mobile-ui's emoji picker pulls Guava in at runtime only",
                 "url": "patches/nativephp-mobile-scanner-android-guava.patch",
                 "sha256": "58983f2f387d43770dee49751e902a1e4230c6dbc08fc2d7214ccc6c3cb782e4",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
+            }
+        ],
+        "nativephp/mobile-share": [
+            {
+                "package": "nativephp/mobile-share",
+                "description": "iOS: present the share sheet from the top-most view controller, so it opens from a bottom sheet instead of UIKit refusing it (scratchpad issue #14)",
+                "url": "patches/nativephp-mobile-share-ios-present-from-top.patch",
+                "sha256": "3998d7bf10b2e5c4a0533a01348286d608f45c1dfaf8ff9308ffe20dd50d94cf",
                 "depth": 1,
                 "extra": {
                     "provenance": "root"
