@@ -16,6 +16,7 @@ use App\Models\ItemPhoto;
 use App\Models\PendingWrite;
 use App\Models\Team;
 use App\Support\Toast;
+use App\Support\ToastAction;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -49,8 +50,6 @@ class InventoryItemDetail extends Component
     public ?string $copiesProblem = null;
 
     public string $copiesError = '';
-
-    public int $copiesMade = 0;
 
     /**
      * @return array{id: int, parent_id: int|null, type: ItemType, name: string, metadata: array<string, string>|null, created_at: string, updated_at: string}|null
@@ -270,13 +269,19 @@ class InventoryItemDetail extends Component
         }
 
         $this->showCopies = false;
-        $this->copiesMade = $made;
         $this->refreshLocalSyncedData();
+        Toast::success(trans_choice(':count copy made|:count copies made', $made), action: new ToastAction('View', 'view-copies', ['item' => $this->item['id']]));
     }
 
-    public function viewCopies(): void
+    /**
+     * @param  array{item?: int}  $data
+     */
+    #[On(Toast::ACTION_PRESSED, when: ['actionId' => 'view-copies'])]
+    public function viewCopies(array $data): void
     {
-        $this->copiesMade = 0;
+        if ($this->item === null || ($data['item'] ?? null) !== $this->item['id']) {
+            return;
+        }
 
         if ($this->parent === null) {
             $this->navigate('/inventory');

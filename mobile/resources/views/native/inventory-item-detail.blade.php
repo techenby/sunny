@@ -11,48 +11,27 @@
 
 @if ($item)
     <native:bottom-bar>
-        <column class="w-full gap-3 px-4 pb-2">
-            @if ($copiesMade > 0)
-                <row ref="item-copies-made" class="{{ Card::classes() }} w-full items-center gap-3 py-3 pl-4 pr-3">
-                    <column class="h-8 w-8 items-center justify-center rounded-full bg-theme-primary">
-                        <native:icon :ios="Ios::Checkmark" :android="Android::Check" :size="16" class="text-theme-on-primary" />
-                    </column>
-                    <column class="flex-1 gap-0.5">
-                        <text font="semibold" class="text-base text-theme-on-surface">{{ trans_choice(':count copy made|:count copies made', $copiesMade) }}</text>
-                        <x-ui.text size="sm">Next to this one {{ $this->copiesPlace() }}</x-ui.text>
-                    </column>
-                    <pressable
-                        ref="item-copies-view"
-                        a11y-label="View copies"
-                        class="min-h-12 items-center justify-center rounded-full bg-theme-primary/15 px-4"
-                        @tap="viewCopies"
-                    >
-                        <text font="semibold" class="text-base text-theme-primary-text">View</text>
-                    </pressable>
+        <row class="w-full items-center gap-3 px-4 pb-2">
+            <pressable
+                ref="edit-item"
+                a11y-label="Edit"
+                class="min-h-12 flex-1 items-center justify-center rounded-full px-4 glass android:bg-theme-surface"
+                @navigate('/inventory/'.$item['id'].'/edit')
+            >
+                <row class="items-center gap-2">
+                    <native:icon :ios="Ios::Pencil" :android="Android::Edit" :size="18" class="text-theme-on-surface" />
+                    <text font="semibold" class="text-lg text-theme-on-surface">Edit</text>
                 </row>
-            @endif
-            <row class="w-full items-center gap-3">
-                <pressable
-                    ref="edit-item"
-                    a11y-label="Edit"
-                    class="min-h-12 flex-1 items-center justify-center rounded-full px-4 glass android:bg-theme-surface"
-                    @navigate('/inventory/'.$item['id'].'/edit')
-                >
-                    <row class="items-center gap-2">
-                        <native:icon :ios="Ios::Pencil" :android="Android::Edit" :size="18" class="text-theme-on-surface" />
-                        <text font="semibold" class="text-lg text-theme-on-surface">Edit</text>
-                    </row>
-                </pressable>
-                <pressable
-                    ref="item-more"
-                    a11y-label="More"
-                    class="h-12 w-12 items-center justify-center rounded-full glass android:bg-theme-surface"
-                    :menu="$this->moreMenu()"
-                >
-                    <native:icon :ios="Ios::Ellipsis" :android="Android::MoreHoriz" :size="22" class="text-theme-on-surface" />
-                </pressable>
-            </row>
-        </column>
+            </pressable>
+            <pressable
+                ref="item-more"
+                a11y-label="More"
+                class="h-12 w-12 items-center justify-center rounded-full glass android:bg-theme-surface"
+                :menu="$this->moreMenu()"
+            >
+                <native:icon :ios="Ios::Ellipsis" :android="Android::MoreHoriz" :size="22" class="text-theme-on-surface" />
+            </pressable>
+        </row>
     </native:bottom-bar>
 
     <scroll-view ref="item-detail" fill class="bg-theme-background">

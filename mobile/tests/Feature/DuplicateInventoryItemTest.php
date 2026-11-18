@@ -12,6 +12,7 @@ use Saloon\Http\Faking\MockResponse;
 use Saloon\Http\PendingRequest;
 use Saloon\Http\Request;
 use Saloon\Laravel\Facades\Saloon;
+use Victorycodedev\ToastKit\Events\ToastActionPressed;
 
 beforeEach(function (): void {
     seedSunnyData();
@@ -47,9 +48,11 @@ it('makes one copy next to the original, with its photos', function (): void {
         ->assertAccessible()
         ->tap('item-copies-submit')
         ->assertSet('showCopies', false)
-        ->assertSee('1 copy made')
-        ->assertSee('Next to this one in Basement')
-        ->tap('item-copies-view')
+        ->assertToastShown(fn (array $params): bool => $params['message'] === '1 copy made'
+            && $params['variant'] === 'success'
+            && $params['action'] === ['id' => 'view-copies', 'label' => 'View']
+            && $params['data'] === ['item' => 12])
+        ->emitNative(ToastActionPressed::class, ['toastId' => 'copies', 'actionId' => 'view-copies', 'data' => ['item' => 12]])
         ->assertNavigatedTo('/inventory/11');
 
     Saloon::assertSent(fn (Request $request): bool => $request instanceof DuplicateItemRequest
@@ -72,7 +75,7 @@ it('makes several copies at once', function (): void {
     $screen->assertSet('copies', 6)
         ->assertSee('Make 6 copies')
         ->tap('item-copies-submit')
-        ->assertSee('6 copies made');
+        ->assertToastShown(fn (array $params): bool => $params['message'] === '6 copies made');
 
     Saloon::assertSent(fn (Request $request): bool => $request instanceof DuplicateItemRequest && $request->body()->all() === ['count' => 6]);
 
@@ -107,9 +110,16 @@ it('says where copies of something outside any place go', function (): void {
         ->assertSee('Going with the places in your home')
         ->tap('item-copies-more')
         ->tap('item-copies-submit')
-        ->assertSee('2 copies made')
-        ->tap('item-copies-view')
+        ->assertToastShown(fn (array $params): bool => $params['message'] === '2 copies made')
+        ->emitNative(ToastActionPressed::class, ['toastId' => 'copies', 'actionId' => 'view-copies', 'data' => ['item' => 11]])
         ->assertNavigatedTo('/inventory');
+});
+
+it('leaves View to the screen of the item that was copied', function (): void {
+    Native::visit('/inventory/12')
+        ->emitNative(ToastActionPressed::class, ['toastId' => 'copies', 'actionId' => 'view-copies', 'data' => ['item' => 13]])
+        ->emitNative(ToastActionPressed::class, ['toastId' => 'other', 'actionId' => 'go-to-restored', 'data' => ['item' => 12]])
+        ->assertNoNavigation();
 });
 
 it('copies nothing while offline and lets them try again', function (): void {
@@ -136,7 +146,7 @@ it('copies nothing while offline and lets them try again', function (): void {
     $screen->tap('item-copies-submit')
         ->assertSet('showCopies', false)
         ->assertSet('copiesProblem', null)
-        ->assertSee('3 copies made');
+        ->assertToastShown(fn (array $params): bool => $params['message'] === '3 copies made');
 
     expect(Item::count())->toBe(18);
 });
@@ -151,7 +161,7 @@ it('explains when Sunny refuses to make copies', function (int $status, array $b
         ->assertSee('Couldn’t make copies')
         ->assertSee($message.' Nothing’s been copied yet.')
         ->assertSee('Try again')
-        ->assertDontSee('copies made');
+        ->assertNativeNotCalled('ToastKit.Show');
 
     expect(Item::count())->toBe(15);
 })->with([

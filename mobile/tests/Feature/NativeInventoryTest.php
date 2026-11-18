@@ -204,7 +204,7 @@ it('stops walking descendants when the synced data contains a parent cycle', fun
 
 it('puts edit and a more menu above the tab bar and delete at the end of the page', function () {
     Native::visit('/inventory/7')
-        ->assertElement('bottom_bar', fn (array $node): bool => array_column(end($node['children'][0]['children'])['children'], 'ref') === ['edit-item', 'item-more'])
+        ->assertElement('bottom_bar', fn (array $node): bool => array_column($node['children'][0]['children'], 'ref') === ['edit-item', 'item-more'])
         ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'item-more'
             && array_column(array_column($node['children'], 'props'), 'label') === ['Print label', 'Make copies'])
         ->assertMissingElement('top_bar_action', fn (array $node): bool => ($node['ref'] ?? null) === 'delete-item')
