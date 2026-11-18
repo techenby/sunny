@@ -218,6 +218,7 @@ user belongs to.
 | `DELETE` | `/api/teams/{team}/items/{item}/photos/{photo}` | Remove a photo. |
 | `GET` | `/api/teams/{team}/recipes` | List the team's recipes. |
 | `POST` | `/api/teams/{team}/recipes` | Create a recipe. |
+| `POST` | `/api/teams/{team}/recipes/import` | Create a recipe from a web page. |
 | `GET` | `/api/teams/{team}/recipes/{recipe}` | Read a recipe. |
 | `PATCH` | `/api/teams/{team}/recipes/{recipe}` | Update a recipe. |
 | `DELETE` | `/api/teams/{team}/recipes/{recipe}` | Delete a recipe. |
@@ -357,6 +358,14 @@ team).
 }
 ```
 
+To import a recipe, send its page's `url` (and optionally a `client_uuid`) to
+`POST /api/teams/{team}/recipes/import`. SunnyHome reads the page's Recipe
+structured data and returns the new recipe with `201`. If the page loads but
+has no recipe, it returns `422` on `url`. If SunnyHome can't open the page at
+all (the site returns an error, blocks the request, or doesn't answer), it
+returns `424` on `url`, so a client can tell the two apart. Imports are limited
+to 30 a minute.
+
 ## List payloads
 
 Lists are called checklists in the API. Create one with:
@@ -487,6 +496,7 @@ Expect standard Laravel JSON errors:
 - `403` when the user doesn't belong to the team in the URL or isn't allowed to do something.
 - `404` when the record doesn't exist or belongs to a different team.
 - `422` when validation fails.
+- `424` when a recipe import can't open the page.
 - `429` when too many token, two-factor, registration or password reset requests are made.
 
 Sanctum tokens don't work with SunnyHome's [MCP server](/docs/developers/mcp/setup), which only accepts OAuth.
