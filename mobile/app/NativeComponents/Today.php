@@ -7,9 +7,11 @@ use App\Enums\TimeOfDay;
 use App\Http\Integrations\Sunny\SunnyOutbox;
 use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Http\Integrations\Sunny\SunnyTeam;
+use App\Models\Routine;
 use App\Models\RoutineOccurrence;
 use App\Models\RoutineOccurrenceStep;
 use App\Support\Toast;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
@@ -33,6 +35,9 @@ class Today extends Component
 
         return RoutineOccurrence::forActiveTeam()
             ->where('due_on', $team->today()->toDateString())
+            ->where(fn (Builder $query) => $query
+                ->whereNotIn('routine_id', Routine::forCurrentServer()->whereDate('starts_on', '>', $team->today()->toDateString())->select('id'))
+                ->orWhereHas('steps', fn (Builder $query) => $query->whereNotNull('completed_at')))
             ->with('steps')
             ->get()
             ->sortBy(fn (RoutineOccurrence $occurrence): array => [$occurrence->time_of_day->sortOrder(), $occurrence->name])

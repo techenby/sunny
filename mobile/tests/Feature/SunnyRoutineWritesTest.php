@@ -40,13 +40,16 @@ it('sends a new routine, then the steps added to it once it has an id', function
         return MockResponse::make(['data' => [...$body, ...$owner, 'id' => $nextId++, 'created_at' => now()->toIso8601String(), 'updated_at' => now()->toIso8601String()]], 201);
     }]);
     $outbox = app(SunnyOutbox::class);
-    $routine = $outbox->queue('routines', 1, ['name' => 'Gym', 'time_of_day' => 'afternoon', 'frequency' => 'weekly', 'weekdays' => [1, 3], 'day_of_month' => null, 'is_active' => true]);
+    $routine = $outbox->queue('routines', 1, ['name' => 'Gym', 'time_of_day' => 'afternoon', 'frequency' => 'weekly', 'weekdays' => [1, 3], 'day_of_month' => null, 'starts_on' => '2026-10-01', 'is_active' => true]);
     $outbox->queue('routine_steps', 1, ['routine_id' => $routine, 'name' => 'Stretch']);
+
+    expect(Routine::find($routine)->starts_on)->toBe('2026-10-01');
 
     app(SunnyWrites::class)->push();
 
     Saloon::assertSent(fn (SaveRecordRequest $request): bool => $request->resolveEndpoint() === '/teams/family/routines'
         && $request->body()->get('weekdays') === [1, 3]
+        && $request->body()->get('starts_on') === '2026-10-01'
         && $request->body()->get('client_uuid') !== null);
     Saloon::assertSent(fn (SaveRecordRequest $request): bool => $request->resolveEndpoint() === '/teams/family/routines/100/steps'
         && $request->getMethod() === Method::POST

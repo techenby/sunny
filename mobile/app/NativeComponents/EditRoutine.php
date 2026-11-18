@@ -22,7 +22,7 @@ class EditRoutine extends Component
     }
 
     /**
-     * @return array{id: int, team_id: int, user_id: int|null, name: string, time_of_day: TimeOfDay, frequency: RoutineFrequency, weekdays: list<int>|null, day_of_month: int|null, is_active: bool, summary: string}|null
+     * @return array{id: int, team_id: int, user_id: int|null, name: string, time_of_day: TimeOfDay, frequency: RoutineFrequency, weekdays: list<int>|null, day_of_month: int|null, starts_on: string|null, is_active: bool, summary: string}|null
      */
     #[Computed]
     public function routine(): ?array

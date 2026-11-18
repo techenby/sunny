@@ -9,6 +9,8 @@
         'timeOfDayOptions' => $this->timeOfDayOptions,
         'frequencyOptions' => $this->frequencyOptions,
         'weekdayRows' => $this->weekdayRows,
+        'startsOnLabel' => $this->startsOnLabel,
+        'startsOnHint' => $this->startsOnHint,
     ])
 @else
     <x-ui.not-found ref="edit-routine-missing" thing="routine" class="ios:bg-theme-grouped-background" />

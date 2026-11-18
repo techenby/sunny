@@ -207,7 +207,7 @@ it('creates a weekly routine on the phone and opens it', function () {
     expect(Routine::find(-1)->only('team_id', 'name', 'time_of_day', 'frequency', 'weekdays', 'is_active'))->toBe([
         'team_id' => 1, 'name' => 'Gym', 'time_of_day' => TimeOfDay::Afternoon, 'frequency' => RoutineFrequency::Weekly, 'weekdays' => [1, 3], 'is_active' => true,
     ])->and(PendingWrite::sole()->payload)->toBe([
-        'name' => 'Gym', 'time_of_day' => 'afternoon', 'frequency' => 'weekly', 'weekdays' => [1, 3], 'day_of_month' => null, 'is_active' => true,
+        'name' => 'Gym', 'time_of_day' => 'afternoon', 'frequency' => 'weekly', 'weekdays' => [1, 3], 'day_of_month' => null, 'starts_on' => now()->toDateString(), 'is_active' => true,
     ]);
     Native::visit('/routines/-1')
         ->assertSee('Afternoon · Mon, Wed')
@@ -263,9 +263,92 @@ it('edits a routine and shows the change on today’s routines', function () {
 
     expect(Routine::find(2)->only('name', 'frequency', 'weekdays', 'user_id'))->toBe(['name' => 'Lights out', 'frequency' => RoutineFrequency::Daily, 'weekdays' => null, 'user_id' => 7])
         ->and(PendingWrite::sole()->payload)->toBe([
-            'name' => 'Lights out', 'time_of_day' => 'evening', 'frequency' => 'daily', 'weekdays' => null, 'day_of_month' => null, 'is_active' => true,
+            'name' => 'Lights out', 'time_of_day' => 'evening', 'frequency' => 'daily', 'weekdays' => null, 'day_of_month' => null, 'starts_on' => '2026-09-01', 'is_active' => true,
         ]);
     Native::visit('/today')->assertSee('Lights out')->assertDontSee('Bedtime');
+});
+
+it('starts a new routine today by default', function () {
+    $this->travelTo('2026-11-16 09:00');
+
+    Native::visit('/routines/create')
+        ->assertSet('startsOn', '2026-11-16')
+        ->assertSet('showStartsOnPicker', false)
+        ->assertSee('Starts on')
+        ->assertSee('Monday, November 16')
+        ->assertMissingElement('date_picker')
+        ->assertDontSee('It’ll show up on Today');
+});
+
+it('picks a later start date for a new routine and sends it to Sunny', function () {
+    $this->travelTo('2026-11-16 09:00');
+
+    Native::visit('/routines/create')
+        ->set('name', 'Change the furnace filter')
+        ->set('frequencyIndex', 2)
+        ->set('dayOfMonth', '1')
+        ->tap('create-routine-starts-on')
+        ->assertSet('showStartsOnPicker', true)
+        ->assertPicker('Starts on', 'date')
+        ->assertPickerValue('Starts on', '2026-11-16')
+        ->pickDate('create-routine-starts-on-calendar', '2026-12-01')
+        ->assertSet('startsOn', '2026-12-01')
+        ->assertSet('showStartsOnPicker', false)
+        ->assertSee('Tuesday, December 1')
+        ->assertSee('It’ll show up on Today from December 1.')
+        ->assertAccessible()
+        ->tap('create-routine-submit')
+        ->assertReplacedWith('/routines/-1');
+
+    expect(Routine::find(-1)->starts_on)->toBe('2026-12-01')
+        ->and(PendingWrite::sole()->payload)->toMatchArray(['frequency' => 'monthly', 'day_of_month' => 1, 'starts_on' => '2026-12-01']);
+});
+
+it('describes the start date and only hints at dates after today', function (string $date, string $label, ?string $hint) {
+    $this->travelTo('2026-11-16 09:00');
+
+    $screen = Native::visit('/routines/create')
+        ->call('chooseStartsOn', $date)
+        ->assertSee($label);
+
+    $hint === null
+        ? $screen->assertMissingElement('row', fn (array $node): bool => ($node['ref'] ?? null) === 'create-routine-starts-on-hint')
+        : $screen->assertSee($hint);
+})->with([
+    'today' => ['2026-11-16', 'Monday, November 16', null],
+    'in the past' => ['2026-11-01', 'Sunday, November 1', null],
+    'tomorrow' => ['2026-11-17', 'Tuesday, November 17', 'It’ll show up on Today from November 17.'],
+    'next year' => ['2027-01-05', 'Tuesday, January 5, 2027', 'It’ll show up on Today from January 5, 2027.'],
+]);
+
+it('keeps the start date when the picker is dismissed or sends something that isn’t a date', function () {
+    Native::visit('/routines/create')
+        ->tap('create-routine-starts-on')
+        ->call('chooseStartsOn', '2026-02-30')
+        ->call('chooseStartsOn', 'tomorrow')
+        ->assertSet('startsOn', now()->toDateString())
+        ->assertSet('showStartsOnPicker', true)
+        ->dismissSheet('create-routine-starts-on-picker')
+        ->assertSet('showStartsOnPicker', false)
+        ->assertSet('startsOn', now()->toDateString());
+});
+
+it('moves a routine’s start date later and hides it from today until then', function () {
+    $startsOn = now()->addDays(3);
+
+    Native::visit('/routines/2/edit')
+        ->assertSet('startsOn', '2026-09-01')
+        ->assertSee('Tuesday, September 1')
+        ->tap('edit-routine-starts-on')
+        ->assertPickerValue('Starts on', '2026-09-01')
+        ->pickDate('edit-routine-starts-on-calendar', $startsOn)
+        ->assertSee('It’ll show up on Today from '.$startsOn->format('F j').'.')
+        ->tap('edit-routine-submit')
+        ->assertWentBack();
+
+    expect(Routine::find(2)->starts_on)->toBe($startsOn->toDateString())
+        ->and(PendingWrite::sole()->payload)->toMatchArray(['starts_on' => $startsOn->toDateString()]);
+    Native::visit('/today')->assertSee('Get ready')->assertDontSee('Bedtime');
 });
 
 it('fills in a monthly routine’s day when editing', function () {

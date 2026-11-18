@@ -4,7 +4,9 @@ namespace App\Concerns;
 
 use App\Enums\RoutineFrequency;
 use App\Enums\TimeOfDay;
+use App\Http\Integrations\Sunny\SunnyTeam;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Native\Mobile\Attributes\Computed;
 
@@ -23,12 +25,16 @@ trait ManagesRoutineForm
 
     public string $dayOfMonth = '';
 
+    public string $startsOn = '';
+
+    public bool $showStartsOnPicker = false;
+
     public bool $isActive = true;
 
     public string $error = '';
 
     /**
-     * @param  array{team_id: int, name: string, time_of_day: TimeOfDay, frequency: RoutineFrequency, weekdays: list<int>|null, day_of_month: int|null, is_active: bool}  $routine
+     * @param  array{team_id: int, name: string, time_of_day: TimeOfDay, frequency: RoutineFrequency, weekdays: list<int>|null, day_of_month: int|null, starts_on: string|null, is_active: bool}  $routine
      */
     public function fillFromRoutine(array $routine): void
     {
@@ -38,7 +44,42 @@ trait ManagesRoutineForm
         $this->frequencyIndex = (int) array_search($routine['frequency'], RoutineFrequency::cases(), strict: true);
         $this->weekdays = array_map(intval(...), $routine['weekdays'] ?? []);
         $this->dayOfMonth = (string) ($routine['day_of_month'] ?? '');
+        $this->startsOn = $routine['starts_on'] !== null ? CarbonImmutable::parse($routine['starts_on'])->toDateString() : $this->teamToday()->toDateString();
         $this->isActive = $routine['is_active'];
+    }
+
+    #[Computed]
+    public function startsOnLabel(): string
+    {
+        return $this->formatStartsOn('l, F j');
+    }
+
+    #[Computed]
+    public function startsOnHint(): string
+    {
+        if ($this->startsOn <= $this->teamToday()->toDateString()) {
+            return '';
+        }
+
+        return 'It’ll show up on Today from '.$this->formatStartsOn('F j').'.';
+    }
+
+    public function openStartsOnPicker(): void
+    {
+        $this->showStartsOnPicker = true;
+    }
+
+    public function closeStartsOnPicker(): void
+    {
+        $this->showStartsOnPicker = false;
+    }
+
+    public function chooseStartsOn(string $date): void
+    {
+        if (Validator::make(['date' => $date], ['date' => ['date_format:Y-m-d']])->passes()) {
+            $this->startsOn = $date;
+            $this->showStartsOnPicker = false;
+        }
     }
 
     /**
@@ -111,8 +152,21 @@ trait ManagesRoutineForm
             'frequency' => $frequency->value,
             'weekdays' => $frequency === RoutineFrequency::Weekly ? $this->weekdays : null,
             'day_of_month' => $frequency === RoutineFrequency::Monthly ? (int) trim($this->dayOfMonth) : null,
+            'starts_on' => $this->startsOn,
             'is_active' => $this->isActive,
         ];
+    }
+
+    protected function teamToday(): CarbonImmutable
+    {
+        return app(SunnyTeam::class)->current()?->today() ?? CarbonImmutable::today();
+    }
+
+    private function formatStartsOn(string $format): string
+    {
+        $date = CarbonImmutable::parse($this->startsOn);
+
+        return $date->format($date->year === $this->teamToday()->year ? $format : $format.', Y');
     }
 
     protected function validationError(): string
