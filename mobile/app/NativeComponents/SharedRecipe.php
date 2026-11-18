@@ -13,12 +13,14 @@ use Illuminate\Support\Str;
 use Illuminate\View\View;
 use JsonException;
 use Native\Mobile\AsyncTask;
+use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Facades\Browser;
 use Native\Mobile\Facades\Network;
 use RuntimeException;
 use Saloon\Exceptions\Request\FatalRequestException;
 use Saloon\Exceptions\Request\RequestException;
 
+#[Lazy]
 class SharedRecipe extends Component
 {
     public string $state = 'loading';
@@ -232,6 +234,11 @@ class SharedRecipe extends Component
     {
         $this->saveProblem = 'failed';
         $this->saveError = $message;
+    }
+
+    protected function placeholder(): View
+    {
+        return $this->render();
     }
 
     public function render(): View

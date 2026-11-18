@@ -60,6 +60,16 @@ it('sends a shared link to the welcome screen before anything has synced', funct
     Saloon::assertNothingSent();
 });
 
+it('paints the screen with its back button before leaving it in mount', function (): void {
+    Native::visit('/recipes/shared/'.SHARE_TOKEN)->assertReplacedWith('/');
+
+    $publishes = Native::fakeBridge()->publishes;
+
+    expect($publishes)->toHaveCount(2)
+        ->and($publishes[0]['props'])->toMatchArray(['nav_back' => true, 'current_uri' => '/recipes/shared/'.SHARE_TOKEN])
+        ->and(json_encode($publishes[0]))->toContain('"ref":"shared-recipe-loading"')->toContain('activity_indicator');
+});
+
 it('shows a shared recipe read-only with one action to save it', function (): void {
     seedSunnyData();
     Saloon::fake([GetSharedRecipeRequest::class => MockResponse::make(['data' => sharedRecipePayload()])]);
