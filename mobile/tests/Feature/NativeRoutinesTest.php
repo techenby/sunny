@@ -95,6 +95,16 @@ it('keeps routines that start today', function (): void {
     expect(array_column($screen->get('routines'), 'name'))->toBe(['Get ready', 'Bedtime']);
 });
 
+it('applies a routine’s start date to the day being viewed', function (): void {
+    Routine::find(3)->update(['starts_on' => now()->addDays(2)->startOfDay()->format('Y-m-d\\TH:i:s.u\\Z')]);
+
+    $screen = Native::visit('/today')->tap('next-day')->assertDontSee('Take out trash');
+
+    Routine::find(3)->update(['starts_on' => now()->addDay()->startOfDay()->format('Y-m-d\\TH:i:s.u\\Z')]);
+
+    $screen->tap('previous-day')->tap('next-day')->assertSee('Take out trash');
+});
+
 it('shows an empty state when nothing is due today', function (): void {
     $this->travelTo(now()->addDays(2));
 
