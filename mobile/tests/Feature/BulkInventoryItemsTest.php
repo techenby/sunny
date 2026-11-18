@@ -78,7 +78,7 @@ it('moves the picked things into another container', function () {
         ->tap('move-parent-choose')
         ->assertSet('showParentPicker', false)
         ->assertSet('selecting', false)
-        ->assertNativeCalled('Dialog.Toast', fn (array $params): bool => $params['message'] === 'Moved 2 things to Basement')
+        ->assertToastShown(fn (array $params): bool => $params['message'] === 'Moved 2 things to Basement' && $params['variant'] === 'success')
         ->assertMissingElement('pressable', fn (array $node): bool => in_array($node['ref'] ?? null, ['item-child-7', 'item-child-10'], true));
 
     expect(Item::find(7)->parent_id)->toBe(11)
@@ -110,7 +110,7 @@ it('takes one picked thing out of every place', function () {
         ->assertSee('Moving Camping tent')
         ->assertSee('Don’t put it in a place yet')
         ->tap('move-parent-choose')
-        ->assertNativeCalled('Dialog.Toast', fn (array $params): bool => $params['message'] === 'Moved 1 thing to “Not in a place yet”');
+        ->assertToastShown(fn (array $params): bool => $params['message'] === 'Moved 1 thing to “Not in a place yet”' && $params['variant'] === 'success');
 
     expect(Item::find(10)->parent_id)->toBeNull();
 });
@@ -158,11 +158,12 @@ it('deletes the picked things once confirmed', function () {
         ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Delete', 'id' => 'delete-selected'])
         ->assertNoNavigation()
         ->assertSet('selecting', false)
-        ->assertNativeCalled('Dialog.Toast', fn (array $params): bool => $params['message'] === 'Deleted 2 things')
+        ->assertToastShown(fn (array $params): bool => $params['message'] === 'Deleted 2 things' && $params['variant'] === 'success')
         ->assertMissingElement('pressable', fn (array $node): bool => in_array($node['ref'] ?? null, ['item-child-7', 'item-child-10'], true));
 
     expect(Item::find(7))->toBeNull()
         ->and(Item::find(10))->toBeNull()
+        ->and(Item::onlyTrashed()->orderBy('id')->pluck('id')->all())->toBe([7, 10])
         ->and(Item::find(8)->parent_id)->toBeNull()
         ->and(Item::find(9)->parent_id)->toBeNull()
         ->and(PendingWrite::query()->orderBy('record_id')->get()->map->only('record_id', 'deletes')->all())

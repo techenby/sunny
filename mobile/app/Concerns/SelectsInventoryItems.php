@@ -6,6 +6,7 @@ use App\Enums\ItemType;
 use App\Http\Integrations\Sunny\SunnyOutbox;
 use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\NativeComponents\Inventory;
+use App\Support\Toast;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -114,7 +115,7 @@ trait SelectsInventoryItems
         $this->refreshLocalSyncedData();
 
         $count = count($items);
-        Dialog::toast(match (true) {
+        Toast::success(match (true) {
             $destination !== null => trans_choice('Moved :count thing to :place|Moved :count things to :place', $count, ['place' => $destination['name']]),
             $this->allLocations($items) => 'Now places in your home',
             default => trans_choice('Moved :count thing to “Not in a place yet”|Moved :count things to “Not in a place yet”', $count),
@@ -162,7 +163,7 @@ trait SelectsInventoryItems
         $this->error = '';
         $this->stopSelecting();
         $this->refreshLocalSyncedData();
-        Dialog::toast(trans_choice('Deleted :count thing|Deleted :count things', count($items)));
+        Toast::success(trans_choice('Deleted :count thing|Deleted :count things', count($items)));
     }
 
     public function tabBarOptions(): ?TabBarOptions
