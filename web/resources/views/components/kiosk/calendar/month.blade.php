@@ -11,7 +11,7 @@
             @endforeach
         </div>
 
-        <div class="grid min-h-0 grid-cols-7 auto-rows-[7rem] divide-x divide-y divide-zinc-100 overflow-y-auto dark:divide-zinc-700">
+        <div class="grid min-h-0 grid-cols-7 auto-rows-[minmax(7rem,1fr)] divide-x divide-y divide-zinc-100 overflow-y-auto dark:divide-zinc-700">
             @foreach ($this->monthDays as $day)
                 <div
                     wire:key="calendar-day-{{ $day['date']->toDateString() }}"
