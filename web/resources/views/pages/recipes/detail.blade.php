@@ -143,10 +143,10 @@
             </flux:card>
         @endif
 
-        @if ($recipe->parent)
+        @if ($recipe->parent && Auth::user()?->can('view', $recipe->parent))
             <flux:card>
                 <flux:heading size="lg" class="mb-2 text-lg!">{{ __('Remixed from') }}</flux:heading>
-                <flux:link href="{{ route('recipes.show', $recipe->parent) }}" wire:navigate>
+                <flux:link href="{{ route('recipes.show', ['current_team' => $recipe->parent->team, 'recipe' => $recipe->parent]) }}" wire:navigate>
                     {{ $recipe->parent->name }}
                 </flux:link>
             </flux:card>
@@ -175,7 +175,7 @@
                 <ul class="space-y-3">
                     @foreach ($remixes as $remix)
                         <li>
-                            <a href="{{ route('recipes.show', $remix) }}" wire:navigate class="group flex items-start gap-3">
+                            <a href="{{ route('recipes.show', ['current_team' => $remix->team, 'recipe' => $remix]) }}" wire:navigate class="group flex items-start gap-3">
                                 <x-ui.table.thumb icon="arrow-path-rounded-square" size="base" />
                                 <div class="min-w-0 text-sm">
                                     <div class="font-medium text-zinc-800 group-hover:text-(--color-accent-content) dark:text-white">{{ $remix->name }}</div>
