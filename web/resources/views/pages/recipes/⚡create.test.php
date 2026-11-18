@@ -40,6 +40,20 @@ test('can create a recipe', function () {
         ->total_time->toBe('1h');
 });
 
+test('can create a recipe named like one the team deleted', function () {
+    $user = User::factory()->create();
+    Recipe::factory()->for($user->currentTeam)->create(['name' => 'Chocolate Cake'])->delete();
+
+    Livewire::actingAs($user)
+        ->test('pages::recipes.create')
+        ->set('form.name', 'Chocolate Cake')
+        ->call('save')
+        ->assertHasNoErrors()
+        ->assertRedirect(route('recipes.index'));
+
+    expect($user->currentTeam->recipes()->sole())->slug->toBe('chocolate-cake-1');
+});
+
 test('can import recipe from url', function () {
     Http::fake([
         'example.com/*' => Http::response(

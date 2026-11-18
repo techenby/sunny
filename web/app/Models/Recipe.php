@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -37,11 +38,25 @@ class Recipe extends Model
         });
     }
 
+    /** @param  array<string, mixed>  $options */
+    public function save(array $options = []): bool
+    {
+        $save = fn (): bool => $this->newModelQuery()->withSavepointIfNeeded(fn (): bool => parent::save($options));
+
+        try {
+            return $save();
+        } catch (UniqueConstraintViolationException $exception) {
+            throw_unless($this->isDirty('slug') && $this->generateUniqueSlug($this->name) !== $this->slug, $exception);
+
+            return $save();
+        }
+    }
+
     public function generateUniqueSlug(string $name): string
     {
         $baseSlug = Str::slug($name);
 
-        $existingSlugs = self::query()
+        $existingSlugs = self::withTrashed()
             ->where('team_id', $this->team_id)
             ->where('slug', 'like', $baseSlug . '%')
             ->when($this->exists, fn ($query) => $query->where('id', '!=', $this->id))

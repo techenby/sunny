@@ -121,3 +121,31 @@ test('disabling sharing removes the share token', function () {
     expect($recipe->isShared())->toBeFalse()
         ->and($recipe->share_token)->toBeNull();
 });
+
+test('slugs skip ones still held by deleted recipes', function () {
+    $team = Team::factory()->create();
+    Recipe::factory()->for($team)->create(['name' => 'Chocolate Cake'])->delete();
+    $vanilla = Recipe::factory()->for($team)->create(['name' => 'Vanilla Cake']);
+
+    $chocolate = Recipe::factory()->for($team)->create(['name' => 'Chocolate Cake']);
+    $vanilla->update(['name' => 'Chocolate Cake']);
+
+    expect($chocolate)->slug->toBe('chocolate-cake-1')
+        ->and($vanilla->fresh())->slug->toBe('chocolate-cake-2');
+});
+
+test('a recipe that loses the race for its slug takes the next one', function () {
+    $team = Team::factory()->create();
+    Recipe::factory()->for($team)->create(['name' => 'Chocolate Cake']);
+    $lostRace = false;
+    Recipe::creating(function (Recipe $recipe) use (&$lostRace) {
+        if (! $lostRace) {
+            $lostRace = true;
+            $recipe->slug = 'chocolate-cake';
+        }
+    });
+
+    $recipe = Recipe::factory()->for($team)->create(['name' => 'Chocolate Cake']);
+
+    expect($recipe)->slug->toBe('chocolate-cake-1');
+});
