@@ -10,6 +10,17 @@
 @if ($recipe)
     <native:bottom-bar>
         <column class="w-full gap-3 px-4 pb-2">
+            @if ($copiedTo !== null)
+                <row ref="recipe-copied" class="{{ Card::classes() }} w-full items-center gap-3 py-3 pl-4 pr-3">
+                    <column class="h-8 w-8 items-center justify-center rounded-full bg-theme-primary">
+                        <native:icon :ios="Ios::Checkmark" :android="Android::Check" :size="16" class="text-theme-on-primary" />
+                    </column>
+                    <column class="flex-1 gap-0.5">
+                        <text font="semibold" class="text-base text-theme-on-surface">Copied to {{ $copiedTo }}</text>
+                        <x-ui.text size="sm">Switch team in Preferences to see it there</x-ui.text>
+                    </column>
+                </row>
+            @endif
             <row class="w-full items-center justify-end gap-3">
                 <pressable
                     ref="edit-recipe"
@@ -254,6 +265,97 @@
             </pressable>
         </column>
     </scroll-view>
+
+    <native:bottom-sheet ref="recipe-copy-sheet" :visible="$showCopy" @dismiss="closeCopy" detents="fit">
+        @if ($showCopy)
+            @php($thumb = $recipe['thumb_url'] ?? $recipe['photo_url'] ?? null)
+            @php($copyTeams = $this->copyTeams())
+            @php($teamName = $this->teamName())
+            <column class="w-full gap-5 bg-theme-background px-4 pt-6 pb-8">
+                <column class="w-full gap-1.5 px-1">
+                    <text font="accent" class="text-2xl text-theme-on-background">Copy to another team</text>
+                    <x-ui.text>The copy gets everything, tags and photo too. This recipe stays here, just as it is.</x-ui.text>
+                </column>
+
+                <row ref="recipe-copy-source" class="{{ Card::classes() }} w-full items-center gap-3 px-4 py-3">
+                    @if ($thumb)
+                        <image :src="$thumb" :alt="'Photo of '.$recipe['name']" class="h-12 w-12 rounded-[10] object-cover" />
+                    @else
+                        <column class="h-12 w-12 items-center justify-center rounded-[10] bg-theme-primary/15">
+                            <icon :ios="Ios::ForkKnife" :android="Android::Restaurant" :size="22" class="text-theme-primary" />
+                        </column>
+                    @endif
+                    <column class="flex-1 gap-0.5">
+                        <x-ui.heading size="lg">{{ $recipe['name'] }}</x-ui.heading>
+                        @if ($teamName)
+                            <x-ui.text>From {{ $teamName }}</x-ui.text>
+                        @endif
+                    </column>
+                </row>
+
+                <column class="w-full gap-2">
+                    <x-ui.subheading class="px-1">Copy to</x-ui.subheading>
+                    <column ref="recipe-copy-teams" class="{{ Card::classes() }} w-full">
+                        @foreach ($copyTeams as $id => $name)
+                            <pressable
+                                ref="recipe-copy-team-{{ $id }}"
+                                :a11y-label="$name.($id === $copyTeamId ? ', selected' : '')"
+                                class="min-h-12 w-full justify-center px-4 py-2"
+                                @tap="pickCopyTeam({{ $id }})"
+                            >
+                                <row class="w-full items-center gap-4">
+                                    <column class="h-9 w-9 items-center justify-center rounded-full bg-theme-primary">
+                                        <text font="medium" class="text-base text-theme-on-primary">{{ mb_strtoupper(mb_substr($name, 0, 1)) }}</text>
+                                    </column>
+                                    <text class="flex-1 text-lg text-theme-on-surface">{{ $name }}</text>
+                                    @if ($id === $copyTeamId)
+                                        <icon :ios="Ios::Checkmark" :android="Android::Check" :size="18" class="text-theme-primary-text" />
+                                    @endif
+                                </row>
+                            </pressable>
+                            @unless ($loop->last)
+                                <divider class="ml-[68]" />
+                            @endunless
+                        @endforeach
+                    </column>
+                </column>
+
+                @if ($copyProblem !== null)
+                    @php($note = $this->copyNote())
+                    <row ref="recipe-copy-problem" class="w-full items-start gap-2.5 rounded-xl bg-theme-primary/15 p-3.5">
+                        <native:icon
+                            :ios="$copyProblem === 'offline' ? Ios::WifiSlash : Ios::ExclamationmarkCircle"
+                            :android="$copyProblem === 'offline' ? Android::WifiOff : Android::ErrorOutline"
+                            :size="20"
+                            class="text-theme-primary-text"
+                        />
+                        <column class="flex-1 gap-0.5">
+                            <text font="semibold" class="text-base text-theme-primary-text">{{ $note['title'] }}</text>
+                            <text class="text-base text-theme-on-surface">{{ $note['message'] }}</text>
+                        </column>
+                    </row>
+                @endif
+
+                <column class="w-full gap-1">
+                    <button
+                        ref="recipe-copy-submit"
+                        variant="primary"
+                        size="lg"
+                        font="semibold"
+                        class="w-full"
+                        :ios-icon="$copyProblem === null ? Ios::SquareOnSquare : Ios::ArrowClockwise"
+                        :android-icon="$copyProblem === null ? Android::FileCopy : Android::Refresh"
+                        @tap="copyToTeam"
+                    >
+                        {{ $copyProblem === null ? 'Copy to '.($copyTeams[$copyTeamId] ?? 'another team') : 'Try again' }}
+                    </button>
+                    <pressable ref="recipe-copy-cancel" a11y-label="Cancel" class="min-h-12 w-full items-center justify-center" @tap="closeCopy">
+                        <text font="semibold" class="text-lg text-theme-on-surface">Cancel</text>
+                    </pressable>
+                </column>
+            </column>
+        @endif
+    </native:bottom-sheet>
 @else
     <x-ui.not-found ref="recipe-missing" thing="recipe" />
 @endif
