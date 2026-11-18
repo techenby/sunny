@@ -59,3 +59,13 @@ test('the remix keeps its photo when the original removes its own', function () 
         ->and(Storage::get($remix->fresh()->thumb_path))->toBe('stew thumb');
     Storage::assertMissing(['teams/1/recipes/stew.jpg', 'teams/1/recipes/thumbs/stew-abcd1234.jpg']);
 });
+
+test('a second remix gets its own slug, even after the first is deleted', function () {
+    $recipe = Recipe::factory()->create(['name' => 'Stew']);
+    (new RemixRecipe)->handle($recipe)->delete();
+
+    $remix = (new RemixRecipe)->handle($recipe);
+
+    expect($remix)->name->toBe('Stew (Remix)')
+        ->slug->toBe('stew-remix-1');
+});

@@ -48,6 +48,30 @@ test('store creates a recipe and returns it', function () {
     ]);
 });
 
+test('store, update and copy give a recipe named like one the team deleted its own slug', function () {
+    $user = User::factory()->create();
+    $team = Team::factory()->create();
+    $team->members()->attach($user, ['role' => TeamRole::Member->value]);
+    Recipe::factory()->for($user->currentTeam)->create(['name' => 'Chocolate Cake'])->delete();
+    Recipe::factory()->for($team)->create(['name' => 'Chocolate Cake'])->delete();
+    $soup = Recipe::factory()->for($user->currentTeam)->create(['name' => 'Soup']);
+
+    $stored = $this->actingAs($user)
+        ->postJson(route('api.recipes.store', $user->currentTeam), ['name' => 'Chocolate Cake'])
+        ->assertCreated()
+        ->assertJsonPath('data.slug', 'chocolate-cake-1');
+
+    $this->actingAs($user)
+        ->patchJson(route('api.recipes.update', [$user->currentTeam, $soup]), ['name' => 'Chocolate Cake'])
+        ->assertOk()
+        ->assertJsonPath('data.slug', 'chocolate-cake-2');
+
+    $this->actingAs($user)
+        ->postJson(route('api.recipes.copy', [$user->currentTeam, $stored->json('data.id')]), ['team_id' => $team->id])
+        ->assertCreated()
+        ->assertJsonPath('data.slug', 'chocolate-cake-1');
+});
+
 test('store returns the existing recipe when a client uuid is retried', function () {
     $user = User::factory()->create();
     $uuid = '9b2f6c1e-3d4a-4f5b-8c7d-1e2f3a4b5c6d';

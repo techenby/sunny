@@ -42,6 +42,19 @@ test('import creates a recipe from a page and keeps its source', function () {
         ->and($recipe->instructions)->toHaveCount(1);
 });
 
+test('import saves a recipe whose name the team already used', function (bool $deleted) {
+    $user = User::factory()->create();
+    $existing = Recipe::factory()->for($user->currentTeam)->create(['name' => 'Apple Cider Donuts']);
+    $deleted && $existing->delete();
+
+    $this->actingAs($user)
+        ->postJson(route('api.recipes.import', $user->currentTeam), ['url' => 'https://example.com/apple-cider-donuts', 'client_uuid' => '9b2f6c1e-3d4a-4f5b-8c7d-1e2f3a4b5c6d'])
+        ->assertCreated()
+        ->assertJsonPath('data.slug', 'apple-cider-donuts-1');
+
+    expect($existing->fresh()->slug)->toBe('apple-cider-donuts');
+})->with(['kept' => false, 'deleted' => true]);
+
 test('import returns the existing recipe when a client uuid is retried', function () {
     $user = User::factory()->create();
     $uuid = '9b2f6c1e-3d4a-4f5b-8c7d-1e2f3a4b5c6d';
