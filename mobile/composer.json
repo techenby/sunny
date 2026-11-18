@@ -166,6 +166,12 @@
                     "url": "patches/nativephp-mobile-scanner-android-guava.patch"
                 }
             ],
+            "nativephp/mobile-share": [
+                {
+                    "description": "iOS: present the share sheet from the top-most view controller, so it opens from a bottom sheet instead of UIKit refusing it (scratchpad issue #14)",
+                    "url": "patches/nativephp-mobile-share-ios-present-from-top.patch"
+                }
+            ],
             "nativephp/mobile-ui": [
                 {
                     "description": "iOS: focus outlined/filled text inputs when their padded box is tapped (upstream issue #19 in our scratchpad)",

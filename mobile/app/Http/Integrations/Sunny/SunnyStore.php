@@ -181,7 +181,8 @@ class SunnyStore
     public static function storedFields(string $type): array
     {
         return match ($type) {
-            'recipes', 'items' => ['team_id', ...self::editableFields($type), 'photo_url', 'thumb_url', 'created_at', 'updated_at'],
+            'recipes' => ['team_id', ...self::editableFields($type), 'photo_url', 'thumb_url', 'share_url', 'created_at', 'updated_at'],
+            'items' => ['team_id', ...self::editableFields($type), 'photo_url', 'thumb_url', 'created_at', 'updated_at'],
             'item_photos' => [...self::editableFields($type), 'url', 'thumb_url', 'position', 'created_at', 'updated_at'],
             'checklists' => ['team_id', 'user_id', ...self::editableFields($type), 'created_at', 'updated_at'],
             'checklist_items' => [...self::editableFields($type), 'url', 'position', 'completed_at', 'completed_by', 'created_at', 'updated_at'],

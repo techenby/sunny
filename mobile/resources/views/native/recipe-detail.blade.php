@@ -356,6 +356,121 @@
             </column>
         @endif
     </native:bottom-sheet>
+
+    <native:bottom-sheet ref="recipe-share-sheet" :visible="$showShare" @dismiss="closeShare" detents="fit">
+        @if ($showShare)
+            @php($thumb = $recipe['thumb_url'] ?? $recipe['photo_url'] ?? null)
+            @php($shareUrl = $this->shareUrl())
+            <column class="w-full gap-5 bg-theme-background px-4 pt-6 pb-8">
+                <column class="w-full gap-1.5 px-1">
+                    <text font="accent" class="text-2xl text-theme-on-background">Share recipe</text>
+                    <x-ui.text>{{ $shareUrl ? 'Your link is on. Anyone who has it can open this recipe in a browser.' : 'Turn on a public link and anyone who has it can see this recipe.' }}</x-ui.text>
+                </column>
+
+                <row ref="recipe-share-source" class="{{ Card::classes() }} w-full items-center gap-3 px-4 py-3">
+                    @if ($thumb)
+                        <image :src="$thumb" :alt="'Photo of '.$recipe['name']" class="h-12 w-12 rounded-[10] object-cover" />
+                    @else
+                        <column class="h-12 w-12 items-center justify-center rounded-[10] bg-theme-primary/15">
+                            <icon :ios="Ios::ForkKnife" :android="Android::Restaurant" :size="22" class="text-theme-primary" />
+                        </column>
+                    @endif
+                    <column class="flex-1 gap-0.5">
+                        <x-ui.heading size="lg">{{ $recipe['name'] }}</x-ui.heading>
+                        <row class="items-center gap-1.5">
+                            <icon :ios="$shareUrl ? Ios::Globe : Ios::LockFill" :android="$shareUrl ? Android::Public : Android::Lock" :size="14" class="text-theme-on-surface-variant" />
+                            <x-ui.text>{{ $shareUrl ? 'Anyone with the link can see it' : 'Only your home can see it' }}</x-ui.text>
+                        </row>
+                    </column>
+                </row>
+
+                @if ($shareUrl)
+                    <column ref="recipe-share-link" class="{{ Card::classes() }} w-full">
+                        <row class="w-full items-center gap-3 px-4 py-3">
+                            <column class="flex-1 gap-0.5">
+                                <x-ui.text size="sm">Public link</x-ui.text>
+                                <text ref="recipe-share-url" class="text-base text-theme-on-surface">{{ preg_replace('~^https?://~', '', $shareUrl) }}</text>
+                            </column>
+                            <pressable
+                                ref="recipe-share-copy"
+                                :a11y-label="$linkCopied ? 'Link copied' : 'Copy link'"
+                                class="min-h-12 items-center justify-center rounded-full bg-theme-primary/15 px-4"
+                                @tap="copyLink"
+                            >
+                                <row class="items-center gap-1.5">
+                                    <icon :ios="$linkCopied ? Ios::Checkmark : Ios::DocOnDoc" :android="$linkCopied ? Android::Check : Android::ContentCopy" :size="16" class="text-theme-primary-text" />
+                                    <text font="semibold" class="text-base text-theme-primary-text">{{ $linkCopied ? 'Copied' : 'Copy' }}</text>
+                                </row>
+                            </pressable>
+                        </row>
+                        <divider class="ml-4" />
+                        <pressable ref="recipe-share-turn-off" a11y-label="Turn off link" class="min-h-12 w-full justify-center px-4 py-2" @tap="turnOffLink">
+                            <row class="w-full items-center gap-3">
+                                <icon :ios="Ios::EyeSlash" :android="Android::LinkOff" :size="18" class="text-theme-destructive" />
+                                <column class="flex-1 gap-0.5">
+                                    <text font="semibold" class="text-base text-theme-destructive">Turn off link</text>
+                                    <x-ui.text size="sm">The old link stops working right away</x-ui.text>
+                                </column>
+                            </row>
+                        </pressable>
+                    </column>
+                @else
+                    <column ref="recipe-share-about" class="{{ Card::classes() }} w-full gap-4 p-4">
+                        <row class="w-full items-start gap-3">
+                            <icon :ios="Ios::Globe" :android="Android::Public" :size="18" class="text-theme-primary" />
+                            <column class="flex-1 gap-0.5">
+                                <text class="text-base text-theme-on-surface">Opens in any browser</text>
+                                <x-ui.text size="sm">No Sunny account needed to view it</x-ui.text>
+                            </column>
+                        </row>
+                        <row class="w-full items-start gap-3">
+                            <icon :ios="Ios::EyeSlash" :android="Android::LinkOff" :size="18" class="text-theme-primary" />
+                            <column class="flex-1 gap-0.5">
+                                <text class="text-base text-theme-on-surface">Turn it off any time</text>
+                                <x-ui.text size="sm">The old link stops working right away</x-ui.text>
+                            </column>
+                        </row>
+                    </column>
+                @endif
+
+                @if ($shareProblem !== null)
+                    @php($note = $this->shareNote())
+                    <row ref="recipe-share-problem" class="w-full items-start gap-2.5 rounded-xl bg-theme-primary/15 p-3.5">
+                        <native:icon
+                            :ios="$shareProblem === 'offline' ? Ios::WifiSlash : Ios::ExclamationmarkCircle"
+                            :android="$shareProblem === 'offline' ? Android::WifiOff : Android::ErrorOutline"
+                            :size="20"
+                            class="text-theme-primary-text"
+                        />
+                        <column class="flex-1 gap-0.5">
+                            <text font="semibold" class="text-base text-theme-primary-text">{{ $note['title'] }}</text>
+                            <text class="text-base text-theme-on-surface">{{ $note['message'] }}</text>
+                        </column>
+                    </row>
+                @endif
+
+                <column class="w-full gap-1">
+                    @if ($shareProblem !== null)
+                        <button ref="recipe-share-submit" variant="primary" size="lg" font="semibold" class="w-full" :ios-icon="Ios::ArrowClockwise" :android-icon="Android::Refresh" @tap="retryShare">
+                            Try again
+                        </button>
+                    @elseif ($shareUrl)
+                        <button ref="recipe-share-submit" variant="primary" size="lg" font="semibold" class="w-full" :ios-icon="Ios::SquareAndArrowUp" :android-icon="Android::Share" @tap="sendLink">
+                            Send link
+                        </button>
+                    @else
+                        <button ref="recipe-share-submit" variant="primary" size="lg" font="semibold" class="w-full" :ios-icon="Ios::Link" :android-icon="Android::Link" @tap="turnOnLink">
+                            Turn on public link
+                        </button>
+                    @endif
+                    @php($dismissLabel = $shareProblem !== null ? 'Cancel' : ($shareUrl ? 'Done' : 'Not now'))
+                    <pressable ref="recipe-share-cancel" :a11y-label="$dismissLabel" class="min-h-12 w-full items-center justify-center" @tap="closeShare">
+                        <text font="semibold" class="text-lg text-theme-on-surface">{{ $dismissLabel }}</text>
+                    </pressable>
+                </column>
+            </column>
+        @endif
+    </native:bottom-sheet>
 @else
     <x-ui.not-found ref="recipe-missing" thing="recipe" />
 @endif

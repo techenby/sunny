@@ -50,6 +50,7 @@ class SunnySync
         $rules['recipes.*.photo_url'] = ['nullable', 'url'];
         $rules['items.*.photo_url'] = ['nullable', 'url'];
         $rules['recipes.*.thumb_url'] = ['nullable', 'url'];
+        $rules['recipes.*.share_url'] = ['nullable', 'url'];
         $rules['items.*.thumb_url'] = ['nullable', 'url'];
         $rules['items.*.photos'] = ['sometimes', 'array', 'list'];
         $rules['items.*.photos.*.id'] = ['required', 'integer', 'min:1'];

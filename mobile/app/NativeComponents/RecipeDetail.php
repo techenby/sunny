@@ -5,6 +5,7 @@ namespace App\NativeComponents;
 use App\Casts\RecipeLines;
 use App\Concerns\ChecksSunnySync;
 use App\Concerns\CopiesRecipeToTeam;
+use App\Concerns\SharesRecipe;
 use App\Concerns\ShowsQueuedChange;
 use App\Http\Integrations\Sunny\SunnyOutbox;
 use App\Http\Integrations\Sunny\SunnySyncCoordinator;
@@ -25,6 +26,7 @@ class RecipeDetail extends Component
 {
     use ChecksSunnySync;
     use CopiesRecipeToTeam;
+    use SharesRecipe;
     use ShowsQueuedChange;
 
     public string $error = '';
@@ -221,6 +223,7 @@ class RecipeDetail extends Component
     {
         return array_values(array_filter([
             NavAction::make('recipe-remix')->label('Remix')->icon(ios: Ios::DocOnDoc->value, android: Android::ContentCopy->value)->press('remix'),
+            NavAction::make('recipe-share')->label('Share')->icon(ios: Ios::SquareAndArrowUp->value, android: Android::Share->value)->press('openShare'),
             $this->copyTeams() === [] ? null : NavAction::make('recipe-copy-to-team')->label('Copy to another team')->icon(ios: Ios::SquareOnSquare->value, android: Android::FileCopy->value)->press('openCopy'),
         ]));
     }
