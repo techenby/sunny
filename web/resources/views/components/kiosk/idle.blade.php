@@ -16,6 +16,7 @@
             lastActivityAt: $persist(Date.now()).using(sessionStorage).as('kiosk-last-activity'),
             returnedHomeFor: null,
             showing: false,
+            dimmed: null,
             now: new Date(),
             shift: '',
 
@@ -30,6 +31,7 @@
 
             tick() {
                 this.now = new Date()
+                this.syncBacklight()
 
                 const refreshSlot = Math.floor(Date.now() / this.refreshEvery)
 
@@ -62,6 +64,18 @@
             wake() {
                 this.lastActivityAt = Date.now()
                 this.showing = false
+                this.syncBacklight()
+            },
+
+            syncBacklight() {
+                const dimmed = this.showing && this.isNight()
+
+                if (dimmed === this.dimmed) {
+                    return
+                }
+
+                this.dimmed = dimmed
+                window.HomeHQ?.setBrightness(dimmed ? 0 : -1)
             },
 
             shiftPixels() {
