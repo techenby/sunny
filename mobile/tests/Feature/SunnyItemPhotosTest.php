@@ -214,7 +214,7 @@ it('holds back a new order until the photos in it are uploaded, and drops ones S
         ->and(PendingWrite::query()->where('resource', 'item_photos')->sole()->error)->toBe('The photo is too large.');
 });
 
-it('forgets queued photos when their item is deleted', function (): void {
+it('forgets queued photos when their item is deleted, keeping the synced ones for Recently deleted', function (): void {
     app(SunnyStore::class)->saveRecord('items', sunnyItemWithPhotos(3, [sunnyPhoto(501, 3, 0)]));
     $outbox = app(SunnyOutbox::class);
     $file = UploadedFile::fake()->image('front.jpg');
@@ -222,6 +222,6 @@ it('forgets queued photos when their item is deleted', function (): void {
 
     $outbox->delete('items', 1, 3);
 
-    expect(ItemPhoto::query()->where('item_id', 3)->exists())->toBeFalse()
+    expect(ItemPhoto::query()->where('item_id', 3)->pluck('id')->all())->toBe([501])
         ->and(PendingWrite::query()->pluck('resource')->all())->toBe(['items']);
 });

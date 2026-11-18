@@ -19,10 +19,10 @@ class SunnyThumbnails
      */
     public function refresh(): void
     {
-        foreach ([Item::class, ItemPhoto::class, Recipe::class] as $model) {
-            $model::query()->forCurrentServer()->whereNull('thumb_url')->whereNotNull('thumb_path')->update(['thumb_path' => null]);
+        foreach (['items', 'item_photos', 'recipes'] as $type) {
+            SunnyStore::stored($type)->forCurrentServer()->whereNull('thumb_url')->whereNotNull('thumb_path')->update(['thumb_path' => null]);
 
-            $missing = $model::query()->forCurrentServer()->whereNotNull('thumb_url')->get(['id', 'thumb_url', 'thumb_path'])
+            $missing = SunnyStore::stored($type)->forCurrentServer()->whereNotNull('thumb_url')->get(['id', 'thumb_url', 'thumb_path'])
                 ->reject(fn (Item|ItemPhoto|Recipe $record): bool => $record->thumb_path === self::pathFor($record->thumb_url) && is_file($record->thumb_path));
 
             foreach ($missing->chunk(self::CONCURRENCY) as $chunk) {
@@ -41,7 +41,7 @@ class SunnyThumbnails
                     }
 
                     if (is_file($path)) {
-                        $model::query()->whereKey($record->id)->update(['thumb_path' => $path]);
+                        SunnyStore::stored($type)->whereKey($record->id)->update(['thumb_path' => $path]);
                     }
                 }
             }
@@ -55,7 +55,7 @@ class SunnyThumbnails
      */
     public function prune(): void
     {
-        $inUse = Item::query()->pluck('thumb_path')
+        $inUse = Item::withTrashed()->pluck('thumb_path')
             ->merge(ItemPhoto::query()->pluck('thumb_path'))
             ->merge(Recipe::query()->pluck('thumb_path'))
             ->filter()->flip();

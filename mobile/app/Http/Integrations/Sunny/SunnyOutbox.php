@@ -121,7 +121,7 @@ class SunnyOutbox
             $record->delete();
 
             if (SunnyStore::children($resource) !== null) {
-                $this->forgetChildren($resource, $id);
+                $this->forgetChildren($resource, $id, keepSynced: $resource === 'items');
             }
 
             if ($resource === 'items') {
@@ -133,6 +133,62 @@ class SunnyOutbox
                 $this->forgetRoutineOccurrences($id);
             }
         });
+    }
+
+    public function restore(int $teamId, int $id): Item
+    {
+        $item = $this->deletedItem($teamId, $id);
+
+        return DB::transaction(function () use ($item, $teamId): Item {
+            if ($item->parent_id !== null && ! Item::forCurrentServer()->where('team_id', $teamId)->whereKey($item->parent_id)->exists()) {
+                $item->parent_id = null;
+            }
+
+            $item->updated_at = now();
+            $item->restore();
+
+            $write = PendingWrite::query()->for('items', $item->id)->first() ?? new PendingWrite([
+                'server' => SunnyStore::server(), 'resource' => 'items', 'record_id' => $item->id, 'team_id' => $teamId, 'version' => 0,
+            ]);
+            $write->fill([
+                'payload' => ['restore' => true],
+                'client_uuid' => null,
+                'photo_path' => null,
+                'deletes' => false,
+                'version' => $write->version + 1,
+                'error' => null,
+            ])->save();
+
+            return $item;
+        });
+    }
+
+    public function forceDelete(int $teamId, int $id): void
+    {
+        $item = $this->deletedItem($teamId, $id);
+
+        DB::transaction(function () use ($item, $teamId): void {
+            $write = PendingWrite::query()->for('items', $item->id)->first() ?? new PendingWrite([
+                'server' => SunnyStore::server(), 'resource' => 'items', 'record_id' => $item->id, 'team_id' => $teamId, 'version' => 0,
+            ]);
+            $unsentDelete = $write->exists && $write->deletes;
+            $write->fill([
+                'payload' => ['forever' => true, ...($unsentDelete ? ['delete_first' => true] : [])],
+                'client_uuid' => null,
+                'photo_path' => null,
+                'deletes' => true,
+                'version' => $write->version + 1,
+                'error' => null,
+            ])->save();
+
+            $this->forgetChildren('items', $item->id);
+            Item::withTrashed()->forCurrentServer()->where('parent_id', $item->id)->update(['parent_id' => null]);
+            $this->rewritePendingReference('items', 'parent_id', $item->id, null);
+            $item->forceDelete();
+        });
+
+        $this->prunePhotos();
+        app(SunnyThumbnails::class)->prune();
     }
 
     public function queueRoutineStep(int $id, bool $completed): void
@@ -168,14 +224,14 @@ class SunnyOutbox
                 return;
             }
 
-            SunnyStore::model($resource)::query()->whereKey($id)->delete();
+            SunnyStore::stored($resource)->whereKey($id)->forceDelete();
 
             if (SunnyStore::children($resource) !== null) {
                 $this->forgetChildren($resource, $id);
             }
 
             if (in_array($resource, ['recipes', 'items'], true)) {
-                SunnyStore::model($resource)::query()->where('parent_id', $id)->update(['parent_id' => null]);
+                SunnyStore::stored($resource)->where('parent_id', $id)->update(['parent_id' => null]);
                 $this->rewritePendingReference($resource, 'parent_id', $id, null);
             }
         });
@@ -187,7 +243,7 @@ class SunnyOutbox
     public function adoptServerId(string $resource, int $localId, int $serverId): void
     {
         $model = SunnyStore::model($resource);
-        $model::query()->whereKey($serverId)->delete();
+        SunnyStore::stored($resource)->whereKey($serverId)->forceDelete();
         $model::query()->whereKey($localId)->update(['id' => $serverId, 'local_id' => $localId]);
         PendingWrite::query()->for($resource, $localId)->update(['record_id' => $serverId]);
 
@@ -198,7 +254,7 @@ class SunnyOutbox
         }
 
         if (in_array($resource, ['recipes', 'items'], true)) {
-            $model::query()->where('parent_id', $localId)->update(['parent_id' => $serverId]);
+            SunnyStore::stored($resource)->where('parent_id', $localId)->update(['parent_id' => $serverId]);
             $this->rewritePendingReference($resource, 'parent_id', $localId, $serverId);
         }
 
@@ -233,7 +289,7 @@ class SunnyOutbox
     public function prunePhotos(): void
     {
         $inUse = PendingWrite::query()->pluck('photo_path')
-            ->merge(Item::query()->pluck('photo_url'))
+            ->merge(Item::withTrashed()->pluck('photo_url'))
             ->merge(SunnyStore::model('recipes')::query()->pluck('photo_url'))
             ->merge(ItemPhoto::query()->pluck('url'))
             ->filter()->flip();
@@ -281,6 +337,16 @@ class SunnyOutbox
         }
     }
 
+    private function deletedItem(int $teamId, int $id): Item
+    {
+        if (! Team::query()->where('server', SunnyStore::server())->whereKey($teamId)->exists()) {
+            throw ValidationException::withMessages(['team' => 'Sync with Sunny before saving to this team.']);
+        }
+
+        return Item::onlyTrashed()->forCurrentServer()->where('team_id', $teamId)->find($id)
+            ?? throw ValidationException::withMessages(['record' => 'This item is no longer in Recently deleted. Sync with Sunny.']);
+    }
+
     private function newRecord(string $resource, int $teamId, array $payload): Model
     {
         $model = SunnyStore::model($resource);
@@ -295,7 +361,7 @@ class SunnyOutbox
         return $record;
     }
 
-    private function forgetChildren(string $resource, int $id): void
+    private function forgetChildren(string $resource, int $id, bool $keepSynced = false): void
     {
         [$childType, $childKey] = SunnyStore::children($resource);
         $model = SunnyStore::model($childType);
@@ -304,7 +370,7 @@ class SunnyOutbox
         PendingWrite::query()->forCurrentServer()->where('resource', $childType)->get()
             ->filter(fn (PendingWrite $write): bool => $ids->contains($write->record_id) || ($write->payload[$childKey] ?? null) === $id)
             ->each->delete();
-        $model::query()->whereKey($ids)->delete();
+        $model::query()->whereKey($keepSynced ? $ids->filter(fn (int $childId): bool => $childId < 0) : $ids)->delete();
     }
 
     private function forgetRoutineOccurrences(int $routineId): void
