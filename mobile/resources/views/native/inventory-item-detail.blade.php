@@ -287,70 +287,74 @@
         'parentTrail' => $this->parentTrail,
     ])
 
-    <native:bottom-sheet ref="item-copies-sheet" :visible="$showCopies" @dismiss="closeCopies" detents="fit">
+    <native:bottom-sheet ref="item-copies-sheet" :visible="$showCopies" @dismiss="closeCopies" detents="0.75,large">
         @if ($showCopies)
             @php($thumb = $this->photos[0]['thumb'] ?? null)
-            <column class="w-full gap-5 bg-theme-background px-4 pt-6 pb-8">
-                <column class="w-full gap-1.5 px-1">
-                    <text font="accent" class="text-2xl text-theme-on-background">Make copies</text>
-                    <x-ui.text>Each copy gets the same name, details and photos, but starts empty inside.</x-ui.text>
-                </column>
+            <column fill class="bg-theme-background">
+                <scroll-view ref="item-copies-scroll" fill>
+                    <column class="w-full gap-5 px-4 pt-6">
+                        <column class="w-full gap-1.5 px-1">
+                            <text font="accent" class="text-2xl text-theme-on-background">Make copies</text>
+                            <x-ui.text>Each copy gets the same name, details and photos, but starts empty inside.</x-ui.text>
+                        </column>
 
-                <row ref="item-copies-source" class="{{ Card::classes() }} w-full items-center gap-3 px-4 py-3">
-                    @if ($thumb)
-                        <image :src="$thumb" :alt="'Photo of '.$item['name']" class="h-12 w-12 rounded-[10] object-cover" />
-                    @else
-                        <x-ui.avatar :color="$item['type']->color()" :ios="$item['type']->iosIcon()" :android="$item['type']->androidIcon()" />
-                    @endif
-                    <column class="flex-1 gap-0.5">
-                        <x-ui.heading size="lg">{{ $item['name'] }}</x-ui.heading>
-                        <x-ui.text>Going {{ $this->copiesPlace() }}</x-ui.text>
+                        <row ref="item-copies-source" class="{{ Card::classes() }} w-full items-center gap-3 px-4 py-3">
+                            @if ($thumb)
+                                <image :src="$thumb" :alt="'Photo of '.$item['name']" class="h-12 w-12 rounded-[10] object-cover" />
+                            @else
+                                <x-ui.avatar :color="$item['type']->color()" :ios="$item['type']->iosIcon()" :android="$item['type']->androidIcon()" />
+                            @endif
+                            <column class="flex-1 gap-0.5">
+                                <x-ui.heading size="lg">{{ $item['name'] }}</x-ui.heading>
+                                <x-ui.text>Going {{ $this->copiesPlace() }}</x-ui.text>
+                            </column>
+                        </row>
+
+                        <column class="w-full gap-3">
+                            <row ref="item-copies-stepper" class="{{ Card::classes() }} w-full items-center justify-between p-4">
+                                <pressable
+                                    ref="item-copies-fewer"
+                                    a11y-label="Fewer copies"
+                                    class="h-[52] w-[52] items-center justify-center rounded-full bg-theme-surface-variant"
+                                    @tap="changeCopies(-1)"
+                                >
+                                    <icon :ios="Ios::Minus" :android="Android::Remove" :size="22" class="{{ $copies <= 1 ? 'opacity-40' : '' }} text-theme-on-surface" />
+                                </pressable>
+                                <column class="items-center gap-0.5">
+                                    <text ref="item-copies-count" font="accent" class="text-5xl text-theme-on-surface">{{ $copies }}</text>
+                                    <text font="medium" class="text-base text-theme-on-surface-variant">{{ $copies === 1 ? 'copy' : 'copies' }}</text>
+                                </column>
+                                <pressable
+                                    ref="item-copies-more"
+                                    a11y-label="More copies"
+                                    class="h-[52] w-[52] items-center justify-center rounded-full bg-theme-primary/15"
+                                    @tap="changeCopies(1)"
+                                >
+                                    <icon :ios="Ios::Plus" :android="Android::Add" :size="22" class="{{ $copies >= DuplicateItem::MAX_COPIES ? 'opacity-40' : '' }} text-theme-primary-text" />
+                                </pressable>
+                            </row>
+                            <text font="medium" class="w-full text-center text-xs text-theme-on-surface-variant">Up to {{ DuplicateItem::MAX_COPIES }} at a time</text>
+                        </column>
+
+                        @if ($copiesProblem !== null)
+                            @php($note = $this->copiesNote())
+                            <row ref="item-copies-problem" class="w-full items-start gap-2.5 rounded-xl bg-theme-primary/15 p-3.5">
+                                <native:icon
+                                    :ios="$copiesProblem === 'offline' ? Ios::WifiSlash : Ios::ExclamationmarkCircle"
+                                    :android="$copiesProblem === 'offline' ? Android::WifiOff : Android::ErrorOutline"
+                                    :size="20"
+                                    class="text-theme-primary-text"
+                                />
+                                <column class="flex-1 gap-0.5">
+                                    <text font="semibold" class="text-base text-theme-primary-text">{{ $note['title'] }}</text>
+                                    <text class="text-base text-theme-on-surface">{{ $note['message'] }}</text>
+                                </column>
+                            </row>
+                        @endif
                     </column>
-                </row>
+                </scroll-view>
 
-                <column class="w-full gap-3">
-                    <row ref="item-copies-stepper" class="{{ Card::classes() }} w-full items-center justify-between p-4">
-                        <pressable
-                            ref="item-copies-fewer"
-                            a11y-label="Fewer copies"
-                            class="h-[52] w-[52] items-center justify-center rounded-full bg-theme-surface-variant"
-                            @tap="changeCopies(-1)"
-                        >
-                            <icon :ios="Ios::Minus" :android="Android::Remove" :size="22" class="{{ $copies <= 1 ? 'opacity-40' : '' }} text-theme-on-surface" />
-                        </pressable>
-                        <column class="items-center gap-0.5">
-                            <text ref="item-copies-count" font="accent" class="text-5xl text-theme-on-surface">{{ $copies }}</text>
-                            <text font="medium" class="text-base text-theme-on-surface-variant">{{ $copies === 1 ? 'copy' : 'copies' }}</text>
-                        </column>
-                        <pressable
-                            ref="item-copies-more"
-                            a11y-label="More copies"
-                            class="h-[52] w-[52] items-center justify-center rounded-full bg-theme-primary/15"
-                            @tap="changeCopies(1)"
-                        >
-                            <icon :ios="Ios::Plus" :android="Android::Add" :size="22" class="{{ $copies >= DuplicateItem::MAX_COPIES ? 'opacity-40' : '' }} text-theme-primary-text" />
-                        </pressable>
-                    </row>
-                    <text font="medium" class="w-full text-center text-xs text-theme-on-surface-variant">Up to {{ DuplicateItem::MAX_COPIES }} at a time</text>
-                </column>
-
-                @if ($copiesProblem !== null)
-                    @php($note = $this->copiesNote())
-                    <row ref="item-copies-problem" class="w-full items-start gap-2.5 rounded-xl bg-theme-primary/15 p-3.5">
-                        <native:icon
-                            :ios="$copiesProblem === 'offline' ? Ios::WifiSlash : Ios::ExclamationmarkCircle"
-                            :android="$copiesProblem === 'offline' ? Android::WifiOff : Android::ErrorOutline"
-                            :size="20"
-                            class="text-theme-primary-text"
-                        />
-                        <column class="flex-1 gap-0.5">
-                            <text font="semibold" class="text-base text-theme-primary-text">{{ $note['title'] }}</text>
-                            <text class="text-base text-theme-on-surface">{{ $note['message'] }}</text>
-                        </column>
-                    </row>
-                @endif
-
-                <column class="w-full gap-1">
+                <column class="w-full gap-1 px-4 pt-3 pb-8">
                     <button
                         ref="item-copies-submit"
                         variant="primary"
