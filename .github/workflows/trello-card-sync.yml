@@ -10,7 +10,7 @@ jobs:
 
     steps:
       - name: Move the PR's Trello cards
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         env:
           TRELLO_API_KEY: ${{ secrets.TRELLO_API_KEY }}
           TRELLO_TOKEN: ${{ secrets.TRELLO_TOKEN }}
