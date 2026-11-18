@@ -118,11 +118,11 @@
                     class="{{ Card::classes() }} min-h-12 w-full justify-center px-4 py-2"
                     @navigate('/inventory/deleted')
                 >
-                    <row class="w-full items-center gap-3">
+                    <row class="w-full items-start gap-3">
                         <icon :ios="Ios::Trash" :android="Android::DeleteOutline" :size="20" class="text-theme-on-surface-variant" />
                         <text class="flex-1 text-base text-theme-on-surface">Recently deleted</text>
-                        <text class="text-base text-theme-on-surface-variant">{{ $this->deletedCount }}</text>
-                        <icon :ios="Ios::ChevronRight" :android="Android::ChevronRight" :size="14" class="text-theme-on-surface-variant" />
+                        <text class="self-center text-base text-theme-on-surface-variant">{{ $this->deletedCount }}</text>
+                        <icon :ios="Ios::ChevronRight" :android="Android::ChevronRight" :size="14" class="self-center text-theme-on-surface-variant" />
                     </row>
                 </pressable>
             @endif

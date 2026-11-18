@@ -112,11 +112,11 @@ it('lists deleted things newest first with their type, where they were and when'
         ->assertAccessible();
 
     expect(collect($screen->get('items'))->map(fn (array $item): array => [$item['name'], $item['supporting'], $item['deleted'], $item['emptied']])->all())->toBe([
-        ['Old lamp', 'Thing · was in Garage', 'Today', false],
-        ['Toy bin', 'Storage · was in Basement', 'Yesterday', true],
-        ['Bike pump', 'Thing · was in Garage', '12 Nov', false],
-        ['Sled', 'Thing · wasn’t in a place', '12 Nov', false],
-        ['Attic', 'Place', '1 Oct 2025', true],
+        ['Old lamp', 'Thing · was in Garage', 'Deleted today', false],
+        ['Toy bin', 'Storage · was in Basement', 'Deleted yesterday', true],
+        ['Bike pump', 'Thing · was in Garage', 'Deleted 12 Nov', false],
+        ['Sled', 'Thing · wasn’t in a place', 'Deleted 12 Nov', false],
+        ['Attic', 'Place', 'Deleted 1 Oct 2025', true],
     ]);
 });
 
@@ -126,7 +126,7 @@ it('counts days in the team’s time zone', function () {
 
     $screen = Native::visit('/inventory/deleted');
 
-    expect(array_column($screen->get('items'), 'deleted'))->toBe(['Yesterday', 'Yesterday', '13 Nov']);
+    expect(array_column($screen->get('items'), 'deleted'))->toBe(['Deleted yesterday', 'Deleted yesterday', 'Deleted 13 Nov']);
 });
 
 it('shows only the active team’s deleted things', function () {
@@ -370,7 +370,7 @@ it('keeps a thing deleted on the phone in Recently deleted with its photos', fun
     Native::visit('/inventory/deleted')
         ->assertSee('Tool chest')
         ->assertSee('Storage · was in Garage')
-        ->assertSee('Today');
+        ->assertSee('Deleted today');
 });
 
 it('keeps deleted things and their photos from Sunny, and drops them once Sunny deletes them forever', function () {

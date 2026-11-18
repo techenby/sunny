@@ -148,10 +148,10 @@ class RecentlyDeletedInventory extends Component
     protected function deletedOn(CarbonImmutable $deletedAt, CarbonImmutable $today): string
     {
         return match (true) {
-            $deletedAt->isSameDay($today) => 'Today',
-            $deletedAt->isSameDay($today->subDay()) => 'Yesterday',
-            $deletedAt->isSameYear($today) => $deletedAt->format('j M'),
-            default => $deletedAt->format('j M Y'),
+            $deletedAt->isSameDay($today) => 'Deleted today',
+            $deletedAt->isSameDay($today->subDay()) => 'Deleted yesterday',
+            $deletedAt->isSameYear($today) => 'Deleted '.$deletedAt->format('j M'),
+            default => 'Deleted '.$deletedAt->format('j M Y'),
         };
     }
 
