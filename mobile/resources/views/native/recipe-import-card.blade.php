@@ -18,7 +18,7 @@ $notice = match ($card['state']) {
 
 <column ref="recipe-import-card" class="{{ Card::classes() }} w-full gap-3 p-3.5">
     <row class="w-full items-center gap-3">
-        <column class="h-10 w-10 items-center justify-center rounded-lg bg-theme-primary/15">
+        <column class="min-h-10 min-w-10 items-center justify-center rounded-lg bg-theme-primary/15">
             <text font="accent" class="text-lg text-theme-primary-text">{{ $card['initial'] }}</text>
         </column>
         <column class="flex-1 gap-0.5">
@@ -41,25 +41,21 @@ $notice = match ($card['state']) {
 
     @if ($card['state'] === 'ready')
         <text class="text-sm text-theme-on-surface-variant">Sunny can read this page and fill in the name, photo, ingredients, steps and times for you.</text>
-        <button
-            ref="recipe-import"
-            variant="primary"
-            font="semibold"
-            class="h-12 w-full"
-            :ios-icon="Ios::ArrowDownToLine"
-            :android-icon="Android::Download"
-            @tap="importRecipe"
-        >
-            Import this recipe
-        </button>
+        <pressable ref="recipe-import" a11y-label="Import this recipe" class="min-h-12 w-full items-center justify-center rounded-full bg-theme-primary px-4" @tap="importRecipe">
+            <row class="items-center gap-2">
+                <icon :ios="Ios::ArrowDownToLine" :android="Android::Download" :size="18" class="text-theme-on-primary" />
+                <text font="semibold" class="text-base text-theme-on-primary">Import this recipe</text>
+            </row>
+        </pressable>
     @elseif ($card['state'] === 'importing')
         @unless (System::isIos())
             <progress-bar ref="recipe-import-progress" indeterminate class="w-full" a11y-label="Importing" />
         @endunless
         <text class="text-sm text-theme-on-surface-variant">Reading the recipe from {{ $card['host'] }}… this takes a few seconds.</text>
-        <button ref="recipe-import" variant="primary" font="semibold" class="h-12 w-full" loading>
-            Importing
-        </button>
+        <row ref="recipe-import" a11y-label="Importing" class="min-h-12 w-full items-center justify-center gap-2 rounded-full bg-theme-primary/15 px-4">
+            <activity-indicator size="sm" />
+            <text font="semibold" class="text-base text-theme-primary-text">Importing</text>
+        </row>
     @elseif ($notice)
         <divider />
         <row class="w-full items-start gap-3">
