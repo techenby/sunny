@@ -27,12 +27,12 @@ Content-Type: application/json
 ```
 
 The response contains the user's `id`, `name`, `email`, `email_verified_at`,
-`two_factor_enabled`, `current_team_id`, `created_at`, and `updated_at`, plus a
-plaintext `token` and its `expires_at` timestamp. Store the token securely; it
-is not shown again. This endpoint allows
-5 failed attempts per minute for each email and IP address, then returns
-`429`; a successful sign-in resets the count. Emails are matched
-case-insensitively, the same as signing in on the web.
+`two_factor_enabled`, `current_team_id`, `onboarded_at`, `created_at`, and
+`updated_at`, plus a plaintext `token` and its `expires_at` timestamp. Store
+the token securely; it is not shown again. This endpoint allows 5 failed
+attempts per minute for each email and IP address, then returns `429`; a
+successful sign-in resets the count. Emails are matched case-insensitively, the
+same as signing in on the web.
 
 ### Two-factor authentication
 
@@ -111,6 +111,61 @@ Accept: application/json
 > A token acts as its owner and is not limited to one team. Revoke a token from
 > Settings immediately if it is exposed or no longer used.
 
+## Create an account
+
+A client can create an account and get a token in one step:
+
+```http
+POST /api/register
+Accept: application/json
+Content-Type: application/json
+
+{
+  "name": "Nami",
+  "email": "nami@example.com",
+  "password": "your-password",
+  "password_confirmation": "your-password",
+  "device_name": "Nami's iPhone"
+}
+```
+
+Accounts are created with the same rules as registering on the web: `name`,
+`email` and a confirmed `password` are required, the email must not already
+have an account, and it is stored in lowercase. The new user gets a personal
+team, the same as on the web.
+
+The response is `201` with the same body as
+[the token endpoint](#create-a-token). `onboarded_at` is `null` for a new
+account, so the client should show onboarding; someone who registers with a
+pending team invitation skips onboarding, so theirs is already set. The token
+lasts 30 days, like a token from signing in.
+
+This endpoint allows 6 requests a minute for each IP address, then returns
+`429`. It returns `404` when registration is turned off.
+
+## Forgotten passwords
+
+Send a password reset link:
+
+```http
+POST /api/forgot-password
+Accept: application/json
+Content-Type: application/json
+
+{
+  "email": "nami@example.com"
+}
+```
+
+The email is the same one the web sends, and its link opens the web's reset
+password page. The response is always `202` with the same `message`, whether
+or not the email has an account, so it doesn't reveal who uses SunnyHome. A
+missing or invalid `email` returns `422`.
+
+Each account gets at most one link a minute; requests inside that minute still
+return `202` but send nothing. This endpoint also allows 6 requests a minute
+for each IP address, then returns `429`.
+
 ## Team behavior
 
 Item, recipe, list, and routine endpoints are scoped to a team in the URL:
@@ -145,6 +200,8 @@ user belongs to.
 | `POST` | `/api/invitations/{code}/accept` | Join the team and delete the invitation. |
 | `POST` | `/api/invitations/{code}/decline` | Decline and delete the invitation. |
 | `GET` | `/api/sync` | Synchronize all accessible teams, recipes, items, lists, and routines. |
+| `POST` | `/api/register` | Create an account and get a token. |
+| `POST` | `/api/forgot-password` | Email a password reset link. |
 | `POST` | `/api/sanctum/token/two-factor` | Complete a two-factor challenge. |
 | `POST` | `/api/sanctum/token/refresh` | Exchange the current token for a new one. |
 | `POST` | `/api/logout` | Revoke the current token. |
@@ -430,6 +487,6 @@ Expect standard Laravel JSON errors:
 - `403` when the user doesn't belong to the team in the URL or isn't allowed to do something.
 - `404` when the record doesn't exist or belongs to a different team.
 - `422` when validation fails.
-- `429` when too many token or two-factor requests are made.
+- `429` when too many token, two-factor, registration or password reset requests are made.
 
 Sanctum tokens don't work with SunnyHome's [MCP server](/docs/developers/mcp/setup), which only accepts OAuth.

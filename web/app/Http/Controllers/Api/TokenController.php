@@ -6,8 +6,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Actions\Fortify\AuthenticateUser;
 use App\Enums\TokenLifetime;
+use App\Http\Controllers\Api\Concerns\IssuesTokens;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Support\TwoFactorChallenge;
 use Illuminate\Auth\Events\Failed;
@@ -24,11 +24,12 @@ use Laravel\Fortify\Events\TwoFactorAuthenticationFailed;
 use Laravel\Fortify\Events\ValidTwoFactorAuthenticationCodeProvided;
 use Laravel\Fortify\Fortify;
 use Laravel\Fortify\LoginRateLimiter;
-use Laravel\Sanctum\NewAccessToken;
 use Laravel\Sanctum\PersonalAccessToken;
 
 class TokenController extends Controller
 {
+    use IssuesTokens;
+
     public function store(Request $request, LoginRateLimiter $limiter): JsonResponse
     {
         $request->validate([
@@ -153,22 +154,5 @@ class TokenController extends Controller
         event(new ValidTwoFactorAuthenticationCodeProvided($user));
 
         return $this->tokenResponse($user, $this->issue($user, $pending->deviceName));
-    }
-
-    private function tokenResponse(User $user, NewAccessToken $token): JsonResponse
-    {
-        return response()->json([
-            ...UserResource::make($user)->resolve(),
-            'token' => $token->plainTextToken,
-            'expires_at' => $token->accessToken->expires_at->toIso8601String(),
-        ]);
-    }
-
-    /**
-     * @param  array<int, string>  $abilities
-     */
-    private function issue(User $user, string $name, array $abilities = ['*']): NewAccessToken
-    {
-        return $user->createToken($name, $abilities, TokenLifetime::ThirtyDays->expiresAt());
     }
 }
