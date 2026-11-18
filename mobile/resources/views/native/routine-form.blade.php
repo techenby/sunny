@@ -73,10 +73,12 @@
                     class="min-h-12 w-full justify-center rounded-xl border border-theme-outline bg-theme-surface px-4 py-2"
                     @tap="openStartsOnPicker"
                 >
-                    <row class="w-full items-center gap-3">
+                    <row class="w-full items-start gap-3">
                         <icon :ios="Ios::Calendar" :android="Android::CalendarMonth" :size="20" class="text-theme-primary" />
-                        <text font="medium" class="flex-1 text-base text-theme-on-surface">{{ $startsOnLabel }}</text>
-                        <x-ui.badge size="sm">Change</x-ui.badge>
+                        <column class="flex-1 items-start gap-1">
+                            <text font="medium" class="text-base text-theme-on-surface">{{ $startsOnLabel }}</text>
+                            <x-ui.badge size="sm">Change</x-ui.badge>
+                        </column>
                     </row>
                 </pressable>
                 @if ($startsOnHint !== '')

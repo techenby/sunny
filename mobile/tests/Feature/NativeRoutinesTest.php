@@ -52,15 +52,23 @@ it('shows the routines due today where the team lives', function (): void {
         ->assertDontSee('Get ready');
 });
 
-it('leaves out routines that start after today', function (): void {
+it('leaves out routines that start after today unless a step is already done', function (): void {
+    Routine::find(2)->update(['starts_on' => now()->addDay()->startOfDay()->format('Y-m-d\\TH:i:s.u\\Z')]);
     Routine::find(1)->update(['starts_on' => now()->addDay()->startOfDay()->format('Y-m-d\\TH:i:s.u\\Z')]);
-    Routine::find(2)->update(['starts_on' => now()->startOfDay()->format('Y-m-d\\TH:i:s.u\\Z')]);
 
     $screen = Native::visit('/today')
-        ->assertSee('Bedtime')
-        ->assertDontSee('Get ready');
+        ->assertSee('Get ready')
+        ->assertDontSee('Bedtime');
 
-    expect(array_column($screen->get('routines'), 'name'))->toBe(['Bedtime']);
+    expect(array_column($screen->get('routines'), 'name'))->toBe(['Get ready']);
+});
+
+it('keeps routines that start today', function (): void {
+    Routine::query()->update(['starts_on' => now()->startOfDay()->format('Y-m-d\\TH:i:s.u\\Z')]);
+
+    $screen = Native::visit('/today');
+
+    expect(array_column($screen->get('routines'), 'name'))->toBe(['Get ready', 'Bedtime']);
 });
 
 it('shows an empty state when nothing is due today', function (): void {
