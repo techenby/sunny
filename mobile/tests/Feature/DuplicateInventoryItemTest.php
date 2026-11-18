@@ -1,9 +1,12 @@
 <?php
 
 use App\Http\Integrations\Sunny\Requests\DuplicateItemRequest;
+use App\Http\Integrations\Sunny\Requests\SaveRecordRequest;
+use App\Http\Integrations\Sunny\Requests\SyncRequest;
 use App\Http\Integrations\Sunny\SunnyOutbox;
 use App\Models\Item;
 use App\Models\ItemPhoto;
+use App\Models\PendingWrite;
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Psr7\Request as GuzzleRequest;
 use Native\Mobile\Testing\Native;
@@ -52,7 +55,7 @@ it('makes one copy next to the original, with its photos', function (): void {
             && $params['variant'] === 'success'
             && $params['action'] === ['id' => 'view-copies', 'label' => 'View']
             && $params['data'] === ['item' => 12])
-        ->emitNative(ToastActionPressed::class, ['toastId' => 'copies', 'actionId' => 'view-copies', 'data' => ['item' => 12]])
+        ->emitNative(ToastActionPressed::class, ['toastId' => 'copies', 'actionId' => 'view-copies', 'data' => ['item' => 12.0]])
         ->assertNavigatedTo('/inventory/11');
 
     Saloon::assertSent(fn (Request $request): bool => $request instanceof DuplicateItemRequest
@@ -171,15 +174,52 @@ it('explains when Sunny refuses to make copies', function (int $status, array $b
     'invalid' => [422, ['errors' => ['count' => ['The count field must not be greater than 25.']]], 'The count field must not be greater than 25.'],
 ]);
 
-it('waits for unsent changes to reach Sunny before copying', function (): void {
-    Saloon::fake([DuplicateItemRequest::class => MockResponse::make(['data' => sunnyCopiesOf(12, 1)], 201)]);
+it('sends unsent changes before copying, so the copies match', function (): void {
+    $sent = [];
+    Saloon::fake([
+        SaveRecordRequest::class => function (PendingRequest $pending) use (&$sent): MockResponse {
+            $sent[] = 'save';
+
+            return MockResponse::make(['data' => [...Item::find(12)->toArray(), 'name' => 'Christmas decorations']]);
+        },
+        SyncRequest::class => MockResponse::make([], 503),
+        DuplicateItemRequest::class => function (PendingRequest $pending) use (&$sent): MockResponse {
+            $sent[] = 'duplicate';
+
+            return MockResponse::make(['data' => [[...sunnyCopiesOf(12, 1)[0], 'name' => 'Christmas decorations']]], 201);
+        },
+    ]);
     app(SunnyOutbox::class)->queue('items', 1, ['name' => 'Christmas decorations', 'type' => 'bin', 'parent_id' => 11, 'metadata' => null], 12);
 
     Native::visit('/inventory/12')
         ->tap('Make copies')
         ->tap('item-copies-submit')
-        ->assertSee('Still sending your changes')
+        ->assertSet('copiesProblem', null)
+        ->assertToastShown(fn (array $params): bool => $params['message'] === '1 copy made');
+
+    expect($sent)->toBe(['save', 'duplicate'])
+        ->and(PendingWrite::count())->toBe(0)
+        ->and(Item::find(90)->name)->toBe('Christmas decorations');
+});
+
+it('waits while unsent changes can’t reach Sunny', function (int $status, string $title): void {
+    Saloon::fake([
+        SaveRecordRequest::class => $status === 0
+            ? MockResponse::make()->throw(fn (PendingRequest $pending) => new FatalRequestException(new ConnectException('Could not resolve host', new GuzzleRequest('PATCH', 'https://sunny.example')), $pending))
+            : MockResponse::make([], $status),
+        DuplicateItemRequest::class => MockResponse::make(['data' => sunnyCopiesOf(12, 1)], 201),
+    ]);
+    app(SunnyOutbox::class)->queue('items', 1, ['name' => 'Christmas decorations', 'type' => 'bin', 'parent_id' => 11, 'metadata' => null], 12);
+
+    Native::visit('/inventory/12')
+        ->tap('Make copies')
+        ->tap('item-copies-submit')
+        ->assertSee($title)
         ->assertSee('Try again');
 
-    Saloon::assertNothingSent();
-});
+    Saloon::assertNotSent(DuplicateItemRequest::class);
+    expect(PendingWrite::count())->toBe(1);
+})->with([
+    'offline' => [0, 'You’re offline'],
+    'server error' => [500, 'Still sending your changes'],
+]);

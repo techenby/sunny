@@ -221,10 +221,22 @@ class InventoryItemDetail extends Component
         $this->copiesError = '';
 
         if ($this->hasUnsentChanges()) {
-            $this->copiesProblem = 'unsent';
-            app(SunnySyncCoordinator::class)->dispatch();
+            try {
+                app(SunnySyncCoordinator::class)->sync();
+            } catch (FatalRequestException) {
+                $this->copiesProblem = 'offline';
 
-            return;
+                return;
+            } catch (AuthenticationException|RequestException|JsonException|ValidationException|RuntimeException) {
+            }
+
+            $this->refreshLocalSyncedData();
+
+            if ($this->item === null || $this->hasUnsentChanges()) {
+                $this->copiesProblem = 'unsent';
+
+                return;
+            }
         }
 
         $team = Team::query()->where('server', SunnyStore::server())->find($this->item['team_id']);
@@ -274,12 +286,12 @@ class InventoryItemDetail extends Component
     }
 
     /**
-     * @param  array{item?: int}  $data
+     * @param  array{item?: int|float|string}  $data
      */
     #[On(Toast::ACTION_PRESSED, when: ['actionId' => 'view-copies'])]
     public function viewCopies(array $data): void
     {
-        if ($this->item === null || ($data['item'] ?? null) !== $this->item['id']) {
+        if ($this->item === null || ! is_numeric($data['item'] ?? null) || (int) $data['item'] !== $this->item['id']) {
             return;
         }
 
