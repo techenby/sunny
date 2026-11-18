@@ -94,6 +94,16 @@ it('opens with the link on when the recipe already has one', function (): void {
     Saloon::assertNothingSent();
 });
 
+it('says so when the link cannot be copied', function (): void {
+    Recipe::find(1)->update(['share_url' => SHARE_URL]);
+
+    Native::visit('/recipes/1')
+        ->tap('Share')
+        ->tap('recipe-share-copy')
+        ->assertSet('linkCopied', false)
+        ->assertToastShown(fn (array $params): bool => $params['message'] === 'Unable to copy the link. Please try again.' && $params['variant'] === 'error');
+});
+
 it('turns the link off', function (): void {
     Recipe::find(1)->update(['share_url' => SHARE_URL]);
     Saloon::fake([ShareRecipeRequest::class => MockResponse::make(['data' => sharedRecipeRecord(null)])]);

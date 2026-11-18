@@ -9,11 +9,11 @@ use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Http\Integrations\Sunny\SunnyTeam;
 use App\Models\RoutineOccurrence;
 use App\Models\RoutineOccurrenceStep;
+use App\Support\Toast;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
 use Native\Mobile\Attributes\On;
-use Native\Mobile\Facades\Dialog;
 
 class Today extends Component
 {
@@ -70,7 +70,7 @@ class Today extends Component
         try {
             app(SunnyOutbox::class)->queueRoutineStep($id, ! $step['completed']);
         } catch (ValidationException $exception) {
-            Dialog::toast(collect($exception->errors())->flatten()->first());
+            Toast::error(collect($exception->errors())->flatten()->first());
         }
 
         app(SunnySyncCoordinator::class)->dispatch();

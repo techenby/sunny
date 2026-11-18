@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "295ee55ea90269b2317eca8112d459eb",
+    "content-hash": "ca5383ca765ca590dbb79fa315afebbb",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -7659,6 +7659,67 @@
                 "source": "https://github.com/tijsverkoyen/CssToInlineStyles/tree/v2.4.0"
             },
             "time": "2025-12-02T11:56:42+00:00"
+        },
+        {
+            "name": "victorycodedev/toastkit",
+            "version": "v1.5.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/victorycodedev/toastkit.git",
+                "reference": "a7d226f5a898ed8210580ad899e2867cd51a133d"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/victorycodedev/toastkit/zipball/a7d226f5a898ed8210580ad899e2867cd51a133d",
+                "reference": "a7d226f5a898ed8210580ad899e2867cd51a133d",
+                "shasum": ""
+            },
+            "require": {
+                "nativephp/mobile": "^4.7",
+                "php": "^8.4"
+            },
+            "require-dev": {
+                "pestphp/pest": "^4.0"
+            },
+            "type": "nativephp-plugin",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Victorycodedev\\ToastKit\\ToastKitServiceProvider"
+                    ]
+                },
+                "nativephp": {
+                    "manifest": "nativephp.json"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Victorycodedev\\ToastKit\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Victory Efekpogua"
+                }
+            ],
+            "description": "Rich, customizable native toast notifications for NativePHP Mobile.",
+            "homepage": "https://github.com/victorycodedev/toastkit",
+            "keywords": [
+                "mobile",
+                "nativephp",
+                "nativephp-plugin",
+                "notifications",
+                "toast"
+            ],
+            "support": {
+                "issues": "https://github.com/victorycodedev/toastkit/issues",
+                "source": "https://github.com/victorycodedev/toastkit"
+            },
+            "time": "2026-11-12T19:10:15+00:00"
         },
         {
             "name": "vlucas/phpdotenv",

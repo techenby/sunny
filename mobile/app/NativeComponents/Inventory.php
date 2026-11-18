@@ -7,6 +7,7 @@ use App\Enums\ItemType;
 use App\Icons\Android;
 use App\Icons\Ios;
 use App\Models\Item;
+use App\Support\Toast;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -14,7 +15,6 @@ use Native\Mobile\Attributes\Computed;
 use Native\Mobile\Attributes\On;
 use Native\Mobile\Edge\Layouts\Builders\NavAction;
 use Native\Mobile\Events\Scanner\CodeScanned;
-use Native\Mobile\Facades\Dialog;
 use Native\Mobile\Facades\Scanner;
 use Sunny\ItemScanner\Events\ScreenUncovered;
 use Sunny\ItemScanner\Facades\ItemScanner;
@@ -202,7 +202,7 @@ class Inventory extends Component
         $path = OpenItemLink::pathFor($data);
 
         if ($path === null) {
-            Dialog::toast('That code isn’t a Sunny label.');
+            Toast::error('That code isn’t a Sunny label.');
 
             return;
         }

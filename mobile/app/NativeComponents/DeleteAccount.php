@@ -5,10 +5,10 @@ namespace App\NativeComponents;
 use App\Actions\DestroySession;
 use App\Http\Integrations\Sunny\SunnyAuth;
 use App\Http\Integrations\Sunny\SunnyConnector;
+use App\Support\Toast;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\View\View;
 use Native\Mobile\Facades\Browser;
-use Native\Mobile\Facades\Dialog;
 use RuntimeException;
 use Saloon\Exceptions\Request\FatalRequestException;
 use Saloon\Exceptions\Request\RequestException;
@@ -85,7 +85,7 @@ class DeleteAccount extends Component
         }
 
         if (! Browser::inApp(app(SunnyConnector::class)->siteUrl().'/settings/teams/'.rawurlencode($slug))) {
-            Dialog::toast('Unable to open the Sunny website. Please try again.');
+            Toast::error('Unable to open the Sunny website. Please try again.');
         }
     }
 

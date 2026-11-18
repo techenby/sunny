@@ -6,9 +6,9 @@ use App\Actions\ShareRecipe;
 use App\Http\Integrations\Sunny\SunnyStore;
 use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Models\Team;
+use App\Support\Toast;
 use Illuminate\Auth\AuthenticationException;
 use JsonException;
-use Native\Mobile\Facades\Dialog;
 use Native\Mobile\Facades\Network;
 use Native\Mobile\Facades\Share;
 use NativePHP\Clipboard\Facades\Clipboard;
@@ -72,7 +72,7 @@ trait SharesRecipe
         $this->linkCopied = Clipboard::writeText($url);
 
         if (! $this->linkCopied) {
-            Dialog::toast('Unable to copy the link. Please try again.');
+            Toast::error('Unable to copy the link. Please try again.');
         }
     }
 

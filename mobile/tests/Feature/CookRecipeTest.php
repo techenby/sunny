@@ -184,7 +184,7 @@ it('counts a timer down, alerts when it ends and offers the next duration', func
 
     $screen->firePoll('tick')
         ->assertSet('timerStep', null)
-        ->assertNativeCalled('Dialog.Toast', fn (array $payload): bool => $payload['message'] === 'Step 3 timer is done')
+        ->assertToastShown(fn (array $params): bool => $params['message'] === 'Step 3 timer is done' && $params['variant'] === 'info')
         ->assertDontSee('STEP 3 TIMER')
         ->tap('cook-tab-cook')
         ->assertSee('1:00')
@@ -331,5 +331,5 @@ it('leaves the alert to the notification once notifications are allowed', functi
 
     $screen->firePoll('tick')->assertSet('timerStep', null);
 
-    Native::fakeBridge()->assertNotCalled('Dialog.Toast');
+    Native::fakeBridge()->assertNotCalled('ToastKit.Show');
 });

@@ -15,7 +15,7 @@ it('moves an item to another place from its page', function () {
         ->assertSee('Put it in Basement')
         ->tap('move-parent-choose')
         ->assertSet('showParentPicker', false)
-        ->assertNativeCalled('Dialog.Toast', fn (array $params): bool => $params['message'] === 'Moved to Basement')
+        ->assertToastShown(fn (array $params): bool => $params['message'] === 'Moved to Basement' && $params['variant'] === 'success')
         ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'item-parent');
 
     expect(Item::find(10)->parent_id)->toBe(11)
@@ -26,7 +26,7 @@ it('takes an item out of every place', function () {
     Native::visit('/inventory/10')
         ->tap('item-move')
         ->tap('move-parent-choose')
-        ->assertNativeCalled('Dialog.Toast', fn (array $params): bool => $params['message'] === 'Moved to “Not in a place yet”')
+        ->assertToastShown(fn (array $params): bool => $params['message'] === 'Moved to “Not in a place yet”' && $params['variant'] === 'success')
         ->assertSee('Not in a place yet');
 
     expect(Item::find(10)->parent_id)->toBeNull();
@@ -39,7 +39,7 @@ it('moves a place back to the places in the home', function () {
         ->tap('item-move')
         ->assertSee('Put it with the places in your home')
         ->tap('move-parent-choose')
-        ->assertNativeCalled('Dialog.Toast', fn (array $params): bool => $params['message'] === 'Now one of the places in your home')
+        ->assertToastShown(fn (array $params): bool => $params['message'] === 'Now one of the places in your home' && $params['variant'] === 'success')
         ->assertSee('One of the places in your home');
 
     expect(Item::find(1)->parent_id)->toBeNull();

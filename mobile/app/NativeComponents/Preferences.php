@@ -6,6 +6,7 @@ use App\Http\Integrations\Sunny\SunnyAuth;
 use App\Http\Integrations\Sunny\SunnyConnector;
 use App\Http\Integrations\Sunny\SunnyTeam;
 use App\Support\CrashReports;
+use App\Support\Toast;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
 use Native\Mobile\Attributes\On;
@@ -53,7 +54,7 @@ class Preferences extends Component
         $crashReports = app(CrashReports::class);
 
         if (! $crashReports->share($share)) {
-            Dialog::toast('Unable to save your choice. Please try again.');
+            Toast::error('Unable to save your choice. Please try again.');
         }
 
         $crashReports->markAsked();
@@ -91,9 +92,9 @@ class Preferences extends Component
         try {
             app(SunnyAuth::class)->logout();
         } catch (RequestException|FatalRequestException) {
-            Dialog::toast('Signed out on this device. Sunny could not revoke the remote session.');
+            Toast::info('Signed out on this device. Sunny could not revoke the remote session.', long: true);
         } catch (RuntimeException) {
-            Dialog::toast('Unable to clear your saved login. Unlock your device and try again.');
+            Toast::error('Unable to clear your saved login. Unlock your device and try again.');
 
             return;
         }
@@ -104,7 +105,7 @@ class Preferences extends Component
     private function openSite(string $path): void
     {
         if (! Browser::inApp(app(SunnyConnector::class)->siteUrl().$path)) {
-            Dialog::toast('Unable to open the Sunny website. Please try again.');
+            Toast::error('Unable to open the Sunny website. Please try again.');
         }
     }
 
