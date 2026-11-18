@@ -103,6 +103,54 @@ test('the screensaver turns into a night clock during night hours', function () 
         ->assertVisible('[data-kiosk-screensaver][data-night]');
 });
 
+test('the night clock dims the frame backlight until it is tapped', function () use ($idleFor) {
+    $now = CarbonImmutable::now('America/Chicago');
+    $team = Team::factory()->create([
+        'timezone' => 'America/Chicago',
+        'screensaver_after' => 1,
+        'return_home_after' => 0,
+        'night_starts_at' => $now->subHour()->format('H:i'),
+        'night_ends_at' => $now->addHour()->format('H:i'),
+    ]);
+    $user = User::factory()->memberOf($team)->create();
+
+    actingAs($user);
+
+    $page = visit(route('kiosk.lists', absolute: false));
+
+    $page->assertNoJavaScriptErrors()
+        ->script('window.brightness = []; window.HomeHQ = { setBrightness: (level) => window.brightness.push(level) }');
+
+    $page->wait(1.5)
+        ->assertScript('window.brightness.includes(0)', false)
+        ->script($idleFor(61));
+
+    $page->wait(1.5)
+        ->assertVisible('[data-kiosk-screensaver][data-night]')
+        ->assertScript('window.brightness.at(-1)', 0)
+        ->click('[data-kiosk-screensaver]')
+        ->assertMissing('[data-kiosk-screensaver]')
+        ->assertScript('window.brightness.at(-1)', -1);
+});
+
+test('the daytime screensaver leaves the backlight alone', function () use ($idleFor) {
+    $team = Team::factory()->create(['screensaver_after' => 1, 'return_home_after' => 0]);
+    $user = User::factory()->memberOf($team)->create();
+
+    actingAs($user);
+
+    $page = visit(route('kiosk.lists', absolute: false));
+
+    $page->assertNoJavaScriptErrors()
+        ->script('window.brightness = []; window.HomeHQ = { setBrightness: (level) => window.brightness.push(level) }');
+
+    $page->script($idleFor(61));
+
+    $page->wait(1.5)
+        ->assertVisible('[data-kiosk-screensaver]')
+        ->assertScript('window.brightness.includes(0)', false);
+});
+
 test('the screensaver shows the next event', function () use ($idleFor) {
     Storage::fake();
 
