@@ -122,6 +122,16 @@
                 {
                     "description": "iOS: drop the microphone and location permission strings and the location code that needs them, since Sunny never records video or geotags photos",
                     "url": "patches/nativephp-mobile-camera-drop-location-and-microphone.patch"
+                },
+                {
+                    "description": "Android: drop RECORD_AUDIO, ACCESS_MEDIA_LOCATION and the shortService foreground service, since Sunny only takes and picks photos and the system camera app doesn't need the service",
+                    "url": "patches/nativephp-mobile-camera-android-drop-unused-permissions.patch"
+                }
+            ],
+            "nativephp/mobile-local-notifications": [
+                {
+                    "description": "Android: drop the Play-restricted USE_EXACT_ALARM and SCHEDULE_EXACT_ALARM permissions and fall back to an inexact alarm when exact alarms aren't allowed, instead of throwing a SecurityException",
+                    "url": "patches/nativephp-mobile-local-notifications-android-inexact-alarms.patch"
                 }
             ],
             "nativephp/mobile": [
@@ -142,7 +152,7 @@
                     "url": "patches/nativephp-mobile-tabs-display-mode.patch"
                 },
                 {
-                    "description": "iOS: ship a PrivacyInfo.xcprivacy declaring the required-reason APIs the PHP runtime, NativePHP and its plugins use, and the crash and diagnostic data NativeWatch collects",
+                    "description": "iOS: ship a PrivacyInfo.xcprivacy declaring the required-reason APIs the PHP runtime, NativePHP and its plugins use, the account data and content Sunny syncs to sunnyhome.app, and the crash and diagnostic data NativeWatch collects",
                     "url": "patches/nativephp-mobile-ios-privacy-manifest.patch"
                 },
                 {
