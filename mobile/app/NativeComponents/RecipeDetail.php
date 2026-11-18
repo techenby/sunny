@@ -4,15 +4,22 @@ namespace App\NativeComponents;
 
 use App\Concerns\ChecksSunnySync;
 use App\Concerns\ShowsQueuedChange;
+use App\Http\Integrations\Sunny\SunnyOutbox;
+use App\Http\Integrations\Sunny\SunnySyncCoordinator;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
 use Native\Mobile\Attributes\On;
+use Native\Mobile\Events\Alert\ButtonPressed;
 use Native\Mobile\Facades\Browser;
+use Native\Mobile\Facades\Dialog;
 
 class RecipeDetail extends Component
 {
     use ChecksSunnySync;
     use ShowsQueuedChange;
+
+    public string $error = '';
 
     /**
      * Ingredients ticked off while cooking, as position => text so a tick stops
@@ -150,6 +157,53 @@ class RecipeDetail extends Component
         if (Recipes::isSourceUrl($this->recipe['source'] ?? null)) {
             Browser::inApp($this->recipe['source']);
         }
+    }
+
+    public function confirmDeleteRecipe(): void
+    {
+        if ($this->recipe === null) {
+            return;
+        }
+
+        $count = count($this->remixes);
+        $message = '“'.$this->recipe['name'].'” will be deleted for everyone on your team.';
+
+        if ($count > 0) {
+            $message .= ' '.trans_choice('{1} Its remix won’t be deleted.|[2,*] Its :count remixes won’t be deleted.', $count);
+        }
+
+        Dialog::alert('Delete '.$this->recipe['name'].'?', $message, [
+            ['label' => 'Cancel', 'style' => 'cancel'],
+            ['label' => 'Delete', 'style' => 'destructive'],
+        ])->id('delete-recipe')->show();
+    }
+
+    #[On(ButtonPressed::class)]
+    public function onAlertButtonPressed(string $label, ?string $id = null): void
+    {
+        if ($id === 'delete-recipe' && $label === 'Delete') {
+            $this->deleteRecipe();
+        } elseif ($id === 'discard-queued-change' && $label === 'Discard') {
+            $this->discardQueuedChange();
+        }
+    }
+
+    public function deleteRecipe(): void
+    {
+        if ($this->recipe === null) {
+            return;
+        }
+
+        try {
+            app(SunnyOutbox::class)->delete('recipes', $this->recipe['team_id'], $this->recipe['id']);
+        } catch (ValidationException $exception) {
+            $this->error = collect($exception->errors())->flatten()->first() ?? 'Unable to delete on this phone. Try again.';
+
+            return;
+        }
+
+        app(SunnySyncCoordinator::class)->dispatch();
+        $this->back();
     }
 
     protected function queuedResource(): string
