@@ -33,7 +33,7 @@
                     <column class="w-20" />
                 </row>
                 @isset($subtitle)
-                    <text ref="{{ $refPrefix }}-parent-subtitle" class="w-full text-center text-sm text-theme-on-surface-variant">{{ $subtitle }}</text>
+                    <text ref="{{ $refPrefix }}-parent-subtitle" max-lines="1" class="w-full text-center text-sm text-theme-on-surface-variant">{{ $subtitle }}</text>
                 @endisset
                 <outlined-text-input
                     ref="{{ $refPrefix }}-parent-search"

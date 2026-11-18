@@ -39,7 +39,7 @@
     @endif
 
     <scroll-view ref="item-detail" fill class="bg-theme-background">
-        <column class="w-full gap-7 px-4 pt-2 {{ $selecting ? 'pb-[176]' : 'pb-8' }}">
+        <column class="w-full gap-7 px-4 pt-2 {{ $selecting ? 'pb-[240]' : 'pb-8' }}">
             <column class="w-full gap-3">
                 <row class="w-full items-center gap-2">
                     <x-ui.avatar
