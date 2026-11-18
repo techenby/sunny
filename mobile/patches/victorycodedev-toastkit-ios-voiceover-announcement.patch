@@ -1,0 +1,28 @@
+--- a/resources/ios/Sources/Manager/ToastKitManager.swift
++++ b/resources/ios/Sources/Manager/ToastKitManager.swift
+@@ -1,5 +1,6 @@
+ import Foundation
+ import SwiftUI
++import UIKit
+ 
+ @MainActor
+ final class ToastKitManager: ObservableObject {
+@@ -83,8 +84,18 @@
+         }
+         schedule(state.configuration)
+         ToastKitEventDispatcher.shown(id)
++        announce(state.configuration)
+     }
+ 
++    private func announce(_ configuration: ToastKitConfiguration) {
++        guard UIAccessibility.isVoiceOverRunning else { return }
++        let text = [configuration.title, configuration.message]
++            .compactMap { $0 }
++            .filter { !$0.isEmpty }
++            .joined(separator: ", ")
++        UIAccessibility.post(notification: .announcement, argument: text)
++    }
++
+     private func schedule(_ configuration: ToastKitConfiguration) {
+         timers.removeValue(forKey: configuration.id)?.cancel()
+         guard let milliseconds = configuration.durationMilliseconds else { return }

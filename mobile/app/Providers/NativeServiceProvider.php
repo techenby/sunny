@@ -15,6 +15,7 @@ use NativePHP\LocalNotifications\LocalNotificationsServiceProvider;
 use Nativephp\MobileOta\OtaServiceProvider;
 use SRWieZ\NativePHP\Mobile\Screen\ScreenServiceProvider;
 use Sunny\ItemScanner\ItemScannerServiceProvider;
+use Victorycodedev\ToastKit\ToastKitServiceProvider;
 use Vos\LiveActivities\LiveActivitiesServiceProvider;
 use ZXN\NativeWatch\Mobile\MobileServiceProvider;
 
@@ -62,6 +63,7 @@ class NativeServiceProvider extends ServiceProvider
             ScreenServiceProvider::class,
             LocalNotificationsServiceProvider::class,
             LiveActivitiesServiceProvider::class,
+            ToastKitServiceProvider::class,
         ];
     }
 }
