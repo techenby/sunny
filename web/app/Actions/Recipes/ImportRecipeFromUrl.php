@@ -82,13 +82,13 @@ class ImportRecipeFromUrl
     private function mapToFormFields(array $recipe, string $url): array
     {
         return [
-            'name' => $recipe['name'] ?? null,
-            'source' => $recipe['url'] ?? $url,
+            'name' => $this->limit($recipe['name'] ?? null, 255),
+            'source' => collect([$recipe['url'] ?? null, $url])->first(fn (mixed $source): bool => is_string($source) && mb_strlen($source) <= 500),
             'tags' => $this->extractTags($recipe),
-            'servings' => isset($recipe['recipeYield']) ? $this->normalizeYield($recipe['recipeYield']) : null,
-            'prep_time' => isset($recipe['prepTime']) ? $this->formatDuration($recipe['prepTime']) : null,
-            'cook_time' => isset($recipe['cookTime']) ? $this->formatDuration($recipe['cookTime']) : null,
-            'total_time' => isset($recipe['totalTime']) ? $this->formatDuration($recipe['totalTime']) : null,
+            'servings' => isset($recipe['recipeYield']) ? $this->limit($this->normalizeYield($recipe['recipeYield']), 50) : null,
+            'prep_time' => isset($recipe['prepTime']) ? $this->limit($this->formatDuration($recipe['prepTime']), 50) : null,
+            'cook_time' => isset($recipe['cookTime']) ? $this->limit($this->formatDuration($recipe['cookTime']), 50) : null,
+            'total_time' => isset($recipe['totalTime']) ? $this->limit($this->formatDuration($recipe['totalTime']), 50) : null,
             'description' => isset($recipe['description']) ? strip_tags((string) $recipe['description']) : null,
             'ingredients' => isset($recipe['recipeIngredient']) ? $this->formatIngredients($recipe['recipeIngredient']) : null,
             'instructions' => isset($recipe['recipeInstructions']) ? $this->formatInstructions($recipe['recipeInstructions']) : null,
@@ -131,6 +131,11 @@ class ImportRecipeFromUrl
             ->unique()
             ->values()
             ->all();
+    }
+
+    private function limit(mixed $value, int $length): ?string
+    {
+        return is_scalar($value) ? trim(mb_substr(trim((string) $value), 0, $length)) : null;
     }
 
     private function normalizeYield(mixed $yield): string

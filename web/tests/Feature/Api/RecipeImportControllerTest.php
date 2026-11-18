@@ -85,6 +85,43 @@ test('import returns the existing recipe when a retry wins the race to insert it
     Http::assertSentCount(1);
 });
 
+test('import trims page values that are too long to save', function () {
+    Http::fake([
+        'example.com/long-values' => Http::response(fakeRecipeHtml([
+            '@type' => 'Recipe',
+            'url' => 'https://example.com/' . str_repeat('a', 500),
+            'name' => str_repeat('Apple Pie ', 30),
+            'recipeYield' => str_repeat('8 slices ', 10),
+            'prepTime' => str_repeat('about an hour ', 10),
+        ])),
+    ]);
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->postJson(route('api.recipes.import', $user->currentTeam), ['url' => 'https://example.com/long-values'])
+        ->assertCreated()
+        ->assertJsonPath('data.name', trim(mb_substr(str_repeat('Apple Pie ', 30), 0, 255)))
+        ->assertJsonPath('data.source', 'https://example.com/long-values')
+        ->assertJsonPath('data.servings', trim(mb_substr(str_repeat('8 slices ', 10), 0, 50)))
+        ->assertJsonPath('data.prep_time', trim(mb_substr(str_repeat('about an hour ', 10), 0, 50)));
+});
+
+test('import keeps a source url up to 500 characters and rejects a longer one', function () {
+    $url = 'https://example.com/apple-cider-donuts?ref=' . str_repeat('a', 457);
+    Http::fake([$url => Http::response(fakeRecipeHtml(['@type' => 'Recipe', 'name' => 'Apple Cider Donuts']))]);
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->postJson(route('api.recipes.import', $user->currentTeam), ['url' => $url])
+        ->assertCreated()
+        ->assertJsonPath('data.source', $url);
+
+    $this->actingAs($user)
+        ->postJson(route('api.recipes.import', $user->currentTeam), ['url' => $url . 'a'])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('url');
+});
+
 test('import explains when a page has no recipe', function () {
     $user = User::factory()->create();
 
