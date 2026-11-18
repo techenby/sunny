@@ -2,6 +2,7 @@
 
 use App\Models\Recipe;
 use App\Models\User;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 
 beforeEach(function () {
@@ -71,18 +72,34 @@ test('import returns the existing recipe when a retry wins the race to insert it
     Http::assertSentCount(1);
 });
 
-test('import explains when a page has no recipe', function (string $url) {
+test('import explains when a page has no recipe', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user)
-        ->postJson(route('api.recipes.import', $user->currentTeam), ['url' => $url])
+        ->postJson(route('api.recipes.import', $user->currentTeam), ['url' => 'https://example.com/not-a-recipe'])
         ->assertUnprocessable()
         ->assertJsonValidationErrors(['url' => 'Sunny couldn’t find a recipe at that address.']);
 
     expect(Recipe::count())->toBe(0);
+});
+
+test('import tells a page it couldn’t open apart from one without a recipe', function (string $url) {
+    Http::fake([
+        'example.com/paywalled' => Http::response('Payment Required', 402),
+        'example.com/unreachable' => fn () => throw new ConnectionException('Connection timed out'),
+    ]);
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->postJson(route('api.recipes.import', $user->currentTeam), ['url' => $url])
+        ->assertStatus(424)
+        ->assertJsonValidationErrors(['url' => 'Sunny couldn’t open that page.']);
+
+    expect(Recipe::count())->toBe(0);
 })->with([
-    'no recipe data' => 'https://example.com/not-a-recipe',
     'page not found' => 'https://example.com/missing',
+    'blocked' => 'https://example.com/paywalled',
+    'connection failed' => 'https://example.com/unreachable',
 ]);
 
 test('import validates the url', function () {

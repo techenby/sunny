@@ -26,7 +26,7 @@
                 keyboard="url"
                 :ios-leading-icon="Ios::Link"
                 :android-leading-icon="Android::Link"
-                :error="($importCard['state'] ?? null) === 'no-recipe'"
+                :error="in_array($importCard['state'] ?? null, ['no-recipe', 'unreachable'], true)"
                 :disabled="$importing ?? false"
                 native:model.debounce.500ms="source"
             />

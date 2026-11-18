@@ -21,7 +21,7 @@ class ImportRecipe
     ) {}
 
     /**
-     * @return array{status: 'imported', id: int}|array{status: 'no-recipe'|'error', message: string}|array{status: 'offline'}
+     * @return array{status: 'imported', id: int}|array{status: 'no-recipe'|'unreachable'|'error', message: string}|array{status: 'offline'}
      */
     public function handle(int $teamId, string $teamSlug, string $url, string $clientUuid, #[\SensitiveParameter] ?string $token = null): array
     {
@@ -34,6 +34,7 @@ class ImportRecipe
         } catch (RequestException $exception) {
             return match ($exception->getResponse()->status()) {
                 422 => ['status' => 'no-recipe', 'message' => self::NO_RECIPE],
+                424 => ['status' => 'unreachable', 'message' => 'That site didn’t let Sunny read the page. Try another link, or fill it in yourself.'],
                 401 => ['status' => 'error', 'message' => 'Sunny didn’t accept this phone’s sign-in. Sign out and back in, then try again.'],
                 403 => ['status' => 'error', 'message' => 'You can’t add recipes to this team.'],
                 429 => ['status' => 'error', 'message' => 'That’s a lot of imports in a row. Wait a minute and try again.'],

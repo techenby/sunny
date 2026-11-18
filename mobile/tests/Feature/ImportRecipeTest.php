@@ -90,6 +90,28 @@ it('reads the page in the background while showing progress', function (): void 
         ->assertElement('button', fn (array $node): bool => ($node['ref'] ?? null) === 'create-recipe-submit' && ($node['props']['disabled'] ?? false) === true);
 });
 
+it('leaves out the progress bar on iOS, where it only draws a second spinner', function (): void {
+    Native::visit('/recipes/create', platform: 'ios')
+        ->input('recipe-source', PANCAKES_URL)
+        ->set('importing', true)
+        ->assertSee('Reading the recipe from seriouseats.com… this takes a few seconds.')
+        ->assertMissingElement('progress_bar');
+});
+
+it('explains when Sunny couldn’t open the page at all', function (): void {
+    Saloon::fake([ImportRecipeRequest::class => MockResponse::make(['message' => 'Sunny couldn’t open that page.', 'errors' => ['url' => ['Sunny couldn’t open that page.']]], 424)]);
+
+    Native::visit('/recipes/create')
+        ->input('recipe-source', PANCAKES_URL)
+        ->tap('recipe-import')
+        ->assertSee('Couldn’t open that page')
+        ->assertSee('That site didn’t let Sunny read the page. Try another link, or fill it in yourself.')
+        ->assertDontSee('No recipe on that page')
+        ->assertElement('outlined_text_input', fn (array $node): bool => ($node['ref'] ?? null) === 'recipe-source' && ($node['props']['is_error'] ?? false) === true)
+        ->assertSee('Change link')
+        ->assertSee('Fill it in myself');
+});
+
 it('explains when Sunny finds no recipe at the link', function (string $url, string $message): void {
     $recipes = Recipe::count();
     Saloon::fake([ImportRecipeRequest::class => MockResponse::make(['message' => 'No recipe', 'errors' => ['url' => ['Sunny couldn’t find a recipe at that address.']]], 422)]);

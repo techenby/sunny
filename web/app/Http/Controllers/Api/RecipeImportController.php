@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Actions\Recipes\CreateRecipe;
 use App\Actions\Recipes\ImportRecipeFromUrl;
+use App\Actions\Recipes\RecipePageUnavailable;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\ImportRecipeRequest;
 use App\Http\Resources\RecipeResource;
@@ -29,6 +30,8 @@ class RecipeImportController extends Controller
 
         try {
             $data = $import->handle($request->validated('url'));
+        } catch (RecipePageUnavailable) {
+            throw ValidationException::withMessages(['url' => 'Sunny couldn’t open that page.'])->status(424);
         } catch (Throwable) {
             throw ValidationException::withMessages(['url' => 'Sunny couldn’t find a recipe at that address.']);
         }

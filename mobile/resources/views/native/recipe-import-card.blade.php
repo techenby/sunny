@@ -1,10 +1,12 @@
 @use('App\Icons\Android')
 @use('App\Icons\Ios')
 @use('App\Ui\Card')
+@use('Native\Mobile\Facades\System')
 
 @php
 $notice = match ($card['state']) {
     'no-recipe' => ['title' => 'No recipe on that page', 'ios' => Ios::ExclamationmarkCircle, 'android' => Android::ErrorOutline, 'tint' => 'text-theme-destructive'],
+    'unreachable' => ['title' => 'Couldn’t open that page', 'ios' => Ios::ExclamationmarkCircle, 'android' => Android::ErrorOutline, 'tint' => 'text-theme-destructive'],
     'offline' => ['title' => 'You’re offline', 'ios' => Ios::WifiSlash, 'android' => Android::WifiOff, 'tint' => 'text-theme-primary-text',
         'message' => 'Importing needs Sunny to read the page, so it can’t wait and sync later like your other changes. Your link stays here, so connect and try again.'],
     'error' => ['title' => 'Couldn’t import', 'ios' => Ios::ExclamationmarkCircle, 'android' => Android::ErrorOutline, 'tint' => 'text-theme-destructive'],
@@ -42,9 +44,8 @@ $notice = match ($card['state']) {
         <button
             ref="recipe-import"
             variant="primary"
-            size="lg"
             font="semibold"
-            class="w-full"
+            class="h-12 w-full"
             :ios-icon="Ios::ArrowDownToLine"
             :android-icon="Android::Download"
             @tap="importRecipe"
@@ -52,9 +53,11 @@ $notice = match ($card['state']) {
             Import this recipe
         </button>
     @elseif ($card['state'] === 'importing')
-        <progress-bar ref="recipe-import-progress" indeterminate a11y-label="Importing" />
+        @unless (System::isIos())
+            <progress-bar ref="recipe-import-progress" indeterminate class="w-full" a11y-label="Importing" />
+        @endunless
         <text class="text-sm text-theme-on-surface-variant">Reading the recipe from {{ $card['host'] }}… this takes a few seconds.</text>
-        <button ref="recipe-import" variant="primary" size="lg" font="semibold" class="w-full" loading>
+        <button ref="recipe-import" variant="primary" font="semibold" class="h-12 w-full" loading>
             Importing
         </button>
     @elseif ($notice)
@@ -66,30 +69,30 @@ $notice = match ($card['state']) {
             <column class="flex-1 gap-1">
                 <text ref="recipe-import-title" font="semibold" class="text-base text-theme-on-surface">{{ $notice['title'] }}</text>
                 <text ref="recipe-import-message" class="text-sm text-theme-on-surface-variant">{{ $notice['message'] ?? $card['message'] }}</text>
-
-                @if ($card['state'] !== 'imported')
-                    <row class="w-full items-center gap-2 pt-2">
-                        @if ($card['state'] === 'no-recipe')
-                            <pressable ref="recipe-import-change-link" a11y-hint="Clears Source so you can paste another link" class="min-h-12 items-center justify-center rounded-full bg-theme-primary px-4" @tap="changeImportLink">
-                                <row class="items-center gap-1.5">
-                                    <icon :ios="Ios::Pencil" :android="Android::Edit" :size="16" class="text-theme-on-primary" />
-                                    <text font="semibold" class="text-base text-theme-on-primary">Change link</text>
-                                </row>
-                            </pressable>
-                        @else
-                            <pressable ref="recipe-import-retry" class="min-h-12 items-center justify-center rounded-full bg-theme-primary px-4" @tap="importRecipe">
-                                <row class="items-center gap-1.5">
-                                    <icon :ios="Ios::ArrowClockwise" :android="Android::Refresh" :size="16" class="text-theme-on-primary" />
-                                    <text font="semibold" class="text-base text-theme-on-primary">Try again</text>
-                                </row>
-                            </pressable>
-                        @endif
-                        <pressable ref="recipe-import-fill-in" class="min-h-12 items-center justify-center rounded-full border border-theme-outline bg-theme-surface px-4" @tap="fillInMyself">
-                            <text font="semibold" class="text-base text-theme-on-surface">Fill it in myself</text>
-                        </pressable>
-                    </row>
-                @endif
             </column>
         </row>
+
+        @if ($card['state'] !== 'imported')
+            <column class="w-full gap-2">
+                @if (in_array($card['state'], ['no-recipe', 'unreachable'], true))
+                    <pressable ref="recipe-import-change-link" a11y-hint="Clears Source so you can paste another link" class="min-h-12 w-full items-center justify-center rounded-full bg-theme-primary px-4" @tap="changeImportLink">
+                        <row class="items-center gap-1.5">
+                            <icon :ios="Ios::Pencil" :android="Android::Edit" :size="16" class="text-theme-on-primary" />
+                            <text font="semibold" class="text-base text-theme-on-primary">Change link</text>
+                        </row>
+                    </pressable>
+                @else
+                    <pressable ref="recipe-import-retry" class="min-h-12 w-full items-center justify-center rounded-full bg-theme-primary px-4" @tap="importRecipe">
+                        <row class="items-center gap-1.5">
+                            <icon :ios="Ios::ArrowClockwise" :android="Android::Refresh" :size="16" class="text-theme-on-primary" />
+                            <text font="semibold" class="text-base text-theme-on-primary">Try again</text>
+                        </row>
+                    </pressable>
+                @endif
+                <pressable ref="recipe-import-fill-in" class="min-h-12 w-full items-center justify-center rounded-full border border-theme-outline bg-theme-surface px-4" @tap="fillInMyself">
+                    <text font="semibold" class="text-base text-theme-on-surface">Fill it in myself</text>
+                </pressable>
+            </column>
+        @endif
     @endif
 </column>
