@@ -31,22 +31,29 @@ test('a shared recipe can be added to a team that deleted one with the same name
     expect($user->currentTeam->recipes()->sole())->slug->toBe('grandmas-pie-1');
 });
 
-test('guests can view a shared remix', function () {
+test('guests do not see remixes on a shared recipe', function () {
     $parent = Recipe::factory()->create(['name' => 'Grandma’s Pie']);
     $remix = Recipe::factory()->remixOf($parent)->shared()->create();
 
     $this->get(route('recipes.shared', $remix->share_token))
         ->assertOk()
         ->assertSee($remix->name)
-        ->assertDontSee('Remixed from');
+        ->assertDontSee('Remixed from')
+        ->assertDontSee('Remixes')
+        ->assertDontSee('No remixes yet');
 });
 
-test('a shared remix hides the original from people outside its team', function () {
+test('people from another team do not see remixes on a shared recipe', function () {
+    $user = User::factory()->create();
     $parent = Recipe::factory()->create(['name' => 'Grandma’s Pie']);
     $remix = Recipe::factory()->remixOf($parent)->shared()->create();
+    Recipe::factory()->for($user->currentTeam)->create(['name' => 'Our Pie', 'parent_id' => $remix->id]);
 
-    $this->actingAs(User::factory()->create())
+    $this->actingAs($user)
         ->get(route('recipes.shared', $remix->share_token))
         ->assertOk()
-        ->assertDontSee('Remixed from');
+        ->assertSee($remix->name)
+        ->assertDontSee('Remixed from')
+        ->assertDontSee('Remixes')
+        ->assertDontSee('Our Pie');
 });
