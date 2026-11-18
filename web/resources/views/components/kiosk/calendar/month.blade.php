@@ -1,6 +1,6 @@
 <div class="flex min-h-0 flex-1 flex-col overflow-hidden">
     <div class="w-full shrink-0 bg-zinc-50 px-3 pt-2 text-sm font-semibold dark:bg-zinc-800">
-        {{ $this->month->format('F') }}
+        {{ $this->month->format('F Y') }}
     </div>
     <div class="grid min-h-0 flex-1 grid-rows-[auto_1fr] overflow-hidden">
         <div class="grid shrink-0 grid-cols-7 border-b border-zinc-100 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800">

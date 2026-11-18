@@ -258,14 +258,25 @@ test('month calendar labels the month being viewed', function () {
     Livewire::actingAs($user)
         ->test('pages::kiosk.calendar')
         ->set('format', 'month')
-        ->assertSee('November')
+        ->assertSee('November 2026')
+        ->call('previous')
+        ->assertSee('October 2026')
+        ->assertDontSee('November 2026')
         ->call('next')
-        ->assertSee('December')
-        ->assertDontSee('November')
-        ->call('previous')
-        ->call('previous')
-        ->assertSee('October')
-        ->assertDontSee('November');
+        ->call('next')
+        ->assertSee('December 2026')
+        ->assertDontSee('November 2026')
+        ->call('next')
+        ->assertSee('January 2027')
+        ->assertDontSee('December 2026')
+        ->set('format', 'week')
+        ->assertSee('Jan 17')
+        ->assertDontSee('January 2027')
+        ->assertDontSee('November 2026')
+        ->set('format', 'day')
+        ->assertSee('January 17')
+        ->assertDontSee('January 2027')
+        ->assertDontSee('November 2026');
 });
 
 test('month calendar shows two events before overflow count', function () {
