@@ -132,22 +132,30 @@ trait MovesItemToTeam
 
             return;
         } catch (RequestException $exception) {
-            $this->teamMoveFailed(match ($exception->getResponse()->status()) {
-                403 => 'You no longer have permission to move things in '.($this->teamName() ?? 'this team').'.',
-                404 => $item['name'].' isn’t in '.($this->teamName() ?? 'this team').' on Sunny anymore.',
-                422 => $teams[$to->id].' isn’t one of your teams anymore.',
-                429 => 'Too many attempts. Please wait before trying again.',
-                default => 'Sunny couldn’t move it right now.',
-            });
-            app(SunnySyncCoordinator::class)->dispatch();
-
-            return;
+            $status = $exception->getResponse()->status();
+            $moved = $status === 404 && $this->arrivedInTeam($item['id'], $to->id) ? [$item['id']] : null;
         } catch (AuthenticationException|RuntimeException) {
             $this->teamMoveFailed('Unable to read your saved login. Unlock your device and try again.');
 
             return;
         } catch (JsonException) {
             $moved = null;
+        }
+
+        if (isset($status) && $moved === null) {
+            $this->teamMoveFailed(match ($status) {
+                403 => 'You no longer have permission to move things in '.($this->teamName() ?? 'this team').'.',
+                404 => $item['name'].' isn’t in '.($this->teamName() ?? 'this team').' on Sunny anymore.',
+                422 => $teams[$to->id].' isn’t one of your teams anymore.',
+                429 => 'Too many attempts. Please wait before trying again.',
+                default => 'Sunny couldn’t move it right now.',
+            });
+
+            if ($status !== 404) {
+                app(SunnySyncCoordinator::class)->dispatch();
+            }
+
+            return;
         }
 
         if ($moved === null) {
@@ -240,6 +248,17 @@ trait MovesItemToTeam
         if (is_array($notice)) {
             Toast::success('Moved to '.$notice['team'], action: new ToastAction('Switch', 'switch-team', ['team_id' => $notice['team_id'], 'item_id' => $notice['item_id']]));
         }
+    }
+
+    protected function arrivedInTeam(int $itemId, int $teamId): bool
+    {
+        try {
+            app(SunnySyncCoordinator::class)->sync();
+        } catch (AuthenticationException|RequestException|FatalRequestException|JsonException|ValidationException|RuntimeException) {
+            return false;
+        }
+
+        return Item::query()->forCurrentServer()->whereKey($itemId)->value('team_id') === $teamId;
     }
 
     protected function teamMoveFailed(string $message): void

@@ -193,7 +193,7 @@ it('moves nothing while offline and lets them try again', function (): void {
 
 it('explains when Sunny refuses the move', function (int $status, string $message): void {
     addTeamsToMoveTo();
-    Saloon::fake([MoveItemRequest::class => MockResponse::make([], $status)]);
+    Saloon::fake([MoveItemRequest::class => MockResponse::make([], $status), SyncRequest::class => MockResponse::make([], 503)]);
 
     Native::visit('/inventory/12')
         ->tap('Move to another team')
@@ -211,6 +211,33 @@ it('explains when Sunny refuses the move', function (int $status, string $messag
     'gone' => [404, 'Holiday decorations isn’t in Family on Sunny anymore.'],
     'not their team' => [422, 'Grandma’s House isn’t one of your teams anymore.'],
 ]);
+
+it('treats a move that already reached Sunny as done', function (): void {
+    addTeamsToMoveTo();
+    $snapshot = json_decode(file_get_contents(base_path('tests/Fixtures/sunny.json')), true, flags: JSON_THROW_ON_ERROR);
+    foreach (['recipes', 'items', 'checklists', 'routines'] as $type) {
+        $snapshot[$type] = array_map(fn (array $record): array => $record + ['team_id' => 1], $snapshot[$type]);
+    }
+    $snapshot['items'] = array_map(fn (array $item): array => $item['id'] === 13 ? [...$item, 'team_id' => 3, 'parent_id' => null] : $item, $snapshot['items']);
+    Saloon::fake([
+        MoveItemRequest::class => MockResponse::make([], 404),
+        SyncRequest::class => MockResponse::make([
+            ...$snapshot,
+            'routine_occurrences' => sunnyRoutineOccurrences(),
+            'teams' => [['id' => 1, 'name' => 'Family', 'slug' => 'family'], ['id' => 2, 'name' => 'Lake Cabin', 'slug' => 'lake-cabin'], ['id' => 3, 'name' => 'Grandma’s House', 'slug' => 'grandmas-house']],
+            'synced_at' => now()->toIso8601String(),
+        ]),
+    ]);
+
+    Native::visit('/inventory/13')
+        ->tap('Move to another team')
+        ->tap('item-team-move-submit')
+        ->assertReplacedWith('/inventory/12')
+        ->follow()
+        ->assertToastShown(fn (array $params): bool => $params['message'] === 'Moved to Grandma’s House');
+
+    expect(Item::find(13)->team_id)->toBe(3);
+});
 
 it('sends unsent changes inside it before moving', function (): void {
     addTeamsToMoveTo();
