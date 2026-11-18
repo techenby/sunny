@@ -188,5 +188,5 @@ it('keeps a recipe’s edit action above the tab bar', function () {
 
     Native::visit('/recipes/1')
         ->assertElement('bottom_bar', fn (array $node): bool => str_contains(json_encode($node), '"ref":"edit-recipe"'))
-        ->assertMissingElement('top_bar_action');
+        ->assertMissingElement('top_bar', fn (array $node): bool => str_contains(json_encode($node), 'top_bar_action'));
 });

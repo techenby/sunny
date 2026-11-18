@@ -8,12 +8,41 @@
 <native:top-bar :title="$recipe ? '' : 'Recipe'" back />
 
 @if ($recipe)
-    @include('native.action-bottom-bar', ['actions' => array_filter([
-        $this->ingredients || $this->instructions
-            ? ['ref' => 'cook-recipe', 'label' => 'Cook', 'ios' => Ios::Flame, 'android' => Android::LocalFireDepartment, 'url' => '/recipes/'.$recipe['id'].'/cook']
-            : null,
-        ['ref' => 'edit-recipe', 'label' => 'Edit', 'ios' => Ios::Pencil, 'android' => Android::Edit, 'url' => '/recipes/'.$recipe['id'].'/edit'],
-    ])])
+    <native:bottom-bar>
+        <column class="w-full gap-3 px-4 pb-2">
+            <row class="w-full items-center justify-end gap-3">
+                <pressable
+                    ref="edit-recipe"
+                    a11y-label="Edit"
+                    class="h-12 w-12 items-center justify-center rounded-full glass android:bg-theme-surface"
+                    @navigate('/recipes/'.$recipe['id'].'/edit')
+                >
+                    <native:icon :ios="Ios::Pencil" :android="Android::Edit" :size="22" class="text-theme-on-surface" />
+                </pressable>
+                @if ($this->ingredients || $this->instructions)
+                    <pressable
+                        ref="cook-recipe"
+                        a11y-label="Cook"
+                        class="min-h-12 flex-1 items-center justify-center rounded-full bg-theme-primary px-5"
+                        @navigate('/recipes/'.$recipe['id'].'/cook')
+                    >
+                        <row class="items-center gap-2">
+                            <native:icon :ios="Ios::Flame" :android="Android::LocalFireDepartment" :size="18" class="text-theme-on-primary" />
+                            <text font="semibold" class="text-lg text-theme-on-primary">Cook</text>
+                        </row>
+                    </pressable>
+                @endif
+                <pressable
+                    ref="recipe-more"
+                    a11y-label="More"
+                    class="h-12 w-12 items-center justify-center rounded-full glass android:bg-theme-surface"
+                    :menu="$this->moreMenu()"
+                >
+                    <native:icon :ios="Ios::Ellipsis" :android="Android::MoreHoriz" :size="22" class="text-theme-on-surface" />
+                </pressable>
+            </row>
+        </column>
+    </native:bottom-bar>
 
     <scroll-view ref="recipe-detail" fill class="bg-theme-background">
         <column class="w-full gap-6 px-4 pt-2 pb-8">
@@ -198,12 +227,12 @@
                                     :a11y-label="$related['name']"
                                     class="w-full px-4 py-3"
                                 >
-                                    <row class="w-full items-start gap-3">
+                                    <row class="w-full items-center gap-3">
                                         <column class="h-9 w-9 items-center justify-center rounded-full bg-theme-primary">
                                             <icon :ios="Ios::ForkKnife" :android="Android::Restaurant" :size="16" class="text-theme-on-primary" />
                                         </column>
                                         <x-ui.heading class="flex-1">{{ $related['name'] }}</x-ui.heading>
-                                        <icon :ios="Ios::ChevronRight" :android="Android::ChevronRight" :size="14" class="self-center text-theme-on-surface-variant" />
+                                        <icon :ios="Ios::ChevronRight" :android="Android::ChevronRight" :size="14" class="text-theme-on-surface-variant" />
                                     </row>
                                 </pressable>
                                 @unless ($loop->last)

@@ -8,6 +8,7 @@
         'submitLabel' => 'Update recipe',
         'tagRows' => $this->tagRows,
         'importCard' => $this->importCard,
+        'remixOf' => $this->remixOf,
     ])
 @else
     <x-ui.not-found ref="edit-recipe-missing" thing="recipe" class="ios:bg-theme-grouped-background" />
