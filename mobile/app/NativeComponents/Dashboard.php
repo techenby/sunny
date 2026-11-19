@@ -7,6 +7,7 @@ use App\Concerns\AnswersInvitations;
 use App\Concerns\ChecksSunnySync;
 use App\Concerns\ShowsCalendarEvents;
 use App\Enums\ItemType;
+use App\Http\Integrations\Sunny\EmailVerificationRequired;
 use App\Http\Integrations\Sunny\SunnyStore;
 use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Http\Integrations\Sunny\SunnyTeam;
@@ -23,6 +24,7 @@ use JsonException;
 use Native\Mobile\Attributes\Computed;
 use Native\Mobile\Attributes\On;
 use Native\Mobile\Events\Alert\ButtonPressed;
+use Native\Mobile\Facades\Device;
 use Native\Mobile\Facades\Dialog;
 use RuntimeException;
 use Saloon\Exceptions\Request\FatalRequestException;
@@ -51,6 +53,14 @@ class Dashboard extends Component
         $this->refreshCalendar();
     }
 
+    #[Computed]
+    public function verifyEmailBy(): ?string
+    {
+        $dueAt = app(SunnyStore::class)->emailVerificationDueAt();
+
+        return $dueAt?->isFuture() ? $dueAt->setTimezone(Device::getTimezone() ?? config('app.timezone'))->format('F j') : null;
+    }
+
     /**
      * @return array<int, string>
      */
@@ -67,7 +77,7 @@ class Dashboard extends Component
 
         try {
             app(SunnySyncCoordinator::class)->sync();
-        } catch (AuthenticationException|RequestException|FatalRequestException|JsonException|ValidationException|RuntimeException $exception) {
+        } catch (AuthenticationException|EmailVerificationRequired|RequestException|FatalRequestException|JsonException|ValidationException|RuntimeException $exception) {
             $this->syncFailed($exception::class);
 
             return;
@@ -185,7 +195,7 @@ class Dashboard extends Component
 
     private function refreshLocalData(): void
     {
-        unset($this->recentRecipes, $this->recentItems, $this->teamOptions, $this->invitations, $this->calendarSnapshot, $this->calendarFeeds, $this->comingUp);
+        unset($this->verifyEmailBy, $this->recentRecipes, $this->recentItems, $this->teamOptions, $this->invitations, $this->calendarSnapshot, $this->calendarFeeds, $this->comingUp);
     }
 
     protected function invitationsChanged(): void
@@ -206,6 +216,12 @@ class Dashboard extends Component
         if (is_a($exception, AuthenticationException::class, true) || is_a($exception, UnauthorizedException::class, true)) {
             rescue(fn () => app(DestroySession::class)->handle(), report: false);
             $this->replace('/login');
+
+            return;
+        }
+
+        if (is_a($exception, EmailVerificationRequired::class, true)) {
+            $this->replace('/verify-email');
 
             return;
         }

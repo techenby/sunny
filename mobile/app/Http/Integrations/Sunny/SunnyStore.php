@@ -193,7 +193,7 @@ class SunnyStore
             DB::table('calendar_snapshots')->delete();
             DB::table('sunny_sync_states')->delete();
         });
-        DB::table('sunny_accounts')->update(['name' => null, 'email' => null, 'email_verified_at' => null]);
+        DB::table('sunny_accounts')->update(['name' => null, 'email' => null, 'email_verified_at' => null, 'email_verification_grace_ends_at' => null]);
         Invitation::query()->delete();
         app(SunnyOutbox::class)->prunePhotos();
         app(SunnyThumbnails::class)->prune();
@@ -228,6 +228,31 @@ class SunnyStore
             'name' => $user['name'],
             'email' => $user['email'],
             'email_verified_at' => is_string($user['email_verified_at'] ?? null) ? CarbonImmutable::parse($user['email_verified_at']) : null,
+            'email_verification_grace_ends_at' => is_string($user['email_verification_grace_ends_at'] ?? null) ? CarbonImmutable::parse($user['email_verification_grace_ends_at']) : null,
+        ]);
+    }
+
+    public function emailVerificationDueAt(): ?CarbonImmutable
+    {
+        $account = DB::table('sunny_accounts')->where('server', self::server())->first();
+
+        if ($account === null || $account->email_verified_at !== null || $account->email_verification_grace_ends_at === null) {
+            return null;
+        }
+
+        return CarbonImmutable::parse($account->email_verification_grace_ends_at);
+    }
+
+    public function needsEmailVerification(): bool
+    {
+        return $this->emailVerificationDueAt()?->isPast() ?? false;
+    }
+
+    public function requireEmailVerification(): void
+    {
+        DB::table('sunny_accounts')->where('server', self::server())->update([
+            'email_verified_at' => null,
+            'email_verification_grace_ends_at' => now(),
         ]);
     }
 

@@ -41,7 +41,7 @@
                         <x-ui.badge size="sm" class="self-start">Not verified</x-ui.badge>
                         <text font="semibold" class="text-base text-theme-on-surface">{{ $emailChanged ? 'Verify your new email' : 'Verify your email' }}</text>
                         <x-ui.text size="sm">
-                            {{ $verificationSent ? 'We sent a link to '.$savedEmail.'. Tap it to confirm it’s yours.' : 'We haven’t sent anything yet. Send a link to '.$savedEmail.' and tap it to confirm it’s yours.' }}
+                            {{ $verificationSent ? 'We sent a link to '.$savedEmail.'. Tap it to confirm it’s yours.' : 'Check '.$savedEmail.' for a link from us and tap it to confirm it’s yours, or send a new one.' }}
                         </x-ui.text>
                     </column>
                 </row>
