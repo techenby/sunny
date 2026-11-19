@@ -45,6 +45,11 @@ function offlineResponse(): MockResponse
     return MockResponse::make()->throw(fn (PendingRequest $request) => new FatalRequestException(new RuntimeException('Could not resolve host'), $request));
 }
 
+function dayBarHolds(string ...$refs): Closure
+{
+    return fn (array $node): bool => ($node['ref'] ?? null) === 'day-bar' && array_column($node['children'], 'ref') === $refs;
+}
+
 function routineStepResponse(int $id, ?string $completedAt): MockResponse
 {
     return MockResponse::make(['data' => ['id' => $id, 'name' => 'Feed the cat', 'position' => 2, 'completed_at' => $completedAt, 'completed_by' => 7]]);
@@ -197,11 +202,10 @@ it('removes routines that are missing from a later download', function (): void 
 it('steps forward to tomorrow from what the phone keeps', function (): void {
     Native::visit('/today')
         ->assertDontSee('Take out trash')
-        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'back-to-today')
+        ->assertElement('row', dayBarHolds('previous-day', 'next-day'))
         ->tap('next-day')
         ->assertNavTitle('Tomorrow')
         ->assertSee(now()->addDay()->format('l, F j'))
-        ->assertSee(now()->addDay()->format('D, M j'))
         ->assertSee('Take out trash')
         ->assertDontSee('Get ready')
         ->tap('previous-day')
@@ -230,7 +234,7 @@ it('downloads yesterday’s routines from Sunny', function (): void {
         ->and(RoutineOccurrence::where('due_on', now()->subDay()->toDateString())->count())->toBe(1);
 });
 
-it('names the day being shown', function (string $today, int $offset, string $title, string $line, string $bar, string $detail): void {
+it('names the day being shown', function (string $today, int $offset, string $title, string $line): void {
     $this->travelTo($today.' 12:00');
     seedSunnyData();
     Saloon::fake([GetRoutineOccurrencesRequest::class => MockResponse::make(['data' => []])]);
@@ -243,17 +247,19 @@ it('names the day being shown', function (string $today, int $offset, string $ti
 
     $screen->assertNavTitle($title)
         ->assertElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'routines-date' && ($node['props']['text'] ?? null) === $line)
-        ->assertElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'day-label' && ($node['props']['text'] ?? null) === $bar)
-        ->assertElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'day-detail' && ($node['props']['text'] ?? null) === $detail);
+        ->assertMissingElement('text', fn (array $node): bool => in_array($node['ref'] ?? null, ['day-label', 'day-detail'], true));
 })->with([
-    'today' => ['2026-11-04', 0, 'Today', 'Wednesday, November 4', 'Today', 'Wed, Nov 4'],
-    'tomorrow' => ['2026-11-04', 1, 'Tomorrow', 'Thursday, November 5', 'Tomorrow', 'Thu, Nov 5'],
-    'yesterday' => ['2026-11-04', -1, 'Yesterday', 'Tuesday, November 3', 'Yesterday', 'Tue, Nov 3'],
-    'this week' => ['2026-11-04', -3, 'Sunday', 'November 1', 'Sun, Nov 1', '3 days ago'],
-    'next week' => ['2026-11-04', 6, 'Tuesday', 'November 10', 'Tue, Nov 10', 'in 6 days'],
-    'a week ago' => ['2026-11-04', -7, 'October 28', 'Wednesday', 'Wed, Oct 28', '7 days ago'],
-    'a week after tomorrow' => ['2026-11-04', 8, 'November 12', 'Thursday', 'Thu, Nov 12', 'in 8 days'],
-    'last year' => ['2027-01-03', -7, 'December 27', 'Sunday, 2026', 'Sun, Dec 27', '7 days ago'],
+    'today' => ['2026-11-04', 0, 'Today', 'Wednesday, November 4'],
+    'tomorrow' => ['2026-11-04', 1, 'Tomorrow', 'Thursday, November 5'],
+    'yesterday' => ['2026-11-04', -1, 'Yesterday', 'Tuesday, November 3'],
+    'this week' => ['2026-11-04', -3, 'Sunday', 'November 1 · 3 days ago'],
+    'two days ago' => ['2026-11-04', -2, 'Monday', 'November 2 · 2 days ago'],
+    'next week' => ['2026-11-04', 6, 'Tuesday', 'November 10 · in 6 days'],
+    'a week ago' => ['2026-11-04', -7, 'October 28', 'Wednesday · 7 days ago'],
+    'a week from today' => ['2026-11-04', 7, 'November 11', 'Wednesday · in 7 days'],
+    'a week after tomorrow' => ['2026-11-04', 8, 'November 12', 'Thursday · in 8 days'],
+    'last year' => ['2027-01-03', -7, 'December 27', 'Sunday, 2026 · 7 days ago'],
+    'next year' => ['2026-12-28', 8, 'January 5', 'Tuesday, 2027 · in 8 days'],
 ]);
 
 it('says when nothing was due on a past day', function (): void {
@@ -275,7 +281,8 @@ it('steps back no further than a week before today', function (): void {
     }
 
     $screen->assertSet('date', now()->subDays(7)->toDateString())
-        ->assertSee('7 days ago')
+        ->assertElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'routines-date' && str_ends_with($node['props']['text'] ?? '', ' · 7 days ago'))
+        ->assertElement('row', dayBarHolds('previous-day', 'back-to-today', 'next-day'))
         ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'previous-day')
         ->assertElement('column', fn (array $node): bool => ($node['ref'] ?? null) === 'previous-day' && ($node['style']['opacity'] ?? null) === 0.4)
         ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'next-day')
@@ -297,7 +304,8 @@ it('steps forward no further than a week after tomorrow', function (): void {
     }
 
     $screen->assertSet('date', now()->addDays(8)->toDateString())
-        ->assertSee('in 8 days')
+        ->assertElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'routines-date' && str_ends_with($node['props']['text'] ?? '', ' · in 8 days'))
+        ->assertElement('row', dayBarHolds('previous-day', 'back-to-today', 'next-day'))
         ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'next-day')
         ->assertElement('column', fn (array $node): bool => ($node['ref'] ?? null) === 'next-day' && ($node['style']['opacity'] ?? null) === 0.4)
         ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'previous-day')
@@ -316,18 +324,34 @@ it('has no calendar for jumping to a day', function (): void {
         ->assertMissingElement('date_picker');
 });
 
-it('goes back to today in one tap', function (): void {
+it('goes back to today in one tap from either side', function (): void {
     Saloon::fake([GetRoutineOccurrencesRequest::class => routineDayResponse(now()->subDays(2)->toDateString())]);
 
     Native::visit('/today')
+        ->assertElement('row', dayBarHolds('previous-day', 'next-day'))
         ->tap('previous-day')
         ->tap('previous-day')
         ->assertNavTitle(now()->subDays(2)->format('l'))
+        ->assertElement('row', dayBarHolds('previous-day', 'back-to-today', 'next-day'))
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'back-to-today'
+            && ($node['props']['a11y_label'] ?? null) === 'Back to today')
+        ->assertSee('Today')
+        ->assertAccessible()
         ->tap('back-to-today')
         ->assertNavTitle('Today')
         ->assertSet('date', '')
         ->assertSee('Bedtime')
-        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'back-to-today');
+        ->assertElement('row', dayBarHolds('previous-day', 'next-day'))
+        ->tap('next-day')
+        ->tap('next-day')
+        ->tap('next-day')
+        ->assertNavTitle(now()->addDays(3)->format('l'))
+        ->assertElement('row', dayBarHolds('previous-day', 'back-to-today', 'next-day'))
+        ->tap('back-to-today')
+        ->assertNavTitle('Today')
+        ->assertSet('date', '')
+        ->assertSee('Bedtime')
+        ->assertElement('row', dayBarHolds('previous-day', 'next-day'));
 });
 
 it('ticks a step off on a past day straight away', function (): void {
@@ -554,7 +578,7 @@ it('shows that other days need a connection when offline', function (): void {
         ->assertSee('You’re offline')
         ->assertSee('Your phone only keeps today and tomorrow. Connect to see '.now()->subDays(2)->format('l').'’s routines and tick things off.')
         ->assertSee('Try again')
-        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'back-to-today')
+        ->assertElement('row', dayBarHolds('previous-day', 'next-day'))
         ->assertAccessible();
 
     Saloon::fake([GetRoutineOccurrencesRequest::class => routineDayResponse(now()->subDays(2)->toDateString())]);

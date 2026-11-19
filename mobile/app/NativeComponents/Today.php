@@ -75,7 +75,7 @@ class Today extends Component
     }
 
     /**
-     * @return array{title: string, date: string, bar: string, barDetail: string, possessive: string, empty: string, emptyDetail: string}
+     * @return array{title: string, date: string, possessive: string, empty: string, emptyDetail: string}
      */
     #[Computed]
     public function labels(): array
@@ -84,7 +84,7 @@ class Today extends Component
         $today = $this->today();
 
         if ($day === null || $today === null) {
-            return ['title' => 'Today', 'date' => '', 'bar' => 'Today', 'barDetail' => '', 'possessive' => 'today’s', 'empty' => 'No routines today', 'emptyDetail' => ''];
+            return ['title' => 'Today', 'date' => '', 'possessive' => 'today’s', 'empty' => 'No routines today', 'emptyDetail' => ''];
         }
 
         $offset = (int) round($today->diffInDays($day));
@@ -96,18 +96,16 @@ class Today extends Component
         };
         $nearby = abs($offset) < 7;
         $title = $named ?? ($nearby ? $day->format('l') : $day->format('F j'));
-        $days = abs($offset) === 1 ? '1 day' : abs($offset).' days';
+        $relative = $offset < 0 ? abs($offset).' days ago' : 'in '.$offset.' days';
 
         return [
             'title' => $title,
             'date' => match (true) {
                 $named !== null => $day->format('l, F j'),
-                $nearby => $day->format('F j'),
-                $day->year === $today->year => $day->format('l'),
-                default => $day->format('l, Y'),
+                $nearby => $day->format('F j').' · '.$relative,
+                $day->year === $today->year => $day->format('l').' · '.$relative,
+                default => $day->format('l, Y').' · '.$relative,
             },
-            'bar' => $named ?? $day->format('D, M j'),
-            'barDetail' => $named !== null ? $day->format('D, M j') : ($offset < 0 ? $days.' ago' : 'in '.$days),
             'possessive' => ($named !== null ? strtolower($named) : $title).'’s',
             'empty' => $named !== null ? 'No routines '.strtolower($named) : 'No routines on '.$title,
             'emptyDetail' => match (true) {

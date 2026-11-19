@@ -14,7 +14,21 @@
 </native:top-bar>
 
 <native:bottom-bar>
-    <column class="w-full items-end gap-2 px-4 pb-2">
+    <row ref="day-bar" class="w-full items-center justify-between gap-3 px-4 pb-2">
+        @if ($this->canGoBack)
+            <pressable
+                ref="previous-day"
+                a11y-label="Previous day"
+                class="h-12 w-12 items-center justify-center rounded-full glass android:bg-theme-surface"
+                @tap="previousDay"
+            >
+                <native:icon :ios="Ios::ChevronLeft" :android="Android::ChevronLeft" :size="22" class="text-theme-on-surface" />
+            </pressable>
+        @else
+            <column ref="previous-day" class="h-12 w-12 items-center justify-center rounded-full glass android:bg-theme-surface opacity-40">
+                <native:icon :ios="Ios::ChevronLeft" :android="Android::ChevronLeft" :size="22" class="text-theme-on-surface" />
+            </column>
+        @endif
         @unless ($this->isToday || $loadError)
             <pressable
                 ref="back-to-today"
@@ -28,41 +42,21 @@
                 </row>
             </pressable>
         @endunless
-        <row ref="day-stepper" class="min-h-12 w-full items-center gap-2 rounded-full px-1 glass android:bg-theme-surface">
-            @if ($this->canGoBack)
-                <pressable
-                    ref="previous-day"
-                    a11y-label="Previous day"
-                    class="h-10 w-10 items-center justify-center rounded-full bg-theme-surface-variant"
-                    @tap="previousDay"
-                >
-                    <native:icon :ios="Ios::ChevronLeft" :android="Android::ChevronLeft" :size="16" class="text-theme-on-surface" />
-                </pressable>
-            @else
-                <column ref="previous-day" class="h-10 w-10 items-center justify-center rounded-full bg-theme-surface-variant opacity-40">
-                    <native:icon :ios="Ios::ChevronLeft" :android="Android::ChevronLeft" :size="16" class="text-theme-on-surface" />
-                </column>
-            @endif
-            <column class="flex-1 items-center">
-                <text ref="day-label" font="semibold" class="w-full text-center text-base text-theme-on-surface">{{ $this->labels['bar'] }}</text>
-                <text ref="day-detail" class="w-full text-center text-xs text-theme-on-surface-variant">{{ $this->labels['barDetail'] }}</text>
+        @if ($this->canGoForward)
+            <pressable
+                ref="next-day"
+                a11y-label="Next day"
+                class="h-12 w-12 items-center justify-center rounded-full glass android:bg-theme-surface"
+                @tap="nextDay"
+            >
+                <native:icon :ios="Ios::ChevronRight" :android="Android::ChevronRight" :size="22" class="text-theme-on-surface" />
+            </pressable>
+        @else
+            <column ref="next-day" class="h-12 w-12 items-center justify-center rounded-full glass android:bg-theme-surface opacity-40">
+                <native:icon :ios="Ios::ChevronRight" :android="Android::ChevronRight" :size="22" class="text-theme-on-surface" />
             </column>
-            @if ($this->canGoForward)
-                <pressable
-                    ref="next-day"
-                    a11y-label="Next day"
-                    class="h-10 w-10 items-center justify-center rounded-full bg-theme-surface-variant"
-                    @tap="nextDay"
-                >
-                    <native:icon :ios="Ios::ChevronRight" :android="Android::ChevronRight" :size="16" class="text-theme-on-surface" />
-                </pressable>
-            @else
-                <column ref="next-day" class="h-10 w-10 items-center justify-center rounded-full bg-theme-surface-variant opacity-40">
-                    <native:icon :ios="Ios::ChevronRight" :android="Android::ChevronRight" :size="16" class="text-theme-on-surface" />
-                </column>
-            @endif
-        </row>
-    </column>
+        @endif
+    </row>
 </native:bottom-bar>
 
 <scroll-view ref="routines" fill class="bg-theme-background">
