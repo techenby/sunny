@@ -168,7 +168,7 @@
                                 </row>
                             </pressable>
                             @unless ($loop->last || $this->isHeading($this->ingredients[$index + 1]))
-                                <divider class="ml-14" />
+                                <divider class="ml-[50]" />
                             @endunless
                         @endforeach
                     </column>

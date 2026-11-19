@@ -130,7 +130,7 @@
                             @endforeach
                         </row>
                         @unless ($loop->last)
-                            <divider class="ml-14" />
+                            <divider class="ml-[52]" />
                         @endunless
                     @endforeach
                 </column>
@@ -187,7 +187,7 @@
                             </pressable>
                         </row>
                         @unless ($loop->last)
-                            <divider class="ml-14" />
+                            <divider class="ml-[52]" />
                         @endunless
                     @endforeach
                 </column>

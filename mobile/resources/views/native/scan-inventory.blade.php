@@ -145,7 +145,7 @@
                             </pressable>
                         </row>
                         @if (! $loop->last)
-                            <divider key="candidate-{{ $candidate['id'] }}-divider" class="ml-20" />
+                            <divider key="candidate-{{ $candidate['id'] }}-divider" class="ml-[84]" />
                         @endif
                     @endforeach
                 </column>

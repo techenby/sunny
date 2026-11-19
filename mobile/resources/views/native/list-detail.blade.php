@@ -271,7 +271,7 @@
                             </pressable>
                         </row>
                         @unless ($loop->last)
-                            <divider class="ml-14" />
+                            <divider class="ml-[50]" />
                         @endunless
                     @endforeach
                 </column>
