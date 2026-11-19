@@ -23,6 +23,8 @@ use Illuminate\Support\Facades\DB;
 
 class SunnyStore
 {
+    public const ROUTINE_DAYS_KEPT = 7;
+
     public function lastSyncedAt(): ?string
     {
         return DB::table('sunny_sync_states')->where('server', self::server())->value('synced_at');
@@ -294,7 +296,7 @@ class SunnyStore
         foreach ($teams as $team) {
             $today = $team->today();
             $dates = $occurrences->where('routine.team_id', $team->id)->pluck('due_on')->push($today->toDateString(), $today->addDay()->toDateString());
-            [$oldest, $newest] = [$today->subDays(7)->toDateString(), $today->addDays(8)->toDateString()];
+            [$oldest, $newest] = [$today->subDays(self::ROUTINE_DAYS_KEPT)->toDateString(), $today->addDays(self::ROUTINE_DAYS_KEPT + 1)->toDateString()];
 
             $replaced = $replaced->merge(RoutineOccurrence::query()->where('team_id', $team->id)->where(fn (Builder $query) => $query
                 ->whereIn('due_on', $dates->unique())

@@ -28,8 +28,8 @@
                 </row>
             </pressable>
         @endunless
-        <row class="w-full items-center gap-3">
-            <row ref="day-stepper" class="min-h-12 flex-1 items-center gap-2 rounded-full px-1 glass android:bg-theme-surface">
+        <row ref="day-stepper" class="min-h-12 w-full items-center gap-2 rounded-full px-1 glass android:bg-theme-surface">
+            @if ($this->canGoBack)
                 <pressable
                     ref="previous-day"
                     a11y-label="Previous day"
@@ -38,10 +38,16 @@
                 >
                     <native:icon :ios="Ios::ChevronLeft" :android="Android::ChevronLeft" :size="16" class="text-theme-on-surface" />
                 </pressable>
-                <column class="flex-1 items-center">
-                    <text ref="day-label" font="semibold" class="text-base text-theme-on-surface">{{ $this->labels['bar'] }}</text>
-                    <text ref="day-detail" class="text-xs text-theme-on-surface-variant">{{ $this->labels['barDetail'] }}</text>
+            @else
+                <column ref="previous-day" class="h-10 w-10 items-center justify-center rounded-full bg-theme-surface-variant opacity-40">
+                    <native:icon :ios="Ios::ChevronLeft" :android="Android::ChevronLeft" :size="16" class="text-theme-on-surface" />
                 </column>
+            @endif
+            <column class="flex-1 items-center">
+                <text ref="day-label" font="semibold" class="w-full text-center text-base text-theme-on-surface">{{ $this->labels['bar'] }}</text>
+                <text ref="day-detail" class="w-full text-center text-xs text-theme-on-surface-variant">{{ $this->labels['barDetail'] }}</text>
+            </column>
+            @if ($this->canGoForward)
                 <pressable
                     ref="next-day"
                     a11y-label="Next day"
@@ -50,42 +56,14 @@
                 >
                     <native:icon :ios="Ios::ChevronRight" :android="Android::ChevronRight" :size="16" class="text-theme-on-surface" />
                 </pressable>
-            </row>
-            <pressable
-                ref="pick-day"
-                a11y-label="Pick a day"
-                class="h-12 w-12 items-center justify-center rounded-full glass android:bg-theme-surface"
-                @tap="openDayPicker"
-            >
-                <native:icon :ios="Ios::Calendar" :android="Android::CalendarMonth" :size="22" class="text-theme-on-surface" />
-            </pressable>
+            @else
+                <column ref="next-day" class="h-10 w-10 items-center justify-center rounded-full bg-theme-surface-variant opacity-40">
+                    <native:icon :ios="Ios::ChevronRight" :android="Android::ChevronRight" :size="16" class="text-theme-on-surface" />
+                </column>
+            @endif
         </row>
     </column>
 </native:bottom-bar>
-
-<native:bottom-sheet ref="day-picker-sheet" :visible="$choosingDay" @dismiss="closeDayPicker" detents="medium,large">
-    @if ($choosingDay)
-        <column fill class="bg-theme-background">
-            <row class="w-full items-center px-4 pt-4 pb-2">
-                <pressable ref="day-picker-cancel" class="min-h-12 w-20 justify-center" @tap="closeDayPicker">
-                    <text class="text-lg text-theme-primary-text">Cancel</text>
-                </pressable>
-                <text font="semibold" class="flex-1 text-center text-lg text-theme-on-surface">Pick a day</text>
-                <column class="w-20" />
-            </row>
-            <native:date-picker
-                ref="day-picker"
-                a11y-label="Pick a day"
-                mode="date"
-                picker-style="inline"
-                :value="$date ?: now($this->timezone)->toDateString()"
-                :timezone="$this->timezone"
-                @change="pickDay"
-                class="w-full px-4"
-            />
-        </column>
-    @endif
-</native:bottom-sheet>
 
 <scroll-view ref="routines" fill class="bg-theme-background">
     <column class="w-full gap-6 px-4 pt-2 pb-8">

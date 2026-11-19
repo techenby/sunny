@@ -35,8 +35,6 @@ class Today extends Component
 
     public string $loadError = '';
 
-    public bool $choosingDay = false;
-
     public ?int $justTicked = null;
 
     /**
@@ -129,22 +127,32 @@ class Today extends Component
     }
 
     #[Computed]
-    public function timezone(): string
+    public function canGoBack(): bool
     {
-        return ($this->today() ?? CarbonImmutable::now())->getTimezone()->getName();
+        $day = $this->day();
+
+        return $day !== null && $day->greaterThan($this->today()->subDays(SunnyStore::ROUTINE_DAYS_KEPT));
+    }
+
+    #[Computed]
+    public function canGoForward(): bool
+    {
+        $day = $this->day();
+
+        return $day !== null && $day->lessThan($this->today()->addDays(SunnyStore::ROUTINE_DAYS_KEPT + 1));
     }
 
     public function previousDay(): void
     {
-        if ($day = $this->day()) {
-            $this->showDay($day->subDay());
+        if ($this->canGoBack) {
+            $this->showDay($this->day()->subDay());
         }
     }
 
     public function nextDay(): void
     {
-        if ($day = $this->day()) {
-            $this->showDay($day->addDay());
+        if ($this->canGoForward) {
+            $this->showDay($this->day()->addDay());
         }
     }
 
@@ -153,28 +161,6 @@ class Today extends Component
         if ($today = $this->today()) {
             $this->showDay($today);
         }
-    }
-
-    public function openDayPicker(): void
-    {
-        $this->choosingDay = true;
-    }
-
-    public function closeDayPicker(): void
-    {
-        $this->choosingDay = false;
-    }
-
-    public function pickDay(string $value): void
-    {
-        $this->choosingDay = false;
-        $today = $this->today();
-
-        if ($today === null || ! preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
-            return;
-        }
-
-        $this->showDay(CarbonImmutable::parse($value, $today->getTimezone()));
     }
 
     public function retry(): void
@@ -217,7 +203,7 @@ class Today extends Component
 
     protected function refreshLocalSyncedData(): void
     {
-        unset($this->routines, $this->labels, $this->isToday, $this->timezone);
+        unset($this->routines, $this->labels, $this->isToday, $this->canGoBack, $this->canGoForward);
     }
 
     public function render(): View

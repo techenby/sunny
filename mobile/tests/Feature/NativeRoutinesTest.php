@@ -230,25 +230,30 @@ it('downloads yesterday’s routines from Sunny', function (): void {
         ->and(RoutineOccurrence::where('due_on', now()->subDay()->toDateString())->count())->toBe(1);
 });
 
-it('names the day being shown', function (string $date, string $title, string $line, string $bar, string $detail): void {
-    $this->travelTo('2026-11-04 12:00');
+it('names the day being shown', function (string $today, int $offset, string $title, string $line, string $bar, string $detail): void {
+    $this->travelTo($today.' 12:00');
     seedSunnyData();
     Saloon::fake([GetRoutineOccurrencesRequest::class => MockResponse::make(['data' => []])]);
 
-    Native::visit('/today')
-        ->call('pickDay', $date)
-        ->assertNavTitle($title)
+    $screen = Native::visit('/today');
+
+    for ($step = 0; $step < abs($offset); $step++) {
+        $screen->tap($offset < 0 ? 'previous-day' : 'next-day');
+    }
+
+    $screen->assertNavTitle($title)
         ->assertElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'routines-date' && ($node['props']['text'] ?? null) === $line)
         ->assertElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'day-label' && ($node['props']['text'] ?? null) === $bar)
         ->assertElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'day-detail' && ($node['props']['text'] ?? null) === $detail);
 })->with([
-    'today' => ['2026-11-04', 'Today', 'Wednesday, November 4', 'Today', 'Wed, Nov 4'],
-    'tomorrow' => ['2026-11-05', 'Tomorrow', 'Thursday, November 5', 'Tomorrow', 'Thu, Nov 5'],
-    'yesterday' => ['2026-11-03', 'Yesterday', 'Tuesday, November 3', 'Yesterday', 'Tue, Nov 3'],
-    'this week' => ['2026-11-01', 'Sunday', 'November 1', 'Sun, Nov 1', '3 days ago'],
-    'next week' => ['2026-11-10', 'Tuesday', 'November 10', 'Tue, Nov 10', 'in 6 days'],
-    'further off' => ['2026-10-12', 'October 12', 'Monday', 'Mon, Oct 12', '23 days ago'],
-    'another year' => ['2025-12-25', 'December 25', 'Thursday, 2025', 'Thu, Dec 25', '314 days ago'],
+    'today' => ['2026-11-04', 0, 'Today', 'Wednesday, November 4', 'Today', 'Wed, Nov 4'],
+    'tomorrow' => ['2026-11-04', 1, 'Tomorrow', 'Thursday, November 5', 'Tomorrow', 'Thu, Nov 5'],
+    'yesterday' => ['2026-11-04', -1, 'Yesterday', 'Tuesday, November 3', 'Yesterday', 'Tue, Nov 3'],
+    'this week' => ['2026-11-04', -3, 'Sunday', 'November 1', 'Sun, Nov 1', '3 days ago'],
+    'next week' => ['2026-11-04', 6, 'Tuesday', 'November 10', 'Tue, Nov 10', 'in 6 days'],
+    'a week ago' => ['2026-11-04', -7, 'October 28', 'Wednesday', 'Wed, Oct 28', '7 days ago'],
+    'a week after tomorrow' => ['2026-11-04', 8, 'November 12', 'Thursday', 'Thu, Nov 12', 'in 8 days'],
+    'last year' => ['2027-01-03', -7, 'December 27', 'Sunday, 2026', 'Sun, Dec 27', '7 days ago'],
 ]);
 
 it('says when nothing was due on a past day', function (): void {
@@ -260,28 +265,55 @@ it('says when nothing was due on a past day', function (): void {
         ->assertSee('No routines were scheduled on this day.');
 });
 
-it('jumps to a day picked from the calendar', function (): void {
-    $date = now()->subDays(20);
-    Saloon::fake([GetRoutineOccurrencesRequest::class => routineDayResponse($date->toDateString(), 'Spring clean')]);
+it('steps back no further than a week before today', function (): void {
+    Saloon::fake([GetRoutineOccurrencesRequest::class => MockResponse::make(['data' => []])]);
+    $screen = Native::visit('/today');
 
-    Native::visit('/today')
-        ->tap('pick-day')
-        ->assertSet('choosingDay', true)
-        ->pickDate('day-picker', $date)
-        ->assertSet('choosingDay', false)
-        ->assertSet('date', $date->toDateString())
-        ->assertNavTitle($date->format('F j'))
-        ->assertSee('Spring clean')
-        ->assertSee('20 days ago');
+    foreach (range(1, 7) as $step) {
+        $screen->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'previous-day')
+            ->tap('previous-day');
+    }
+
+    $screen->assertSet('date', now()->subDays(7)->toDateString())
+        ->assertSee('7 days ago')
+        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'previous-day')
+        ->assertElement('column', fn (array $node): bool => ($node['ref'] ?? null) === 'previous-day' && ($node['style']['opacity'] ?? null) === 0.4)
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'next-day')
+        ->assertAccessible()
+        ->call('previousDay')
+        ->assertSet('date', now()->subDays(7)->toDateString())
+        ->tap('back-to-today')
+        ->assertNavTitle('Today')
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'previous-day');
 });
 
-it('closes the calendar without changing the day', function (): void {
+it('steps forward no further than a week after tomorrow', function (): void {
+    Saloon::fake([GetRoutineOccurrencesRequest::class => MockResponse::make(['data' => []])]);
+    $screen = Native::visit('/today');
+
+    foreach (range(1, 8) as $step) {
+        $screen->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'next-day')
+            ->tap('next-day');
+    }
+
+    $screen->assertSet('date', now()->addDays(8)->toDateString())
+        ->assertSee('in 8 days')
+        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'next-day')
+        ->assertElement('column', fn (array $node): bool => ($node['ref'] ?? null) === 'next-day' && ($node['style']['opacity'] ?? null) === 0.4)
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'previous-day')
+        ->assertAccessible()
+        ->call('nextDay')
+        ->assertSet('date', now()->addDays(8)->toDateString())
+        ->tap('back-to-today')
+        ->assertNavTitle('Today')
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'next-day');
+});
+
+it('has no calendar for jumping to a day', function (): void {
     Native::visit('/today')
-        ->tap('pick-day')
-        ->tap('day-picker-cancel')
-        ->assertSet('choosingDay', false)
-        ->assertSet('date', '')
-        ->assertNavTitle('Today');
+        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'pick-day')
+        ->assertMissingElement('bottom_sheet')
+        ->assertMissingElement('date_picker');
 });
 
 it('goes back to today in one tap', function (): void {
