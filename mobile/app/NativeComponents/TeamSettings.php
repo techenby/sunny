@@ -11,6 +11,7 @@ use App\Http\Integrations\Sunny\SunnyTeams;
 use App\Http\Integrations\Sunny\SunnyTokenStore;
 use App\Models\Team;
 use App\Support\InvitationExpiry;
+use App\Support\Toast;
 use Carbon\CarbonImmutable;
 use DateTimeZone;
 use Illuminate\View\View;
@@ -185,7 +186,7 @@ class TeamSettings extends Component
         $this->offline = Network::status()?->connected === false;
 
         if ($this->offline) {
-            Dialog::toast('Still offline. Try again once you’re connected.');
+            Toast::error('Still offline. Try again once you’re connected.');
 
             return;
         }
@@ -231,7 +232,7 @@ class TeamSettings extends Component
 
         if ($this->updateTeam(['name' => $name])) {
             $this->showRename = false;
-            Dialog::toast('Renamed to '.$name);
+            Toast::success('Renamed to '.$name);
         }
     }
 
@@ -354,7 +355,7 @@ class TeamSettings extends Component
 
         if ($removed) {
             $this->memberId = null;
-            Dialog::toast('Removed '.$member['name']);
+            Toast::success('Removed '.$member['name']);
         }
     }
 
@@ -372,7 +373,7 @@ class TeamSettings extends Component
         );
 
         if ($left) {
-            Dialog::toast('You left '.$team->name);
+            Toast::success('You left '.$team->name);
             $this->back();
         }
     }
@@ -382,7 +383,7 @@ class TeamSettings extends Component
         $team = $this->team();
 
         if ($team?->slug && ! Browser::inApp(app(SunnyConnector::class)->siteUrl().'/settings/teams/'.rawurlencode($team->slug))) {
-            Dialog::toast('Unable to open the Sunny website. Please try again.');
+            Toast::error('Unable to open the Sunny website. Please try again.');
         }
     }
 
@@ -444,7 +445,7 @@ class TeamSettings extends Component
             return;
         }
 
-        Dialog::toast(self::failureMessage($problem, $response, $fallback));
+        Toast::error(self::failureMessage($problem, $response, $fallback));
     }
 
     private function refreshInvitations(): void

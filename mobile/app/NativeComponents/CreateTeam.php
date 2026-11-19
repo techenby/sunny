@@ -4,8 +4,8 @@ namespace App\NativeComponents;
 
 use App\Concerns\CallsSunnyOnline;
 use App\Http\Integrations\Sunny\SunnyTeams;
+use App\Support\Toast;
 use Illuminate\View\View;
-use Native\Mobile\Facades\Dialog;
 use Saloon\Http\Response;
 
 class CreateTeam extends Component
@@ -53,7 +53,7 @@ class CreateTeam extends Component
         $this->creating = false;
 
         if ($created) {
-            Dialog::toast('Created '.$name);
+            Toast::success('Created '.$name);
             $this->replace('/preferences/team');
         }
     }

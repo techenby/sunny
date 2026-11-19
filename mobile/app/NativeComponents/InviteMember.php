@@ -10,6 +10,7 @@ use App\Http\Integrations\Sunny\SunnyTeams;
 use App\Http\Integrations\Sunny\SunnyTokenStore;
 use App\Models\Team;
 use App\Support\InvitationExpiry;
+use App\Support\Toast;
 use Illuminate\View\View;
 use Native\Mobile\AsyncTask;
 use Native\Mobile\Attributes\On;
@@ -188,7 +189,7 @@ class InviteMember extends Component
             function (string $problem, ?Response $response) use ($team, $code): void {
                 if ($problem === 'offline') {
                     $this->offline = true;
-                    Dialog::toast('You’re offline. Cancelling an invitation needs a connection.');
+                    Toast::error('You’re offline. Cancelling an invitation needs a connection.');
 
                     return;
                 }
@@ -199,7 +200,7 @@ class InviteMember extends Component
                     return;
                 }
 
-                Dialog::toast(self::failureMessage($problem, $response, 'Sunny couldn’t cancel the invitation right now.'));
+                Toast::error(self::failureMessage($problem, $response, 'Sunny couldn’t cancel the invitation right now.'));
             },
         );
 
@@ -208,7 +209,7 @@ class InviteMember extends Component
                 $this->sent = null;
             }
 
-            Dialog::toast('Cancelled the invitation to '.$invitation['email']);
+            Toast::success('Cancelled the invitation to '.$invitation['email']);
         }
     }
 

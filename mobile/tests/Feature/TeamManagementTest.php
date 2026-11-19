@@ -180,7 +180,7 @@ it('renames the team', function (): void {
         ->input('team-rename-input', 'Swick Household')
         ->tap('team-rename-save')
         ->assertSet('showRename', false)
-        ->assertNativeCalled('Dialog.Toast', fn (array $params): bool => $params['message'] === 'Renamed to Swick Household')
+        ->assertToastShown(fn (array $params): bool => $params['message'] === 'Renamed to Swick Household')
         ->assertNavTitle('Swick Household');
 
     Saloon::assertSent(fn (Request $request): bool => $request instanceof UpdateTeamRequest
@@ -265,7 +265,7 @@ it('removes a member once the owner confirms', function (): void {
             && $params['message'] === 'Grandma will lose access to the team’s recipes, inventory, routines and lists.')
         ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Remove', 'id' => 'remove-member'])
         ->assertSet('memberId', null)
-        ->assertNativeCalled('Dialog.Toast', fn (array $params): bool => $params['message'] === 'Removed Grandma Jo')
+        ->assertToastShown(fn (array $params): bool => $params['message'] === 'Removed Grandma Jo')
         ->assertDontSee('Grandma Jo');
 
     Saloon::assertSent(fn (Request $request): bool => $request instanceof RemoveTeamMemberRequest && $request->resolveEndpoint() === '/teams/family/members/10');
@@ -285,7 +285,7 @@ it('leaves the current team and switches to another one', function (): void {
             && $params['title'] === 'Leave Family?'
             && $params['message'] === 'You’ll lose access to Family. To come back, you’ll need a new invitation.')
         ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Leave', 'id' => 'leave-team'])
-        ->assertNativeCalled('Dialog.Toast', fn (array $params): bool => $params['message'] === 'You left Family')
+        ->assertToastShown(fn (array $params): bool => $params['message'] === 'You left Family')
         ->goBack()
         ->assertSet('activeTeamId', 2)
         ->assertDontSee('Family');
@@ -338,7 +338,7 @@ it('shows the team look-only while offline', function (): void {
         ->tap('member-9')
         ->assertSet('memberId', null)
         ->tap('team-offline')
-        ->assertNativeCalled('Dialog.Toast', fn (array $params): bool => $params['message'] === 'Still offline. Try again once you’re connected.');
+        ->assertToastShown(fn (array $params): bool => $params['message'] === 'Still offline. Try again once you’re connected.');
 
     Saloon::assertNotSent(GetTeamInvitationsRequest::class);
     Saloon::assertNotSent(UpdateTeamRequest::class);
@@ -369,7 +369,7 @@ it('creates a team and switches to it', function (): void {
         ->assertAccessible()
         ->input('create-team-name', 'Lake House')
         ->tap('create-team-submit')
-        ->assertNativeCalled('Dialog.Toast', fn (array $params): bool => $params['message'] === 'Created Lake House')
+        ->assertToastShown(fn (array $params): bool => $params['message'] === 'Created Lake House')
         ->assertReplacedWith('/preferences/team');
 
     Saloon::assertSent(fn (Request $request): bool => $request instanceof CreateTeamRequest && $request->body()->all() === ['name' => 'Lake House']);

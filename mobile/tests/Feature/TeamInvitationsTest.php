@@ -128,7 +128,7 @@ it('accepts an invitation from Summary', function (): void {
         ->assertSee('Join Miller Cabin')
         ->assertAccessible()
         ->tap('dashboard-accept-miller-code')
-        ->assertNativeCalled('Dialog.Toast', fn (array $params): bool => $params['message'] === 'You joined Miller Cabin. Switch to it in Preferences.')
+        ->assertToastShown(fn (array $params): bool => $params['message'] === 'You joined Miller Cabin. Switch to it in Preferences.')
         ->assertDontSee('Pat Miller invited you');
 
     Saloon::assertSent(fn (Request $request): bool => $request instanceof AcceptInvitationRequest && $request->resolveEndpoint() === '/invitations/miller-code/accept');
@@ -144,7 +144,7 @@ it('declines an invitation from Summary', function (): void {
 
     Native::visit('/dashboard')
         ->tap('dashboard-decline-miller-code')
-        ->assertNativeCalled('Dialog.Toast', fn (array $params): bool => $params['message'] === 'Declined the invitation to Miller Cabin')
+        ->assertToastShown(fn (array $params): bool => $params['message'] === 'Declined the invitation to Miller Cabin')
         ->assertDontSee('Miller Cabin');
 
     Saloon::assertSent(fn (Request $request): bool => $request instanceof DeclineInvitationRequest && $request->resolveEndpoint() === '/invitations/miller-code/decline');
@@ -178,7 +178,7 @@ it('forgets an invitation Sunny no longer has', function (): void {
 
     Native::visit('/dashboard')
         ->tap('dashboard-accept-miller-code')
-        ->assertNativeCalled('Dialog.Toast', fn (array $params): bool => $params['message'] === 'This invitation has expired.')
+        ->assertToastShown(fn (array $params): bool => $params['message'] === 'This invitation has expired.')
         ->assertDontSee('Miller Cabin');
 
     expect(Invitation::count())->toBe(0)->and(Team::find(3))->toBeNull();
@@ -190,7 +190,7 @@ it('keeps an invitation to answer later when offline', function (): void {
 
     Native::visit('/dashboard')
         ->tap('dashboard-accept-miller-code')
-        ->assertNativeCalled('Dialog.Toast', fn (array $params): bool => $params['message'] === 'You’re offline. Joining a team needs a connection.')
+        ->assertToastShown(fn (array $params): bool => $params['message'] === 'You’re offline. Joining a team needs a connection.')
         ->assertSee('Join Miller Cabin');
 
     expect(Invitation::count())->toBe(1);
@@ -301,7 +301,7 @@ it('cancels an invitation once confirmed', function (): void {
         ->assertSee('grandma.jo@gmail.com')
         ->tap('cancel-invitation-inv-jo')
         ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Cancel It', 'id' => 'cancel-invitation'])
-        ->assertNativeCalled('Dialog.Toast', fn (array $params): bool => $params['message'] === 'Cancelled the invitation to grandma.jo@gmail.com')
+        ->assertToastShown(fn (array $params): bool => $params['message'] === 'Cancelled the invitation to grandma.jo@gmail.com')
         ->assertDontSee('grandma.jo@gmail.com');
 
     Saloon::assertSent(fn (Request $request): bool => $request instanceof CancelTeamInvitationRequest && $request->resolveEndpoint() === '/teams/family/invitations/inv-jo');

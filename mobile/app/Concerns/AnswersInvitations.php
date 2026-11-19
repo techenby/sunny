@@ -6,8 +6,8 @@ use App\Http\Integrations\Sunny\SunnyTeams;
 use App\Models\Invitation;
 use App\NativeComponents\Preferences;
 use App\Support\InvitationExpiry;
+use App\Support\Toast;
 use Native\Mobile\Attributes\Computed;
-use Native\Mobile\Facades\Dialog;
 use Saloon\Http\Response;
 
 trait AnswersInvitations
@@ -46,7 +46,7 @@ trait AnswersInvitations
         );
 
         if ($joined) {
-            Dialog::toast('You joined '.$invitation->team_name.'. Switch to it in Preferences.');
+            Toast::success('You joined '.$invitation->team_name.'. Switch to it in Preferences.');
         }
 
         $this->invitationsChanged();
@@ -66,7 +66,7 @@ trait AnswersInvitations
         );
 
         if ($declined) {
-            Dialog::toast('Declined the invitation to '.$invitation->team_name);
+            Toast::success('Declined the invitation to '.$invitation->team_name);
         }
 
         $this->invitationsChanged();
@@ -81,11 +81,11 @@ trait AnswersInvitations
     {
         if (in_array($response?->status(), [404, 422], true)) {
             $invitation->delete();
-            Dialog::toast(self::firstError($response) ?? 'That invitation isn’t there anymore.');
+            Toast::error(self::firstError($response) ?? 'That invitation isn’t there anymore.');
 
             return;
         }
 
-        Dialog::toast($problem === 'offline' ? 'You’re offline. '.$offline : self::failureMessage($problem, $response, 'Sunny couldn’t answer the invitation right now. Please try again.'));
+        Toast::error($problem === 'offline' ? 'You’re offline. '.$offline : self::failureMessage($problem, $response, 'Sunny couldn’t answer the invitation right now. Please try again.'));
     }
 }
