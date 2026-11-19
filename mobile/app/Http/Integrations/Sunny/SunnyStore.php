@@ -23,6 +23,8 @@ use Illuminate\Support\Facades\DB;
 
 class SunnyStore
 {
+    public const ROUTINE_DAYS_KEPT = 7;
+
     public function lastSyncedAt(): ?string
     {
         return DB::table('sunny_sync_states')->where('server', self::server())->value('synced_at');
@@ -143,6 +145,7 @@ class SunnyStore
             $pending = PendingWrite::query()->get();
             RoutineOccurrenceStep::query()->delete();
             RoutineOccurrence::query()->delete();
+            DB::table('routine_days')->delete();
             Item::withTrashed()->whereNotIn('id', $pending->where('resource', 'items')->pluck('record_id')
                 ->merge($pending->where('resource', 'item_photos')->pluck('payload.item_id')))->forceDelete();
             ItemPhoto::query()->whereNotIn('id', $pending->where('resource', 'item_photos')->pluck('record_id'))->delete();
@@ -250,36 +253,90 @@ class SunnyStore
 
     /**
      * @param  Collection<int, array>  $occurrences
+     */
+    public function saveRoutineDay(int $teamId, string $date, Collection $occurrences): void
+    {
+        DB::transaction(function () use ($teamId, $date, $occurrences): void {
+            $pending = PendingWrite::query()->forCurrentServer()->where('resource', 'routine_occurrence_steps')->get()->keyBy('record_id');
+            $existing = RoutineOccurrence::query()->where('team_id', $teamId)->where('due_on', $date)->pluck('id');
+            $localTicks = RoutineOccurrenceStep::query()->whereIn('routine_occurrence_id', $existing)->whereIn('id', $pending->keys())->pluck('completed_at', 'id');
+            RoutineOccurrenceStep::query()->whereIn('routine_occurrence_id', $existing)->delete();
+            RoutineOccurrence::query()->whereKey($existing)->delete();
+
+            $pendingTicks = $pending->map(fn (PendingWrite $write, int $id): mixed => $write->payload['completed'] ? ($localTicks[$id] ?? now()) : null);
+
+            $occurrences
+                ->filter(fn (array $occurrence): bool => $occurrence['routine']['team_id'] === $teamId && $occurrence['due_on'] === $date)
+                ->each(fn (array $occurrence) => $this->createRoutineOccurrence($occurrence, $pendingTicks));
+
+            DB::table('routine_days')->updateOrInsert(['team_id' => $teamId, 'due_on' => $date], ['server' => self::server(), 'fetched_at' => now()]);
+        });
+    }
+
+    public function hasRoutineDay(int $teamId, string $date): bool
+    {
+        return DB::table('routine_days')->where('server', self::server())->where('team_id', $teamId)->where('due_on', $date)->exists()
+            || RoutineOccurrence::query()->forCurrentServer()->where('team_id', $teamId)->where('due_on', $date)->exists();
+    }
+
+    /**
+     * @param  Collection<int, array>  $occurrences
      * @param  Collection<int, int>  $pendingStepIds
      */
     private function saveRoutineOccurrences(Collection $occurrences, Collection $pendingStepIds): void
     {
         $pendingTicks = RoutineOccurrenceStep::query()->whereIn('id', $pendingStepIds)->pluck('completed_at', 'id');
-        RoutineOccurrenceStep::query()->delete();
-        RoutineOccurrence::query()->delete();
+        $teams = Team::query()->where('server', self::server())->get();
+        $replaced = RoutineOccurrence::query()
+            ->where(fn (Builder $query) => $query->where('server', '!=', self::server())->orWhereNotIn('team_id', $teams->modelKeys()))
+            ->pluck('id')
+            ->merge($occurrences->pluck('id'));
+        DB::table('routine_days')->where(fn ($query) => $query->where('server', '!=', self::server())->orWhereNotIn('team_id', $teams->modelKeys()))->delete();
+
+        foreach ($teams as $team) {
+            $today = $team->today();
+            $dates = $occurrences->where('routine.team_id', $team->id)->pluck('due_on')->push($today->toDateString(), $today->addDay()->toDateString());
+            [$oldest, $newest] = [$today->subDays(self::ROUTINE_DAYS_KEPT)->toDateString(), $today->addDays(self::ROUTINE_DAYS_KEPT + 1)->toDateString()];
+
+            $replaced = $replaced->merge(RoutineOccurrence::query()->where('team_id', $team->id)->where(fn (Builder $query) => $query
+                ->whereIn('due_on', $dates->unique())
+                ->orWhereNotBetween('due_on', [$oldest, $newest]))->pluck('id'));
+            DB::table('routine_days')->where('team_id', $team->id)->whereNotBetween('due_on', [$oldest, $newest])->delete();
+        }
+
+        RoutineOccurrenceStep::query()->whereIn('routine_occurrence_id', $replaced)->delete();
+        RoutineOccurrence::query()->whereKey($replaced)->delete();
 
         foreach ($occurrences as $occurrence) {
-            RoutineOccurrence::query()->create([
-                'id' => $occurrence['id'],
-                'server' => self::server(),
-                'team_id' => $occurrence['routine']['team_id'],
-                'routine_id' => $occurrence['routine_id'],
-                'due_on' => $occurrence['due_on'],
-                'name' => $occurrence['routine']['name'],
-                'time_of_day' => $occurrence['routine']['time_of_day'],
-                'assignee' => $occurrence['routine']['user']['name'] ?? null,
-            ]);
+            $this->createRoutineOccurrence($occurrence, $pendingTicks);
+        }
+    }
 
-            foreach ($occurrence['steps'] as $step) {
-                RoutineOccurrenceStep::query()->create([
-                    'id' => $step['id'],
-                    'server' => self::server(),
-                    'routine_occurrence_id' => $occurrence['id'],
-                    'name' => $step['name'],
-                    'position' => $step['position'] ?? null,
-                    'completed_at' => $pendingTicks->has($step['id']) ? $pendingTicks[$step['id']] : $step['completed_at'],
-                ]);
-            }
+    /**
+     * @param  Collection<int, mixed>  $pendingTicks
+     */
+    private function createRoutineOccurrence(array $occurrence, Collection $pendingTicks): void
+    {
+        RoutineOccurrence::query()->create([
+            'id' => $occurrence['id'],
+            'server' => self::server(),
+            'team_id' => $occurrence['routine']['team_id'],
+            'routine_id' => $occurrence['routine_id'],
+            'due_on' => $occurrence['due_on'],
+            'name' => $occurrence['routine']['name'],
+            'time_of_day' => $occurrence['routine']['time_of_day'],
+            'assignee' => $occurrence['routine']['user']['name'] ?? null,
+        ]);
+
+        foreach ($occurrence['steps'] as $step) {
+            RoutineOccurrenceStep::query()->create([
+                'id' => $step['id'],
+                'server' => self::server(),
+                'routine_occurrence_id' => $occurrence['id'],
+                'name' => $step['name'],
+                'position' => $step['position'] ?? null,
+                'completed_at' => $pendingTicks->has($step['id']) ? $pendingTicks[$step['id']] : $step['completed_at'],
+            ]);
         }
     }
 }
