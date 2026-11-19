@@ -349,6 +349,18 @@ it('shows the team look-only while offline', function (): void {
     Saloon::assertNotSent(UpdateTeamRequest::class);
 });
 
+it('says when the team was last synced in the phone’s timezone', function (): void {
+    signInAs(7);
+    $this->travelTo('2026-11-19 03:05:00');
+    DB::table('sunny_sync_states')->updateOrInsert(['server' => SunnyStore::server()], ['synced_at' => '2026-11-19T03:05:00+00:00']);
+    Native::fakeBridge()
+        ->respondTo('Network.Status', ['connected' => false])
+        ->respondTo('Device.GetInfo', ['info' => json_encode(['timezone' => 'America/Chicago'])]);
+
+    Native::visit('/preferences/team', platform: 'ios')
+        ->assertSee('This is Family as of Today at 9:05 PM.');
+});
+
 it('turns look-only when a change can’t reach Sunny', function (): void {
     signInAs(7);
     Saloon::fake([UpdateTeamMemberRequest::class => offlineTeamResponse()]);

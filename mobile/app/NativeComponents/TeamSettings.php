@@ -19,6 +19,7 @@ use Native\Mobile\AsyncTask;
 use Native\Mobile\Attributes\On;
 use Native\Mobile\Events\Alert\ButtonPressed;
 use Native\Mobile\Facades\Browser;
+use Native\Mobile\Facades\Device;
 use Native\Mobile\Facades\Dialog;
 use Native\Mobile\Facades\Network;
 use RuntimeException;
@@ -156,7 +157,7 @@ class TeamSettings extends Component
     {
         $synced = app(SunnyStore::class)->lastSyncedAt();
 
-        return $synced === null ? null : CarbonImmutable::parse($synced)->setTimezone(config('app.timezone'))->calendar();
+        return $synced === null ? null : CarbonImmutable::parse($synced)->setTimezone(Device::getTimezone() ?? config('app.timezone'))->calendar();
     }
 
     public function leaveFooter(): string

@@ -15,6 +15,7 @@ use Illuminate\View\View;
 use Native\Mobile\AsyncTask;
 use Native\Mobile\Attributes\On;
 use Native\Mobile\Events\Alert\ButtonPressed;
+use Native\Mobile\Facades\Device;
 use Native\Mobile\Facades\Dialog;
 use Native\Mobile\Facades\Network;
 use RuntimeException;
@@ -91,7 +92,7 @@ class InviteMember extends Component
 
     public function updatedAt(): ?string
     {
-        return $this->team()?->invitations_fetched_at?->setTimezone(config('app.timezone'))->format('g:i A');
+        return $this->team()?->invitations_fetched_at?->setTimezone(Device::getTimezone() ?? config('app.timezone'))->format('g:i A');
     }
 
     public function chooseRole(string $role): void
