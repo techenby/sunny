@@ -21,6 +21,8 @@ class Account extends Component
 
     public string $email = '';
 
+    public string $savedEmail = '';
+
     public bool $verified = true;
 
     public bool $emailChanged = false;
@@ -133,7 +135,7 @@ class Account extends Component
 
         if ($sent) {
             $this->verificationSent = true;
-            Toast::success('Verification email sent to '.$this->email);
+            Toast::success('Verification email sent to '.$this->savedEmail);
 
             return;
         }
@@ -180,7 +182,8 @@ class Account extends Component
 
                 if ($saved === null || ($this->name === $saved['name'] && $this->email === $saved['email'])) {
                     $this->useProfile($profile);
-                } elseif ($this->email === $profile['email']) {
+                } else {
+                    $this->savedEmail = $profile['email'];
                     $this->verified = $profile['verified'];
                 }
             })
@@ -196,6 +199,7 @@ class Account extends Component
 
         $this->name = $profile['name'];
         $this->email = $profile['email'];
+        $this->savedEmail = $profile['email'];
         $this->verified = $profile['verified'];
     }
 

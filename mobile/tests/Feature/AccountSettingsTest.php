@@ -149,6 +149,22 @@ it('marks a new email as not verified and sends the verification email when aske
     expect(app(SunnyStore::class)->profile())->toBe(['name' => 'Andy Swick', 'email' => 'andy@swickhome.com', 'verified' => false]);
 });
 
+it('keeps the verification card on the saved email while a different one is being typed', function (): void {
+    rememberAndy(verified: false);
+    Saloon::fake([
+        GetUserRequest::class => MockResponse::make(['data' => sunnyUser(['email_verified_at' => null])]),
+        SendVerificationEmailRequest::class => MockResponse::make([], 202),
+    ]);
+
+    Native::visit('/preferences/account', platform: 'ios')
+        ->input('account-email', 'andy@swickhome.com')
+        ->assertSee('Send a link to andy@swick.family and tap it to confirm it’s yours.')
+        ->tap('account-send-verification')
+        ->assertToastShown(fn (array $params): bool => $params['message'] === 'Verification email sent to andy@swick.family')
+        ->assertSee('We sent a link to andy@swick.family. Tap it to confirm it’s yours.')
+        ->assertDontSee('andy@swickhome.com. Tap');
+});
+
 it('hides the verification card once Sunny says the email is verified', function (): void {
     rememberAndy(verified: false);
     Saloon::fake([

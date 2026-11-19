@@ -43,7 +43,7 @@
                             <x-ui.badge size="sm">Not verified</x-ui.badge>
                         </row>
                         <x-ui.text size="sm">
-                            {{ $verificationSent ? 'We sent a link to '.$email.'. Tap it to confirm it’s yours.' : 'We haven’t sent anything yet. Send a link to '.$email.' and tap it to confirm it’s yours.' }}
+                            {{ $verificationSent ? 'We sent a link to '.$savedEmail.'. Tap it to confirm it’s yours.' : 'We haven’t sent anything yet. Send a link to '.$savedEmail.' and tap it to confirm it’s yours.' }}
                         </x-ui.text>
                     </column>
                 </row>
