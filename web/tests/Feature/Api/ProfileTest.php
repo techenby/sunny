@@ -11,7 +11,8 @@ test('guests cannot change their profile or password', function () {
     $this->postJson(route('api.user.verification.send'))->assertUnauthorized();
 });
 
-test('a user can change their name and email', function () {
+test('a user can change their name and email, and is sent a link to verify the new one', function () {
+    Notification::fake();
     $user = User::factory()->create();
 
     $this->actingAs($user)
@@ -25,6 +26,8 @@ test('a user can change their name and email', function () {
         ->name->toBe('Nami')
         ->email->toBe('nami@example.com')
         ->email_verified_at->toBeNull();
+
+    Notification::assertSentTo($user, VerifyEmail::class);
 });
 
 test('changing only the name keeps the email verified', function () {

@@ -11,12 +11,14 @@ Route::livewire('kiosk/pair/{code}', 'pages::kiosk.pair')
     ->withHead(title: 'Pair kiosk');
 
 Route::prefix('{current_team}/kiosk')
-    ->middleware(['auth', 'verified', EnsureTeamMembership::class])
+    ->middleware(['auth', EnsureTeamMembership::class])
     ->name('kiosk')
     ->group(function (): void {
-        Route::livewire('configure/preview', 'pages::kiosk.configure.preview')->name('.configure.preview')->withHead(title: 'Kiosk preview');
-        Route::livewire('configure/calendar', 'pages::kiosk.configure.calendar')->name('.configure.calendar')->withHead(title: 'Kiosk calendars');
-        Route::livewire('configure/settings', 'pages::kiosk.configure.settings')->name('.configure.settings')->withHead(title: 'Kiosk settings');
+        Route::middleware('verified')->group(function (): void {
+            Route::livewire('configure/preview', 'pages::kiosk.configure.preview')->name('.configure.preview')->withHead(title: 'Kiosk preview');
+            Route::livewire('configure/calendar', 'pages::kiosk.configure.calendar')->name('.configure.calendar')->withHead(title: 'Kiosk calendars');
+            Route::livewire('configure/settings', 'pages::kiosk.configure.settings')->name('.configure.settings')->withHead(title: 'Kiosk settings');
+        });
 
         Route::livewire('calendar', 'pages::kiosk.calendar')->name('.calendar')->withHead(title: 'Calendar');
         Route::livewire('routines', 'pages::kiosk.routines')->name('.routines')->withHead(title: 'Routines');

@@ -119,4 +119,21 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Email Verification Grace Period
+    |--------------------------------------------------------------------------
+    |
+    | The web asks for a verified email right away. The API (the mobile app)
+    | keeps working for unverified accounts until a few days after sign-up,
+    | and for every account until the date below, so app builds that can't
+    | prompt for verification yet keep syncing.
+    |
+    */
+
+    'verification' => [
+        'grace_days' => (int) env('AUTH_VERIFICATION_GRACE_DAYS', 7),
+        'grace_until' => env('AUTH_VERIFICATION_GRACE_UNTIL', '2027-01-04'),
+    ],
+
 ];

@@ -103,6 +103,19 @@ test('someone else\'s or an expired invitation cannot be answered', function (st
     'expired' => [['email' => 'zoro@strawhat.pirates', 'expires_at' => now()->subDay()]],
 ]);
 
+test('an invitation cannot be answered before the user verifies their email', function (string $action) {
+    $this->zoro->forceFill(['email_verified_at' => null])->save();
+    $invitation = TeamInvitation::factory()->for($this->crew)->create(['email' => 'zoro@strawhat.pirates']);
+
+    $this->actingAs($this->zoro)
+        ->postJson(route("api.invitations.{$action}", $invitation))
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['invitation' => 'Verify your email address before you answer this invitation.']);
+
+    expect($invitation->fresh())->not->toBeNull()
+        ->and($this->zoro->belongsToTeam($this->crew))->toBeFalse();
+})->with(['accept', 'decline']);
+
 test('an invitation that is gone cannot be answered by its code', function (string $action) {
     $invitation = TeamInvitation::factory()->for($this->crew)->create(['email' => 'zoro@strawhat.pirates']);
     $invitation->delete();

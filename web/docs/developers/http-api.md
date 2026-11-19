@@ -27,7 +27,7 @@ Content-Type: application/json
 ```
 
 The response contains the user's `id`, `name`, `email`, `email_verified_at`,
-`two_factor_enabled`, `current_team_id`, `onboarded_at`, `created_at`, and
+`email_verification_grace_ends_at`, `two_factor_enabled`, `current_team_id`, `onboarded_at`, `created_at`, and
 `updated_at`, plus a plaintext `token` and its `expires_at` timestamp. Store
 the token securely; it is not shown again. This endpoint allows 5 failed
 attempts per minute for each email and IP address, then returns `429`; a
@@ -138,7 +138,8 @@ The response is `201` with the same body as
 [the token endpoint](#create-a-token). `onboarded_at` is `null` for a new
 account, so the client should show onboarding; someone who registers with a
 pending team invitation skips onboarding, so theirs is already set. The token
-lasts 30 days, like a token from signing in.
+lasts 30 days, like a token from signing in. The new user is sent a link to
+verify their email; see [Email verification](#email-verification).
 
 This endpoint allows 6 requests a minute for each IP address, then returns
 `429`. It returns `404` when registration is turned off.
@@ -251,11 +252,31 @@ Collections and single resources use Laravel's standard `data` wrapper.
 ## Account
 
 Profile changes use the same rules as Settings on the web. Fields left out of
-`PATCH /api/user` are unchanged. Changing the email clears `email_verified_at`.
+`PATCH /api/user` are unchanged. Changing the email clears `email_verified_at`
+and sends a link to verify the new address.
 `POST /api/user/email/verification-notification` returns `202` when it sends
 the link and `204` when the email is already verified. Password changes return
 `204`, and password changes and verification emails are limited to 6 requests
 a minute.
+
+## Email verification
+
+The web asks for a verified email right away. The API gives an unverified
+account a grace period instead, so an app can keep syncing while it asks the
+person to verify. The grace period ends 7 days after the account was created,
+or on the date set by `AUTH_VERIFICATION_GRACE_UNTIL` if that's later.
+`email_verification_grace_ends_at` on the user says when it ends, and is `null`
+once the email is verified.
+
+After the grace period, every endpoint except signing in, signing out,
+refreshing a token, and the `/api/user` account endpoints returns `423` with
+`"email_verification_required": true`. Use `423` to show a "verify your email"
+screen rather than treating it as a permission error, and keep queued changes
+to send once the email is verified.
+
+Answering a team invitation always needs a verified email, because an
+invitation is matched to the account by its email address. Until then, accept
+and decline return `422` with an `invitation` error.
 
 ## Teams
 
@@ -496,6 +517,7 @@ Expect standard Laravel JSON errors:
 - `403` when the user doesn't belong to the team in the URL or isn't allowed to do something.
 - `404` when the record doesn't exist or belongs to a different team.
 - `422` when validation fails.
+- `423` when the user's email needs verifying. See [Email verification](#email-verification).
 - `424` when a recipe import can't open the page.
 - `429` when too many token, two-factor, registration or password reset requests are made.
 

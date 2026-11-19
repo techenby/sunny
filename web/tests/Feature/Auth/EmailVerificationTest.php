@@ -2,7 +2,9 @@
 
 use App\Models\User;
 use Illuminate\Auth\Events\Verified;
+use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
 
 test('email verification screen can be rendered', function () {
@@ -63,4 +65,42 @@ test('already verified user visiting verification link is redirected without fir
 
     expect($user->fresh()->hasVerifiedEmail())->toBeTrue();
     Event::assertNotDispatched(Verified::class);
+});
+
+test('registering sends a verification email', function () {
+    Notification::fake();
+
+    $this->post(route('register.store'), [
+        'name' => 'Nico Robin',
+        'email' => 'robin@example.com',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+    ]);
+
+    Notification::assertSentTo(User::where('email', 'robin@example.com')->sole(), VerifyEmail::class);
+});
+
+test('unverified users are sent to verify their email before using the app', function (string $routeName) {
+    $user = User::factory()->unverified()->create();
+
+    $this->actingAs($user)
+        ->get(route($routeName, ['current_team' => $user->currentTeam]))
+        ->assertRedirect(route('verification.notice'));
+})->with(['dashboard', 'teams.index', 'appearance.edit', 'kiosk.configure.settings']);
+
+test('the verification screen shows the address and lets the user change it', function () {
+    $user = User::factory()->unverified()->create(['email' => 'robin@example.com']);
+
+    $this->actingAs($user)
+        ->get(route('verification.notice'))
+        ->assertSee('robin@example.com')
+        ->assertSee(route('profile.edit'));
+});
+
+test('verified users can use the app', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->get(route('dashboard', ['current_team' => $user->currentTeam]))
+        ->assertOk();
 });

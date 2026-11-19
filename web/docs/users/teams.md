@@ -43,8 +43,8 @@ The creator becomes the team's owner and SunnyHome switches to the new team.
 5. Select **Send invitation**.
 
 Invitations expire after three days. The recipient must sign in with the same
-email address that received the invitation. After acceptance, SunnyHome switches
-their account to the joined team.
+email address that received the invitation, and verify it. After acceptance,
+SunnyHome switches their account to the joined team.
 
 A pending invitation can be cancelled from the team's settings page.
 

@@ -30,6 +30,16 @@ test('renders successfully', function () {
         ->assertOk();
 })->group('smoke');
 
+test('a paired kiosk keeps showing when its owner has not verified their email', function () {
+    $user = User::factory()->unverified()->create();
+    $device = KioskDevice::factory()->paired($user, $user->currentTeam)->create();
+
+    actingAs($user)
+        ->withSession(['kiosk_device_id' => $device->id])
+        ->get(route('kiosk.calendar', ['current_team' => $user->currentTeam]))
+        ->assertOk();
+});
+
 test('kiosk layout follows the team appearance setting', function () {
     $team = Team::factory()->create(['appearance' => Appearance::Dark]);
     $user = User::factory()->memberOf($team)->create();
