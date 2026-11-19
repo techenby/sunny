@@ -10,6 +10,7 @@ use App\Http\Integrations\Sunny\SunnyWrites;
 use App\Models\PendingWrite;
 use App\Models\Routine;
 use App\Models\RoutineStep;
+use Illuminate\Support\Arr;
 use Illuminate\Validation\ValidationException;
 use Native\Mobile\Testing\Native;
 use Saloon\Enums\Method;
@@ -159,4 +160,78 @@ it('keeps routines and steps that have not reached Sunny through a download', fu
     expect(Routine::find($routine))->not->toBeNull()
         ->and(RoutineStep::find($step))->not->toBeNull()
         ->and(Routine::find(1))->toBeNull();
+});
+
+function fakeRoutineSaves(array &$sent): void
+{
+    $nextId = 100;
+    Saloon::fake([SaveRecordRequest::class => function (PendingRequest $request) use (&$sent, &$nextId): MockResponse {
+        $endpoint = $request->getRequest()->resolveEndpoint();
+        $body = $request->body()->all();
+        $sent[] = $request->getMethod()->value.' '.$endpoint.' '.json_encode(Arr::except($body, 'client_uuid'));
+        $isStep = str_contains($endpoint, '/steps');
+        $id = preg_match('#/(\d+)$#', $endpoint, $match) ? (int) $match[1] : $nextId++;
+        $owner = $isStep ? ['routine_id' => (int) explode('/', $endpoint)[4], 'position' => 1] : ['team_id' => 1, 'starts_on' => '2026-10-01T00:00:00.000000Z'];
+        $record = $isStep ? [] : Arr::except(Routine::find($id)?->toArray() ?? [], ['server', 'local_id']);
+
+        return MockResponse::make(['data' => [...$record, ...Arr::except($body, 'step_order'), ...$owner, 'id' => $id, 'created_at' => now()->toIso8601String(), 'updated_at' => now()->toIso8601String()]], $isStep || $record === [] ? 201 : 200);
+    }]);
+}
+
+it('sends a new step order with a patch to the routine', function (): void {
+    $sent = [];
+    fakeRoutineSaves($sent);
+
+    app(SunnyOutbox::class)->queue('routines', 1, ['step_order' => [13, 11, 12]], 1);
+    app(SunnyWrites::class)->push();
+
+    expect($sent)->toBe(['PATCH /teams/family/routines/1 {"step_order":[13,11,12]}'])
+        ->and(PendingWrite::count())->toBe(0);
+});
+
+it('keeps a step order queued offline, the latest order replacing an earlier one', function (): void {
+    Saloon::fake([SaveRecordRequest::class => MockResponse::make([], 503)]);
+    $outbox = app(SunnyOutbox::class);
+    $outbox->queue('routines', 1, ['step_order' => [13, 11, 12]], 1);
+
+    expect(fn () => app(SunnyWrites::class)->push())->toThrow(Exception::class);
+
+    $outbox->queue('routines', 1, ['step_order' => [12, 13, 11]], 1);
+
+    expect(PendingWrite::sole()->only('resource', 'record_id', 'payload', 'error'))->toBe(['resource' => 'routines', 'record_id' => 1, 'payload' => ['step_order' => [12, 13, 11]], 'error' => null]);
+});
+
+it('waits for a new step to reach Sunny before sending an order that includes it', function (): void {
+    $sent = [];
+    fakeRoutineSaves($sent);
+    $outbox = app(SunnyOutbox::class);
+    $outbox->queue('routines', 1, ['name' => 'Lights out'], 2);
+    $step = $outbox->queue('routine_steps', 1, ['routine_id' => 2, 'name' => 'Read a story']);
+    $outbox->queue('routines', 1, ['step_order' => [21, $step, 22]], 2);
+
+    app(SunnyWrites::class)->push();
+
+    expect($sent)->toBe([
+        'POST /teams/family/routines/2/steps {"name":"Read a story"}',
+        'PATCH /teams/family/routines/2 {"name":"Lights out","step_order":[21,100,22]}',
+    ])->and(PendingWrite::count())->toBe(0);
+});
+
+it('creates a routine and its steps before sending the order they were put in', function (): void {
+    $sent = [];
+    fakeRoutineSaves($sent);
+    $outbox = app(SunnyOutbox::class);
+    $routine = $outbox->queue('routines', 1, ['name' => 'Gym', 'time_of_day' => 'morning', 'frequency' => 'daily', 'weekdays' => null, 'day_of_month' => null, 'is_active' => true]);
+    $stretch = $outbox->queue('routine_steps', 1, ['routine_id' => $routine, 'name' => 'Stretch']);
+    $lift = $outbox->queue('routine_steps', 1, ['routine_id' => $routine, 'name' => 'Lift']);
+    $outbox->queue('routines', 1, ['step_order' => [$lift, $stretch]], $routine);
+
+    app(SunnyWrites::class)->push();
+
+    expect($sent)->toBe([
+        'POST /teams/family/routines {"name":"Gym","time_of_day":"morning","frequency":"daily","weekdays":null,"day_of_month":null,"is_active":true}',
+        'POST /teams/family/routines/100/steps {"name":"Stretch"}',
+        'POST /teams/family/routines/100/steps {"name":"Lift"}',
+        'PATCH /teams/family/routines/100 {"step_order":[102,101]}',
+    ])->and(PendingWrite::count())->toBe(0);
 });

@@ -63,7 +63,78 @@
                 <text ref="routine-error" class="text-sm text-theme-destructive">{{ $error }}</text>
             @endif
 
-            @if ($this->steps)
+            <row class="w-full items-center gap-3 px-1">
+                <x-ui.heading size="lg" class="flex-1">{{ $this->steps ? 'Steps ('.count($this->steps).')' : 'Steps' }}</x-ui.heading>
+                @if ($reordering)
+                    <pressable
+                        ref="routine-reorder-done"
+                        a11y-label="Done"
+                        a11y-hint="Saves the new order"
+                        class="min-h-12 items-center justify-center rounded-full bg-theme-primary/15 px-4"
+                        @tap="finishReordering"
+                    >
+                        <row class="items-center gap-1.5">
+                            <icon :ios="Ios::Checkmark" :android="Android::Check" :size="18" class="text-theme-primary-text" />
+                            <text font="semibold" class="text-base text-theme-primary-text">Done</text>
+                        </row>
+                    </pressable>
+                @elseif (count($this->steps) > 1)
+                    <pressable
+                        ref="routine-reorder"
+                        a11y-label="Reorder"
+                        a11y-hint="Move steps up or down"
+                        class="min-h-12 items-center justify-center rounded-full bg-theme-surface-variant px-4"
+                        @tap="startReordering"
+                    >
+                        <row class="items-center gap-1.5">
+                            <icon :ios="Ios::ArrowUpArrowDown" :android="Android::SwapVert" :size="18" class="text-theme-on-surface" />
+                            <text font="semibold" class="text-base text-theme-on-surface">Reorder</text>
+                        </row>
+                    </pressable>
+                @endif
+            </row>
+
+            @if ($this->steps && $reordering)
+                <column class="w-full rounded-xl bg-theme-surface">
+                    @foreach ($this->steps as $step)
+                        @php($moved = $movedStepId === $step['id'])
+                        <row
+                            ref="routine-step-{{ $step['id'] }}"
+                            class="w-full items-center gap-3 py-1 pr-2 pl-4 {{ $moved ? 'bg-theme-primary/10' : '' }} {{ $loop->first ? 'rounded-t-xl' : '' }} {{ $loop->last ? 'rounded-b-xl' : '' }}"
+                        >
+                            @if ($moved)
+                                <text font="semibold" class="w-6 text-center text-sm text-theme-primary-text">{{ $loop->iteration }}</text>
+                            @else
+                                <text class="w-6 text-center text-sm text-theme-on-surface-variant">{{ $loop->iteration }}</text>
+                            @endif
+                            <text class="flex-1 text-base text-theme-on-surface">{{ $step['name'] }}</text>
+                            @foreach ([['up', 'moveStepUp', Ios::ChevronUp, Android::KeyboardArrowUp, $loop->first], ['down', 'moveStepDown', Ios::ChevronDown, Android::KeyboardArrowDown, $loop->last]] as [$direction, $action, $iosIcon, $androidIcon, $atEnd])
+                                @if ($atEnd)
+                                    <column ref="routine-step-{{ $step['id'] }}-{{ $direction }}" class="h-12 w-11 items-center justify-center">
+                                        <column class="h-10 w-10 items-center justify-center rounded-full border border-theme-outline opacity-40">
+                                            <icon :ios="$iosIcon" :android="$androidIcon" :size="18" class="text-theme-on-surface-variant" />
+                                        </column>
+                                    </column>
+                                @else
+                                    <pressable
+                                        ref="routine-step-{{ $step['id'] }}-{{ $direction }}"
+                                        :a11y-label="'Move '.$step['name'].' '.$direction"
+                                        class="h-12 w-11 items-center justify-center"
+                                        @tap="{{ $action }}({{ $step['id'] }})"
+                                    >
+                                        <column class="h-10 w-10 items-center justify-center rounded-full bg-theme-surface-variant">
+                                            <icon :ios="$iosIcon" :android="$androidIcon" :size="18" class="text-theme-on-surface" />
+                                        </column>
+                                    </pressable>
+                                @endif
+                            @endforeach
+                        </row>
+                        @unless ($loop->last)
+                            <divider class="ml-14" />
+                        @endunless
+                    @endforeach
+                </column>
+            @elseif ($this->steps)
                 <column class="w-full rounded-xl bg-theme-surface">
                     @foreach ($this->steps as $step)
                         <row ref="routine-step-{{ $step['id'] }}" class="w-full items-center">

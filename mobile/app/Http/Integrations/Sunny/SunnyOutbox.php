@@ -258,12 +258,18 @@ class SunnyOutbox
             $this->rewritePendingReference($resource, 'parent_id', $localId, $serverId);
         }
 
-        if ($resource === 'item_photos') {
-            PendingWrite::query()->forCurrentServer()->where('resource', 'items')->get()
-                ->filter(fn (PendingWrite $write): bool => in_array($localId, $write->payload['photo_order'] ?? [], true))
+        [$ownerType, $orderKey] = match ($resource) {
+            'item_photos' => ['items', 'photo_order'],
+            'routine_steps' => ['routines', 'step_order'],
+            default => [null, null],
+        };
+
+        if ($ownerType !== null) {
+            PendingWrite::query()->forCurrentServer()->where('resource', $ownerType)->get()
+                ->filter(fn (PendingWrite $write): bool => in_array($localId, $write->payload[$orderKey] ?? [], true))
                 ->each(fn (PendingWrite $write) => $write->update(['payload' => [
                     ...$write->payload,
-                    'photo_order' => array_map(fn (int $id): int => $id === $localId ? $serverId : $id, $write->payload['photo_order']),
+                    $orderKey => array_map(fn (int $id): int => $id === $localId ? $serverId : $id, $write->payload[$orderKey]),
                 ]]));
         }
     }
