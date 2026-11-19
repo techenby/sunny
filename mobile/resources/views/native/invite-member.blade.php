@@ -117,10 +117,8 @@
                             </column>
                             <column class="flex-1 gap-1">
                                 <text max-lines="1" class="text-base text-theme-on-surface">{{ $invitation['email'] }}</text>
-                                <row class="w-full items-center gap-2">
-                                    <x-ui.badge size="sm" class="shrink-0" :color="$invitation['role'] === TeamRole::Admin ? 'red' : null">{{ $invitation['role']->label() }}</x-ui.badge>
-                                    <text class="flex-1 text-sm {{ $invitation['soon'] ? 'text-theme-destructive' : 'text-theme-on-surface-variant' }}">{{ $invitation['expires'] }}</text>
-                                </row>
+                                <x-ui.badge size="sm" class="self-start" :color="$invitation['role'] === TeamRole::Admin ? 'red' : null">{{ $invitation['role']->label() }}</x-ui.badge>
+                                <text class="text-sm {{ $invitation['soon'] ? 'text-theme-destructive' : 'text-theme-on-surface-variant' }}">{{ $invitation['expires'] }}</text>
                             </column>
                             @if ($canInvite)
                                 <pressable
