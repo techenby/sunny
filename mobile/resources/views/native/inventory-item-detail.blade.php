@@ -10,6 +10,9 @@
 <native:top-bar :title="$item['name'] ?? 'Item'" display-mode="large" back />
 
 @if ($item)
+    @if ($selecting)
+    @include('native.inventory-selection-bar', ['selectedItems' => $this->selectedItems, 'selectedAll' => $this->selectedAll])
+    @else
     <native:bottom-bar>
         <row class="w-full items-center gap-3 px-4 pb-2">
             <pressable
@@ -33,9 +36,10 @@
             </pressable>
         </row>
     </native:bottom-bar>
+    @endif
 
     <scroll-view ref="item-detail" fill class="bg-theme-background">
-        <column class="w-full gap-7 px-4 pt-2 pb-8">
+        <column class="w-full gap-7 px-4 pt-2 {{ $selecting ? 'pb-[240]' : 'pb-8' }}">
             <column class="w-full gap-3">
                 <row class="w-full items-center gap-2">
                     <x-ui.avatar
@@ -210,8 +214,46 @@
 
             @unless ($this->starterStorage)
             <column class="w-full gap-3">
-                <x-ui.heading size="lg" class="px-1">{{ $this->children ? 'What’s inside ('.count($this->children).')' : 'What’s inside' }}</x-ui.heading>
+                <row class="w-full items-center gap-3 px-1">
+                    <x-ui.heading size="lg" class="flex-1">{{ $this->children ? 'What’s inside ('.count($this->children).')' : 'What’s inside' }}</x-ui.heading>
+                    @if ($selecting)
+                        <pressable
+                            ref="item-select-done"
+                            a11y-label="Done"
+                            class="min-h-12 items-center justify-center rounded-full bg-theme-surface-variant px-4"
+                            @tap="stopSelecting"
+                        >
+                            <text font="semibold" class="text-base text-theme-on-surface">Done</text>
+                        </pressable>
+                    @elseif ($this->children)
+                        <pressable
+                            ref="item-select"
+                            a11y-label="Select"
+                            a11y-hint="Pick several things to move or delete"
+                            class="min-h-12 items-center justify-center rounded-full bg-theme-surface-variant px-4"
+                            @tap="startSelecting"
+                        >
+                            <row class="items-center gap-1.5">
+                                <icon :ios="Ios::CheckmarkCircle" :android="Android::CheckCircleOutline" :size="18" class="text-theme-on-surface" />
+                                <text font="semibold" class="text-base text-theme-on-surface">Select</text>
+                            </row>
+                        </pressable>
+                    @endif
+                </row>
                 <column class="{{ Card::classes() }} w-full">
+                    @if ($selecting)
+                    @foreach ($this->children as $child)
+                        @include('native.inventory-item-tick-row', [
+                            'item' => $child,
+                            'ref' => 'item-child-'.$child['id'],
+                            'selected' => in_array($child['id'], $selectedIds, true),
+                            'corners' => trim(($loop->first ? 'rounded-t-[17]' : '').' '.($loop->last ? 'rounded-b-[17]' : '')),
+                        ])
+                        @unless ($loop->last)
+                            <divider class="ml-[112]" />
+                        @endunless
+                    @endforeach
+                    @else
                     @foreach ($this->children as $child)
                         @include('native.inventory-item-row', ['item' => $child, 'ref' => 'item-child-'.$child['id'], 'from' => $item['id']])
                         <divider class="ml-[72]" />
@@ -229,6 +271,7 @@
                             <text font="semibold" class="flex-1 text-lg text-theme-primary-text">{{ $this->children ? 'Add something here' : 'Put something inside' }}</text>
                         </row>
                     </pressable>
+                    @endif
                 </column>
             </column>
             @endunless
@@ -250,7 +293,7 @@
                 </column>
             @endif
 
-            @if ($this->photos === [])
+            @if ($this->photos === [] && ! $selecting)
                 <pressable
                     ref="item-add-photo"
                     a11y-label="Add a photo"
@@ -267,6 +310,7 @@
                 </pressable>
             @endif
 
+            @unless ($selecting)
             <pressable
                 ref="delete-item"
                 a11y-label="Delete {{ $item['name'] }}"
@@ -275,12 +319,14 @@
             >
                 <text font="semibold" class="text-center text-lg text-theme-destructive">Delete {{ $item['name'] }}</text>
             </pressable>
+            @endunless
         </column>
     </scroll-view>
 
     @include('native.parent-picker-sheet', [
         'refPrefix' => 'move',
         'topLevelLabel' => $item['type'] === ItemType::Location ? 'Put it with the places in your home' : null,
+        ...($movingSelected ? $this->selectedMoveCopy : []),
         'selectedParent' => $this->selectedParent,
         'browsedParent' => $this->browsedParent,
         'parentPickerRows' => $this->parentPickerRows,
