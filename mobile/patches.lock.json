@@ -1,5 +1,5 @@
 {
-    "_hash": "48ba72f2fd7b2fbc744d60a9221f78440f277723b2b36231a642f171b76157f3",
+    "_hash": "2d9f65957f25bc2789af43ac22d93d1345d7752cb6a608431ff57bab298558fc",
     "patches": {
         "nativephp/mobile-camera": [
             {
@@ -101,6 +101,18 @@
                 "description": "iOS: build the app icon from the Icon Composer file set in nativephp.ios_icon so iOS 26 gets the Liquid Glass light, dark and tinted variants",
                 "url": "patches/nativephp-mobile-ios-icon-composer.patch",
                 "sha256": "cd0742065e808d36aeaf756b606cb8e4e03c5b15dd49d2f8d2baf460ec9ea482",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
+            }
+        ],
+        "nativephp/mobile-secure-storage": [
+            {
+                "package": "nativephp/mobile-secure-storage",
+                "description": "Android: declare the secure storage functions as context-only so a cold-boot background task (sunny:sync) can read the Sunny token",
+                "url": "patches/nativephp-mobile-secure-storage-android-context-only.patch",
+                "sha256": "681c0da59d64e09495929bb93e57ceee27ea2a2426d474887021012e8408e745",
                 "depth": 1,
                 "extra": {
                     "provenance": "root"
