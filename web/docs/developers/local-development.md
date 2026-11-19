@@ -68,12 +68,12 @@ composer run ci:check
 ```
 
 - `test` clears cached configuration and runs the Pest suite.
-- `lint:check` checks Rector and Duster without changing files.
+- `lint:check` checks Rector and Pint without changing files.
 - `stan` runs PHPStan.
 - `ci:check` applies the repository's lint fixes and runs the tests, matching
   the continuous-integration workflow.
 
-Use `composer run lint` when you want Rector and Duster to fix the working tree.
+Use `composer run lint` when you want Rector and Pint to fix the working tree.
 
 Many Livewire page and component tests are colocated beside their Blade and PHP
 files under `resources/views`. Conventional feature, unit, and browser tests

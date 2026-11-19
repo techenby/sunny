@@ -28,7 +28,6 @@
 - [sabre/vobject](https://github.com/sabre-io/vobject)
 - [saloonphp/saloon](https://docs.saloon.dev/)
 - [spatie/simple-excel](https://github.com/spatie/simple-excel)
-- [tightenco/duster](https://github.com/tighten/duster)
 
 **Notable NPM Packages:**
 - [@laravel/passkeys](https://www.npmjs.com/package/@laravel/passkeys)
@@ -53,13 +52,13 @@ and is served by Laradocs at `/docs`.
     Runs multiple development tasks in parallel using `npx concurrently`, including serving the site, running the queues, running `pail`, and compiling frontend assets.
 
 - `composer run lint`
-    Runs Rector and Duster to standardize the codebase.
+    Runs Rector and Pint to standardize the codebase.
 
 - `composer run lint:check`
-    Runs Rector and Duster in check-only mode, without applying fixes.
+    Runs Rector and Pint in check-only mode, without applying fixes.
 
 - `composer run ci:check`
-    Runs all the commands that GitHub Actions will run, including Rector, Duster, PHPStan, and the test suite.
+    Runs all the commands that GitHub Actions will run, including Rector, Pint, PHPStan, and the test suite.
 
 - `composer run stan`
     Runs PHPStan to check the codebase for type safety.

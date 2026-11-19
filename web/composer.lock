@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f48ebc3000e7fc94c20e471def094864",
+    "content-hash": "8fb0ad812cb1f1d96e1094f6d64fbf4a",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -16450,75 +16450,6 @@
                 "source": "https://github.com/ta-tikoma/phpunit-architecture-test/tree/0.8.7"
             },
             "time": "2026-02-17T17:25:14+00:00"
-        },
-        {
-            "name": "tightenco/duster",
-            "version": "v3.4.7",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/tighten/duster.git",
-                "reference": "cc441ee6fa86efa3c70ac70d0e8256fad205635b"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/tighten/duster/zipball/cc441ee6fa86efa3c70ac70d0e8256fad205635b",
-                "reference": "cc441ee6fa86efa3c70ac70d0e8256fad205635b",
-                "shasum": ""
-            },
-            "require": {
-                "php": "^8.2.0"
-            },
-            "require-dev": {
-                "friendsofphp/php-cs-fixer": "^3.95",
-                "laravel-zero/framework": "^12.1",
-                "laravel/agent-detector": "^2.0",
-                "laravel/pint": "^1.29",
-                "nunomaduro/termwind": "^2.4",
-                "spatie/invade": "^1.1",
-                "squizlabs/php_codesniffer": "^4.0",
-                "tightenco/tlint": "^9.6"
-            },
-            "bin": [
-                "builds/duster"
-            ],
-            "type": "project",
-            "autoload": {
-                "psr-4": {
-                    "App\\": "app/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Matt Stauffer",
-                    "email": "matt@tighten.com",
-                    "homepage": "https://tighten.com",
-                    "role": "Developer"
-                },
-                {
-                    "name": "Anthony Clark",
-                    "email": "anthony@tighten.com",
-                    "homepage": "https://tighten.com",
-                    "role": "Developer"
-                }
-            ],
-            "description": "Automatic configuration for Laravel apps to apply Tighten's standard linting & code standards.",
-            "homepage": "https://github.com/tighten/duster",
-            "keywords": [
-                "Code style",
-                "duster",
-                "laravel",
-                "php",
-                "tightenco"
-            ],
-            "support": {
-                "issues": "https://github.com/tighten/duster/issues",
-                "source": "https://github.com/tighten/duster"
-            },
-            "time": "2026-09-02T05:46:47+00:00"
         }
     ],
     "aliases": [],
@@ -16530,5 +16461,5 @@
         "php": "^8.3"
     },
     "platform-dev": {},
-    "plugin-api-version": "2.9.0"
+    "plugin-api-version": "2.11.0"
 }
