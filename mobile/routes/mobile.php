@@ -1,6 +1,8 @@
 <?php
 
 use App\Layouts\TabsLayout;
+use App\NativeComponents\Account;
+use App\NativeComponents\ChangePassword;
 use App\NativeComponents\CookRecipe;
 use App\NativeComponents\CreateInventoryItem;
 use App\NativeComponents\CreateList;
@@ -40,6 +42,8 @@ Route::native('/setup', SetUpHome::class);
 Route::nativeGroup(TabsLayout::class, function () {
     Route::native('/dashboard', Dashboard::class);
     Route::native('/preferences', Preferences::class);
+    Route::native('/preferences/account', Account::class);
+    Route::native('/preferences/password', ChangePassword::class);
     Route::native('/preferences/delete-account', DeleteAccount::class);
     Route::native('/today', Today::class);
     Route::native('/routines', Routines::class);

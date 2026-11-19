@@ -4,6 +4,50 @@
 <native:top-bar title="Preferences" back />
 
 <list ref="preferences" fill class="bg-theme-background">
+    <list-section header="Account" footer="Two-factor authentication, passkeys and API tokens open on {{ $this->siteHost() }}.">
+        @if ($profile)
+            <list-item
+                ref="account"
+                :headline="$profile['name']"
+                :supporting="$profile['email']"
+                :leadingMonogram="$this->initials($profile['name'])"
+                :leadingMonogramColor="theme('primary')"
+                :trailingIconIos="Ios::ChevronRight"
+                :trailingIconAndroid="Android::ChevronRight"
+                @navigate="'/preferences/account'"
+            />
+        @else
+            <list-item
+                ref="account"
+                headline="Name and email"
+                :leadingIconIos="Ios::PersonCropCircle"
+                :leadingIconAndroid="Android::AccountCircle"
+                :trailingIconIos="Ios::ChevronRight"
+                :trailingIconAndroid="Android::ChevronRight"
+                @navigate="'/preferences/account'"
+            />
+        @endif
+        <list-item
+            ref="password"
+            headline="Password"
+            :leadingIconIos="Ios::Key"
+            :leadingIconAndroid="Android::Key"
+            :trailingIconIos="Ios::ChevronRight"
+            :trailingIconAndroid="Android::ChevronRight"
+            @navigate="'/preferences/password'"
+        />
+        <list-item
+            ref="security-settings"
+            headline="Security settings"
+            :leadingIconIos="Ios::CheckmarkShield"
+            :leadingIconAndroid="Android::Security"
+            :trailingIconIos="Ios::ArrowUpRight"
+            :trailingIconAndroid="Android::OpenInNew"
+            a11y-hint="Opens the Sunny website"
+            @tap="openSecuritySettings"
+        />
+    </list-section>
+
     <list-section header="Team" :footer="$this->teamOptions ? 'Recipes, inventory, routines and lists show for the team you pick.' : 'Pull down on Summary to download your teams.'">
         @forelse ($this->teamOptions as $id => $name)
             <list-item
