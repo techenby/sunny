@@ -140,7 +140,7 @@ it('offers to log in instead when the email already has an account', function ()
         ->assertSet('email', 'alex@example.com');
 });
 
-it('goes back to log in when it came from there', function (): void {
+it('goes back to log in with the email when it came from there', function (): void {
     Saloon::fake([RegisterRequest::class => MockResponse::make(['errors' => ['email' => ['The email has already been taken.']]], 422)]);
 
     Native::visit('/login')
@@ -152,7 +152,10 @@ it('goes back to log in when it came from there', function (): void {
         ->input('register-password-confirmation', 'Correct-Horse-9!')
         ->tap('register-submit')
         ->tap('register-login-instead')
-        ->assertWentBack();
+        ->assertWentBack()
+        ->goBack()
+        ->assertScreen(Login::class)
+        ->assertSet('email', 'alex@example.com');
 });
 
 it('checks the form before contacting Sunny', function (): void {

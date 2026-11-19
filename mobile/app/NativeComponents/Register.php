@@ -5,6 +5,7 @@ namespace App\NativeComponents;
 use App\Http\Integrations\Sunny\SunnyAuth;
 use App\Http\Integrations\Sunny\SunnyConnector;
 use App\Support\Toast;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 use Native\Mobile\Facades\Browser;
 use Native\Mobile\Facades\Network;
@@ -77,13 +78,19 @@ class Register extends Component
 
     public function showLogin(): void
     {
+        $email = trim($this->email);
+
         if ($this->data('from') === 'login') {
+            if ($email !== '') {
+                Cache::put(Login::EMAIL_HANDOFF, $email, now()->addMinutes(5));
+            }
+
             $this->back();
 
             return;
         }
 
-        $this->navigate('/login', ['from' => 'register', 'email' => trim($this->email)]);
+        $this->navigate('/login', ['from' => 'register', 'email' => $email]);
     }
 
     public function openTerms(): void

@@ -3,6 +3,7 @@
 namespace App\NativeComponents;
 
 use App\Http\Integrations\Sunny\SunnyAuth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
 use JsonException;
@@ -13,6 +14,8 @@ use UnexpectedValueException;
 
 class Login extends Component
 {
+    public const EMAIL_HANDOFF = 'login.email';
+
     public string $email = '';
 
     public string $password = '';
@@ -30,6 +33,15 @@ class Login extends Component
     public function mount(): void
     {
         $this->email = (string) $this->data('email', '');
+    }
+
+    public function onResume(): void
+    {
+        $email = Cache::pull(self::EMAIL_HANDOFF);
+
+        if (is_string($email) && $email !== '') {
+            $this->email = $email;
+        }
     }
 
     public function submit(): void
