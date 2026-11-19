@@ -17,12 +17,11 @@ jobs:
     uses: ./.github/workflows/web-rector-fix.yml
     secrets: inherit
 
-  duster:
+  pint:
     needs: rector
-    uses: ./.github/workflows/web-duster-fix-blame.yml
+    uses: ./.github/workflows/web-pint-fix.yml
     secrets: inherit
 
   tests:
-    needs: duster
     uses: ./.github/workflows/web-tests.yml
     secrets: inherit

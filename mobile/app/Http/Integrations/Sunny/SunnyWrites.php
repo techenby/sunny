@@ -2,6 +2,7 @@
 
 namespace App\Http\Integrations\Sunny;
 
+use App\Http\Integrations\Sunny\Requests\ChecklistActionRequest;
 use App\Http\Integrations\Sunny\Requests\DeleteRecordRequest;
 use App\Http\Integrations\Sunny\Requests\ForceDeleteItemRequest;
 use App\Http\Integrations\Sunny\Requests\RestoreItemRequest;
@@ -41,7 +42,7 @@ class SunnyWrites
                         continue;
                     }
 
-                    if (! $this->photoOrderIsReady($write)) {
+                    if (! $this->orderIsReady($write)) {
                         continue;
                     }
 
@@ -54,26 +55,31 @@ class SunnyWrites
         }
     }
 
-    private function photoOrderIsReady(PendingWrite $write): bool
+    private function orderIsReady(PendingWrite $write): bool
     {
-        $order = $write->payload['photo_order'] ?? null;
+        [$key, $childType] = match ($write->resource) {
+            'items' => ['photo_order', 'item_photos'],
+            'routines' => ['step_order', 'routine_steps'],
+            default => [null, null],
+        };
+        $order = $key !== null ? ($write->payload[$key] ?? null) : null;
 
-        if ($write->resource !== 'items' || ! is_array($order)) {
+        if (! is_array($order) || ($key === 'step_order' && $write->isCreate())) {
             return true;
         }
 
-        $uploading = PendingWrite::query()->forCurrentServer()->where('resource', 'item_photos')->whereNull('error')->where('deletes', false)
+        $creating = PendingWrite::query()->forCurrentServer()->where('resource', $childType)->whereNull('error')->where('deletes', false)
             ->whereIn('record_id', array_filter($order, fn (int $id): bool => $id < 0))
             ->exists();
 
-        if ($uploading) {
+        if ($creating) {
             return false;
         }
 
         $kept = array_values(array_filter($order, fn (int $id): bool => $id > 0));
 
         if ($kept !== $order) {
-            $write->update(['payload' => [...$write->payload, 'photo_order' => $kept]]);
+            $write->update(['payload' => [...$write->payload, $key => $kept]]);
         }
 
         return true;
@@ -90,6 +96,12 @@ class SunnyWrites
 
         if ($write->resource === 'routine_occurrence_steps') {
             $this->sendRoutineStep($write, $team, $connector);
+
+            return;
+        }
+
+        if (in_array($write->resource, ['checklist_clears', 'checklist_resets'], true)) {
+            $this->sendChecklistAction($write, $team, $connector);
 
             return;
         }
@@ -115,7 +127,7 @@ class SunnyWrites
 
         $photoPath = $write->photo_path !== null && is_file($write->photo_path) ? $write->photo_path : null;
         $payload = $owner !== null ? Arr::except($write->payload, $owner[1]) : $write->payload;
-        $payload = $write->isCreate() ? [...$payload, 'client_uuid' => $write->client_uuid] : $payload;
+        $payload = $write->isCreate() ? [...Arr::except($payload, 'step_order'), 'client_uuid' => $write->client_uuid] : $payload;
         [$ownerKey, $ownerId] = $owner !== null ? [$owner[1], $write->payload[$owner[1]]] : ['team_id', $write->team_id];
 
         try {
@@ -142,6 +154,13 @@ class SunnyWrites
             }
 
             $current = PendingWrite::query()->for($write->resource, $record['id'])->first();
+
+            if ($current !== null && $current->version === $write->version && $write->isCreate() && isset($write->payload['step_order'])) {
+                $current->update(['payload' => Arr::only($current->payload, 'step_order'), 'client_uuid' => null]);
+                $this->store->saveRecord($write->resource, $record);
+
+                return;
+            }
 
             if ($current === null || $current->version === $write->version) {
                 $current?->delete();
@@ -222,6 +241,19 @@ class SunnyWrites
                 RoutineOccurrenceStep::query()->find($write->record_id)?->update(['completed_at' => $step['completed_at'] ?? null]);
             }
         });
+    }
+
+    private function sendChecklistAction(PendingWrite $write, Team $team, SunnyConnector $connector): void
+    {
+        $action = $write->resource === 'checklist_clears' ? 'clear-completed' : 'reset';
+
+        try {
+            $connector->send(new ChecklistActionRequest($team->slug, $write->record_id, $action));
+        } catch (RequestException $exception) {
+            throw_if($this->rejectionMessage($exception) === null, $exception);
+        }
+
+        $write->delete();
     }
 
     /**

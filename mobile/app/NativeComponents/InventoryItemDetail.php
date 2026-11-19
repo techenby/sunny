@@ -2,23 +2,35 @@
 
 namespace App\NativeComponents;
 
+use App\Actions\DuplicateItem;
 use App\Concerns\ChecksSunnySync;
 use App\Concerns\ChoosesInventoryParent;
+use App\Concerns\MovesItemToTeam;
+use App\Concerns\SelectsInventoryItems;
 use App\Concerns\ShowsQueuedChange;
 use App\Enums\ItemType;
 use App\Http\Integrations\Sunny\SunnyOutbox;
+use App\Http\Integrations\Sunny\SunnyStore;
 use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Icons\Android;
 use App\Icons\Ios;
 use App\Models\ItemPhoto;
+use App\Models\PendingWrite;
+use App\Models\Team;
 use App\Support\Toast;
+use App\Support\ToastAction;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use JsonException;
 use Native\Mobile\Attributes\Computed;
 use Native\Mobile\Attributes\On;
 use Native\Mobile\Edge\Layouts\Builders\NavAction;
 use Native\Mobile\Events\Alert\ButtonPressed;
 use Native\Mobile\Facades\Dialog;
+use RuntimeException;
+use Saloon\Exceptions\Request\FatalRequestException;
+use Saloon\Exceptions\Request\RequestException;
 
 class InventoryItemDetail extends Component
 {
@@ -27,11 +39,32 @@ class InventoryItemDetail extends Component
         selectParent as protected chooseParent;
         selectTopLevel as protected chooseTopLevel;
     }
+    use MovesItemToTeam;
+    use SelectsInventoryItems;
     use ShowsQueuedChange;
 
     public string $error = '';
 
     public int $photoIndex = 0;
+
+    public bool $showCopies = false;
+
+    public int $copies = 1;
+
+    public ?string $copiesProblem = null;
+
+    public string $copiesError = '';
+
+    public function mount(): void
+    {
+        $this->showMovedToTeam();
+    }
+
+    public function onResume(): void
+    {
+        $this->refreshLocalSyncedData();
+        $this->showMovedToTeam();
+    }
 
     /**
      * @return array{id: int, parent_id: int|null, type: ItemType, name: string, metadata: array<string, string>|null, created_at: string, updated_at: string}|null
@@ -165,6 +198,168 @@ class InventoryItemDetail extends Component
     /**
      * @return list<NavAction>
      */
+    public function moreMenu(): array
+    {
+        return array_values(array_filter([
+            NavAction::make('item-print-label')->label('Print label')->icon(ios: Ios::Qrcode->value, android: Android::QrCode2->value)->press('showQrCode'),
+            NavAction::make('item-make-copies')->label('Make copies')->icon(ios: Ios::SquareOnSquare->value, android: Android::ContentCopy->value)->press('openCopies'),
+            $this->teamMoveTeams() === [] ? null : NavAction::make('item-move-to-team')->label('Move to another team')->icon(ios: Ios::ArrowLeftArrowRight->value, android: Android::SwapHoriz->value)->press('openTeamMove'),
+        ]));
+    }
+
+    public function openCopies(): void
+    {
+        $this->copies = 1;
+        $this->copiesProblem = null;
+        $this->copiesError = '';
+        $this->showCopies = true;
+    }
+
+    public function closeCopies(): void
+    {
+        $this->showCopies = false;
+        $this->copiesProblem = null;
+        $this->copiesError = '';
+    }
+
+    public function changeCopies(int $by): void
+    {
+        $this->copies = max(1, min(DuplicateItem::MAX_COPIES, $this->copies + $by));
+    }
+
+    public function makeCopies(): void
+    {
+        if ($this->item === null) {
+            return;
+        }
+
+        $this->copiesProblem = null;
+        $this->copiesError = '';
+
+        if ($this->hasUnsentChanges()) {
+            try {
+                app(SunnySyncCoordinator::class)->sync();
+            } catch (FatalRequestException) {
+                $this->copiesProblem = 'offline';
+
+                return;
+            } catch (AuthenticationException|RequestException|JsonException|ValidationException|RuntimeException) {
+            }
+
+            $this->refreshLocalSyncedData();
+
+            if ($this->item === null || $this->hasUnsentChanges()) {
+                $this->copiesProblem = 'unsent';
+
+                return;
+            }
+        }
+
+        $team = Team::query()->where('server', SunnyStore::server())->find($this->item['team_id']);
+
+        if (! $team?->slug) {
+            $this->copiesFailed('Sync with Sunny before making copies.');
+
+            return;
+        }
+
+        try {
+            $made = app(DuplicateItem::class)->handle($team, $this->item['id'], $this->copies);
+        } catch (FatalRequestException) {
+            $this->copiesProblem = 'offline';
+
+            return;
+        } catch (RequestException $exception) {
+            $response = $exception->getResponse();
+            $this->copiesFailed(match ($response->status()) {
+                403 => 'You no longer have permission to add things to this team.',
+                404 => $this->item['name'].' is no longer on Sunny.',
+                422 => collect($response->json('errors') ?? [])->flatten()->first() ?? 'Sunny couldn’t make copies.',
+                429 => 'Too many attempts. Please wait before trying again.',
+                default => 'Sunny couldn’t make copies right now.',
+            });
+            app(SunnySyncCoordinator::class)->dispatch();
+
+            return;
+        } catch (AuthenticationException|RuntimeException) {
+            $this->copiesFailed('Unable to read your saved login. Unlock your device and try again.');
+
+            return;
+        } catch (JsonException) {
+            $made = 0;
+        }
+
+        if ($made === 0) {
+            $this->copiesFailed('Sunny didn’t confirm the copies.');
+            app(SunnySyncCoordinator::class)->dispatch();
+
+            return;
+        }
+
+        $this->showCopies = false;
+        $this->refreshLocalSyncedData();
+        Toast::success(trans_choice(':count copy made|:count copies made', $made), action: new ToastAction('View', 'view-copies', ['item' => $this->item['id']]));
+    }
+
+    /**
+     * @param  array{item?: int|float|string}  $data
+     */
+    #[On(Toast::ACTION_PRESSED, when: ['actionId' => 'view-copies'])]
+    public function viewCopies(array $data): void
+    {
+        if ($this->item === null || ! is_numeric($data['item'] ?? null) || (int) $data['item'] !== $this->item['id']) {
+            return;
+        }
+
+        if ($this->parent === null) {
+            $this->navigate('/inventory');
+
+            return;
+        }
+
+        $this->openParent();
+    }
+
+    public function copiesPlace(): string
+    {
+        return match (true) {
+            $this->parent !== null => 'in '.$this->parent['name'],
+            $this->item['type'] === ItemType::Location => 'with the places in your home',
+            default => 'in “Not in a place yet”',
+        };
+    }
+
+    /**
+     * @return array{title: string, message: string}
+     */
+    public function copiesNote(): array
+    {
+        [$title, $message] = match ($this->copiesProblem) {
+            'offline' => ['You’re offline', 'Making copies needs a connection, since Sunny copies the photos for you.'],
+            'unsent' => ['Still sending your changes', 'Sunny copies what it has, so your latest changes need to reach it first.'],
+            default => ['Couldn’t make copies', $this->copiesError],
+        };
+
+        return ['title' => $title, 'message' => $message.' Nothing’s been copied yet.'];
+    }
+
+    protected function copiesFailed(string $message): void
+    {
+        $this->copiesProblem = 'failed';
+        $this->copiesError = $message;
+    }
+
+    protected function hasUnsentChanges(): bool
+    {
+        return $this->item['id'] < 0
+            || $this->queuedChange !== null
+            || PendingWrite::query()->forCurrentServer()->where('resource', 'item_photos')->get()
+                ->contains(fn (PendingWrite $write): bool => ($write->payload['item_id'] ?? null) === $this->item['id']);
+    }
+
+    /**
+     * @return list<NavAction>
+     */
     public function addMenu(): array
     {
         return [
@@ -179,6 +374,8 @@ class InventoryItemDetail extends Component
             return;
         }
 
+        $this->movingSelected = false;
+        unset($this->parentChoices, $this->parentPickerRows, $this->selectedParent, $this->browsedParent, $this->parentTrail);
         $this->parentId = $this->parentChoice($this->item['parent_id']) === null ? null : $this->item['parent_id'];
         $this->openParentPicker();
     }
@@ -186,12 +383,26 @@ class InventoryItemDetail extends Component
     public function selectParent(int $id): void
     {
         $this->chooseParent($id);
+
+        if ($this->movingSelected) {
+            $this->moveSelected();
+
+            return;
+        }
+
         $this->moveItem();
     }
 
     public function selectTopLevel(): void
     {
         $this->chooseTopLevel();
+
+        if ($this->movingSelected) {
+            $this->moveSelected();
+
+            return;
+        }
+
         $this->moveItem();
     }
 
@@ -264,6 +475,8 @@ class InventoryItemDetail extends Component
     {
         if ($id === 'delete-item' && $label === 'Delete') {
             $this->deleteItem();
+        } elseif ($id === 'delete-selected' && $label === 'Delete') {
+            $this->deleteSelected();
         } elseif ($id === 'discard-queued-change' && $label === 'Discard') {
             $this->discardQueuedChange();
         }
@@ -327,7 +540,7 @@ class InventoryItemDetail extends Component
 
     protected function refreshLocalSyncedData(): void
     {
-        unset($this->item, $this->photos, $this->parent, $this->path, $this->children, $this->starterStorage, $this->queuedChange, $this->parentChoices, $this->selectedParent, $this->browsedParent, $this->parentPickerRows, $this->parentTrail);
+        unset($this->item, $this->photos, $this->parent, $this->path, $this->children, $this->starterStorage, $this->queuedChange, $this->parentChoices, $this->selectedParent, $this->browsedParent, $this->parentPickerRows, $this->parentTrail, $this->selectedItems, $this->selectedAll, $this->selectedMoveCopy);
     }
 
     /**
@@ -351,6 +564,10 @@ class InventoryItemDetail extends Component
      */
     protected function unselectableParentIds(): array
     {
+        if ($this->movingSelected) {
+            return $this->selectedWithContentsIds();
+        }
+
         if ($this->item === null) {
             return [];
         }

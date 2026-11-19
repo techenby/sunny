@@ -4,4 +4,5 @@
     'formRef' => 'create-list',
     'submitLabel' => 'Save list',
     'typeOptions' => $this->typeOptions,
+    'ownerOptions' => $this->ownerOptions,
 ])

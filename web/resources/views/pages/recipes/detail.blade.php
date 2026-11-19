@@ -4,6 +4,7 @@
     <div class="space-y-6 lg:col-span-2">
         @php
             $editable ??= false;
+            $showRemixes ??= true;
             $editUrl = $editable ? route('recipes.edit', $recipe) : null;
             $emptyTile = 'bg-amber-200 text-amber-800 dark:bg-amber-400/40 dark:text-amber-200';
         @endphp
@@ -143,51 +144,53 @@
             </flux:card>
         @endif
 
-        @if ($recipe->parent)
+        @if ($showRemixes)
+            @if ($recipe->parent && Auth::user()?->can('view', $recipe->parent))
+                <flux:card>
+                    <flux:heading size="lg" class="mb-2 text-lg!">{{ __('Remixed from') }}</flux:heading>
+                    <flux:link href="{{ route('recipes.show', ['current_team' => $recipe->parent->team, 'recipe' => $recipe->parent]) }}" wire:navigate>
+                        {{ $recipe->parent->name }}
+                    </flux:link>
+                </flux:card>
+            @endif
+
+            @php
+                $remixes = $recipe->remixes()
+                    ->whereKeyNot($recipe->getKey())
+                    ->with('team')
+                    ->latest()
+                    ->get()
+                    ->filter(fn ($remix) => Auth::user()?->can('view', $remix));
+            @endphp
+
             <flux:card>
-                <flux:heading size="lg" class="mb-2 text-lg!">{{ __('Remixed from') }}</flux:heading>
-                <flux:link href="{{ route('recipes.show', $recipe->parent) }}" wire:navigate>
-                    {{ $recipe->parent->name }}
-                </flux:link>
+                <div class="mb-3 flex items-baseline justify-between gap-2">
+                    <flux:heading size="lg" class="text-lg!">{{ __('Remixes') }}</flux:heading>
+                    @if ($remixes->isNotEmpty())
+                        <flux:text size="sm" variant="subtle">{{ $remixes->count() }}</flux:text>
+                    @endif
+                </div>
+
+                @if ($remixes->isEmpty())
+                    <flux:text>{{ __('No remixes yet') }}</flux:text>
+                @else
+                    <ul class="space-y-3">
+                        @foreach ($remixes as $remix)
+                            <li>
+                                <a href="{{ route('recipes.show', ['current_team' => $remix->team, 'recipe' => $remix]) }}" wire:navigate class="group flex items-start gap-3">
+                                    <x-ui.table.thumb icon="arrow-path-rounded-square" size="base" />
+                                    <div class="min-w-0 text-sm">
+                                        <div class="font-medium text-zinc-800 group-hover:text-(--color-accent-content) dark:text-white">{{ $remix->name }}</div>
+                                        <flux:text variant="subtle">
+                                            <time datetime="{{ $remix->created_at->toIso8601String() }}">{{ $remix->created_at->diffForHumans() }}</time>
+                                        </flux:text>
+                                    </div>
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
             </flux:card>
         @endif
-
-        @php
-            $remixes = $recipe->remixes()
-                ->whereKeyNot($recipe->getKey())
-                ->with('team')
-                ->latest()
-                ->get()
-                ->filter(fn ($remix) => Auth::user()?->can('view', $remix));
-        @endphp
-
-        <flux:card>
-            <div class="mb-3 flex items-baseline justify-between gap-2">
-                <flux:heading size="lg" class="text-lg!">{{ __('Remixes') }}</flux:heading>
-                @if ($remixes->isNotEmpty())
-                    <flux:text size="sm" variant="subtle">{{ $remixes->count() }}</flux:text>
-                @endif
-            </div>
-
-            @if ($remixes->isEmpty())
-                <flux:text>{{ __('No remixes yet') }}</flux:text>
-            @else
-                <ul class="space-y-3">
-                    @foreach ($remixes as $remix)
-                        <li>
-                            <a href="{{ route('recipes.show', $remix) }}" wire:navigate class="group flex items-start gap-3">
-                                <x-ui.table.thumb icon="arrow-path-rounded-square" size="base" />
-                                <div class="min-w-0 text-sm">
-                                    <div class="font-medium text-zinc-800 group-hover:text-(--color-accent-content) dark:text-white">{{ $remix->name }}</div>
-                                    <flux:text variant="subtle">
-                                        <time datetime="{{ $remix->created_at->toIso8601String() }}">{{ $remix->created_at->diffForHumans() }}</time>
-                                    </flux:text>
-                                </div>
-                            </a>
-                        </li>
-                    @endforeach
-                </ul>
-            @endif
-        </flux:card>
     </div>
 </div>

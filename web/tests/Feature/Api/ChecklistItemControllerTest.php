@@ -176,6 +176,29 @@ test('update renames an item', function () {
         ->assertJsonPath('data.name', 'Oat milk');
 });
 
+test('update changes and removes an item link', function () {
+    $user = User::factory()->create();
+    $item = ChecklistItem::factory()->for(Checklist::factory()->for($user->currentTeam))->create(['url' => 'https://www.lego.com']);
+    $route = route('api.checklists.items.update', [$user->currentTeam, $item->checklist, $item]);
+
+    $this->actingAs($user)
+        ->patchJson($route, ['url' => 'https://www.lego.com/product/orchid-10311'])
+        ->assertOk()
+        ->assertJsonPath('data.url', 'https://www.lego.com/product/orchid-10311');
+
+    $this->actingAs($user)
+        ->patchJson($route, ['url' => 'lego orchid'])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('url');
+
+    $this->actingAs($user)
+        ->patchJson($route, ['url' => null])
+        ->assertOk()
+        ->assertJsonPath('data.url', null);
+
+    expect($item->fresh()->url)->toBeNull();
+});
+
 test('update completes an item and records who completed it', function () {
     $user = User::factory()->create();
     $item = ChecklistItem::factory()->for(Checklist::factory()->for($user->currentTeam))->create();

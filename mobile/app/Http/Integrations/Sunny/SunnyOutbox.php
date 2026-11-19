@@ -2,6 +2,7 @@
 
 namespace App\Http\Integrations\Sunny;
 
+use App\Models\ChecklistItem;
 use App\Models\Item;
 use App\Models\ItemPhoto;
 use App\Models\PendingWrite;
@@ -132,6 +133,10 @@ class SunnyOutbox
             if ($resource === 'routines') {
                 $this->forgetRoutineOccurrences($id);
             }
+
+            if ($resource === 'checklists') {
+                PendingWrite::query()->forCurrentServer()->whereIn('resource', ['checklist_clears', 'checklist_resets'])->where('record_id', $id)->delete();
+            }
         });
     }
 
@@ -212,6 +217,37 @@ class SunnyOutbox
         });
     }
 
+    public function clearCompleted(int $teamId, int $checklistId): void
+    {
+        $this->ensureRecordInTeam('checklists', $teamId, $checklistId);
+
+        DB::transaction(function () use ($teamId, $checklistId): void {
+            $pending = PendingWrite::query()->forCurrentServer()->where('resource', 'checklist_items')->pluck('record_id');
+
+            foreach (ChecklistItem::query()->where('checklist_id', $checklistId)->whereNotNull('completed_at')->get() as $item) {
+                $pending->contains($item->id) ? $this->delete('checklist_items', $teamId, $item->id) : $item->delete();
+            }
+
+            $this->queueChecklistAction('checklist_clears', $teamId, $checklistId);
+        });
+    }
+
+    public function resetChecklist(int $teamId, int $checklistId): void
+    {
+        $this->ensureRecordInTeam('checklists', $teamId, $checklistId);
+
+        DB::transaction(function () use ($teamId, $checklistId): void {
+            $ids = ChecklistItem::query()->where('checklist_id', $checklistId)->pluck('id');
+            ChecklistItem::query()->whereKey($ids)->whereNotNull('completed_at')->update(['completed_at' => null, 'completed_by' => null, 'updated_at' => now()]);
+
+            PendingWrite::query()->forCurrentServer()->where('resource', 'checklist_items')->whereIn('record_id', $ids)->get()
+                ->filter(fn (PendingWrite $write): bool => ($write->payload['completed'] ?? false) === true)
+                ->each(fn (PendingWrite $write) => $write->update(['payload' => [...$write->payload, 'completed' => false], 'version' => $write->version + 1]));
+
+            $this->queueChecklistAction('checklist_resets', $teamId, $checklistId);
+        });
+    }
+
     /**
      * Throw away a record's queued change. A record Sunny has never seen goes with it: anything inside it moves to the top level, and a list's items are dropped.
      */
@@ -258,12 +294,18 @@ class SunnyOutbox
             $this->rewritePendingReference($resource, 'parent_id', $localId, $serverId);
         }
 
-        if ($resource === 'item_photos') {
-            PendingWrite::query()->forCurrentServer()->where('resource', 'items')->get()
-                ->filter(fn (PendingWrite $write): bool => in_array($localId, $write->payload['photo_order'] ?? [], true))
+        [$ownerType, $orderKey] = match ($resource) {
+            'item_photos' => ['items', 'photo_order'],
+            'routine_steps' => ['routines', 'step_order'],
+            default => [null, null],
+        };
+
+        if ($ownerType !== null) {
+            PendingWrite::query()->forCurrentServer()->where('resource', $ownerType)->get()
+                ->filter(fn (PendingWrite $write): bool => in_array($localId, $write->payload[$orderKey] ?? [], true))
                 ->each(fn (PendingWrite $write) => $write->update(['payload' => [
                     ...$write->payload,
-                    'photo_order' => array_map(fn (int $id): int => $id === $localId ? $serverId : $id, $write->payload['photo_order']),
+                    $orderKey => array_map(fn (int $id): int => $id === $localId ? $serverId : $id, $write->payload[$orderKey]),
                 ]]));
         }
     }
@@ -345,6 +387,17 @@ class SunnyOutbox
 
         return Item::onlyTrashed()->forCurrentServer()->where('team_id', $teamId)->find($id)
             ?? throw ValidationException::withMessages(['record' => 'This item is no longer in Recently deleted. Sync with Sunny.']);
+    }
+
+    private function queueChecklistAction(string $resource, int $teamId, int $checklistId): void
+    {
+        PendingWrite::query()->for($resource, $checklistId)->delete();
+
+        if ($checklistId > 0) {
+            PendingWrite::query()->create([
+                'server' => SunnyStore::server(), 'resource' => $resource, 'record_id' => $checklistId, 'team_id' => $teamId, 'payload' => [], 'version' => 1,
+            ]);
+        }
     }
 
     private function newRecord(string $resource, int $teamId, array $payload): Model

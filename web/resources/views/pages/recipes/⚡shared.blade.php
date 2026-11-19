@@ -7,7 +7,8 @@ use Laravel\Head\Facades\Head;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-new #[Layout('layouts::guest')] class extends Component {
+new #[Layout('layouts::guest')] class extends Component
+{
     public Recipe $recipe;
 
     public function mount(string $shareToken): void
@@ -50,5 +51,5 @@ new #[Layout('layouts::guest')] class extends Component {
         @endauth
     </div>
 
-    @include('pages.recipes.detail')
+    @include('pages.recipes.detail', ['showRemixes' => false])
 </div>

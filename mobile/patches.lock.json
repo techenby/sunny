@@ -107,6 +107,18 @@
                 }
             }
         ],
+        "nativephp/mobile-secure-storage": [
+            {
+                "package": "nativephp/mobile-secure-storage",
+                "description": "Android: declare the secure storage functions as context-only so a cold-boot background task (sunny:sync) can read the Sunny token",
+                "url": "patches/nativephp-mobile-secure-storage-android-context-only.patch",
+                "sha256": "681c0da59d64e09495929bb93e57ceee27ea2a2426d474887021012e8408e745",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
+            }
+        ],
         "nativephp/mobile-scanner": [
             {
                 "package": "nativephp/mobile-scanner",

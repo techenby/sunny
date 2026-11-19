@@ -7,11 +7,19 @@ use App\Concerns\ShowsQueuedChange;
 use App\Enums\ChecklistType;
 use App\Http\Integrations\Sunny\SunnyOutbox;
 use App\Http\Integrations\Sunny\SunnySyncCoordinator;
+use App\Icons\Android;
+use App\Icons\Ios;
 use App\Models\PendingWrite;
+use App\Support\Toast;
+use App\Support\ToastAction;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
 use Native\Mobile\Attributes\On;
+use Native\Mobile\Edge\Layouts\Builders\NavAction;
 use Native\Mobile\Events\Alert\ButtonPressed;
 use Native\Mobile\Facades\Browser;
 use Native\Mobile\Facades\Dialog;
@@ -23,9 +31,15 @@ class ListDetail extends Component
 
     public string $newItem = '';
 
+    public string $newItemUrl = '';
+
     public ?int $editingItemId = null;
 
     public string $editingName = '';
+
+    public string $editingUrl = '';
+
+    public string $linkError = '';
 
     public string $error = '';
 
@@ -39,7 +53,7 @@ class ListDetail extends Component
     }
 
     /**
-     * @return list<array{id: int, name: string, url: string|null, completed: bool, error: string|null}>
+     * @return list<array{id: int, name: string, url: string|null, domain: string|null, completed: bool, error: string|null}>
      */
     #[Computed]
     public function items(): array
@@ -56,9 +70,25 @@ class ListDetail extends Component
             'id' => $item['id'],
             'name' => $item['name'],
             'url' => $item['url'],
+            'domain' => $item['url'] !== null ? self::domainOf($item['url']) : null,
             'completed' => $item['completed_at'] !== null,
             'error' => $errors[$item['id']] ?? null,
         ])->all();
+    }
+
+    /**
+     * @return list<array{id: int, name: string, url: string|null, domain: string|null, completed: bool, error: string|null}>
+     */
+    #[Computed]
+    public function completedItems(): array
+    {
+        return array_values(array_filter($this->items, fn (array $item): bool => $item['completed']));
+    }
+
+    #[Computed]
+    public function takesLinks(): bool
+    {
+        return ($this->checklist['type'] ?? null) === ChecklistType::Wishlist;
     }
 
     #[Computed]
@@ -72,6 +102,7 @@ class ListDetail extends Component
     public function addItem(string $text = ''): void
     {
         $name = trim($text !== '' ? $text : $this->newItem);
+        $url = self::withScheme($this->newItemUrl);
 
         if ($this->checklist === null || $name === '') {
             return;
@@ -83,9 +114,33 @@ class ListDetail extends Component
             return;
         }
 
-        if ($this->change(fn (SunnyOutbox $outbox) => $outbox->queue('checklist_items', $this->checklist['team_id'], ['checklist_id' => $this->checklist['id'], 'name' => $name]))) {
-            $this->newItem = '';
+        if (($this->linkError = $this->problemWithLink($url)) !== '') {
+            return;
         }
+
+        $payload = ['checklist_id' => $this->checklist['id'], 'name' => $name, ...($url !== '' ? ['url' => $url] : [])];
+
+        if ($this->change(fn (SunnyOutbox $outbox) => $outbox->queue('checklist_items', $this->checklist['team_id'], $payload))) {
+            $this->newItem = '';
+            $this->newItemUrl = '';
+        }
+    }
+
+    public function submitNewItemUrl(string $url = ''): void
+    {
+        $this->newItemUrl = $url;
+        $this->addItem();
+    }
+
+    public function updatedNewItemUrl(string $url): void
+    {
+        $this->linkError = $this->problemWithLink($url, typing: true);
+    }
+
+    public function clearNewItemUrl(): void
+    {
+        $this->newItemUrl = '';
+        $this->linkError = '';
     }
 
     public function toggleItem(int $id): void
@@ -113,6 +168,8 @@ class ListDetail extends Component
         if ($item !== null) {
             $this->editingItemId = $id;
             $this->editingName = $item['name'];
+            $this->editingUrl = $item['url'] ?? '';
+            $this->linkError = '';
             $this->error = '';
         }
     }
@@ -121,6 +178,7 @@ class ListDetail extends Component
     {
         $item = collect($this->items)->firstWhere('id', $this->editingItemId);
         $name = trim($text ?? $this->editingName);
+        $url = self::withScheme($this->editingUrl);
 
         if ($item === null) {
             $this->cancelEdit();
@@ -140,23 +198,76 @@ class ListDetail extends Component
             return;
         }
 
-        if ($name === $item['name'] || $this->change(fn (SunnyOutbox $outbox) => $outbox->queue('checklist_items', $this->checklist['team_id'], ['name' => $name], $item['id']))) {
+        if (($this->linkError = $this->problemWithLink($url)) !== '') {
+            return;
+        }
+
+        $changes = [
+            ...($name !== $item['name'] ? ['name' => $name] : []),
+            ...(($url !== '' ? $url : null) !== $item['url'] ? ['url' => $url !== '' ? $url : null] : []),
+        ];
+
+        if ($changes === [] || $this->change(fn (SunnyOutbox $outbox) => $outbox->queue('checklist_items', $this->checklist['team_id'], $changes, $item['id']))) {
             $this->cancelEdit();
         }
+    }
+
+    public function submitEditingUrl(string $url = ''): void
+    {
+        $this->editingUrl = $url;
+        $this->saveItem();
+    }
+
+    public function updatedEditingUrl(string $url): void
+    {
+        $this->linkError = $this->problemWithLink($url, typing: true);
+    }
+
+    public function clearEditingUrl(): void
+    {
+        $this->editingUrl = '';
+        $this->linkError = '';
+    }
+
+    public function removeLink(): void
+    {
+        $this->editingUrl = '';
+        $this->saveItem();
     }
 
     public function cancelEdit(): void
     {
         $this->editingItemId = null;
         $this->editingName = '';
+        $this->editingUrl = '';
+        $this->linkError = '';
         $this->error = '';
     }
 
     public function removeItem(int $id): void
     {
-        if (collect($this->items)->contains('id', $id)) {
-            $this->change(fn (SunnyOutbox $outbox) => $outbox->delete('checklist_items', $this->checklist['team_id'], $id));
+        if (! collect($this->items)->contains('id', $id)) {
+            return;
         }
+
+        if ($this->editingItemId === $id) {
+            $this->cancelEdit();
+        }
+
+        $this->change(fn (SunnyOutbox $outbox) => $outbox->delete('checklist_items', $this->checklist['team_id'], $id));
+    }
+
+    /**
+     * @param  array{id: int, name: string, url: string|null}  $item
+     * @return list<NavAction>
+     */
+    public function itemMenu(array $item): array
+    {
+        return array_values(array_filter([
+            NavAction::make('list-item-'.$item['id'].'-edit')->label('Edit')->icon(ios: Ios::Pencil->value, android: Android::Edit->value)->press('editItem('.$item['id'].')'),
+            $item['url'] !== null ? NavAction::make('list-item-'.$item['id'].'-open-link')->label('Open link')->icon(ios: Ios::ArrowUpRight->value, android: Android::OpenInNew->value)->press('openItemLink('.$item['id'].')') : null,
+            NavAction::make('list-item-'.$item['id'].'-remove')->label('Remove')->icon(ios: Ios::Trash->value, android: Android::Delete->value)->press('removeItem('.$item['id'].')')->destructive(),
+        ]));
     }
 
     public function confirmDeleteList(): void
@@ -171,11 +282,84 @@ class ListDetail extends Component
         ])->id('delete-list')->show();
     }
 
+    public function confirmRemoveDone(): void
+    {
+        $names = array_column($this->completedItems, 'name');
+
+        if ($this->checklist === null || $names === []) {
+            return;
+        }
+
+        $named = count($names) > 3 ? implode(', ', array_slice($names, 0, 3)).' and '.(count($names) - 3).' more' : Arr::join($names, ', ', ' and ');
+
+        Dialog::alert(
+            trans_choice('Remove :count done item?|Remove :count done items?', count($names)),
+            $named.' will be removed from '.$this->checklist['name'].' for everyone on your team.',
+            [
+                ['label' => 'Cancel', 'style' => 'cancel'],
+                ['label' => 'Remove', 'style' => 'destructive'],
+            ],
+        )->id('remove-done')->show();
+    }
+
+    public function removeDone(): void
+    {
+        if ($this->checklist === null || $this->completedItems === []) {
+            return;
+        }
+
+        if (in_array($this->editingItemId, array_column($this->completedItems, 'id'), true)) {
+            $this->cancelEdit();
+        }
+
+        $this->change(fn (SunnyOutbox $outbox) => $outbox->clearCompleted($this->checklist['team_id'], $this->checklist['id']));
+    }
+
+    public function uncheckAll(): void
+    {
+        $ids = array_column($this->completedItems, 'id');
+
+        if ($this->checklist !== null && $ids !== [] && $this->change(fn (SunnyOutbox $outbox) => $outbox->resetChecklist($this->checklist['team_id'], $this->checklist['id']))) {
+            Toast::success(trans_choice(':count item unchecked|:count items unchecked', count($ids)), action: new ToastAction('Undo', 'undo-uncheck', [
+                'list' => $this->checklist['id'],
+                'items' => $ids,
+            ]));
+        }
+    }
+
+    /**
+     * @param  array{list: int, items: list<int>}  $data
+     */
+    #[On(Toast::ACTION_PRESSED, when: ['actionId' => 'undo-uncheck'])]
+    public function undoUncheckAll(array $data): void
+    {
+        if ($this->checklist === null || (int) $data['list'] !== $this->checklist['id']) {
+            return;
+        }
+
+        $unchecked = array_column(array_filter($this->items, fn (array $item): bool => ! $item['completed']), 'id');
+        $ids = array_values(array_intersect(array_map(intval(...), $data['items']), $unchecked));
+
+        if ($ids === []) {
+            return;
+        }
+
+        $this->change(function (SunnyOutbox $outbox) use ($ids): void {
+            $outbox->discard('checklist_resets', $this->checklist['id']);
+
+            foreach ($ids as $id) {
+                $outbox->queue('checklist_items', $this->checklist['team_id'], ['completed' => true], $id);
+            }
+        });
+    }
+
     #[On(ButtonPressed::class)]
     public function onAlertButtonPressed(string $label, ?string $id = null): void
     {
         if ($id === 'delete-list' && $label === 'Delete') {
             $this->deleteList();
+        } elseif ($id === 'remove-done' && $label === 'Remove') {
+            $this->removeDone();
         } elseif ($id === 'discard-queued-change' && $label === 'Discard') {
             $this->discardQueuedChange();
         }
@@ -198,7 +382,7 @@ class ListDetail extends Component
 
     protected function refreshLocalSyncedData(): void
     {
-        unset($this->checklist, $this->items, $this->summary, $this->queuedChange);
+        unset($this->checklist, $this->items, $this->completedItems, $this->takesLinks, $this->summary, $this->queuedChange);
     }
 
     protected function queuedResource(): string
@@ -214,6 +398,44 @@ class ListDetail extends Component
     public function render(): View
     {
         return view('native.list-detail');
+    }
+
+    private static function domainOf(string $url): string
+    {
+        $host = parse_url($url, PHP_URL_HOST);
+
+        return is_string($host) && $host !== '' ? Str::chopStart(Str::lower($host), 'www.') : $url;
+    }
+
+    private static function withScheme(string $url): string
+    {
+        $url = trim($url);
+
+        if ($url === '' || (preg_match('~^[a-z][a-z0-9+.-]*:~i', $url, $scheme) === 1 && ! str_contains($scheme[0], '.'))) {
+            return $url;
+        }
+
+        return 'https://'.$url;
+    }
+
+    private function problemWithLink(string $url, bool $typing = false): string
+    {
+        $url = trim($url);
+
+        if ($url === '' || ($typing && (str_starts_with('https://', Str::lower($url)) || str_starts_with('http://', Str::lower($url))))) {
+            return '';
+        }
+
+        $url = self::withScheme($url);
+
+        if (mb_strlen($url) > 2048) {
+            return 'The link is too long (2048 characters max).';
+        }
+
+        $isWebAddress = Validator::make(['url' => $url], ['url' => 'url:http,https'])->passes()
+            && ($typing || str_contains((string) parse_url($url, PHP_URL_HOST), '.'));
+
+        return $isWebAddress ? '' : 'That’s not a web address. Try one like lego.com';
     }
 
     private function change(callable $callback): bool

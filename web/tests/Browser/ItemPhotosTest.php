@@ -38,8 +38,7 @@ test('people can flip through an item\'s photos and choose the primary one', fun
         ->click('Make primary')
         ->assertPresent('[wire\\:click="makePrimary(' . $front->id . ')"]')
         ->assertSee('1 of 3')
-        ->assertNoJavaScriptErrors()
-        ->screenshot(filename: 'item-photos');
+        ->assertNoJavaScriptErrors();
 
     expect($item->photos()->pluck('id')->all())->toBe([$back->id, $front->id, $scratch->id]);
 });

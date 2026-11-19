@@ -1,0 +1,25 @@
+diff --git a/nativephp.json b/nativephp.json
+--- a/nativephp.json
++++ b/nativephp.json
+@@ -4,18 +4,21 @@
+         {
+             "name": "SecureStorage.Set",
+             "android": "com.nativephp.securestorage.SecureStorageFunctions.Set",
++            "android_params": ["context"],
+             "ios": "SecureStorageFunctions.Set",
+             "description": "Store a value securely"
+         },
+         {
+             "name": "SecureStorage.Get",
+             "android": "com.nativephp.securestorage.SecureStorageFunctions.Get",
++            "android_params": ["context"],
+             "ios": "SecureStorageFunctions.Get",
+             "description": "Retrieve a value from secure storage"
+         },
+         {
+             "name": "SecureStorage.Delete",
+             "android": "com.nativephp.securestorage.SecureStorageFunctions.Delete",
++            "android_params": ["context"],
+             "ios": "SecureStorageFunctions.Delete",
+             "description": "Delete a value from secure storage"
+         }

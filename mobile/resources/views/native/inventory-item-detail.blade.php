@@ -1,3 +1,4 @@
+@use('App\Actions\DuplicateItem')
 @use('App\Enums\ItemType')
 @use('App\Icons\Android')
 @use('App\Icons\Ios')
@@ -9,6 +10,9 @@
 <native:top-bar :title="$item['name'] ?? 'Item'" display-mode="large" back />
 
 @if ($item)
+    @if ($selecting)
+    @include('native.inventory-selection-bar', ['selectedItems' => $this->selectedItems, 'selectedAll' => $this->selectedAll])
+    @else
     <native:bottom-bar>
         <row class="w-full items-center gap-3 px-4 pb-2">
             <pressable
@@ -23,21 +27,19 @@
                 </row>
             </pressable>
             <pressable
-                ref="item-print-label"
-                a11y-label="Print label"
-                class="min-h-12 flex-1 items-center justify-center rounded-full px-4 glass android:bg-theme-surface"
-                @tap="showQrCode"
+                ref="item-more"
+                a11y-label="More"
+                class="h-12 w-12 items-center justify-center rounded-full glass android:bg-theme-surface"
+                :menu="$this->moreMenu()"
             >
-                <row class="items-center gap-2">
-                    <native:icon :ios="Ios::Qrcode" :android="Android::QrCode2" :size="18" class="text-theme-on-surface" />
-                    <text font="semibold" class="text-lg text-theme-on-surface">Print label</text>
-                </row>
+                <native:icon :ios="Ios::Ellipsis" :android="Android::MoreHoriz" :size="22" class="text-theme-on-surface" />
             </pressable>
         </row>
     </native:bottom-bar>
+    @endif
 
     <scroll-view ref="item-detail" fill class="bg-theme-background">
-        <column class="w-full gap-7 px-4 pt-2 pb-8">
+        <column class="w-full gap-7 px-4 pt-2 {{ $selecting ? 'pb-[240]' : 'pb-8' }}">
             <column class="w-full gap-3">
                 <row class="w-full items-center gap-2">
                     <x-ui.avatar
@@ -212,8 +214,46 @@
 
             @unless ($this->starterStorage)
             <column class="w-full gap-3">
-                <x-ui.heading size="lg" class="px-1">{{ $this->children ? 'What’s inside ('.count($this->children).')' : 'What’s inside' }}</x-ui.heading>
+                <row class="w-full items-center gap-3 px-1">
+                    <x-ui.heading size="lg" class="flex-1">{{ $this->children ? 'What’s inside ('.count($this->children).')' : 'What’s inside' }}</x-ui.heading>
+                    @if ($selecting)
+                        <pressable
+                            ref="item-select-done"
+                            a11y-label="Done"
+                            class="min-h-12 items-center justify-center rounded-full bg-theme-surface-variant px-4"
+                            @tap="stopSelecting"
+                        >
+                            <text font="semibold" class="text-base text-theme-on-surface">Done</text>
+                        </pressable>
+                    @elseif ($this->children)
+                        <pressable
+                            ref="item-select"
+                            a11y-label="Select"
+                            a11y-hint="Pick several things to move or delete"
+                            class="min-h-12 items-center justify-center rounded-full bg-theme-surface-variant px-4"
+                            @tap="startSelecting"
+                        >
+                            <row class="items-center gap-1.5">
+                                <icon :ios="Ios::CheckmarkCircle" :android="Android::CheckCircleOutline" :size="18" class="text-theme-on-surface" />
+                                <text font="semibold" class="text-base text-theme-on-surface">Select</text>
+                            </row>
+                        </pressable>
+                    @endif
+                </row>
                 <column class="{{ Card::classes() }} w-full">
+                    @if ($selecting)
+                    @foreach ($this->children as $child)
+                        @include('native.inventory-item-tick-row', [
+                            'item' => $child,
+                            'ref' => 'item-child-'.$child['id'],
+                            'selected' => in_array($child['id'], $selectedIds, true),
+                            'corners' => trim(($loop->first ? 'rounded-t-[17]' : '').' '.($loop->last ? 'rounded-b-[17]' : '')),
+                        ])
+                        @unless ($loop->last)
+                            <divider class="ml-[112]" />
+                        @endunless
+                    @endforeach
+                    @else
                     @foreach ($this->children as $child)
                         @include('native.inventory-item-row', ['item' => $child, 'ref' => 'item-child-'.$child['id'], 'from' => $item['id']])
                         <divider class="ml-[72]" />
@@ -231,6 +271,7 @@
                             <text font="semibold" class="flex-1 text-lg text-theme-primary-text">{{ $this->children ? 'Add something here' : 'Put something inside' }}</text>
                         </row>
                     </pressable>
+                    @endif
                 </column>
             </column>
             @endunless
@@ -252,7 +293,7 @@
                 </column>
             @endif
 
-            @if ($this->photos === [])
+            @if ($this->photos === [] && ! $selecting)
                 <pressable
                     ref="item-add-photo"
                     a11y-label="Add a photo"
@@ -269,6 +310,7 @@
                 </pressable>
             @endif
 
+            @unless ($selecting)
             <pressable
                 ref="delete-item"
                 a11y-label="Delete {{ $item['name'] }}"
@@ -277,17 +319,185 @@
             >
                 <text font="semibold" class="text-center text-lg text-theme-destructive">Delete {{ $item['name'] }}</text>
             </pressable>
+            @endunless
         </column>
     </scroll-view>
 
     @include('native.parent-picker-sheet', [
         'refPrefix' => 'move',
         'topLevelLabel' => $item['type'] === ItemType::Location ? 'Put it with the places in your home' : null,
+        ...($movingSelected ? $this->selectedMoveCopy : []),
         'selectedParent' => $this->selectedParent,
         'browsedParent' => $this->browsedParent,
         'parentPickerRows' => $this->parentPickerRows,
         'parentTrail' => $this->parentTrail,
     ])
+
+    <native:bottom-sheet ref="item-copies-sheet" :visible="$showCopies" @dismiss="closeCopies" detents="0.75,large">
+        @if ($showCopies)
+            @php($thumb = $this->photos[0]['thumb'] ?? null)
+            <column fill class="bg-theme-background">
+                <scroll-view ref="item-copies-scroll" fill>
+                    <column class="w-full gap-5 px-4 pt-6">
+                        <column class="w-full gap-1.5 px-1">
+                            <text font="accent" class="text-2xl text-theme-on-background">Make copies</text>
+                            <x-ui.text>Each copy gets the same name, details and photos, but starts empty inside.</x-ui.text>
+                        </column>
+
+                        <row ref="item-copies-source" class="{{ Card::classes() }} w-full items-center gap-3 px-4 py-3">
+                            @if ($thumb)
+                                <image :src="$thumb" :alt="'Photo of '.$item['name']" class="h-12 w-12 rounded-[10] object-cover" />
+                            @else
+                                <x-ui.avatar :color="$item['type']->color()" :ios="$item['type']->iosIcon()" :android="$item['type']->androidIcon()" />
+                            @endif
+                            <column class="flex-1 gap-0.5">
+                                <x-ui.heading size="lg">{{ $item['name'] }}</x-ui.heading>
+                                <x-ui.text>Going {{ $this->copiesPlace() }}</x-ui.text>
+                            </column>
+                        </row>
+
+                        <column class="w-full gap-3">
+                            <row ref="item-copies-stepper" class="{{ Card::classes() }} w-full items-center justify-between p-4">
+                                <pressable
+                                    ref="item-copies-fewer"
+                                    a11y-label="Fewer copies"
+                                    class="h-[52] w-[52] items-center justify-center rounded-full bg-theme-surface-variant"
+                                    @tap="changeCopies(-1)"
+                                >
+                                    <icon :ios="Ios::Minus" :android="Android::Remove" :size="22" class="{{ $copies <= 1 ? 'opacity-40' : '' }} text-theme-on-surface" />
+                                </pressable>
+                                <column class="items-center gap-0.5">
+                                    <text ref="item-copies-count" font="accent" class="text-5xl text-theme-on-surface">{{ $copies }}</text>
+                                    <text font="medium" class="text-base text-theme-on-surface-variant">{{ $copies === 1 ? 'copy' : 'copies' }}</text>
+                                </column>
+                                <pressable
+                                    ref="item-copies-more"
+                                    a11y-label="More copies"
+                                    class="h-[52] w-[52] items-center justify-center rounded-full bg-theme-primary/15"
+                                    @tap="changeCopies(1)"
+                                >
+                                    <icon :ios="Ios::Plus" :android="Android::Add" :size="22" class="{{ $copies >= DuplicateItem::MAX_COPIES ? 'opacity-40' : '' }} text-theme-primary-text" />
+                                </pressable>
+                            </row>
+                            <text font="medium" class="w-full text-center text-xs text-theme-on-surface-variant">Up to {{ DuplicateItem::MAX_COPIES }} at a time</text>
+                        </column>
+
+                        @if ($copiesProblem !== null)
+                            @php($note = $this->copiesNote())
+                            <row ref="item-copies-problem" class="w-full items-start gap-2.5 rounded-xl bg-theme-primary/15 p-3.5">
+                                <native:icon
+                                    :ios="$copiesProblem === 'offline' ? Ios::WifiSlash : Ios::ExclamationmarkCircle"
+                                    :android="$copiesProblem === 'offline' ? Android::WifiOff : Android::ErrorOutline"
+                                    :size="20"
+                                    class="text-theme-primary-text"
+                                />
+                                <column class="flex-1 gap-0.5">
+                                    <text font="semibold" class="text-base text-theme-primary-text">{{ $note['title'] }}</text>
+                                    <text class="text-base text-theme-on-surface">{{ $note['message'] }}</text>
+                                </column>
+                            </row>
+                        @endif
+                    </column>
+                </scroll-view>
+
+                <column class="w-full gap-1 px-4 pt-3 pb-8">
+                    <button
+                        ref="item-copies-submit"
+                        variant="primary"
+                        size="lg"
+                        font="semibold"
+                        class="w-full"
+                        :ios-icon="$copiesProblem === null ? Ios::SquareOnSquare : Ios::ArrowClockwise"
+                        :android-icon="$copiesProblem === null ? Android::ContentCopy : Android::Refresh"
+                        @tap="makeCopies"
+                    >
+                        {{ $copiesProblem === null ? trans_choice('Make :count copy|Make :count copies', $copies) : 'Try again' }}
+                    </button>
+                    <pressable ref="item-copies-cancel" a11y-label="Cancel" class="min-h-12 w-full items-center justify-center" @tap="closeCopies">
+                        <text font="semibold" class="text-lg text-theme-on-surface">Cancel</text>
+                    </pressable>
+                </column>
+            </column>
+        @endif
+    </native:bottom-sheet>
+
+    <native:bottom-sheet ref="item-team-move-sheet" :visible="$showTeamMove" @dismiss="closeTeamMove" detents="0.75,large">
+        @if ($showTeamMove)
+            @php($moveTeams = $this->teamMoveTeams())
+            @php($destination = $this->teamMoveDestination())
+            <column fill class="bg-theme-background">
+                <scroll-view ref="item-team-move-scroll" fill>
+                    <column class="w-full gap-5 px-4 pt-6">
+                        <column class="w-full gap-1.5 px-1">
+                            <text font="accent" class="text-2xl text-theme-on-background">Move to another team</text>
+                            <x-ui.text>{{ $this->teamMoveSummary() }}</x-ui.text>
+                        </column>
+
+                        <column ref="item-team-move-teams" class="{{ Card::classes() }} w-full">
+                            @foreach ($moveTeams as $id => $name)
+                                <pressable
+                                    ref="item-team-move-team-{{ $id }}"
+                                    :a11y-label="$name.', '.$destination.($id === $teamMoveTeamId ? ', selected' : '')"
+                                    class="min-h-12 w-full justify-center px-4 py-2"
+                                    @tap="pickTeamMoveTeam({{ $id }})"
+                                >
+                                    <row class="w-full items-center gap-4">
+                                        <column class="h-9 w-9 items-center justify-center rounded-full bg-theme-primary">
+                                            <text font="medium" class="text-base text-theme-on-primary">{{ mb_strtoupper(mb_substr($name, 0, 1)) }}</text>
+                                        </column>
+                                        <column class="flex-1 gap-0.5">
+                                            <text class="text-lg text-theme-on-surface">{{ $name }}</text>
+                                            <x-ui.text>{{ $destination }}</x-ui.text>
+                                        </column>
+                                        @if ($id === $teamMoveTeamId)
+                                            <icon :ios="Ios::Checkmark" :android="Android::Check" :size="18" class="text-theme-primary-text" />
+                                        @endif
+                                    </row>
+                                </pressable>
+                                @unless ($loop->last)
+                                    <divider class="ml-[68]" />
+                                @endunless
+                            @endforeach
+                        </column>
+
+                        @if ($teamMoveProblem !== null)
+                            @php($note = $this->teamMoveNote())
+                            <row ref="item-team-move-problem" class="w-full items-start gap-2.5 rounded-xl bg-theme-primary/15 p-3.5">
+                                <native:icon
+                                    :ios="$teamMoveProblem === 'offline' ? Ios::WifiSlash : Ios::ExclamationmarkCircle"
+                                    :android="$teamMoveProblem === 'offline' ? Android::WifiOff : Android::ErrorOutline"
+                                    :size="20"
+                                    class="text-theme-primary-text"
+                                />
+                                <column class="flex-1 gap-0.5">
+                                    <text font="semibold" class="text-base text-theme-primary-text">{{ $note['title'] }}</text>
+                                    <text class="text-base text-theme-on-surface">{{ $note['message'] }}</text>
+                                </column>
+                            </row>
+                        @endif
+                    </column>
+                </scroll-view>
+
+                <column class="w-full gap-1 px-4 pt-3 pb-8">
+                    <button
+                        ref="item-team-move-submit"
+                        variant="primary"
+                        size="lg"
+                        font="semibold"
+                        class="w-full"
+                        :ios-icon="$teamMoveProblem === null ? Ios::ArrowLeftArrowRight : Ios::ArrowClockwise"
+                        :android-icon="$teamMoveProblem === null ? Android::SwapHoriz : Android::Refresh"
+                        @tap="moveToTeam"
+                    >
+                        {{ $teamMoveProblem === null ? 'Move to '.($moveTeams[$teamMoveTeamId] ?? 'another team') : 'Try again' }}
+                    </button>
+                    <pressable ref="item-team-move-cancel" a11y-label="Cancel" class="min-h-12 w-full items-center justify-center" @tap="closeTeamMove">
+                        <text font="semibold" class="text-lg text-theme-on-surface">Cancel</text>
+                    </pressable>
+                </column>
+            </column>
+        @endif
+    </native:bottom-sheet>
 @else
     <x-ui.not-found ref="item-missing" thing="item" />
 @endif

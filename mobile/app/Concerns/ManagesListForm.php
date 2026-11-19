@@ -7,6 +7,7 @@ use Native\Mobile\Attributes\Computed;
 
 trait ManagesListForm
 {
+    use ChoosesOwner;
     use SavesSunnyRecord;
 
     public string $name = '';
@@ -16,13 +17,14 @@ trait ManagesListForm
     public string $error = '';
 
     /**
-     * @param  array{team_id: int, name: string, type: ChecklistType}  $checklist
+     * @param  array{team_id: int, user_id: int|null, name: string, type: ChecklistType}  $checklist
      */
     public function fillFromList(array $checklist): void
     {
         $this->initializeTeam($checklist['team_id']);
         $this->name = $checklist['name'];
         $this->typeIndex = (int) array_search($checklist['type'], ChecklistType::cases(), strict: true);
+        $this->fillOwner($checklist['user_id']);
     }
 
     /**

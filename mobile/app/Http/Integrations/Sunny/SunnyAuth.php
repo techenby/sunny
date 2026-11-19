@@ -103,6 +103,7 @@ class SunnyAuth
         if ($clearLocalData) {
             $userId = $response->json('id');
             $this->store->startSession(is_int($userId) ? $userId : null);
+            $this->store->rememberProfile($response->json());
 
             if (is_int($userId) && array_key_exists('onboarded_at', $response->json()) && $response->json('onboarded_at') === null) {
                 Onboarding::begin($userId, is_string($response->json('name')) ? $response->json('name') : null);

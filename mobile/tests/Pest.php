@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Integrations\Sunny\SunnyStore;
+use App\Models\Team;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Native\Mobile\AsyncTask;
 use Native\Mobile\Testing\FakeBridge;
@@ -89,6 +90,14 @@ function seedSunnyData(): void
         'teams' => [['id' => 1, 'name' => 'Family', 'slug' => 'family']],
         'synced_at' => now()->toIso8601String(),
     ]);
+}
+
+function seedSunnyMembers(): void
+{
+    Team::find(1)->update(['members' => [
+        ['id' => 1, 'name' => 'Andy Swick', 'initials' => 'AS'],
+        ['id' => 7, 'name' => 'Sam Swick', 'initials' => 'SS'],
+    ]]);
 }
 
 /**

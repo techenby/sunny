@@ -4,6 +4,7 @@ namespace App\NativeComponents;
 
 use App\Concerns\ChecksSunnySync;
 use App\Enums\ChecklistType;
+use App\Http\Integrations\Sunny\SunnyTeam;
 use App\Models\Checklist;
 use App\Models\ChecklistItem;
 use Illuminate\Support\Str;
@@ -36,26 +37,49 @@ class Lists extends Component
     }
 
     /**
-     * @return list<array{id: int, name: string, type: ChecklistType, summary: string}>
+     * @return list<array{id: int, name: string, type: ChecklistType, summary: string, owner: array{name: string, initials: string|null, whose: string|null}|null}>
      */
     #[Computed]
     public function lists(): array
     {
+        $team = app(SunnyTeam::class)->current();
+
         return Checklist::forActiveTeam()
             ->withCount(['items', 'items as completed_items_count' => fn ($query) => $query->whereNotNull('completed_at')])
             ->orderBy('name')
             ->get()
             ->filter(fn (Checklist $checklist): bool => $this->search === '' || Str::contains($checklist->name, $this->search, ignoreCase: true))
-            ->map(fn (Checklist $checklist): array => [
-                'id' => $checklist->id,
-                'name' => $checklist->name,
-                'type' => $checklist->type,
-                'summary' => $checklist->type->label().' · '.($checklist->items_count === 0
-                    ? 'No items'
-                    : "{$checklist->completed_items_count} of {$checklist->items_count} done"),
-            ])
+            ->map(function (Checklist $checklist) use ($team): array {
+                $owner = $team?->owner($checklist->user_id);
+
+                return [
+                    'id' => $checklist->id,
+                    'name' => $checklist->name,
+                    'type' => $checklist->type,
+                    'owner' => $owner,
+                    'summary' => collect([
+                        $owner['whose'] ?? null,
+                        $checklist->type->label(),
+                        $checklist->items_count === 0 ? 'No items' : "{$checklist->completed_items_count} of {$checklist->items_count} done",
+                    ])->filter()->join(' · '),
+                ];
+            })
             ->values()
             ->all();
+    }
+
+    #[Computed]
+    public function footer(): string
+    {
+        $footer = trans_choice(':count list|:count lists', count($this->lists));
+
+        if (! app(SunnyTeam::class)->current()?->hasSeveralMembers()) {
+            return $footer;
+        }
+
+        $household = collect($this->lists)->filter(fn (array $checklist): bool => $checklist['owner']['initials'] === null)->count();
+
+        return $footer.' · '.$household.' for the household';
     }
 
     public function updateSearch(string $query): void
@@ -73,7 +97,7 @@ class Lists extends Component
 
     protected function refreshLocalSyncedData(): void
     {
-        unset($this->lists);
+        unset($this->lists, $this->footer);
     }
 
     public function render(): View

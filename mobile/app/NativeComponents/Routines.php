@@ -5,6 +5,7 @@ namespace App\NativeComponents;
 use App\Concerns\ChecksSunnySync;
 use App\Enums\RoutineFrequency;
 use App\Enums\TimeOfDay;
+use App\Http\Integrations\Sunny\SunnyTeam;
 use App\Models\Routine;
 use App\Models\RoutineStep;
 use Illuminate\Support\Str;
@@ -19,7 +20,7 @@ class Routines extends Component
     public string $search = '';
 
     /**
-     * @return array{id: int, team_id: int, user_id: int|null, name: string, time_of_day: TimeOfDay, frequency: RoutineFrequency, weekdays: list<int>|null, day_of_month: int|null, is_active: bool, summary: string}|null
+     * @return array{id: int, team_id: int, user_id: int|null, name: string, time_of_day: TimeOfDay, frequency: RoutineFrequency, weekdays: list<int>|null, day_of_month: int|null, starts_on: string|null, is_active: bool, summary: string}|null
      */
     public static function find(int $id): ?array
     {
@@ -42,22 +43,29 @@ class Routines extends Component
     }
 
     /**
-     * @return list<array{id: int, name: string, timeOfDay: TimeOfDay, summary: string}>
+     * @return list<array{id: int, name: string, timeOfDay: TimeOfDay, summary: string, owner: array{name: string, initials: string|null, whose: string|null}|null}>
      */
     #[Computed]
     public function routines(): array
     {
+        $team = app(SunnyTeam::class)->current();
+
         return Routine::forActiveTeam()
             ->withCount('steps')
             ->get()
             ->filter(fn (Routine $routine): bool => $this->search === '' || Str::contains($routine->name, $this->search, ignoreCase: true))
             ->sortBy(fn (Routine $routine): array => [$routine->time_of_day->sortOrder(), $routine->name])
-            ->map(fn (Routine $routine): array => [
-                'id' => $routine->id,
-                'name' => $routine->name,
-                'timeOfDay' => $routine->time_of_day,
-                'summary' => self::summary($routine).' · '.trans_choice(':count step|:count steps', $routine->steps_count),
-            ])
+            ->map(function (Routine $routine) use ($team): array {
+                $owner = $team?->owner($routine->user_id);
+
+                return [
+                    'id' => $routine->id,
+                    'name' => $routine->name,
+                    'timeOfDay' => $routine->time_of_day,
+                    'owner' => $owner,
+                    'summary' => collect([$owner['whose'] ?? null, self::summary($routine), trans_choice(':count step|:count steps', $routine->steps_count)])->filter()->join(' · '),
+                ];
+            })
             ->values()
             ->all();
     }

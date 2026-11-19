@@ -21,6 +21,15 @@
                 'selected' => $typeIndex,
                 'action' => 'chooseType',
             ])
+
+            @if ($ownerOptions)
+                @include('native.owner-picker', [
+                    'ref' => $formRef.'-owner',
+                    'label' => 'Belongs to',
+                    'members' => $ownerOptions,
+                    'selected' => $userId,
+                ])
+            @endif
         </column>
 
         @if ($error !== '')

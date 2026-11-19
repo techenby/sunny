@@ -7,6 +7,7 @@ use App\Models\Routine;
 use App\Models\RoutineOccurrence;
 use App\Models\RoutineOccurrenceStep;
 use App\Models\RoutineStep;
+use App\Models\Team;
 use App\NativeComponents\CreateRoutine;
 use App\NativeComponents\EditRoutine;
 use App\NativeComponents\Routines;
@@ -26,15 +27,30 @@ it('opens every routine from today’s routines', function () {
 
 it('lists every routine by time of day with its schedule', function () {
     $screen = Native::visit('/routines')
-        ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === 'Get ready'
-            && ($node['props']['supporting'] ?? null) === 'Morning · Every day · 3 steps')
-        ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === 'Bedtime'
-            && ($node['props']['supporting'] ?? null) === 'Evening · Sun, Mon, Tue, Wed, Thu · 2 steps')
-        ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === 'Take out trash'
-            && ($node['props']['supporting'] ?? null) === 'Anytime · Monthly on the 2nd · Paused · 0 steps')
+        ->assertSee('Morning · Every day · 3 steps')
+        ->assertSee('Evening · Sun, Mon, Tue, Wed, Thu · 2 steps')
+        ->assertSee('Anytime · Monthly on the 2nd · Paused · 0 steps')
+        ->assertMissingElement('column', fn (array $node): bool => str_ends_with($node['ref'] ?? '', '-owner'))
         ->assertAccessible();
 
     expect(array_column($screen->get('routines'), 'name'))->toBe(['Get ready', 'Bedtime', 'Take out trash']);
+});
+
+it('shows who each routine is assigned to when the team has several members', function () {
+    seedSunnyMembers();
+    Routine::find(3)->update(['user_id' => 99]);
+
+    Native::visit('/routines')
+        ->assertElement('column', fn (array $node): bool => ($node['ref'] ?? null) === 'all-routines-2-owner'
+            && ($node['props']['a11y_label'] ?? null) === 'Sam Swick')
+        ->assertSee('SS')
+        ->assertSee('Sam’s · Evening · Sun, Mon, Tue, Wed, Thu · 2 steps')
+        ->assertElement('column', fn (array $node): bool => ($node['ref'] ?? null) === 'all-routines-1-owner'
+            && ($node['props']['a11y_label'] ?? null) === 'Household')
+        ->assertElement('column', fn (array $node): bool => ($node['ref'] ?? null) === 'all-routines-3-owner'
+            && ($node['props']['a11y_label'] ?? null) === 'Household')
+        ->assertSee('Anytime · Monthly on the 2nd · Paused · 0 steps')
+        ->assertAccessible();
 });
 
 it('filters routines by name as you search', function () {
@@ -136,6 +152,94 @@ it('removes a step that never reached Sunny without queueing anything', function
     expect(RoutineStep::find(-1))->toBeNull()->and(PendingWrite::count())->toBe(0);
 });
 
+it('starts and stops reordering a routine’s steps', function () {
+    Native::visit('/routines/1')
+        ->assertSee('Steps (3)')
+        ->tap('routine-reorder')
+        ->assertSet('reordering', true)
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-step-12-up')
+        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-step-12-remove')
+        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-reorder')
+        ->assertAccessible()
+        ->tap('routine-reorder-done')
+        ->assertSet('reordering', false)
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-step-12-remove');
+
+    expect(PendingWrite::count())->toBe(0);
+});
+
+it('offers reordering only when a routine has two or more steps', function () {
+    Native::visit('/routines/3')->assertSee('Steps')->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-reorder');
+    Native::visit('/routines/2')->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-reorder');
+});
+
+it('moves steps up and down without moving past either end', function () {
+    $screen = Native::visit('/routines/1')
+        ->tap('routine-reorder')
+        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-step-11-up')
+        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-step-13-down')
+        ->tap('routine-step-13-up')
+        ->assertSet('movedStepId', 13);
+
+    expect(array_column($screen->get('steps'), 'name'))->toBe(['Make bed', 'Water plants', 'Feed the cat']);
+
+    $screen->call('moveStepUp', 11)->call('moveStepDown', 12)->tap('routine-step-13-up');
+
+    expect(array_column($screen->get('steps'), 'name'))->toBe(['Water plants', 'Make bed', 'Feed the cat'])
+        ->and(RoutineStep::find(13)->position)->toBe(3)
+        ->and(PendingWrite::count())->toBe(0);
+});
+
+it('saves the new order once, when Done is tapped', function () {
+    $screen = Native::visit('/routines/1')
+        ->tap('routine-reorder')
+        ->tap('routine-step-13-up')
+        ->tap('routine-step-13-up')
+        ->tap('routine-step-11-down')
+        ->tap('routine-step-12-down')
+        ->tap('routine-reorder-done')
+        ->assertSet('reordering', false);
+
+    expect(array_column($screen->get('steps'), 'name'))->toBe(['Water plants', 'Make bed', 'Feed the cat'])
+        ->and(RoutineStep::whereIn('id', [11, 12, 13])->orderBy('position')->pluck('position', 'id')->all())->toBe([13 => 1, 11 => 2, 12 => 3])
+        ->and(PendingWrite::sole()->only('resource', 'record_id', 'payload'))->toBe(['resource' => 'routines', 'record_id' => 1, 'payload' => ['step_order' => [13, 11, 12]]]);
+    expect(array_column(Native::visit('/routines/1')->get('steps'), 'name'))->toBe(['Water plants', 'Make bed', 'Feed the cat']);
+});
+
+it('saves nothing when the steps end up in their original order', function () {
+    Native::visit('/routines/1')
+        ->tap('routine-reorder')
+        ->tap('routine-step-12-up')
+        ->tap('routine-step-12-down')
+        ->tap('routine-reorder-done');
+
+    expect(PendingWrite::count())->toBe(0);
+});
+
+it('discards moves when leaving without tapping Done', function () {
+    Native::visit('/routines/1')
+        ->tap('routine-reorder')
+        ->tap('routine-step-13-up')
+        ->tap('routine-step-13-up')
+        ->call('back')
+        ->assertWentBack();
+
+    expect(array_column(Native::visit('/routines/1')->assertSet('reordering', false)->get('steps'), 'name'))->toBe(['Make bed', 'Feed the cat', 'Water plants'])
+        ->and(RoutineStep::find(13)->position)->toBe(3)
+        ->and(PendingWrite::count())->toBe(0);
+});
+
+it('keeps a step added while reordering at the end, and saves its place in the order', function () {
+    $screen = Native::visit('/routines/2')
+        ->tap('routine-reorder')
+        ->submit('routine-new-step', 'Read a story')
+        ->tap('routine-step--1-up')
+        ->tap('routine-reorder-done');
+
+    expect(array_column($screen->get('steps'), 'name'))->toBe(['Pajamas', 'Read a story', 'Brush teeth'])
+        ->and(PendingWrite::where('resource', 'routines')->sole()->payload)->toBe(['step_order' => [21, -1, 22]]);
+});
+
 it('asks before deleting a routine', function () {
     Native::visit('/routines/1')
         ->tap('delete-routine')
@@ -207,7 +311,7 @@ it('creates a weekly routine on the phone and opens it', function () {
     expect(Routine::find(-1)->only('team_id', 'name', 'time_of_day', 'frequency', 'weekdays', 'is_active'))->toBe([
         'team_id' => 1, 'name' => 'Gym', 'time_of_day' => TimeOfDay::Afternoon, 'frequency' => RoutineFrequency::Weekly, 'weekdays' => [1, 3], 'is_active' => true,
     ])->and(PendingWrite::sole()->payload)->toBe([
-        'name' => 'Gym', 'time_of_day' => 'afternoon', 'frequency' => 'weekly', 'weekdays' => [1, 3], 'day_of_month' => null, 'is_active' => true,
+        'name' => 'Gym', 'time_of_day' => 'afternoon', 'frequency' => 'weekly', 'weekdays' => [1, 3], 'day_of_month' => null, 'starts_on' => now()->toDateString(), 'is_active' => true,
     ]);
     Native::visit('/routines/-1')
         ->assertSee('Afternoon · Mon, Wed')
@@ -263,9 +367,92 @@ it('edits a routine and shows the change on today’s routines', function () {
 
     expect(Routine::find(2)->only('name', 'frequency', 'weekdays', 'user_id'))->toBe(['name' => 'Lights out', 'frequency' => RoutineFrequency::Daily, 'weekdays' => null, 'user_id' => 7])
         ->and(PendingWrite::sole()->payload)->toBe([
-            'name' => 'Lights out', 'time_of_day' => 'evening', 'frequency' => 'daily', 'weekdays' => null, 'day_of_month' => null, 'is_active' => true,
+            'name' => 'Lights out', 'time_of_day' => 'evening', 'frequency' => 'daily', 'weekdays' => null, 'day_of_month' => null, 'starts_on' => '2026-09-01', 'is_active' => true,
         ]);
     Native::visit('/today')->assertSee('Lights out')->assertDontSee('Bedtime');
+});
+
+it('starts a new routine today by default', function () {
+    $this->travelTo('2026-11-16 09:00');
+
+    Native::visit('/routines/create')
+        ->assertSet('startsOn', '2026-11-16')
+        ->assertSet('showStartsOnPicker', false)
+        ->assertSee('Starts on')
+        ->assertSee('Monday, November 16')
+        ->assertMissingElement('date_picker')
+        ->assertDontSee('It’ll show up on Today');
+});
+
+it('picks a later start date for a new routine and sends it to Sunny', function () {
+    $this->travelTo('2026-11-16 09:00');
+
+    Native::visit('/routines/create')
+        ->set('name', 'Change the furnace filter')
+        ->set('frequencyIndex', 2)
+        ->set('dayOfMonth', '1')
+        ->tap('create-routine-starts-on')
+        ->assertSet('showStartsOnPicker', true)
+        ->assertPicker('Starts on', 'date')
+        ->assertPickerValue('Starts on', '2026-11-16')
+        ->pickDate('create-routine-starts-on-calendar', '2026-12-01')
+        ->assertSet('startsOn', '2026-12-01')
+        ->assertSet('showStartsOnPicker', false)
+        ->assertSee('Tuesday, December 1')
+        ->assertSee('It’ll show up on Today from December 1.')
+        ->assertAccessible()
+        ->tap('create-routine-submit')
+        ->assertReplacedWith('/routines/-1');
+
+    expect(Routine::find(-1)->starts_on)->toBe('2026-12-01')
+        ->and(PendingWrite::sole()->payload)->toMatchArray(['frequency' => 'monthly', 'day_of_month' => 1, 'starts_on' => '2026-12-01']);
+});
+
+it('describes the start date and only hints at dates after today', function (string $date, string $label, ?string $hint) {
+    $this->travelTo('2026-11-16 09:00');
+
+    $screen = Native::visit('/routines/create')
+        ->call('chooseStartsOn', $date)
+        ->assertSee($label);
+
+    $hint === null
+        ? $screen->assertMissingElement('row', fn (array $node): bool => ($node['ref'] ?? null) === 'create-routine-starts-on-hint')
+        : $screen->assertSee($hint);
+})->with([
+    'today' => ['2026-11-16', 'Monday, November 16', null],
+    'in the past' => ['2026-11-01', 'Sunday, November 1', null],
+    'tomorrow' => ['2026-11-17', 'Tuesday, November 17', 'It’ll show up on Today from November 17.'],
+    'next year' => ['2027-01-05', 'Tuesday, January 5, 2027', 'It’ll show up on Today from January 5, 2027.'],
+]);
+
+it('keeps the start date when the picker is dismissed or sends something that isn’t a date', function () {
+    Native::visit('/routines/create')
+        ->tap('create-routine-starts-on')
+        ->call('chooseStartsOn', '2026-02-30')
+        ->call('chooseStartsOn', 'tomorrow')
+        ->assertSet('startsOn', now()->toDateString())
+        ->assertSet('showStartsOnPicker', true)
+        ->dismissSheet('create-routine-starts-on-picker')
+        ->assertSet('showStartsOnPicker', false)
+        ->assertSet('startsOn', now()->toDateString());
+});
+
+it('moves a routine’s start date later and hides it from today until then', function () {
+    $startsOn = now()->addDays(3);
+
+    Native::visit('/routines/2/edit')
+        ->assertSet('startsOn', '2026-09-01')
+        ->assertSee('Tuesday, September 1')
+        ->tap('edit-routine-starts-on')
+        ->assertPickerValue('Starts on', '2026-09-01')
+        ->pickDate('edit-routine-starts-on-calendar', $startsOn)
+        ->assertSee('It’ll show up on Today from '.$startsOn->format('F j').'.')
+        ->tap('edit-routine-submit')
+        ->assertWentBack();
+
+    expect(Routine::find(2)->starts_on)->toBe($startsOn->toDateString())
+        ->and(PendingWrite::sole()->payload)->toMatchArray(['starts_on' => $startsOn->toDateString()]);
+    Native::visit('/today')->assertSee('Get ready')->assertDontSee('Bedtime');
 });
 
 it('fills in a monthly routine’s day when editing', function () {
@@ -279,3 +466,92 @@ it('fills in a monthly routine’s day when editing', function () {
 it('shows a missing routine when editing', function () {
     Native::visit('/routines/99/edit')->assertSee('Routine not found');
 });
+
+it('leaves out the assignee picker for a team with one member and assigns them new routines', function () {
+    Team::find(1)->update(['members' => [['id' => 7, 'name' => 'Sam Swick', 'initials' => 'SS']]]);
+
+    Native::visit('/routines/create')
+        ->assertDontSee('Assigned to')
+        ->set('name', 'Stretch')
+        ->tap('create-routine-submit')
+        ->assertReplacedWith('/routines/-1');
+
+    expect(Routine::find(-1)->user_id)->toBe(7)
+        ->and(PendingWrite::sole()->payload)->toMatchArray(['user_id' => 7]);
+});
+
+it('keeps a routine’s assignee when a team with one member edits it', function () {
+    Team::find(1)->update(['members' => [['id' => 7, 'name' => 'Sam Swick', 'initials' => 'SS']]]);
+
+    Native::visit('/routines/1/edit')->assertDontSee('Assigned to')->set('name', 'Wake up')->tap('edit-routine-submit');
+
+    expect(Routine::find(1)->user_id)->toBeNull()
+        ->and(PendingWrite::sole()->payload)->not->toHaveKey('user_id');
+});
+
+it('offers the household and each member as assignees of a new routine', function () {
+    seedSunnyMembers();
+
+    Native::visit('/routines/create')
+        ->assertSee('Assigned to')
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'create-routine-owner-0'
+            && ($node['props']['a11y_label'] ?? null) === 'Household, selected')
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'create-routine-owner-1'
+            && ($node['props']['a11y_label'] ?? null) === 'Andy Swick')
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'create-routine-owner-7'
+            && ($node['props']['a11y_label'] ?? null) === 'Sam Swick')
+        ->call('chooseOwner', 99)
+        ->assertSet('userId', null)
+        ->assertAccessible();
+});
+
+it('creates a routine for the household or for one member', function (?string $tap, ?int $userId) {
+    seedSunnyMembers();
+
+    $screen = Native::visit('/routines/create')->set('name', 'Stretch');
+    if ($tap !== null) {
+        $screen->tap($tap);
+    }
+    $screen->tap('create-routine-submit')->assertReplacedWith('/routines/-1');
+
+    expect(Routine::find(-1)->user_id)->toBe($userId)
+        ->and(PendingWrite::sole()->payload)->toBe([
+            'name' => 'Stretch', 'time_of_day' => 'morning', 'frequency' => 'daily', 'weekdays' => null, 'day_of_month' => null, 'starts_on' => now()->toDateString(), 'is_active' => true, 'user_id' => $userId,
+        ]);
+})->with([
+    'household' => [null, null],
+    'a member' => ['create-routine-owner-1', 1],
+    'back to the household' => ['create-routine-owner-0', null],
+]);
+
+it('changes who a routine is assigned to and shows it on today’s routines', function (int $routineId, string $tap, ?int $userId, string $subtitle) {
+    seedSunnyMembers();
+
+    Native::visit("/routines/{$routineId}/edit")
+        ->tap($tap)
+        ->tap('edit-routine-submit')
+        ->assertWentBack();
+
+    expect(Routine::find($routineId)->user_id)->toBe($userId)
+        ->and(PendingWrite::sole()->payload)->toMatchArray(['user_id' => $userId]);
+    Native::visit('/today')->assertElement('text', fn (array $node): bool => ($node['ref'] ?? null) === "routine-{$routineId}-subtitle"
+        && ($node['props']['text'] ?? null) === $subtitle);
+})->with([
+    'household to a member' => [1, 'edit-routine-owner-1', 1, 'Andy’s · Morning · 1 of 3'],
+    'member to the household' => [2, 'edit-routine-owner-0', null, 'Evening · 0 of 2'],
+]);
+
+it('fills in a routine’s assignee when editing, falling back to the household for one who left', function (?int $stored, ?int $expected, string $selected) {
+    seedSunnyMembers();
+    Routine::find(2)->update(['user_id' => $stored]);
+
+    Native::visit('/routines/2/edit')
+        ->assertSet('userId', $expected)
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === $selected
+            && str_ends_with($node['props']['a11y_label'] ?? '', ', selected'))
+        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'edit-routine-owner-99');
+})->with([
+    'a member' => [7, 7, 'edit-routine-owner-7'],
+    'the household' => [null, null, 'edit-routine-owner-0'],
+    'someone who left' => [99, null, 'edit-routine-owner-0'],
+]);
