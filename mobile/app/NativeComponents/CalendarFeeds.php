@@ -29,6 +29,7 @@ class CalendarFeeds extends Component
     public function onResume(): void
     {
         $this->refreshLocalSyncedData();
+        $this->refresh();
     }
 
     public function refresh(): void

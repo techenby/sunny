@@ -389,6 +389,26 @@ describe('Calendars', function (): void {
             ->and(app(SunnyCalendar::class)->events(1, '2026-11-17', 2))->toBeNull();
     });
 
+    it('drops the offline notice once a calendar saves', function (): void {
+        seedCalendar([]);
+        Saloon::fake([GetCalendarFeedsRequest::class => calendarOffline()]);
+        $screen = Native::visit('/calendar/feeds')->assertSee('You’re offline');
+
+        Saloon::fake([
+            GetCalendarFeedsRequest::class => calendarFeedsResponse(),
+            SaveCalendarFeedRequest::class => MockResponse::make(['data' => calendarFeed(4, 'Soccer', '#dc2626')], 201),
+        ]);
+
+        $screen->tap('add-calendar')
+            ->follow()
+            ->set('name', 'Soccer')
+            ->set('url', 'https://calendar.example.com/soccer.ics')
+            ->tap('create-calendar-submit')
+            ->goBack()
+            ->assertDontSee('You’re offline')
+            ->assertSee('Family');
+    });
+
     it('keeps the form when adding a calendar offline, then retries with the same request id', function (): void {
         Saloon::fake([SaveCalendarFeedRequest::class => calendarOffline()]);
 
