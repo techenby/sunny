@@ -68,15 +68,12 @@
 
         @if ($this->events !== null)
             <column ref="day-events" class="w-full gap-2">
-                <row class="w-full items-center gap-3">
-                    <x-ui.heading size="lg" class="flex-1">On the calendar</x-ui.heading>
-                    <pressable ref="day-events-calendar" a11y-label="Calendar" class="min-h-12 justify-center" @navigate('/calendar')>
-                        <row class="items-center gap-1">
-                            <text font="semibold" class="text-base text-theme-primary-text">Calendar</text>
-                            <icon :ios="Ios::ChevronRight" :android="Android::ChevronRight" :size="12" class="text-theme-primary-text" />
-                        </row>
-                    </pressable>
-                </row>
+                <pressable ref="day-events-calendar" a11y-label="On the calendar, open Calendar" class="min-h-12 w-full justify-center" @navigate('/calendar')>
+                    <row class="w-full items-center gap-3">
+                        <x-ui.heading size="lg" class="flex-1">On the calendar</x-ui.heading>
+                        <icon :ios="Ios::ChevronRight" :android="Android::ChevronRight" :size="14" class="text-theme-primary-text" />
+                    </row>
+                </pressable>
 
                 @if ($calendarStatus !== '' && $this->calendarUpdatedAt)
                     <row ref="day-events-status" class="w-full items-start gap-2">

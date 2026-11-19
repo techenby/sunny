@@ -97,15 +97,12 @@
         @if ($this->teamOptions)
             @php($comingUp = $this->comingUp)
             <column ref="coming-up" class="w-full gap-3">
-                <row class="w-full items-center gap-3">
-                    <x-ui.heading size="lg" class="flex-1">Coming up</x-ui.heading>
-                    <pressable ref="open-calendar" a11y-label="Calendar" class="min-h-12 justify-center" @navigate('/calendar')>
-                        <row class="items-center gap-1">
-                            <text font="semibold" class="text-base text-theme-primary-text">Calendar</text>
-                            <icon :ios="Ios::ChevronRight" :android="Android::ChevronRight" :size="12" class="text-theme-primary-text" />
-                        </row>
-                    </pressable>
-                </row>
+                <pressable ref="open-calendar" a11y-label="Coming up, open Calendar" class="min-h-12 w-full justify-center" @navigate('/calendar')>
+                    <row class="w-full items-center gap-3">
+                        <x-ui.heading size="lg" class="flex-1">Coming up</x-ui.heading>
+                        <icon :ios="Ios::ChevronRight" :android="Android::ChevronRight" :size="14" class="text-theme-primary-text" />
+                    </row>
+                </pressable>
 
                 @if ($comingUp && $calendarStatus !== '' && $this->calendarUpdatedAt)
                     <row ref="coming-up-status" class="w-full items-start gap-2">

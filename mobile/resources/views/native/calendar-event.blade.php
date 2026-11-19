@@ -3,7 +3,7 @@
 
 <row ref="{{ $ref }}" class="w-full items-start gap-3 px-4 py-2">
     <column :class="'w-1 min-h-10 self-stretch rounded-full '.($event['declined'] ? 'border border-'.$event['color'] : 'bg-'.$event['color'])" />
-    <column class="w-[64] gap-0.5">
+    <column class="min-w-[64] shrink-0 gap-0.5">
         <text font="medium" :class="$event['declined'] ? 'text-sm text-theme-on-surface-variant' : 'text-sm text-theme-on-surface'">{{ $event['time'] }}</text>
         @if ($event['until'])
             <text class="text-xs text-theme-on-surface-variant">{{ $event['until'] }}</text>
