@@ -40,7 +40,7 @@ function routineDayResponse(string $date, string $name = 'Get ready'): MockRespo
     ]]]);
 }
 
-function offlineResponse(): MockResponse
+function routineDayOfflineResponse(): MockResponse
 {
     return MockResponse::make()->throw(fn (PendingRequest $request) => new FatalRequestException(new RuntimeException('Could not resolve host'), $request));
 }
@@ -438,7 +438,7 @@ it('sends a past day’s tick to that day once Sunny can be reached', function (
     $yesterday = now()->subDay()->toDateString();
     Saloon::fake([
         GetRoutineOccurrencesRequest::class => routineDayResponse($yesterday),
-        UpdateRoutineStepRequest::class => offlineResponse(),
+        UpdateRoutineStepRequest::class => routineDayOfflineResponse(),
     ]);
 
     Native::visit('/today')
@@ -472,7 +472,7 @@ it('keeps a waiting tick when the same day is downloaded again', function (): vo
     $yesterday = now()->subDay()->toDateString();
     Saloon::fake([
         GetRoutineOccurrencesRequest::class => routineDayResponse($yesterday),
-        UpdateRoutineStepRequest::class => offlineResponse(),
+        UpdateRoutineStepRequest::class => routineDayOfflineResponse(),
     ]);
 
     $screen = Native::visit('/today')
@@ -545,7 +545,7 @@ it('keeps showing a downloaded day when it cannot be refreshed', function (MockR
         ->assertDontSee('You’re offline')
         ->assertDontSee('Sunny is unavailable');
 })->with([
-    'offline' => fn (): MockResponse => offlineResponse(),
+    'offline' => fn (): MockResponse => routineDayOfflineResponse(),
     'unavailable' => fn (): MockResponse => MockResponse::make([], 500),
 ]);
 
@@ -630,7 +630,7 @@ it('forgets downloaded days when the team is gone or the phone is cleared', func
 });
 
 it('shows that other days need a connection when offline', function (): void {
-    Saloon::fake([GetRoutineOccurrencesRequest::class => offlineResponse()]);
+    Saloon::fake([GetRoutineOccurrencesRequest::class => routineDayOfflineResponse()]);
 
     $screen = Native::visit('/today')
         ->tap('previous-day')
@@ -652,7 +652,7 @@ it('shows that other days need a connection when offline', function (): void {
 });
 
 it('keeps the bar’s Today button working when a day fails to load', function (): void {
-    Saloon::fake([GetRoutineOccurrencesRequest::class => offlineResponse()]);
+    Saloon::fake([GetRoutineOccurrencesRequest::class => routineDayOfflineResponse()]);
 
     Native::visit('/today')
         ->tap('previous-day')
@@ -665,7 +665,7 @@ it('keeps the bar’s Today button working when a day fails to load', function (
 });
 
 it('takes the offline card back to today', function (): void {
-    Saloon::fake([GetRoutineOccurrencesRequest::class => offlineResponse()]);
+    Saloon::fake([GetRoutineOccurrencesRequest::class => routineDayOfflineResponse()]);
 
     Native::visit('/today')
         ->tap('previous-day')
