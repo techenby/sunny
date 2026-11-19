@@ -3,12 +3,15 @@
 use App\Models\TeamInvitation;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
+use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Notification;
 use Laravel\Fortify\Features;
 use Laravel\Sanctum\PersonalAccessToken;
 
 test('new users can register and are signed in straight away', function () {
     $this->freezeSecond();
+    Notification::fake();
 
     $response = $this->postJson(route('api.register'), [
         'name' => 'Nami',
@@ -20,12 +23,14 @@ test('new users can register and are signed in straight away', function () {
         ->assertCreated()
         ->assertJsonPath('name', 'Nami')
         ->assertJsonPath('email', 'nami@example.com')
+        ->assertJsonPath('email_verified_at', null)
         ->assertJsonPath('two_factor_enabled', false)
         ->assertJsonPath('expires_at', now()->addDays(30)->toIso8601String())
         ->assertJsonStructure(['id', 'email_verified_at', 'current_team_id', 'onboarded_at', 'token']);
 
     $user = User::where('email', 'nami@example.com')->sole();
     $token = PersonalAccessToken::findToken($response->json('token'));
+    Notification::assertSentTo($user, VerifyEmail::class);
 
     expect($response->json('id'))->toBe($user->id)
         ->and($response->json('current_team_id'))->toBe($user->personalTeam()->id)

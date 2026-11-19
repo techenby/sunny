@@ -61,6 +61,15 @@ it('shows the account at the top of preferences', function (): void {
     Saloon::assertNothingSent();
 });
 
+it('prompts an unverified user to open account settings and verify their email', function (): void {
+    rememberAndy(verified: false);
+
+    Native::visit('/preferences')
+        ->assertSee('Verify your email')
+        ->tap('account')
+        ->assertNavigatedTo('/preferences/account');
+});
+
 it('downloads the name and email when the phone does not have them yet', function (): void {
     DB::table('sunny_accounts')->insert(['server' => SunnyStore::server(), 'user_id' => 7]);
     Saloon::fake([GetUserRequest::class => MockResponse::make(['data' => sunnyUser()])]);
@@ -138,11 +147,12 @@ it('marks a new email as not verified and sends the verification email when aske
         ->assertToastShown(fn (array $params): bool => $params['message'] === 'Saved. Your new email isn’t verified yet.')
         ->assertSee('Not verified')
         ->assertSee('Verify your new email')
-        ->assertSee('We haven’t sent anything yet. Send a link to andy@swickhome.com and tap it to confirm it’s yours.')
+        ->assertSee('Check andy@swickhome.com for a verification link, or request a new one.')
         ->assertAccessible()
         ->tap('account-send-verification')
         ->assertToastShown(fn (array $params): bool => $params['message'] === 'Verification email sent to andy@swickhome.com')
-        ->assertSee('We sent a link to andy@swickhome.com. Tap it to confirm it’s yours.')
+        ->assertSee('We sent a link to andy@swickhome.com.')
+        ->assertSee('Open the link and sign in on the web if asked.')
         ->assertSee('Send it again');
 
     Saloon::assertSent(SendVerificationEmailRequest::class);
@@ -158,11 +168,11 @@ it('keeps the verification card on the saved email while a different one is bein
 
     Native::visit('/preferences/account', platform: 'ios')
         ->input('account-email', 'andy@swickhome.com')
-        ->assertSee('Send a link to andy@swick.family and tap it to confirm it’s yours.')
+        ->assertSee('Check andy@swick.family for a verification link, or request a new one.')
         ->tap('account-send-verification')
         ->assertToastShown(fn (array $params): bool => $params['message'] === 'Verification email sent to andy@swick.family')
-        ->assertSee('We sent a link to andy@swick.family. Tap it to confirm it’s yours.')
-        ->assertDontSee('andy@swickhome.com. Tap');
+        ->assertSee('We sent a link to andy@swick.family.')
+        ->assertDontSee('We sent a link to andy@swickhome.com.');
 });
 
 it('hides the verification card once Sunny says the email is verified', function (): void {

@@ -68,6 +68,7 @@ trait CallsSunnyOnline
     {
         return match (true) {
             $problem === 'locked' => 'Unable to read your saved login. Unlock your device and try again.',
+            $response?->status() === 403 && data_get(json_decode($response->body(), true), 'message') === 'Your email address is not verified.' => 'Verify your email in Preferences → Account to continue.',
             $response?->status() === 403 => 'You can’t do that in this team anymore.',
             $response?->status() === 429 => 'Too many attempts. Please wait a minute and try again.',
             default => self::firstError($response) ?? $fallback,

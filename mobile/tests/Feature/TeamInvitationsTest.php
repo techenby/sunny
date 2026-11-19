@@ -184,6 +184,18 @@ it('forgets an invitation Sunny no longer has', function (): void {
     expect(Invitation::count())->toBe(0)->and(Team::find(3))->toBeNull();
 });
 
+it('keeps an invitation when the account needs to verify its email first', function (): void {
+    invitedToMillerCabin();
+    Saloon::fake([AcceptInvitationRequest::class => MockResponse::make(['message' => 'Your email address is not verified.'], 403)]);
+
+    Native::visit('/dashboard')
+        ->tap('dashboard-accept-miller-code')
+        ->assertToastShown(fn (array $params): bool => $params['message'] === 'Verify your email in Preferences → Account to continue.')
+        ->assertSee('Join Miller Cabin');
+
+    expect(Invitation::count())->toBe(1)->and(Team::find(3))->toBeNull();
+});
+
 it('keeps an invitation to answer later when offline', function (): void {
     invitedToMillerCabin();
     Saloon::fake([AcceptInvitationRequest::class => cannotConnect()]);

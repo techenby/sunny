@@ -36,6 +36,18 @@ test('guests cannot see or answer invitations', function () {
     $this->postJson(route('api.invitations.decline', 'code'))->assertUnauthorized();
 });
 
+test('users must verify their email before seeing or answering an invitation', function () {
+    $this->zoro->markEmailAsUnverified();
+    $invitation = TeamInvitation::factory()->for($this->crew)->create(['email' => $this->zoro->email]);
+
+    $this->actingAs($this->zoro)->getJson(route('api.invitations.index'))->assertOk()->assertJsonCount(0, 'data');
+    $this->postJson(route('api.invitations.accept', $invitation))->assertForbidden();
+    $this->postJson(route('api.invitations.decline', $invitation))->assertForbidden();
+
+    expect($invitation->fresh())->not->toBeNull()
+        ->and($this->zoro->belongsToTeam($this->crew))->toBeFalse();
+});
+
 test('a user sees the pending invitations sent to their email', function () {
     $invitation = TeamInvitation::factory()->for($this->crew)->create(['email' => 'Zoro@StrawHat.Pirates', 'invited_by' => $this->luffy->id]);
     TeamInvitation::factory()->expired()->create(['email' => 'zoro@strawhat.pirates']);

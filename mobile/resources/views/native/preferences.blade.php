@@ -10,6 +10,7 @@
                 ref="account"
                 :headline="$profile['name']"
                 :supporting="$profile['email']"
+                :overline="$profile['verified'] ? null : 'Verify your email'"
                 :leadingMonogram="$this->initials($profile['name'])"
                 :leadingMonogramColor="theme('primary')"
                 :trailingIconIos="Ios::ChevronRight"

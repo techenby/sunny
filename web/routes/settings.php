@@ -8,13 +8,6 @@ Route::middleware(['auth'])->group(function () {
     Route::redirect('settings', 'settings/profile');
 
     Route::livewire('settings/profile', 'pages::settings.profile')->name('profile.edit')->withHead(title: 'Profile settings');
-});
-
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::livewire('settings/appearance', 'pages::settings.appearance')->name('appearance.edit')->withHead(title: 'Appearance settings');
-
-    Route::livewire('settings/api-tokens', 'pages::settings.api-tokens')->name('api-tokens.index')->withHead(title: 'API tokens settings');
-
     Route::livewire('settings/security', 'pages::settings.security')
         ->middleware(
             when(
@@ -26,6 +19,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         )
         ->name('security.edit')
         ->withHead(title: 'Security settings');
+});
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::livewire('settings/appearance', 'pages::settings.appearance')->name('appearance.edit')->withHead(title: 'Appearance settings');
+
+    Route::livewire('settings/api-tokens', 'pages::settings.api-tokens')->name('api-tokens.index')->withHead(title: 'API tokens settings');
 
     Route::livewire('settings/teams', 'pages::teams.index')->name('teams.index')->withHead(title: 'Teams');
 

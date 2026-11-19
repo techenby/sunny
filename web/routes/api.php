@@ -56,8 +56,8 @@ Route::middleware('auth:sanctum')
 
         Route::post('teams', [TeamController::class, 'store'])->name('teams.store');
         Route::get('invitations', [InvitationController::class, 'index'])->name('invitations.index');
-        Route::post('invitations/{invitation}/accept', [InvitationController::class, 'accept'])->name('invitations.accept');
-        Route::post('invitations/{invitation}/decline', [InvitationController::class, 'decline'])->name('invitations.decline');
+        Route::post('invitations/{invitation}/accept', [InvitationController::class, 'accept'])->middleware('verified')->name('invitations.accept');
+        Route::post('invitations/{invitation}/decline', [InvitationController::class, 'decline'])->middleware('verified')->name('invitations.decline');
 
         Route::prefix('teams/{team}')
             ->middleware(EnsureTeamMembership::class)
@@ -68,7 +68,7 @@ Route::middleware('auth:sanctum')
                 Route::patch('members/{member}', [TeamMemberController::class, 'update'])->name('teams.members.update');
                 Route::delete('members/{member}', [TeamMemberController::class, 'destroy'])->name('teams.members.destroy');
                 Route::get('invitations', [TeamInvitationController::class, 'index'])->name('teams.invitations.index');
-                Route::post('invitations', [TeamInvitationController::class, 'store'])->name('teams.invitations.store');
+                Route::post('invitations', [TeamInvitationController::class, 'store'])->middleware('verified')->name('teams.invitations.store');
                 Route::delete('invitations/{invitation}', [TeamInvitationController::class, 'destroy'])->name('teams.invitations.destroy');
 
                 Route::get('items', [ItemController::class, 'index'])->name('items.index');

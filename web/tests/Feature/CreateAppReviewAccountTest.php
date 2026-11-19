@@ -36,6 +36,17 @@ test('it creates a review account whose household only it belongs to', function 
         ->and($user->deletionBlockedMessage())->toBeNull();
 
     Storage::assertExists(ItemPhoto::first()->path);
+
+    $response = $this->postJson(route('api.token'), [
+        'email' => $user->email,
+        'password' => 'review-password',
+        'device_name' => 'App Review',
+    ])->assertOk()->assertJsonPath('email_verified_at', fn ($value) => $value !== null);
+
+    $this->withToken($response->json('token'))
+        ->getJson(route('api.sync'))
+        ->assertOk()
+        ->assertJsonPath('teams.0.id', $team->id);
 });
 
 test('running it again replaces the account and its data', function () {

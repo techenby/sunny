@@ -2,7 +2,9 @@
 
 use App\Models\User;
 use Illuminate\Auth\Events\Verified;
+use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
 
 test('email verification screen can be rendered', function () {
@@ -10,7 +12,32 @@ test('email verification screen can be rendered', function () {
 
     $response = $this->actingAs($user)->get(route('verification.notice'));
 
-    $response->assertOk();
+    $response->assertOk()
+        ->assertSee($user->email)
+        ->assertSee(route('profile.edit'));
+});
+
+test('unverified users can fix their profile and request a link before entering the web app', function () {
+    Notification::fake();
+    $user = User::factory()->unverified()->create();
+    $dashboard = route('dashboard', ['current_team' => $user->currentTeam]);
+
+    $this->actingAs($user)->get($dashboard)->assertRedirect(route('verification.notice'));
+    $this->get(route('profile.edit'))->assertOk()->assertSee('Delete account');
+    $this->from(route('profile.edit'))
+        ->post(route('verification.send'))
+        ->assertRedirect(route('profile.edit'))
+        ->assertSessionHas('status', 'verification-link-sent');
+
+    Notification::assertSentTo($user, VerifyEmail::class);
+
+    $this->get(URL::temporarySignedRoute(
+        'verification.verify',
+        now()->addMinutes(60),
+        ['id' => $user->id, 'hash' => sha1($user->email)]
+    ))->assertRedirect($dashboard);
+
+    $this->actingAs($user->fresh())->get($dashboard)->assertOk();
 });
 
 test('email can be verified', function () {

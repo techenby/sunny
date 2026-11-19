@@ -4,7 +4,9 @@ use App\Actions\Fortify\CreateNewUser;
 use App\Models\TeamInvitation;
 use App\Models\User;
 use Bentonow\BentoLaravel\Facades\Bento;
+use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
 
 test('registration screen can be rendered', function () {
@@ -25,6 +27,8 @@ test('registration screen shows the team from a pending invitation', function ()
 });
 
 test('new users can register', function () {
+    Notification::fake();
+
     $this->post(route('register.store'), [
         'name' => 'John Doe',
         'email' => 'test@example.com',
@@ -34,6 +38,7 @@ test('new users can register', function () {
         ->assertRedirect(route('onboarding', absolute: false));
 
     $this->assertAuthenticated();
+    Notification::assertSentTo(User::sole(), VerifyEmail::class);
 });
 
 test('new users with a single name can register', function () {

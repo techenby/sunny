@@ -189,6 +189,21 @@ test('paired kiosk session can access kiosk pages', function (): void {
         ->assertOk();
 });
 
+test('an unverified kiosk owner is directed to verify on another device', function (): void {
+    $user = User::factory()->unverified()->create();
+    $device = KioskDevice::factory()->paired($user, $user->currentTeam)->create();
+
+    actingAs($user)
+        ->withSession(['kiosk_device_id' => $device->id])
+        ->get(route('kiosk.calendar'))
+        ->assertRedirect(route('verification.notice'));
+
+    $this->get(route('verification.notice'))
+        ->assertOk()
+        ->assertSee('Verify the email address of the account that paired this kiosk on another device')
+        ->assertDontSee('Resend verification email');
+});
+
 test('a forgotten kiosk is signed out and sent back to pairing', function (string $route): void {
     $user = User::factory()->create();
     $device = KioskDevice::factory()->paired($user, $user->currentTeam)->create();

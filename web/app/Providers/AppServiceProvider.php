@@ -7,6 +7,7 @@ namespace App\Providers;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterval;
+use Illuminate\Auth\Middleware\EnsureEmailIsVerified;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -18,6 +19,7 @@ use Laravel\Head\Enums\TwitterCard;
 use Laravel\Head\Facades\Head;
 use Laravel\Head\HeadBuilder;
 use Laravel\Passport\Passport;
+use Livewire\Livewire;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -32,6 +34,7 @@ class AppServiceProvider extends ServiceProvider
         $this->configureGates();
         $this->configureHead();
         $this->configurePassport();
+        Livewire::addPersistentMiddleware(EnsureEmailIsVerified::class);
     }
 
     protected function configureHead(): void
@@ -66,7 +69,7 @@ class AppServiceProvider extends ServiceProvider
     protected function configureGates(): void
     {
         Gate::define('admin', function (User $user): bool {
-            return $user->email === 'andy@techenby.com';
+            return $user->hasVerifiedEmail() && $user->email === 'andy@techenby.com';
         });
     }
 

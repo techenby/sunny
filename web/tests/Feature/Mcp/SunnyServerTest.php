@@ -31,6 +31,10 @@ test('an oauth user can access the mcp server', function () {
         ->assertOk();
 });
 
+test('an oauth user with an unverified email cannot access the mcp server', function () {
+    mcp(User::factory()->unverified()->create(), 'ping')->assertForbidden();
+});
+
 test('api tokens cannot access the mcp server', function () {
     $token = User::factory()->create()->createToken('Test')->plainTextToken;
 
