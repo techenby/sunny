@@ -260,11 +260,16 @@ it('removes a member once the owner confirms', function (): void {
     Native::visit('/preferences/team')
         ->tap('member-10')
         ->tap('member-remove')
-        ->assertNativeCalled('Dialog.Alert', fn (array $params): bool => $params['id'] === 'remove-member'
-            && $params['title'] === 'Remove Grandma from Family?'
-            && $params['message'] === 'Grandma will lose access to the team’s recipes, inventory, routines and lists.')
-        ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Remove', 'id' => 'remove-member'])
+        ->assertNativeNotCalled('Dialog.Alert')
+        ->assertSee('Remove Grandma from Family?')
+        ->assertSee('Grandma will lose access to the team’s recipes, inventory, routines and lists.')
+        ->assertAccessible()
+        ->tap('member-remove-keep')
+        ->assertDontSee('Remove Grandma from Family?')
+        ->tap('member-remove')
+        ->tap('member-remove-confirm-button')
         ->assertSet('memberId', null)
+        ->assertSet('confirmingRemove', false)
         ->assertToastShown(fn (array $params): bool => $params['message'] === 'Removed Grandma Jo')
         ->assertDontSee('Grandma Jo');
 

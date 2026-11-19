@@ -48,6 +48,8 @@ class TeamSettings extends Component
 
     public ?int $memberId = null;
 
+    public bool $confirmingRemove = false;
+
     public ?string $invitationsRefreshedAt = null;
 
     public function mount(): void
@@ -283,12 +285,14 @@ class TeamSettings extends Component
     {
         if (! $this->offline && collect($this->members())->contains(fn (array $member): bool => $member['id'] === $id && $member['tappable'])) {
             $this->memberId = $id;
+            $this->confirmingRemove = false;
         }
     }
 
     public function closeMember(): void
     {
         $this->memberId = null;
+        $this->confirmingRemove = false;
     }
 
     public function changeRole(string $role): void
@@ -308,16 +312,12 @@ class TeamSettings extends Component
 
     public function confirmRemove(): void
     {
-        $member = $this->member();
+        $this->confirmingRemove = $this->member() !== null;
+    }
 
-        if ($member !== null) {
-            $first = self::firstName($member['name']);
-
-            Dialog::alert('Remove '.$first.' from '.$this->team()->name.'?', $first.' will lose access to the team’s recipes, inventory, routines and lists.', [
-                ['label' => 'Cancel', 'style' => 'cancel'],
-                ['label' => 'Remove', 'style' => 'destructive'],
-            ])->id('remove-member')->show();
-        }
+    public function keepMember(): void
+    {
+        $this->confirmingRemove = false;
     }
 
     public function confirmLeave(): void
@@ -333,9 +333,7 @@ class TeamSettings extends Component
     #[On(ButtonPressed::class)]
     public function onAlertButtonPressed(string $label, ?string $id = null): void
     {
-        if ($id === 'remove-member' && $label === 'Remove') {
-            $this->removeMember();
-        } elseif ($id === 'leave-team' && $label === 'Leave') {
+        if ($id === 'leave-team' && $label === 'Leave') {
             $this->leave();
         }
     }
@@ -344,7 +342,7 @@ class TeamSettings extends Component
     {
         $member = $this->member();
 
-        if ($member === null) {
+        if ($member === null || ! $this->confirmingRemove) {
             return;
         }
 
@@ -354,7 +352,7 @@ class TeamSettings extends Component
         );
 
         if ($removed) {
-            $this->memberId = null;
+            $this->closeMember();
             Toast::success('Removed '.$member['name']);
         }
     }
@@ -440,7 +438,7 @@ class TeamSettings extends Component
     {
         if ($problem === 'offline') {
             $this->offline = true;
-            $this->memberId = null;
+            $this->closeMember();
 
             return;
         }

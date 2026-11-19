@@ -259,20 +259,29 @@
                         </column>
                     </row>
 
-                    <column class="w-full gap-2">
-                        @include('native.role-options', ['ref' => 'member-role', 'roles' => [TeamRole::Admin, TeamRole::Member], 'selected' => $member['role'], 'action' => 'changeRole'])
-                        <x-ui.text size="sm">Changes as soon as you pick one.</x-ui.text>
-                    </column>
+                    @if ($confirmingRemove)
+                        <column ref="member-remove-confirm" class="w-full gap-1">
+                            <text font="semibold" class="text-base text-theme-on-surface">Remove {{ $this->firstName($member['name']) }} from {{ $team->name }}?</text>
+                            <x-ui.text>{{ $this->firstName($member['name']) }} will lose access to the team’s recipes, inventory, routines and lists.</x-ui.text>
+                        </column>
+                        <button ref="member-remove-confirm-button" variant="destructive" size="lg" font="semibold" class="w-full" @tap="removeMember">Remove {{ $this->firstName($member['name']) }}</button>
+                        <button ref="member-remove-keep" variant="ghost" class="w-full" @tap="keepMember">Keep {{ $this->firstName($member['name']) }}</button>
+                    @else
+                        <column class="w-full gap-2">
+                            @include('native.role-options', ['ref' => 'member-role', 'roles' => [TeamRole::Admin, TeamRole::Member], 'selected' => $member['role'], 'action' => 'changeRole'])
+                            <x-ui.text size="sm">Changes as soon as you pick one.</x-ui.text>
+                        </column>
 
-                    <pressable
-                        ref="member-remove"
-                        :a11y-label="'Remove from '.$team->name"
-                        class="min-h-12 w-full items-center justify-center rounded-full border border-theme-outline bg-theme-surface px-4"
-                        @tap="confirmRemove"
-                    >
-                        <text font="semibold" class="text-base text-theme-destructive">Remove from {{ $team->name }}</text>
-                    </pressable>
-                    <button ref="member-done" variant="ghost" class="w-full" @tap="closeMember">Done</button>
+                        <pressable
+                            ref="member-remove"
+                            :a11y-label="'Remove from '.$team->name"
+                            class="min-h-12 w-full items-center justify-center rounded-full border border-theme-outline bg-theme-surface px-4"
+                            @tap="confirmRemove"
+                        >
+                            <text font="semibold" class="text-base text-theme-destructive">Remove from {{ $team->name }}</text>
+                        </pressable>
+                        <button ref="member-done" variant="ghost" class="w-full" @tap="closeMember">Done</button>
+                    @endif
                 </column>
             </scroll-view>
         @endif
