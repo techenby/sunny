@@ -4,6 +4,7 @@ use App\Http\Integrations\Sunny\Requests\GetRoutineOccurrencesRequest;
 use App\Http\Integrations\Sunny\Requests\SyncRequest;
 use App\Http\Integrations\Sunny\Requests\UpdateRoutineStepRequest;
 use App\Http\Integrations\Sunny\SunnyOutbox;
+use App\Http\Integrations\Sunny\SunnyStore;
 use App\Http\Integrations\Sunny\SunnySync;
 use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Http\Integrations\Sunny\SunnyWrites;
@@ -12,6 +13,8 @@ use App\Models\Routine;
 use App\Models\RoutineOccurrence;
 use App\Models\RoutineOccurrenceStep;
 use App\Models\Team;
+use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\DB;
 use Native\Mobile\Testing\Native;
 use Saloon\Enums\Method;
 use Saloon\Exceptions\Request\FatalRequestException;
@@ -336,7 +339,8 @@ it('sends a past day’s tick to that day once Sunny can be reached', function (
     ]);
     app(SunnySync::class)->sync();
 
-    expect(RoutineOccurrence::where('due_on', $yesterday)->exists())->toBeFalse()
+    expect(RoutineOccurrence::where('due_on', $yesterday)->exists())->toBeTrue()
+        ->and(RoutineOccurrenceStep::find(42)->isCompleted())->toBeTrue()
         ->and(PendingWrite::count())->toBe(1);
 
     Saloon::fake([UpdateRoutineStepRequest::class => routineStepResponse(42, '2026-09-29T21:00:00.000000Z')]);
@@ -365,16 +369,147 @@ it('keeps a waiting tick when the same day is downloaded again', function (): vo
         ->and($screen->get('loadError'))->toBe('');
 });
 
-it('downloads the day again after a sync clears it', function (): void {
-    Saloon::fake([GetRoutineOccurrencesRequest::class => routineDayResponse(now()->subDay()->toDateString())]);
-    $screen = Native::visit('/today')->tap('previous-day');
+it('spins only the first time a day is downloaded', function (): void {
+    $yesterday = now()->subDay()->toDateString();
+    $loading = [];
+    $screen = Native::visit('/today');
+    Saloon::fake([GetRoutineOccurrencesRequest::class => function () use (&$screen, &$loading, $yesterday): MockResponse {
+        $loading[] = $screen->get('loading');
 
-    RoutineOccurrence::where('id', 4)->delete();
+        return routineDayResponse($yesterday);
+    }]);
 
-    $screen->emitNative('sunny-sync-complete', ['status' => 'finished'])
+    $screen->tap('previous-day')
+        ->assertSee('Get ready')
+        ->tap('next-day')
+        ->tap('previous-day')
+        ->assertSet('loading', false)
         ->assertSee('Get ready');
 
+    expect($loading)->toBe([true, false]);
     Saloon::assertSentCount(2);
+});
+
+it('shows the spinner while a day is downloaded for the first time', function (): void {
+    Native::visit('/today')
+        ->set('date', now()->subDay()->toDateString())
+        ->set('loading', true)
+        ->assertSee('Loading yesterday’s routines…')
+        ->assertElement('activity_indicator');
+});
+
+it('does not spin again for a downloaded day with nothing on it', function (): void {
+    $loading = [];
+    $screen = Native::visit('/today');
+    Saloon::fake([GetRoutineOccurrencesRequest::class => function () use (&$screen, &$loading): MockResponse {
+        $loading[] = $screen->get('loading');
+
+        return MockResponse::make(['data' => []]);
+    }]);
+
+    $screen->tap('previous-day')
+        ->tap('next-day')
+        ->tap('previous-day')
+        ->assertSee('No routines yesterday');
+
+    expect($loading)->toBe([true, false]);
+});
+
+it('keeps showing a downloaded day when it cannot be refreshed', function (MockResponse $response): void {
+    Saloon::fake([GetRoutineOccurrencesRequest::class => routineDayResponse(now()->subDay()->toDateString())]);
+    $screen = Native::visit('/today')->tap('previous-day')->tap('next-day');
+
+    Saloon::fake([GetRoutineOccurrencesRequest::class => $response]);
+
+    $screen->tap('previous-day')
+        ->assertSet('loading', false)
+        ->assertSet('loadError', '')
+        ->assertSee('Get ready')
+        ->assertDontSee('You’re offline')
+        ->assertDontSee('Sunny is unavailable');
+})->with([
+    'offline' => fn (): MockResponse => offlineResponse(),
+    'unavailable' => fn (): MockResponse => MockResponse::make([], 500),
+]);
+
+it('keeps a past day on screen when a sync finishes after ticking it', function (): void {
+    $yesterday = now()->subDay()->toDateString();
+    Saloon::fake([
+        GetRoutineOccurrencesRequest::class => routineDayResponse($yesterday),
+        UpdateRoutineStepRequest::class => routineStepResponse(42, '2026-09-29T21:00:00.000000Z'),
+    ]);
+    $screen = Native::visit('/today')->tap('previous-day')->tap('routine-step-42');
+
+    $loading = [];
+    Saloon::fake([
+        SyncRequest::class => MockResponse::make([
+            'teams' => [['id' => 1, 'name' => 'Family', 'slug' => 'family']],
+            'recipes' => [], 'items' => [], 'checklists' => [], 'checklist_items' => [], 'routines' => [], 'routine_steps' => [], 'routine_occurrences' => sunnyRoutineOccurrences(), 'synced_at' => now()->toIso8601String(),
+        ]),
+        GetRoutineOccurrencesRequest::class => function () use (&$screen, &$loading, $yesterday): MockResponse {
+            $loading[] = $screen->get('loading');
+
+            return routineDayResponse($yesterday);
+        },
+    ]);
+    app(SunnySync::class)->sync();
+
+    expect(RoutineOccurrence::where('due_on', $yesterday)->count())->toBe(1);
+
+    $screen->emitNative('sunny-sync-complete', ['status' => 'finished'])
+        ->assertSet('loading', false)
+        ->assertSee('Get ready')
+        ->assertElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-4-subtitle'
+            && ($node['props']['text'] ?? null) === 'Morning · Household · 1 of 2');
+
+    expect($loading)->toBe([false]);
+});
+
+it('keeps downloaded days through a sync until they are more than a week away', function (): void {
+    $store = app(SunnyStore::class);
+    $day = fn (int $id, CarbonImmutable $date): array => ['id' => $id, 'routine_id' => 1, 'due_on' => $date->toDateString(), 'routine' => ['id' => 1, 'team_id' => 1, 'name' => 'Day '.$id, 'time_of_day' => 'morning', 'user' => null], 'steps' => [['id' => $id * 10, 'name' => 'Step', 'position' => 1, 'completed_at' => null]]];
+    $today = Team::find(1)->today();
+    $dates = [100 => $today->subDays(8), 101 => $today->subDays(7), 102 => $today->addDays(8), 103 => $today->addDays(9)];
+
+    foreach ($dates as $id => $date) {
+        $store->saveRoutineDay(1, $date->toDateString(), collect([$day($id, $date)]));
+    }
+    $store->saveRoutineDay(1, $today->subDays(3)->toDateString(), collect());
+
+    Saloon::fake([SyncRequest::class => MockResponse::make([
+        'teams' => [['id' => 1, 'name' => 'Family', 'slug' => 'family']],
+        'recipes' => [], 'items' => [], 'checklists' => [], 'checklist_items' => [], 'routines' => [], 'routine_steps' => [], 'routine_occurrences' => sunnyRoutineOccurrences(), 'synced_at' => now()->toIso8601String(),
+    ])]);
+    app(SunnySync::class)->sync();
+
+    expect(RoutineOccurrence::whereKey(array_keys($dates))->orderBy('id')->pluck('id')->all())->toBe([101, 102])
+        ->and(RoutineOccurrenceStep::whereIn('id', [1000, 1010, 1020, 1030])->orderBy('id')->pluck('id')->all())->toBe([1010, 1020])
+        ->and(RoutineOccurrence::whereKey([1, 2, 3])->count())->toBe(3)
+        ->and($store->hasRoutineDay(1, $today->subDays(3)->toDateString()))->toBeTrue()
+        ->and($store->hasRoutineDay(1, $today->subDays(8)->toDateString()))->toBeFalse()
+        ->and($store->hasRoutineDay(1, $today->addDays(9)->toDateString()))->toBeFalse();
+});
+
+it('forgets downloaded days when the team is gone or the phone is cleared', function (): void {
+    $store = app(SunnyStore::class);
+    $yesterday = now()->subDay()->toDateString();
+    $store->saveRoutineDay(1, $yesterday, collect(routineDayResponse($yesterday)->body()->all()['data']));
+
+    $store->clear();
+
+    expect(RoutineOccurrence::count())->toBe(0)
+        ->and(DB::table('routine_days')->count())->toBe(0);
+
+    seedSunnyData();
+    $store->saveRoutineDay(1, $yesterday, collect());
+    Saloon::fake([SyncRequest::class => MockResponse::make([
+        'teams' => [['id' => 2, 'name' => 'Other', 'slug' => 'other']],
+        'recipes' => [], 'items' => [], 'checklists' => [], 'checklist_items' => [], 'routines' => [], 'routine_steps' => [], 'routine_occurrences' => [], 'synced_at' => now()->toIso8601String(),
+    ])]);
+    app(SunnySync::class)->sync();
+
+    expect(RoutineOccurrence::count())->toBe(0)
+        ->and($store->hasRoutineDay(1, $yesterday))->toBeFalse();
 });
 
 it('shows that other days need a connection when offline', function (): void {

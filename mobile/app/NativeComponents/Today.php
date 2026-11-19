@@ -5,6 +5,7 @@ namespace App\NativeComponents;
 use App\Concerns\ChecksSunnySync;
 use App\Enums\TimeOfDay;
 use App\Http\Integrations\Sunny\SunnyOutbox;
+use App\Http\Integrations\Sunny\SunnyStore;
 use App\Http\Integrations\Sunny\SunnySync;
 use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Http\Integrations\Sunny\SunnyTeam;
@@ -251,7 +252,7 @@ class Today extends Component
             $token = null;
         }
 
-        $this->loading = true;
+        $this->loading = ! app(SunnyStore::class)->hasRoutineDay($teamId, $date);
 
         AsyncTask::dispatch(static fn () => app(SunnySync::class)->fetchRoutineDay($teamId, $date, $token))
             ->finished(function () use ($date): void {
@@ -260,15 +261,19 @@ class Today extends Component
                 }
 
                 $this->loading = false;
+                $this->loadError = '';
                 unset($this->routines);
             })
-            ->failed(function (AsyncTaskException $exception) use ($date): void {
+            ->failed(function (AsyncTaskException $exception) use ($teamId, $date): void {
                 if ($this->day()?->toDateString() !== $date) {
                     return;
                 }
 
                 $this->loading = false;
-                $this->loadError = is_a($exception->originalClass(), FatalRequestException::class, true) ? 'offline' : 'unavailable';
+
+                if (! app(SunnyStore::class)->hasRoutineDay($teamId, $date)) {
+                    $this->loadError = is_a($exception->originalClass(), FatalRequestException::class, true) ? 'offline' : 'unavailable';
+                }
             });
     }
 
