@@ -38,10 +38,8 @@
                         <icon :ios="Ios::Envelope" :android="Android::Email" :size="18" class="text-theme-primary-text" />
                     </column>
                     <column class="flex-1 gap-1">
-                        <row class="w-full items-center gap-2">
-                            <text font="semibold" class="flex-1 text-base text-theme-on-surface">{{ $emailChanged ? 'Verify your new email' : 'Verify your email' }}</text>
-                            <x-ui.badge size="sm">Not verified</x-ui.badge>
-                        </row>
+                        <x-ui.badge size="sm" class="self-start">Not verified</x-ui.badge>
+                        <text font="semibold" class="text-base text-theme-on-surface">{{ $emailChanged ? 'Verify your new email' : 'Verify your email' }}</text>
                         <x-ui.text size="sm">
                             {{ $verificationSent ? 'We sent a link to '.$savedEmail.'. Tap it to confirm it’s yours.' : 'We haven’t sent anything yet. Send a link to '.$savedEmail.' and tap it to confirm it’s yours.' }}
                         </x-ui.text>
