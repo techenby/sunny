@@ -163,21 +163,23 @@
 
     <native:bottom-sheet ref="team-rename-sheet" :visible="$showRename" @dismiss="closeRename" detents="medium">
         @if ($showRename)
-            <column fill class="gap-4 bg-theme-background px-6 pt-6 pb-8">
-                <x-ui.heading size="lg">Rename {{ $team->name }}</x-ui.heading>
-                <outlined-text-input
-                    ref="team-rename-input"
-                    label="Name"
-                    autocapitalize="words"
-                    :ios-leading-icon="Ios::House"
-                    :android-leading-icon="Android::Home"
-                    :error="$renameError !== ''"
-                    :supporting="$renameError !== '' ? $renameError : null"
-                    native:model="newName"
-                />
-                <button ref="team-rename-save" variant="primary" size="lg" font="semibold" class="w-full" @tap="rename">Save name</button>
-                <button ref="team-rename-cancel" variant="ghost" class="w-full" @tap="closeRename">Cancel</button>
-            </column>
+            <scroll-view fill class="bg-theme-background">
+                <column class="w-full gap-4 px-6 pt-6 pb-8">
+                    <x-ui.heading size="lg">Rename {{ $team->name }}</x-ui.heading>
+                    <outlined-text-input
+                        ref="team-rename-input"
+                        label="Name"
+                        autocapitalize="words"
+                        :ios-leading-icon="Ios::House"
+                        :android-leading-icon="Android::Home"
+                        :error="$renameError !== ''"
+                        :supporting="$renameError !== '' ? $renameError : null"
+                        native:model="newName"
+                    />
+                    <button ref="team-rename-save" variant="primary" size="lg" font="semibold" class="w-full" @tap="rename">Save name</button>
+                    <button ref="team-rename-cancel" variant="ghost" class="w-full" @tap="closeRename">Cancel</button>
+                </column>
+            </scroll-view>
         @endif
     </native:bottom-sheet>
 
@@ -275,10 +277,10 @@
                         <pressable
                             ref="member-remove"
                             :a11y-label="'Remove from '.$team->name"
-                            class="min-h-12 w-full items-center justify-center rounded-full border border-theme-outline bg-theme-surface px-4"
+                            class="min-h-12 w-full items-center justify-center rounded-3xl border border-theme-outline bg-theme-surface px-4"
                             @tap="confirmRemove"
                         >
-                            <text font="semibold" class="text-base text-theme-destructive">Remove from {{ $team->name }}</text>
+                            <text font="semibold" class="text-center text-base text-theme-destructive">Remove from {{ $team->name }}</text>
                         </pressable>
                         <button ref="member-done" variant="ghost" class="w-full" @tap="closeMember">Done</button>
                     @endif

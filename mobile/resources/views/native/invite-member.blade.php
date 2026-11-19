@@ -21,7 +21,7 @@
     @else
         <column class="w-full gap-6 px-4 py-6">
             <row class="w-full items-center gap-4 px-2">
-                <column class="h-12 w-12 items-center justify-center rounded-full bg-theme-primary">
+                <column class="min-h-12 min-w-12 items-center justify-center rounded-full bg-theme-primary">
                     <text font="semibold" class="text-lg text-theme-on-primary">{{ mb_strtoupper(mb_substr($team->name, 0, 1)) }}</text>
                 </column>
                 <column class="flex-1 gap-0.5">
@@ -78,8 +78,6 @@
                             size="lg"
                             font="semibold"
                             class="w-full"
-                            :ios-icon="$offline ? Ios::ArrowClockwise : Ios::Paperplane"
-                            :android-icon="$offline ? Android::Refresh : Android::Send"
                             @tap="send"
                         >
                             {{ $offline ? 'Try again' : 'Send invitation' }}
