@@ -49,7 +49,13 @@ class SunnyStore
             $pending = PendingWrite::query()->forCurrentServer()->get();
 
             foreach ($teams as $team) {
-                Team::query()->updateOrCreate(['id' => $team['id']], ['server' => self::server(), 'name' => $team['name'], 'slug' => $team['slug'] ?? null, 'timezone' => $team['timezone'] ?? null]);
+                Team::query()->updateOrCreate(['id' => $team['id']], [
+                    'server' => self::server(),
+                    'name' => $team['name'],
+                    'slug' => $team['slug'] ?? null,
+                    'timezone' => $team['timezone'] ?? null,
+                    'members' => self::members($team['members'] ?? []),
+                ]);
             }
 
             if (! Team::query()->where('server', self::server())->where('is_active', true)->exists()) {
@@ -199,10 +205,10 @@ class SunnyStore
         return match ($type) {
             'recipes' => ['parent_id', 'name', 'source', 'servings', 'prep_time', 'cook_time', 'total_time', 'description', 'ingredients', 'instructions', 'notes', 'nutrition', 'tags'],
             'items' => ['parent_id', 'type', 'name', 'metadata'],
-            'checklists' => ['type', 'name'],
+            'checklists' => ['type', 'name', 'user_id'],
             'item_photos' => ['item_id'],
             'checklist_items' => ['checklist_id', 'name', 'url'],
-            'routines' => ['name', 'time_of_day', 'frequency', 'weekdays', 'day_of_month', 'starts_on', 'is_active'],
+            'routines' => ['name', 'time_of_day', 'frequency', 'weekdays', 'day_of_month', 'starts_on', 'is_active', 'user_id'],
             'routine_steps' => ['routine_id', 'name'],
         };
     }
@@ -214,9 +220,9 @@ class SunnyStore
             'recipes' => ['team_id', ...self::editableFields($type), 'photo_url', 'thumb_url', 'share_url', 'created_at', 'updated_at'],
             'items' => ['team_id', ...self::editableFields($type), 'photo_url', 'thumb_url', 'created_at', 'updated_at', 'deleted_at'],
             'item_photos' => [...self::editableFields($type), 'url', 'thumb_url', 'position', 'created_at', 'updated_at'],
-            'checklists' => ['team_id', 'user_id', ...self::editableFields($type), 'created_at', 'updated_at'],
+            'checklists' => ['team_id', ...self::editableFields($type), 'created_at', 'updated_at'],
             'checklist_items' => [...self::editableFields($type), 'position', 'completed_at', 'completed_by', 'created_at', 'updated_at'],
-            'routines' => ['team_id', 'user_id', ...self::editableFields($type), 'created_at', 'updated_at'],
+            'routines' => ['team_id', ...self::editableFields($type), 'created_at', 'updated_at'],
             'routine_steps' => [...self::editableFields($type), 'position', 'created_at', 'updated_at'],
         };
     }
@@ -275,6 +281,16 @@ class SunnyStore
     public static function server(): string
     {
         return hash('sha256', rtrim((string) config('services.sunny.api_url'), '/'));
+    }
+
+    /** @return list<array{id: int, name: string, initials: string}> */
+    private static function members(array $members): array
+    {
+        return collect($members)
+            ->filter(fn (mixed $member): bool => is_array($member) && is_int($member['id'] ?? null))
+            ->map(fn (array $member): array => Arr::only($member, ['id', 'name', 'initials']))
+            ->values()
+            ->all();
     }
 
     /**

@@ -11,20 +11,21 @@
     'createUrl' => '/lists/create',
 ])
 
-<list ref="checklist-list" fill separator class="bg-theme-background">
+<list ref="checklist-list" fill class="bg-theme-background">
     @if ($this->lists)
-        <list-section :footer="trans_choice(':count list|:count lists', count($this->lists))">
+        <list-section :footer="$this->footer">
             @foreach ($this->lists as $checklist)
-                <list-item
-                    :headline="$checklist['name']"
-                    :supporting="$checklist['summary']"
-                    :leadingIconIos="$checklist['type']->iosIcon()"
-                    :leadingIconAndroid="$checklist['type']->androidIcon()"
-                    :leadingIconBgColor="$checklist['type']->iconColor()"
-                    :trailingIconIos="Ios::ChevronRight"
-                    :trailingIconAndroid="Android::ChevronRight"
-                    @navigate="'/lists/'.$checklist['id']"
-                />
+                @include('native.owned-row', [
+                    'ref' => 'checklist-'.$checklist['id'],
+                    'url' => '/lists/'.$checklist['id'],
+                    'headline' => $checklist['name'],
+                    'supporting' => $checklist['summary'],
+                    'ios' => $checklist['type']->iosIcon(),
+                    'android' => $checklist['type']->androidIcon(),
+                    'iconBackground' => $checklist['type']->iconColor(),
+                    'owner' => $checklist['owner'],
+                    'last' => $loop->last,
+                ])
             @endforeach
         </list-section>
     @else

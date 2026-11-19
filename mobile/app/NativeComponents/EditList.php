@@ -43,7 +43,7 @@ class EditList extends Component
             return;
         }
 
-        $this->saveRecord('checklists', $this->listPayload(), $this->checklist['id']);
+        $this->saveRecord('checklists', [...$this->listPayload(), ...$this->ownerPayload(creating: false)], $this->checklist['id']);
     }
 
     public function render(): View

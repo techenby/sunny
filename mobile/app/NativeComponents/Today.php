@@ -38,14 +38,15 @@ class Today extends Component
     public ?int $justTicked = null;
 
     /**
-     * @return list<array{id: int, name: string, assignee: string, timeOfDay: TimeOfDay, completed: int, total: int, steps: list<array{id: int, name: string, completed: bool}>}>
+     * @return list<array{id: int, name: string, summary: string, owner: array{name: string, initials: string|null, whose: string|null}|null, timeOfDay: TimeOfDay, steps: list<array{id: int, name: string, completed: bool}>}>
      */
     #[Computed]
     public function routines(): array
     {
+        $team = app(SunnyTeam::class)->current();
         $day = $this->day();
 
-        if ($day === null) {
+        if ($team === null || $day === null) {
             return [];
         }
 
@@ -54,22 +55,27 @@ class Today extends Component
             ->where(fn (Builder $query) => $query
                 ->whereNotIn('routine_id', Routine::forCurrentServer()->whereDate('starts_on', '>', $day->toDateString())->select('id'))
                 ->orWhereHas('steps', fn (Builder $query) => $query->whereNotNull('completed_at')))
-            ->with('steps')
+            ->with('steps', 'routine')
             ->get()
             ->sortBy(fn (RoutineOccurrence $occurrence): array => [$occurrence->time_of_day->sortOrder(), $occurrence->name])
-            ->map(fn (RoutineOccurrence $occurrence): array => [
-                'id' => $occurrence->id,
-                'name' => $occurrence->name,
-                'assignee' => $occurrence->assignee ?? 'Household',
-                'timeOfDay' => $occurrence->time_of_day,
-                'completed' => $occurrence->steps->filter->isCompleted()->count(),
-                'total' => $occurrence->steps->count(),
-                'steps' => $occurrence->steps->map(fn (RoutineOccurrenceStep $step): array => [
-                    'id' => $step->id,
-                    'name' => $step->name,
-                    'completed' => $step->isCompleted(),
-                ])->all(),
-            ])
+            ->map(function (RoutineOccurrence $occurrence) use ($team): array {
+                $owner = $team->owner($occurrence->routine?->user_id);
+                $completed = $occurrence->steps->filter->isCompleted()->count();
+                $total = $occurrence->steps->count();
+
+                return [
+                    'id' => $occurrence->id,
+                    'name' => $occurrence->name,
+                    'summary' => collect([$owner['whose'] ?? null, $occurrence->time_of_day->label(), $total ? "{$completed} of {$total}" : null])->filter()->join(' · '),
+                    'owner' => $owner,
+                    'timeOfDay' => $occurrence->time_of_day,
+                    'steps' => $occurrence->steps->map(fn (RoutineOccurrenceStep $step): array => [
+                        'id' => $step->id,
+                        'name' => $step->name,
+                        'completed' => $step->isCompleted(),
+                    ])->all(),
+                ];
+            })
             ->values()
             ->all();
     }

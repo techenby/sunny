@@ -12,6 +12,7 @@ use Native\Mobile\Attributes\Computed;
 
 trait ManagesRoutineForm
 {
+    use ChoosesOwner;
     use SavesSunnyRecord;
 
     public string $name = '';
@@ -34,7 +35,7 @@ trait ManagesRoutineForm
     public string $error = '';
 
     /**
-     * @param  array{team_id: int, name: string, time_of_day: TimeOfDay, frequency: RoutineFrequency, weekdays: list<int>|null, day_of_month: int|null, starts_on: string|null, is_active: bool}  $routine
+     * @param  array{team_id: int, user_id: int|null, name: string, time_of_day: TimeOfDay, frequency: RoutineFrequency, weekdays: list<int>|null, day_of_month: int|null, starts_on: string|null, is_active: bool}  $routine
      */
     public function fillFromRoutine(array $routine): void
     {
@@ -46,6 +47,7 @@ trait ManagesRoutineForm
         $this->dayOfMonth = (string) ($routine['day_of_month'] ?? '');
         $this->startsOn = $routine['starts_on'] !== null ? CarbonImmutable::parse($routine['starts_on'])->toDateString() : $this->teamToday()->toDateString();
         $this->isActive = $routine['is_active'];
+        $this->fillOwner($routine['user_id']);
     }
 
     #[Computed]

@@ -24,7 +24,7 @@ class CreateList extends Component
             return;
         }
 
-        $this->saveRecord('checklists', $this->listPayload());
+        $this->saveRecord('checklists', [...$this->listPayload(), ...$this->ownerPayload(creating: true)]);
     }
 
     public function render(): View

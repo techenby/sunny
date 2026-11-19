@@ -39,6 +39,11 @@ class RoutineOccurrence extends Model
         return $this->belongsTo(Team::class);
     }
 
+    public function routine(): BelongsTo
+    {
+        return $this->belongsTo(Routine::class);
+    }
+
     public function steps(): HasMany
     {
         return $this->hasMany(RoutineOccurrenceStep::class)->orderBy('position')->orderBy('id');

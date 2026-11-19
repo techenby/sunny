@@ -106,8 +106,11 @@
                         </column>
                         <column class="flex-1 gap-0.5">
                             <x-ui.heading size="lg">{{ $routine['name'] }}</x-ui.heading>
-                            <x-ui.text ref="routine-{{ $routine['id'] }}-subtitle" size="sm">{{ $routine['timeOfDay']->label() }} · {{ $routine['assignee'] }}{{ $routine['total'] ? ' · '.$routine['completed'].' of '.$routine['total'] : '' }}</x-ui.text>
+                            <x-ui.text ref="routine-{{ $routine['id'] }}-subtitle" size="sm">{{ $routine['summary'] }}</x-ui.text>
                         </column>
+                        @if ($routine['owner'])
+                            @include('native.owner-mark', ['owner' => $routine['owner'], 'ref' => 'routine-'.$routine['id'].'-owner'])
+                        @endif
                     </row>
 
                     <column class="{{ Card::classes() }} w-full">

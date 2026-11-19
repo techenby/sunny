@@ -44,7 +44,7 @@ class EditRoutine extends Component
             return;
         }
 
-        $this->saveRecord('routines', $this->routinePayload(), $this->routine['id']);
+        $this->saveRecord('routines', [...$this->routinePayload(), ...$this->ownerPayload(creating: false)], $this->routine['id']);
     }
 
     public function render(): View

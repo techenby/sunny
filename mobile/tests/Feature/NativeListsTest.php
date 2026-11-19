@@ -5,6 +5,7 @@ use App\Http\Integrations\Sunny\SunnyStore;
 use App\Models\Checklist;
 use App\Models\ChecklistItem;
 use App\Models\PendingWrite;
+use App\Models\Team;
 use App\NativeComponents\CreateList;
 use App\NativeComponents\EditList;
 use App\NativeComponents\ListDetail;
@@ -16,25 +17,48 @@ beforeEach(fn () => seedSunnyData());
 it('lists the team’s lists alphabetically with their progress', function () {
     $screen = Native::visit('/lists')
         ->assertNavTitle('Lists')
-        ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === 'Groceries'
-            && ($node['props']['supporting'] ?? null) === 'Shopping · 1 of 3 done')
-        ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === 'Birthday ideas'
-            && ($node['props']['supporting'] ?? null) === 'Wish list · No items')
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'checklist-1'
+            && ($node['props']['a11y_label'] ?? null) === 'Groceries, Shopping · 1 of 3 done')
+        ->assertSee('Wish list · No items')
+        ->assertElement('list_section', fn (array $node): bool => ($node['props']['footer'] ?? null) === '3 lists')
         ->assertAccessible();
 
-    $headlines = [];
-    $collect = function (array $node) use (&$collect, &$headlines): void {
-        if (($node['type'] ?? null) === 'list_item') {
-            $headlines[] = $node['props']['headline'];
-        }
+    expect(array_column($screen->get('lists'), 'name'))->toBe(['Birthday ideas', 'Chores', 'Groceries']);
+});
 
-        foreach ($node['children'] ?? [] as $child) {
-            $collect($child);
-        }
-    };
-    $collect($screen->tree());
+it('shows no owners on the lists of a team with one member', function () {
+    Team::find(1)->update(['members' => [['id' => 1, 'name' => 'Andy Swick', 'initials' => 'AS']]]);
 
-    expect($headlines)->toBe(['Birthday ideas', 'Chores', 'Groceries']);
+    Native::visit('/lists')
+        ->assertSee('Wish list · No items')
+        ->assertDontSee('Andy’s')
+        ->assertMissingElement('column', fn (array $node): bool => str_ends_with($node['ref'] ?? '', '-owner'));
+});
+
+it('shows who each list belongs to when the team has several members', function () {
+    seedSunnyMembers();
+
+    Native::visit('/lists')
+        ->assertElement('column', fn (array $node): bool => ($node['ref'] ?? null) === 'checklist-3-owner'
+            && ($node['props']['a11y_label'] ?? null) === 'Andy Swick')
+        ->assertSee('AS')
+        ->assertSee('Andy’s · Wish list · No items')
+        ->assertElement('column', fn (array $node): bool => ($node['ref'] ?? null) === 'checklist-1-owner'
+            && ($node['props']['a11y_label'] ?? null) === 'Household')
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'checklist-1'
+            && ($node['props']['a11y_label'] ?? null) === 'Groceries, Household, Shopping · 1 of 3 done')
+        ->assertElement('list_section', fn (array $node): bool => ($node['props']['footer'] ?? null) === '3 lists · 2 for the household')
+        ->assertAccessible();
+});
+
+it('shows a list whose owner left the team as the household’s', function () {
+    seedSunnyMembers();
+    Checklist::find(3)->update(['user_id' => 99]);
+
+    Native::visit('/lists')
+        ->assertSee('Wish list · No items')
+        ->assertElement('column', fn (array $node): bool => ($node['ref'] ?? null) === 'checklist-3-owner'
+            && ($node['props']['a11y_label'] ?? null) === 'Household');
 });
 
 it('explains how to start when the team has no lists', function () {
@@ -539,4 +563,100 @@ it('keeps a list’s owner when it is edited', function () {
 
     expect(Checklist::find(3)->user_id)->toBe(1)
         ->and(PendingWrite::sole()->payload)->not->toHaveKey('user_id');
+});
+
+it('leaves out the owner picker for a team with one member and gives them new lists', function () {
+    Team::find(1)->update(['members' => [['id' => 1, 'name' => 'Andy Swick', 'initials' => 'AS']]]);
+
+    Native::visit('/lists/create')
+        ->assertDontSee('Belongs to')
+        ->assertSet('ownerOptions', [])
+        ->set('name', 'Hardware store')
+        ->tap('create-list-submit')
+        ->assertReplacedWith('/lists/-1');
+
+    expect(Checklist::find(-1)->user_id)->toBe(1)
+        ->and(PendingWrite::sole()->payload)->toBe(['name' => 'Hardware store', 'type' => 'todo', 'user_id' => 1]);
+});
+
+it('keeps a list’s owner when a team with one member edits it', function () {
+    Team::find(1)->update(['members' => [['id' => 1, 'name' => 'Andy Swick', 'initials' => 'AS']]]);
+
+    Native::visit('/lists/1/edit')->assertDontSee('Belongs to')->set('name', 'Pantry')->tap('edit-list-submit');
+
+    expect(Checklist::find(1)->user_id)->toBeNull()
+        ->and(PendingWrite::sole()->payload)->not->toHaveKey('user_id');
+});
+
+it('offers the household and each member as owners of a new list', function () {
+    seedSunnyMembers();
+
+    Native::visit('/lists/create')
+        ->assertSee('Belongs to')
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'create-list-owner-0'
+            && ($node['props']['a11y_label'] ?? null) === 'Household, selected')
+        ->assertSee('Everyone in the team')
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'create-list-owner-1'
+            && ($node['props']['a11y_label'] ?? null) === 'Andy Swick')
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'create-list-owner-7'
+            && ($node['props']['a11y_label'] ?? null) === 'Sam Swick')
+        ->assertAccessible();
+});
+
+it('creates a list for the household or for one member', function (?string $tap, ?int $userId) {
+    seedSunnyMembers();
+
+    $screen = Native::visit('/lists/create')->set('name', 'Hardware store');
+    if ($tap !== null) {
+        $screen->tap($tap)->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === $tap
+            && str_ends_with($node['props']['a11y_label'] ?? '', ', selected'));
+    }
+    $screen->tap('create-list-submit')->assertReplacedWith('/lists/-1');
+
+    expect(Checklist::find(-1)->user_id)->toBe($userId)
+        ->and(PendingWrite::sole()->payload)->toBe(['name' => 'Hardware store', 'type' => 'todo', 'user_id' => $userId]);
+})->with([
+    'household' => [null, null],
+    'a member' => ['create-list-owner-7', 7],
+    'back to the household' => ['create-list-owner-0', null],
+]);
+
+it('changes who a list belongs to', function (int $listId, string $tap, ?int $userId) {
+    seedSunnyMembers();
+
+    Native::visit("/lists/{$listId}/edit")
+        ->tap($tap)
+        ->tap('edit-list-submit')
+        ->assertWentBack();
+
+    expect(Checklist::find($listId)->user_id)->toBe($userId)
+        ->and(PendingWrite::sole()->payload)->toMatchArray(['user_id' => $userId]);
+})->with([
+    'household to a member' => [1, 'edit-list-owner-7', 7],
+    'member to the household' => [3, 'edit-list-owner-0', null],
+    'member to another member' => [3, 'edit-list-owner-7', 7],
+]);
+
+it('fills in a list’s owner when editing', function () {
+    seedSunnyMembers();
+
+    Native::visit('/lists/3/edit')
+        ->assertSet('userId', 1)
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'edit-list-owner-1'
+            && ($node['props']['a11y_label'] ?? null) === 'Andy Swick, selected');
+});
+
+it('gives a list whose owner left the team back to the household', function () {
+    seedSunnyMembers();
+    Checklist::find(3)->update(['user_id' => 99]);
+
+    Native::visit('/lists/3/edit')
+        ->assertSet('userId', null)
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'edit-list-owner-0'
+            && ($node['props']['a11y_label'] ?? null) === 'Household, selected')
+        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'edit-list-owner-99')
+        ->set('name', 'Gift ideas')
+        ->tap('edit-list-submit');
+
+    expect(PendingWrite::sole()->payload)->toBe(['name' => 'Gift ideas', 'type' => 'wishlist', 'user_id' => null]);
 });
