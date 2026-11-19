@@ -24,6 +24,12 @@ new #[Layout('layouts::guest')] class extends Component
             return;
         }
 
+        if (! Auth::user()->hasVerifiedEmail()) {
+            $this->redirect(route('verification.notice'));
+
+            return;
+        }
+
         $recipe = (new SaveSharedRecipeToTeam)->handle($this->recipe, Auth::user()->currentTeam);
 
         $this->redirect(route('recipes.show', $recipe), navigate: true);

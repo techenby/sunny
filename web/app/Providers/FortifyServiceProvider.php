@@ -15,6 +15,7 @@ use App\Http\Responses\VerifyEmailResponse;
 use App\Models\TeamInvitation;
 use App\Models\User;
 use App\Support\TwoFactorChallenge;
+use Illuminate\Auth\Middleware\EnsureEmailIsVerified;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Http\Request;
@@ -28,6 +29,7 @@ use Laravel\Fortify\Contracts\VerifyEmailResponse as VerifyEmailResponseContract
 use Laravel\Fortify\Fortify;
 use Laravel\Head\Facades\Head;
 use Laravel\Passkeys\Contracts\PasskeyLoginResponse as PasskeyLoginResponseContract;
+use Livewire\Livewire;
 
 class FortifyServiceProvider extends ServiceProvider
 {
@@ -42,6 +44,8 @@ class FortifyServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Livewire::addPersistentMiddleware(EnsureEmailIsVerified::class);
+
         $this->configureActions();
         $this->configureViews();
         $this->configureRateLimiting();

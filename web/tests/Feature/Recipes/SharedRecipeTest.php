@@ -18,6 +18,19 @@ test('a shared recipe can be added to the current team once', function () {
         ->source->toBe(route('recipes.shared', 'abc'));
 });
 
+test('an unverified user can view a shared recipe but must verify before saving it', function () {
+    $user = User::factory()->unverified()->create();
+    $recipe = Recipe::factory()->shared()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::recipes.shared', ['shareToken' => $recipe->share_token])
+        ->assertSee($recipe->name)
+        ->call('addToMyTeam')
+        ->assertRedirect(route('verification.notice'));
+
+    expect($user->currentTeam->recipes()->exists())->toBeFalse();
+});
+
 test('a shared recipe can be added to a team that deleted one with the same name', function () {
     $user = User::factory()->create();
     Recipe::factory()->for($user->currentTeam)->create(['name' => 'Grandma’s Pie'])->delete();

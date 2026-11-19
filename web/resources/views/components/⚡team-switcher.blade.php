@@ -12,6 +12,11 @@ use Livewire\Component;
 new class extends Component {
     public string $teamName = '';
 
+    public function boot(): void
+    {
+        abort_unless(Auth::user()?->hasVerifiedEmail(), 403);
+    }
+
     public function currentTeam(): ?array
     {
         $team = Auth::user()->currentTeam;

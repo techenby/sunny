@@ -43,6 +43,10 @@ class RestrictKioskSession
 
     protected function isKioskPath(Request $request, KioskDevice $device): bool
     {
+        if ($request->routeIs('verification.notice')) {
+            return true;
+        }
+
         $path = '/' . ltrim($request->path(), '/');
 
         if (str_starts_with($path, '/livewire/') || str_starts_with($path, '/livewire-')) {

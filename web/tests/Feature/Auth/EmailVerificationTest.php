@@ -6,13 +6,29 @@ use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
+use Livewire\Livewire;
 
 test('email verification screen can be rendered', function () {
     $user = User::factory()->unverified()->create();
 
     $response = $this->actingAs($user)->get(route('verification.notice'));
 
-    $response->assertOk();
+    $response->assertOk()
+        ->assertSee($user->email)
+        ->assertSee(route('profile.edit'));
+});
+
+test('an existing account can request a verification email from the notice', function () {
+    $user = User::factory()->unverified()->create();
+    Notification::fake();
+
+    $this->actingAs($user)
+        ->from(route('verification.notice'))
+        ->post(route('verification.send'))
+        ->assertRedirect(route('verification.notice'))
+        ->assertSessionHas('status', 'verification-link-sent');
+
+    Notification::assertSentTo($user, VerifyEmail::class);
 });
 
 test('email can be verified', function () {
@@ -75,6 +91,21 @@ test('unverified users are sent to the verification screen instead of the app', 
         ->assertRedirect(route('verification.notice'));
 });
 
+test('an open dashboard rejects Livewire updates after email verification is cleared', function () {
+    $user = User::factory()->create();
+    $dashboard = $this->actingAs($user)->get(route('dashboard'))->assertOk();
+    $snapshot = html_entity_decode((string) str($dashboard->getContent())->betweenFirst('wire:snapshot="', '"'));
+
+    $user->forceFill(['email_verified_at' => null])->save();
+
+    $this->actingAs($user->fresh())
+        ->postJson(Livewire::getUpdateUri(), [
+            'components' => [['snapshot' => $snapshot, 'updates' => [], 'calls' => []]],
+        ], ['X-Livewire' => 'true'])
+        ->assertForbidden()
+        ->assertJsonPath('message', 'Your email address is not verified.');
+});
+
 test('new users are sent a verification email when they register', function () {
     Notification::fake();
 
@@ -88,10 +119,16 @@ test('new users are sent a verification email when they register', function () {
     Notification::assertSentTo(User::where('email', 'nami@example.com')->sole(), VerifyEmail::class);
 });
 
-test('unverified users can still use the app through the API', function () {
+test('unverified users can still sign in and sync through the mobile API', function () {
     $user = User::factory()->unverified()->create();
 
-    $this->actingAs($user)
+    $token = $this->postJson(route('api.token'), [
+        'email' => $user->email,
+        'password' => 'password',
+        'device_name' => 'iPhone',
+    ])->assertOk()->assertJsonPath('email_verified_at', null)->json('token');
+
+    $this->withToken($token)
         ->getJson(route('api.sync'))
         ->assertOk();
 });

@@ -12,6 +12,27 @@ test('profile page is displayed', function () {
         ->assertOk();
 });
 
+test('unverified users can still open profile settings and see account deletion', function () {
+    $this->actingAs(User::factory()->unverified()->create())
+        ->get(route('profile.edit'))
+        ->assertOk()
+        ->assertSee(route('verification.notice'))
+        ->assertSeeLivewire('pages::settings.delete-user-form')
+        ->assertDontSeeLivewire('team-switcher');
+});
+
+test('the team switcher blocks updates from an unverified account', function () {
+    $user = User::factory()->create();
+    $switcher = Livewire::actingAs($user)->test('team-switcher')->set('teamName', 'Another Team');
+
+    $user->forceFill(['email_verified_at' => null])->save();
+    Livewire::actingAs($user->fresh());
+
+    $switcher->call('createTeam')->assertForbidden();
+
+    expect($user->ownedTeams()->count())->toBe(1);
+});
+
 test('profile information can be updated', function () {
     $user = User::factory()->create();
 
