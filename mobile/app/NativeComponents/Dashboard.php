@@ -24,7 +24,6 @@ use JsonException;
 use Native\Mobile\Attributes\Computed;
 use Native\Mobile\Attributes\On;
 use Native\Mobile\Events\Alert\ButtonPressed;
-use Native\Mobile\Facades\Device;
 use Native\Mobile\Facades\Dialog;
 use RuntimeException;
 use Saloon\Exceptions\Request\FatalRequestException;
@@ -51,14 +50,6 @@ class Dashboard extends Component
         app(SunnySyncCoordinator::class)->dispatchIfDue();
         $this->refreshLocalData();
         $this->refreshCalendar();
-    }
-
-    #[Computed]
-    public function verifyEmailBy(): ?string
-    {
-        $dueAt = app(SunnyStore::class)->emailVerificationDueAt();
-
-        return $dueAt?->isFuture() ? $dueAt->setTimezone(Device::getTimezone() ?? config('app.timezone'))->format('F j') : null;
     }
 
     /**
@@ -195,7 +186,7 @@ class Dashboard extends Component
 
     private function refreshLocalData(): void
     {
-        unset($this->verifyEmailBy, $this->recentRecipes, $this->recentItems, $this->teamOptions, $this->invitations, $this->calendarSnapshot, $this->calendarFeeds, $this->comingUp);
+        unset($this->recentRecipes, $this->recentItems, $this->teamOptions, $this->invitations, $this->calendarSnapshot, $this->calendarFeeds, $this->comingUp);
     }
 
     protected function invitationsChanged(): void

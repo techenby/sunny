@@ -7,7 +7,6 @@ namespace App\Models;
 use App\Concerns\HasTeams;
 use App\Http\Integrations\Bento\Requests\CreateDataDeletionRequest;
 use Bentonow\BentoLaravel\Facades\Bento;
-use Carbon\CarbonImmutable;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -68,23 +67,6 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
             $teams->count(),
             ['teams' => $teams->pluck('name')->join(', ', __(' and '))],
         );
-    }
-
-    public function emailVerificationGraceEndsAt(): ?CarbonImmutable
-    {
-        if ($this->hasVerifiedEmail()) {
-            return null;
-        }
-
-        $afterSignUp = CarbonImmutable::parse($this->created_at)->addDays(config('auth.verification.grace_days'));
-        $configured = config('auth.verification.grace_until');
-
-        return filled($configured) ? $afterSignUp->max(CarbonImmutable::parse($configured)->endOfDay()) : $afterSignUp;
-    }
-
-    public function isWithinEmailVerificationGracePeriod(): bool
-    {
-        return $this->emailVerificationGraceEndsAt()?->isFuture() ?? false;
     }
 
     public function needsOnboarding(): bool

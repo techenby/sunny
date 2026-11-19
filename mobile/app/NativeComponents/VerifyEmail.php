@@ -6,9 +6,11 @@ use App\Http\Integrations\Sunny\SunnyAccount;
 use App\Http\Integrations\Sunny\SunnyAuth;
 use App\Http\Integrations\Sunny\SunnyStore;
 use App\Http\Integrations\Sunny\SunnySyncCoordinator;
+use App\Http\Integrations\Sunny\SunnyTokenStore;
 use App\Support\Toast;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\View\View;
+use Native\Mobile\AsyncTask;
 use Native\Mobile\Attributes\On;
 use Native\Mobile\Events\Alert\ButtonPressed;
 use Native\Mobile\Facades\Dialog;
@@ -30,11 +32,13 @@ class VerifyEmail extends Component
     public function mount(): void
     {
         $this->email = app(SunnyStore::class)->profile()['email'] ?? '';
+        $this->checkInBackground();
     }
 
     public function onResume(): void
     {
         $this->email = app(SunnyStore::class)->profile()['email'] ?? $this->email;
+        $this->checkInBackground();
     }
 
     public function send(): void
@@ -148,11 +152,35 @@ class VerifyEmail extends Component
         return view('native.verify-email');
     }
 
+    private function checkInBackground(): void
+    {
+        if (Network::status()?->connected === false) {
+            return;
+        }
+
+        try {
+            $token = app(SunnyTokenStore::class)->get();
+        } catch (RuntimeException) {
+            return;
+        }
+
+        if ($token === null) {
+            return;
+        }
+
+        AsyncTask::dispatch(static fn (): ?array => app(SunnyAccount::class)->refresh($token))
+            ->finished(function (?array $profile): void {
+                if ($profile !== null && $profile['verified']) {
+                    $this->continueToSunny();
+                }
+            })
+            ->failed(fn () => null);
+    }
+
     private function continueToSunny(): void
     {
         SunnySyncCoordinator::forgetDispatch();
-        app(SunnySyncCoordinator::class)->dispatch();
         Toast::success('Email verified');
-        $this->replace('/dashboard');
+        $this->replace('/');
     }
 }

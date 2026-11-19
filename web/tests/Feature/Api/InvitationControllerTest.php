@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\Teams\AcceptTeamInvitation;
+use App\Actions\Teams\DeclineTeamInvitation;
 use App\Enums\TeamRole;
 use App\Models\Team;
 use App\Models\TeamInvitation;
@@ -109,11 +110,19 @@ test('an invitation cannot be answered before the user verifies their email', fu
 
     $this->actingAs($this->zoro)
         ->postJson(route("api.invitations.{$action}", $invitation))
-        ->assertUnprocessable()
-        ->assertJsonValidationErrors(['invitation' => 'Verify your email address before you answer this invitation.']);
+        ->assertStatus(423);
 
     expect($invitation->fresh())->not->toBeNull()
         ->and($this->zoro->belongsToTeam($this->crew))->toBeFalse();
+})->with(['accept', 'decline']);
+
+test('the invitation actions refuse an unverified user even when called directly', function (string $action) {
+    $this->zoro->forceFill(['email_verified_at' => null])->save();
+    $invitation = TeamInvitation::factory()->for($this->crew)->create(['email' => 'zoro@strawhat.pirates']);
+    $handler = $action === 'accept' ? AcceptTeamInvitation::class : DeclineTeamInvitation::class;
+
+    expect(fn () => resolve($handler)->handle($this->zoro, $invitation))
+        ->toThrow(ValidationException::class, 'Verify your email address before you answer this invitation.');
 })->with(['accept', 'decline']);
 
 test('an invitation that is gone cannot be answered by its code', function (string $action) {

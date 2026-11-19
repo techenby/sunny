@@ -55,25 +55,6 @@
             </pressable>
         @endif
 
-        @if ($this->verifyEmailBy)
-            <pressable
-                ref="dashboard-verify-email"
-                a11y-label="Verify your email by {{ $this->verifyEmailBy }}. Opens your account."
-                @navigate('/preferences/account')
-                class="{{ Card::classes() }} w-full p-4"
-            >
-                <row class="w-full items-start gap-3">
-                    <column class="h-9 w-9 items-center justify-center rounded-full bg-theme-primary/15">
-                        <icon :ios="Ios::Envelope" :android="Android::Email" :size="18" class="text-theme-primary-text" />
-                    </column>
-                    <column class="flex-1 gap-1">
-                        <x-ui.heading>Verify your email by {{ $this->verifyEmailBy }}</x-ui.heading>
-                        <x-ui.text size="sm">Sunny will stop syncing after that until you do. Tap to send a link.</x-ui.text>
-                    </column>
-                </row>
-            </pressable>
-        @endif
-
         @foreach ($this->invitations as $invitation)
             <column ref="dashboard-invitation-{{ $invitation['code'] }}" class="{{ Card::classes() }} w-full gap-3 p-4">
                 <row class="w-full items-start gap-3">

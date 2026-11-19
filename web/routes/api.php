@@ -24,8 +24,8 @@ use App\Http\Controllers\Api\TeamController;
 use App\Http\Controllers\Api\TeamInvitationController;
 use App\Http\Controllers\Api\TeamMemberController;
 use App\Http\Controllers\Api\TokenController;
-use App\Http\Middleware\EnsureEmailIsVerifiedOrInGracePeriod;
 use App\Http\Middleware\EnsureTeamMembership;
+use App\Http\Middleware\RequireVerifiedEmail;
 use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -51,7 +51,7 @@ Route::middleware('auth:sanctum')
         Route::post('logout', [TokenController::class, 'destroy'])->name('logout');
     });
 
-Route::middleware(['auth:sanctum', EnsureEmailIsVerifiedOrInGracePeriod::class])
+Route::middleware(['auth:sanctum', RequireVerifiedEmail::class])
     ->name('api.')
     ->group(function (): void {
         Route::post('user/onboarding', OnboardingController::class)->name('user.onboarding');

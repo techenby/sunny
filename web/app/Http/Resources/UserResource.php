@@ -19,7 +19,6 @@ class UserResource extends JsonResource
             'name' => $this->name,
             'email' => $this->email,
             'email_verified_at' => $this->email_verified_at,
-            'email_verification_grace_ends_at' => $this->emailVerificationGraceEndsAt(),
             'two_factor_enabled' => $this->hasEnabledTwoFactorAuthentication(),
             'current_team_id' => $this->current_team_id,
             'onboarded_at' => $this->onboarded_at,
