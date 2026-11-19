@@ -22,6 +22,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
 use Native\Mobile\AsyncTask;
+use Native\Mobile\Testing\FakeAsyncTask;
 use Native\Mobile\Testing\Native;
 use Saloon\Exceptions\Request\RequestException;
 use Saloon\Exceptions\Request\Statuses\UnauthorizedException;
@@ -220,10 +221,10 @@ it('syncs in the background when returning to a stale dashboard', function (): v
     seedSunnyData();
     Saloon::fake([SyncRequest::class => MockResponse::make($this->snapshot)]);
     $recipe = Native::visit('/dashboard')->assertDontSee('Soup')->tap('dashboard-recipes-1')->follow();
-    $async->assertNotDispatched();
+    expect(syncDispatches($async))->toBe(0);
     $this->travel(6)->minutes();
     $recipe->goBack()->assertSee('Soup');
-    $async->assertDispatchedTimes(1);
+    expect(syncDispatches($async))->toBe(1);
     $async->assertShared('sunny-sync-complete');
 });
 
@@ -258,11 +259,11 @@ it('backs off after a failed background sync instead of retrying on every poll',
     $screen = Native::visit('/dashboard');
     $screen->firePoll('pollSunnySync');
     Native::visit('/recipes')->firePoll('pollSunnySync');
-    $async->assertDispatchedTimes(1);
+    expect(syncDispatches($async))->toBe(1);
 
     $this->travel(6)->minutes();
     $screen->firePoll('pollSunnySync');
-    $async->assertDispatchedTimes(2);
+    expect(syncDispatches($async))->toBe(2);
 });
 
 it('does not start a background sync while another is in flight', function (): void {
@@ -273,7 +274,7 @@ it('does not start a background sync while another is in flight', function (): v
 
     Native::visit('/dashboard')->firePoll('pollSunnySync');
 
-    $async->assertNotDispatched();
+    expect(syncDispatches($async))->toBe(0);
 });
 
 it('only runs a scheduled sync when local data is stale', function (): void {
@@ -344,7 +345,7 @@ it('starts a fresh background sync after signing back in from a revoked session'
 
     Native::visit('/dashboard');
 
-    $async->assertDispatchedTimes(1);
+    expect(syncDispatches($async))->toBe(1);
 });
 
 it('clears local data when a session is revoked', function (): void {
@@ -446,3 +447,8 @@ it('does not expose another API server data', function (): void {
     expect(Recipes::all())->toBe([])->and(Inventory::all())->toBe([])
         ->and(app(SunnyStore::class)->lastSyncedAt())->toBeNull();
 });
+
+function syncDispatches(FakeAsyncTask $async): int
+{
+    return collect($async->dispatched)->where('shared', 'sunny-sync-complete')->count();
+}

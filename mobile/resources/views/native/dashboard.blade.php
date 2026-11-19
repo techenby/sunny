@@ -94,6 +94,77 @@
             </column>
         @endunless
 
+        @if ($this->teamOptions)
+            @php($comingUp = $this->comingUp)
+            <column ref="coming-up" class="w-full gap-3">
+                <pressable ref="open-calendar" a11y-label="Coming up, open Calendar" class="min-h-12 w-full justify-center" @navigate('/calendar')>
+                    <row class="w-full items-center gap-3">
+                        <x-ui.heading size="lg" class="flex-1">Coming up</x-ui.heading>
+                        <icon :ios="Ios::ChevronRight" :android="Android::ChevronRight" :size="14" class="text-theme-primary-text" />
+                    </row>
+                </pressable>
+
+                @if ($comingUp && $calendarStatus !== '' && $this->calendarUpdatedAt)
+                    <row ref="coming-up-status" class="w-full items-start gap-2">
+                        <icon :ios="Ios::WifiSlash" :android="Android::WifiOff" :size="14" class="mt-0.5 text-theme-on-surface-variant" />
+                        <x-ui.text size="sm" class="flex-1">{{ $calendarStatus === 'offline' ? 'You’re offline.' : 'Sunny couldn’t refresh events.' }} Last updated {{ $this->calendarUpdatedAt }}.</x-ui.text>
+                    </row>
+                @endif
+
+                <column class="{{ Card::classes() }} w-full py-1">
+                    @if (($this->calendarFeeds['feeds'] ?? null) === [])
+                        <pressable ref="coming-up-no-calendars" a11y-label="No calendars yet. Connect one to see what’s coming up." class="w-full px-4 py-3" @navigate('/calendar')>
+                            <row class="w-full items-center gap-3">
+                                <icon :ios="Ios::Calendar" :android="Android::CalendarMonth" :size="18" class="text-theme-primary" />
+                                <x-ui.text size="sm" class="flex-1">No calendars yet. Connect one to see what’s coming up.</x-ui.text>
+                                <icon :ios="Ios::ChevronRight" :android="Android::ChevronRight" :size="14" class="text-theme-on-surface-variant" />
+                            </row>
+                        </pressable>
+                    @elseif ($comingUp)
+                        @foreach ($this->calendarSnapshot['warnings'] as $warning)
+                            <pressable ref="coming-up-warning-{{ $warning['feed_id'] }}" :a11y-label="$warning['feed_name'].' isn’t showing. Fix it in Calendars.'" class="w-full px-4 py-2" @navigate('/calendar/feeds')>
+                                <row class="w-full items-center gap-2">
+                                    <icon :ios="Ios::ExclamationmarkTriangleFill" :android="Android::Warning" :size="14" class="text-theme-destructive" />
+                                    <text font="medium" class="flex-1 text-sm text-theme-destructive">{{ $warning['feed_name'] }} isn’t showing</text>
+                                    <text font="semibold" class="text-sm text-theme-primary-text">Fix</text>
+                                </row>
+                            </pressable>
+                        @endforeach
+                        @foreach ($comingUp as $day)
+                            @unless ($loop->first)
+                                <divider class="mx-4 my-1" />
+                            @endunless
+                            <row class="w-full items-center px-4 pt-2 pb-1">
+                                <text font="accent" class="flex-1 text-xs text-theme-on-surface">{{ $day['name'] }}</text>
+                                <text font="medium" class="text-xs text-theme-on-surface-variant">{{ $day['date'] }}</text>
+                            </row>
+                            @forelse ($day['events'] as $event)
+                                @include('native.calendar-event', ['event' => $event, 'ref' => 'coming-up-'.$loop->parent->index.'-'.$loop->index])
+                            @empty
+                                <row ref="coming-up-{{ $loop->index }}-empty" class="w-full items-center gap-2 px-4 pt-1 pb-3">
+                                    <icon :ios="Ios::SunMax" :android="Android::WbSunny" :size="16" class="text-theme-primary" />
+                                    <x-ui.text size="sm">Nothing scheduled</x-ui.text>
+                                </row>
+                            @endforelse
+                        @endforeach
+                    @else
+                        <row ref="coming-up-unavailable" class="w-full items-center gap-3 px-4 py-3">
+                            @if ($this->calendarIsLoading)
+                                <activity-indicator />
+                                <x-ui.text size="sm">Loading events…</x-ui.text>
+                            @elseif ($calendarStatus === 'offline')
+                                <icon :ios="Ios::WifiSlash" :android="Android::WifiOff" :size="16" class="text-theme-on-surface-variant" />
+                                <x-ui.text size="sm" class="flex-1">You’re offline. Events show up here once Sunny can be reached.</x-ui.text>
+                            @else
+                                <icon :ios="Ios::ExclamationmarkTriangle" :android="Android::Warning" :size="16" class="text-theme-on-surface-variant" />
+                                <x-ui.text size="sm" class="flex-1">Sunny couldn’t load events. Pull down to try again.</x-ui.text>
+                            @endif
+                        </row>
+                    @endif
+                </column>
+            </column>
+        @endif
+
         <column class="w-full gap-3">
             <x-ui.heading size="lg">Recent recipes</x-ui.heading>
             @if ($this->recentRecipes)

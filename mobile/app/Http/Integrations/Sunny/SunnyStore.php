@@ -190,6 +190,7 @@ class SunnyStore
             Routine::query()->whereNotIn('id', $pending->where('resource', 'routines')->pluck('record_id')
                 ->merge($pending->where('resource', 'routine_steps')->pluck('payload.routine_id')))->delete();
             Team::query()->whereNotIn('id', $pending->pluck('team_id'))->delete();
+            DB::table('calendar_snapshots')->delete();
             DB::table('sunny_sync_states')->delete();
         });
         DB::table('sunny_accounts')->update(['name' => null, 'email' => null, 'email_verified_at' => null]);

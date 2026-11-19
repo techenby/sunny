@@ -3,6 +3,7 @@
 namespace App\NativeComponents;
 
 use App\Concerns\ChecksSunnySync;
+use App\Concerns\ShowsCalendarEvents;
 use App\Enums\TimeOfDay;
 use App\Http\Integrations\Sunny\SunnyOutbox;
 use App\Http\Integrations\Sunny\SunnyStore;
@@ -13,6 +14,7 @@ use App\Http\Integrations\Sunny\SunnyTokenStore;
 use App\Models\Routine;
 use App\Models\RoutineOccurrence;
 use App\Models\RoutineOccurrenceStep;
+use App\Support\CalendarAgenda;
 use App\Support\Toast;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
@@ -28,6 +30,7 @@ use Saloon\Exceptions\Request\FatalRequestException;
 class Today extends Component
 {
     use ChecksSunnySync;
+    use ShowsCalendarEvents;
 
     public string $date = '';
 
@@ -36,6 +39,32 @@ class Today extends Component
     public string $loadError = '';
 
     public ?int $justTicked = null;
+
+    public function mount(): void
+    {
+        $this->refreshCalendar();
+    }
+
+    public function onResume(): void
+    {
+        $this->refreshLocalSyncedData();
+        $this->refreshCalendar();
+    }
+
+    /**
+     * @return list<array<string, mixed>>|null
+     */
+    #[Computed]
+    public function events(): ?array
+    {
+        $day = $this->day();
+
+        if ($this->calendarSnapshot === null || $day === null || ($this->calendarFeeds['feeds'] ?? null) === []) {
+            return null;
+        }
+
+        return CalendarAgenda::rows($this->calendarSnapshot['events'], $day);
+    }
 
     /**
      * @return list<array{id: int, name: string, summary: string, owner: array{name: string, initials: string|null, whose: string|null}|null, timeOfDay: TimeOfDay, steps: list<array{id: int, name: string, completed: bool}>}>
@@ -170,6 +199,7 @@ class Today extends Component
     public function retry(): void
     {
         $this->loadDay();
+        $this->refreshCalendar(force: true);
     }
 
     public function toggleStep(int $id): void
@@ -199,6 +229,7 @@ class Today extends Component
         }
 
         $this->refreshLocalSyncedData();
+        $this->refreshCalendar();
 
         if (! $this->isKeptOnPhone()) {
             $this->loadDay();
@@ -207,7 +238,7 @@ class Today extends Component
 
     protected function refreshLocalSyncedData(): void
     {
-        unset($this->routines, $this->labels, $this->isToday, $this->canGoBack, $this->canGoForward);
+        unset($this->routines, $this->labels, $this->isToday, $this->canGoBack, $this->canGoForward, $this->calendarSnapshot, $this->calendarFeeds, $this->calendarUpdatedAt, $this->calendarIsLoading, $this->events);
     }
 
     public function render(): View
@@ -219,8 +250,10 @@ class Today extends Component
     {
         $this->date = $day->isSameDay($this->today()) ? '' : $day->toDateString();
         $this->justTicked = null;
+        $this->calendarStatus = '';
         $this->refreshLocalSyncedData();
         $this->loadDay();
+        $this->refreshCalendar();
     }
 
     private function loadDay(): void
@@ -265,6 +298,14 @@ class Today extends Component
                     $this->loadError = is_a($exception->originalClass(), FatalRequestException::class, true) ? 'offline' : 'unavailable';
                 }
             });
+    }
+
+    protected function calendarRange(): ?array
+    {
+        $team = app(SunnyTeam::class)->current();
+        $day = $this->day();
+
+        return $team === null || $day === null ? null : [$team->id, $day->toDateString(), 1];
     }
 
     private function isKeptOnPhone(): bool
