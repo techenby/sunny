@@ -389,6 +389,12 @@ describe('Calendars', function (): void {
             ->and(app(SunnyCalendar::class)->events(1, '2026-11-17', 2))->toBeNull();
     });
 
+    it('waits long enough for Sunny to fetch a new or changed calendar', function (): void {
+        expect((new SaveCalendarFeedRequest('family', []))->config()->all())->toBe(['connect_timeout' => 4, 'timeout' => 15])
+            ->and((new SaveCalendarFeedRequest('family', [], 2))->config()->all())->toBe(['connect_timeout' => 4, 'timeout' => 15])
+            ->and((new DeleteCalendarFeedRequest('family', 2))->config()->all())->toBe(['connect_timeout' => 4, 'timeout' => 8]);
+    });
+
     it('drops the offline notice once a calendar saves', function (): void {
         seedCalendar([]);
         Saloon::fake([GetCalendarFeedsRequest::class => calendarOffline()]);

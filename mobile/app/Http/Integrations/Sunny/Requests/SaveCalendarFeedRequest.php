@@ -34,6 +34,6 @@ class SaveCalendarFeedRequest extends Request implements HasBody
      */
     protected function defaultConfig(): array
     {
-        return ['connect_timeout' => 4, 'timeout' => 8];
+        return ['connect_timeout' => 4, 'timeout' => 15];
     }
 }
