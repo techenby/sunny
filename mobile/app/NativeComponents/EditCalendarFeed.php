@@ -50,7 +50,7 @@ class EditCalendarFeed extends Component
 
         return collect([
             CalendarAgenda::problem($this->feed['last_error']),
-            $this->feed['last_failed_at'] ? 'last failed '.CarbonImmutable::parse($this->feed['last_failed_at'])->diffForHumans() : null,
+            $this->feed['last_failed_at'] ? 'last failed '.CalendarAgenda::ago(CarbonImmutable::parse($this->feed['last_failed_at'])) : null,
         ])->filter()->implode(' · ');
     }
 

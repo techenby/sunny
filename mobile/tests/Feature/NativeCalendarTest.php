@@ -234,6 +234,22 @@ describe('Calendar', function (): void {
         Saloon::assertSent(fn (GetCalendarEventsRequest $request): bool => $request->query()->all() === ['from' => '2026-11-17', 'days' => 42]);
     });
 
+    it('shows when an event that started earlier ends', function (): void {
+        Saloon::fake([GetCalendarFeedsRequest::class => calendarFeedsResponse(), GetCalendarEventsRequest::class => calendarEventsResponse([
+            calendarEvent('Sleepover', '2026-11-16T19:00:00+00:00', '2026-11-17T09:30:00+00:00'),
+            calendarEvent('Camping trip', '2026-11-16T18:00:00+00:00', '2026-11-19T10:00:00+00:00'),
+        ])]);
+
+        Native::visit('/calendar')
+            ->assertSee('Until')
+            ->assertSee('9:30 am')
+            ->assertSee('All day')
+            ->assertDontSee('7:00 pm')
+            ->assertDontSee('6:00 pm')
+            ->assertElement('row', fn (array $node): bool => ($node['ref'] ?? null) === 'calendar-2026-11-17-0')
+            ->assertElement('row', fn (array $node): bool => ($node['ref'] ?? null) === 'calendar-2026-11-17-1');
+    });
+
     it('opens Calendars from its menu', function (): void {
         seedCalendar(sampleEvents(), days: 42);
 
@@ -321,6 +337,19 @@ describe('Calendars', function (): void {
             ->assertAccessible()
             ->tap('calendar-feed-2')
             ->assertNavigatedTo('/calendar/feeds/2/edit');
+    });
+
+    it('puts a longer problem under the heading and says just now for a fresh failure', function (): void {
+        Saloon::fake([GetCalendarFeedsRequest::class => calendarFeedsResponse([calendarFeed(5, 'Camp', '#ca8a04', [
+            'status' => 'failing',
+            'last_failed_at' => '2026-11-17T07:41:40.000000Z',
+            'last_error' => 'Could not connect to the calendar server.',
+        ])])]);
+
+        Native::visit('/calendar/feeds')
+            ->assertSee('Last failed just now')
+            ->assertSee('Could not connect to the calendar server')
+            ->assertElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'calendar-feed-5-problem');
     });
 
     it('shows the calendars it last fetched while offline', function (): void {

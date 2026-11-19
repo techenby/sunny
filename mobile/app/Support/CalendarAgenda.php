@@ -10,15 +10,20 @@ class CalendarAgenda
      * @param  list<array<string, mixed>>  $events
      * @return list<array{title: string, location: string|null, time: string, until: string|null, color: string, declined: bool}>
      */
-    public static function rows(array $events): array
+    public static function rows(array $events, CarbonImmutable $day): array
     {
-        return array_map(function (array $event): array {
+        $dayStart = $day->startOfDay();
+        $dayEnd = $dayStart->addDay();
+
+        return array_map(function (array $event) use ($dayStart, $dayEnd): array {
             $startsAt = CarbonImmutable::parse($event['starts_at']);
             $endsAt = $event['ends_at'] !== null ? CarbonImmutable::parse($event['ends_at']) : null;
             $declined = ($event['response_status'] ?? null) === 'DECLINED';
 
             if ($event['all_day']) {
                 [$time, $until] = ['All day', null];
+            } elseif ($startsAt->lessThan($dayStart) && $endsAt !== null) {
+                [$time, $until] = $endsAt->lessThanOrEqualTo($dayEnd) ? ['Until', $endsAt->format('g:i a')] : ['All day', null];
             } elseif ($endsAt === null || $endsAt->equalTo($startsAt)) {
                 [$time, $until] = [$startsAt->format('g:i a'), null];
             } else {
@@ -73,6 +78,11 @@ class CalendarAgenda
         }
 
         return preg_match('/HTTP (\d{3})/', $message, $matches) ? 'HTTP '.$matches[1] : rtrim(trim($message), '.');
+    }
+
+    public static function ago(CarbonImmutable $at): string
+    {
+        return $at->greaterThan(now()->subMinute()) ? 'just now' : $at->diffForHumans();
     }
 
     public static function lastUpdated(CarbonImmutable $fetchedAt, CarbonImmutable $now): string

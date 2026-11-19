@@ -52,7 +52,7 @@ class Calendar extends Component
                     'key' => $date,
                     'name' => $name,
                     'detail' => in_array($name, ['Today', 'Tomorrow'], true) ? $day->format('l, M j') : $day->format('M j'),
-                    'events' => CalendarAgenda::rows($events),
+                    'events' => CalendarAgenda::rows($events, $day),
                 ];
             })
             ->values()
@@ -68,7 +68,7 @@ class Calendar extends Component
             return null;
         }
 
-        return 'Updated '.($fetchedAt->greaterThan(now()->subMinute()) ? 'just now' : $fetchedAt->diffForHumans()).' · next 6 weeks';
+        return 'Updated '.CalendarAgenda::ago($fetchedAt).' · next 6 weeks';
     }
 
     #[Computed]

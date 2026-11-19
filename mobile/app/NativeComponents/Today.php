@@ -57,11 +57,13 @@ class Today extends Component
     #[Computed]
     public function events(): ?array
     {
-        if ($this->calendarSnapshot === null || ($this->calendarFeeds['feeds'] ?? null) === []) {
+        $day = $this->day();
+
+        if ($this->calendarSnapshot === null || $day === null || ($this->calendarFeeds['feeds'] ?? null) === []) {
             return null;
         }
 
-        return CalendarAgenda::rows($this->calendarSnapshot['events']);
+        return CalendarAgenda::rows($this->calendarSnapshot['events'], $day);
     }
 
     /**

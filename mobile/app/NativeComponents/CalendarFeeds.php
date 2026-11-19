@@ -74,8 +74,8 @@ class CalendarFeeds extends Component
             'failing' => $feed['status'] === 'failing',
             'problem' => CalendarAgenda::problem($feed['last_error']),
             'detail' => match (true) {
-                $feed['status'] === 'failing' => 'Last failed '.($feed['last_failed_at'] ? CarbonImmutable::parse($feed['last_failed_at'])->diffForHumans() : 'recently'),
-                $feed['last_fetched_at'] !== null => 'Updated '.CarbonImmutable::parse($feed['last_fetched_at'])->diffForHumans(),
+                $feed['status'] === 'failing' => 'Last failed '.($feed['last_failed_at'] ? CalendarAgenda::ago(CarbonImmutable::parse($feed['last_failed_at'])) : 'recently'),
+                $feed['last_fetched_at'] !== null => 'Updated '.CalendarAgenda::ago(CarbonImmutable::parse($feed['last_fetched_at'])),
                 default => 'Not fetched yet',
             },
         ]);

@@ -18,7 +18,7 @@
             </row>
         @endif
         @if ($event['declined'])
-            <x-ui.badge size="sm" class="mt-0.5">Declined</x-ui.badge>
+            <x-ui.badge size="sm" class="mt-0.5 self-start">Declined</x-ui.badge>
         @endif
     </column>
 </row>

@@ -143,7 +143,7 @@ class Dashboard extends Component
         return array_map(fn (CarbonImmutable $day): array => [
             'name' => CalendarAgenda::dayName($day, $today),
             'date' => $day->format('D, M j'),
-            'events' => CalendarAgenda::rows($days[$day->toDateString()] ?? []),
+            'events' => CalendarAgenda::rows($days[$day->toDateString()] ?? [], $day),
         ], [$today, $today->addDay()]);
     }
 

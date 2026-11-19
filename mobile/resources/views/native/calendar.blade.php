@@ -103,7 +103,7 @@
                             </row>
                             <x-ui.text size="sm">We couldn’t fetch this calendar, so its events are missing. Its link may have expired.</x-ui.text>
                             @if ($problem = CalendarAgenda::problem($warning['message']))
-                                <x-ui.badge size="sm" class="mt-1">{{ $problem }}</x-ui.badge>
+                                <x-ui.badge size="sm" class="mt-1 self-start">{{ $problem }}</x-ui.badge>
                             @endif
                         </column>
                     </row>

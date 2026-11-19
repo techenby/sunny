@@ -61,10 +61,13 @@
                     <column ref="calendar-feed-{{ $feed['id'] }}-fix" class="mx-3 gap-1.5 rounded-xl bg-theme-primary/15 px-4 py-3">
                         <row class="w-full items-center gap-2">
                             <text font="accent" class="flex-1 text-sm text-theme-destructive">Sunny couldn’t fetch it</text>
-                            @if ($feed['problem'])
+                            @if ($feed['problem'] && str_starts_with($feed['problem'], 'HTTP '))
                                 <text font="mono" class="rounded-md bg-theme-surface/70 px-1.5 py-0.5 text-xs text-theme-on-surface">{{ $feed['problem'] }}</text>
                             @endif
                         </row>
+                        @if ($feed['problem'] && ! str_starts_with($feed['problem'], 'HTTP '))
+                            <text ref="calendar-feed-{{ $feed['id'] }}-problem" font="mono" class="self-start rounded-md bg-theme-surface/70 px-1.5 py-0.5 text-xs text-theme-on-surface">{{ $feed['problem'] }}</text>
+                        @endif
                         <text class="text-sm text-theme-on-surface">Check the link is right and the calendar is still shared. For Google Calendar, copy a fresh Secret address in iCal format and paste it in here.</text>
                     </column>
                 </column>
