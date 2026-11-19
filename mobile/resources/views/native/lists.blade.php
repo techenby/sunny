@@ -11,7 +11,7 @@
     'createUrl' => '/lists/create',
 ])
 
-<list ref="checklist-list" fill separator class="bg-theme-background">
+<list ref="checklist-list" fill class="bg-theme-background">
     @if ($this->lists)
         <list-section :footer="$this->footer">
             @foreach ($this->lists as $checklist)
@@ -24,6 +24,7 @@
                     'android' => $checklist['type']->androidIcon(),
                     'iconBackground' => $checklist['type']->iconColor(),
                     'owner' => $checklist['owner'],
+                    'last' => $loop->last,
                 ])
             @endforeach
         </list-section>
