@@ -19,6 +19,7 @@ use App\NativeComponents\EditInventoryItem;
 use App\NativeComponents\EditList;
 use App\NativeComponents\EditRecipe;
 use App\NativeComponents\EditRoutine;
+use App\NativeComponents\ForgotPassword;
 use App\NativeComponents\Home;
 use App\NativeComponents\Inventory;
 use App\NativeComponents\InventoryItemDetail;
@@ -45,6 +46,7 @@ use Illuminate\Support\Facades\Route;
 Route::native('/', Home::class);
 Route::native('/login', Login::class);
 Route::native('/register', Register::class);
+Route::native('/forgot-password', ForgotPassword::class);
 Route::native('/setup', SetUpHome::class);
 Route::nativeGroup(TabsLayout::class, function () {
     Route::native('/dashboard', Dashboard::class);

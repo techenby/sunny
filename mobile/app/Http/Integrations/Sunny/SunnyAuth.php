@@ -7,12 +7,16 @@ use App\Http\Integrations\Sunny\Requests\CreateTokenRequest;
 use App\Http\Integrations\Sunny\Requests\DeleteAccountRequest;
 use App\Http\Integrations\Sunny\Requests\LogoutRequest;
 use App\Http\Integrations\Sunny\Requests\RefreshTokenRequest;
+use App\Http\Integrations\Sunny\Requests\RegisterRequest;
+use App\Http\Integrations\Sunny\Requests\SendPasswordResetLinkRequest;
 use App\Http\Integrations\Sunny\Requests\VerifyTwoFactorRequest;
 use App\Models\Onboarding;
 use Illuminate\Auth\AuthenticationException;
+use Saloon\Exceptions\Request\FatalRequestException;
+use Saloon\Exceptions\Request\RequestException;
 use Saloon\Exceptions\Request\Statuses\UnauthorizedException;
 use Saloon\Http\Auth\TokenAuthenticator;
-use Saloon\Http\Response;
+use Saloon\Http\Request;
 use UnexpectedValueException;
 
 class SunnyAuth
@@ -32,7 +36,7 @@ class SunnyAuth
         $response = $this->connector->send(new CreateTokenRequest($email, $password, $deviceName));
 
         if ($response->json('two_factor') !== true) {
-            $this->storeToken($response, clearLocalData: true);
+            $this->storeToken($response->json(), clearLocalData: true);
 
             return null;
         }
@@ -50,7 +54,36 @@ class SunnyAuth
         bool $useRecoveryCode = false,
     ): void {
         $response = $this->connector->send(new VerifyTwoFactorRequest($challenge, $code, $useRecoveryCode));
-        $this->storeToken($response, clearLocalData: true);
+        $this->storeToken($response->json(), clearLocalData: true);
+    }
+
+    /**
+     * @return array{status: int, body: array<array-key, mixed>}
+     */
+    public function register(
+        string $name,
+        string $email,
+        #[\SensitiveParameter] string $password,
+        #[\SensitiveParameter] string $passwordConfirmation,
+        string $deviceName,
+    ): array {
+        return $this->attempt(new RegisterRequest($name, $email, $password, $passwordConfirmation, $deviceName));
+    }
+
+    /**
+     * @param  array<array-key, mixed>  $body
+     */
+    public function signIn(array $body): void
+    {
+        $this->storeToken($body, clearLocalData: true);
+    }
+
+    /**
+     * @return array{status: int, body: array<array-key, mixed>}
+     */
+    public function sendPasswordResetLink(string $email): array
+    {
+        return $this->attempt(new SendPasswordResetLinkRequest($email));
     }
 
     public function authenticatedConnector(#[\SensitiveParameter] ?string $token = null): SunnyConnector
@@ -64,7 +97,7 @@ class SunnyAuth
 
     public function refresh(): void
     {
-        $this->storeToken($this->authenticatedConnector()->send(new RefreshTokenRequest));
+        $this->storeToken($this->authenticatedConnector()->send(new RefreshTokenRequest)->json());
     }
 
     public function logout(): void
@@ -94,19 +127,40 @@ class SunnyAuth
         $this->destroySession->handle();
     }
 
-    private function storeToken(Response $response, bool $clearLocalData = false): void
+    /**
+     * @return array{status: int, body: array<array-key, mixed>}
+     */
+    private function attempt(Request $request): array
     {
-        $token = $response->json('token');
+        try {
+            $response = $this->connector->send($request);
+        } catch (RequestException $exception) {
+            $response = $exception->getResponse();
+        } catch (FatalRequestException) {
+            return ['status' => 0, 'body' => []];
+        }
+
+        $body = rescue(fn (): mixed => $response->json(), [], report: false);
+
+        return ['status' => $response->status(), 'body' => is_array($body) ? $body : []];
+    }
+
+    /**
+     * @param  array<array-key, mixed>  $body
+     */
+    private function storeToken(array $body, bool $clearLocalData = false): void
+    {
+        $token = $body['token'] ?? null;
 
         throw_unless(is_string($token) && trim($token) !== '', UnexpectedValueException::class, 'Sunny did not return a valid authentication token.');
 
         if ($clearLocalData) {
-            $userId = $response->json('id');
+            $userId = $body['id'] ?? null;
             $this->store->startSession(is_int($userId) ? $userId : null);
-            $this->store->rememberProfile($response->json());
+            $this->store->rememberProfile($body);
 
-            if (is_int($userId) && array_key_exists('onboarded_at', $response->json()) && $response->json('onboarded_at') === null) {
-                Onboarding::begin($userId, is_string($response->json('name')) ? $response->json('name') : null);
+            if (is_int($userId) && array_key_exists('onboarded_at', $body) && $body['onboarded_at'] === null) {
+                Onboarding::begin($userId, is_string($body['name'] ?? null) ? $body['name'] : null);
             }
             SunnySyncCoordinator::forgetDispatch();
         }

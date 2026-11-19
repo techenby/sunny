@@ -3,11 +3,10 @@
 namespace App\NativeComponents;
 
 use App\Http\Integrations\Sunny\SunnyAuth;
-use App\Http\Integrations\Sunny\SunnyConnector;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
 use JsonException;
-use Native\Mobile\Facades\Browser;
 use RuntimeException;
 use Saloon\Exceptions\Request\FatalRequestException;
 use Saloon\Exceptions\Request\RequestException;
@@ -15,6 +14,8 @@ use UnexpectedValueException;
 
 class Login extends Component
 {
+    public const EMAIL_HANDOFF = 'login.email';
+
     public string $email = '';
 
     public string $password = '';
@@ -28,6 +29,20 @@ class Login extends Component
     public string $error = '';
 
     protected string $challenge = '';
+
+    public function mount(): void
+    {
+        $this->email = (string) $this->data('email', '');
+    }
+
+    public function onResume(): void
+    {
+        $email = Cache::pull(self::EMAIL_HANDOFF);
+
+        if (is_string($email) && $email !== '') {
+            $this->email = $email;
+        }
+    }
 
     public function submit(): void
     {
@@ -84,8 +99,7 @@ class Login extends Component
 
     public function forgotPassword(): void
     {
-        $url = app(SunnyConnector::class)->siteUrl().'/forgot-password';
-        $this->error = Browser::inApp($url) ? '' : 'Unable to open password reset. Please try again.';
+        $this->navigate('/forgot-password', ['email' => trim($this->email)]);
     }
 
     public function showRegister(): void
