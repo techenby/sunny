@@ -194,7 +194,7 @@
                             class="min-h-12 items-center justify-center"
                             @tap="undoUncheckAll"
                         >
-                            <column class="h-9 items-center justify-center rounded-full bg-theme-primary/15 px-3.5">
+                            <column class="min-h-9 items-center justify-center rounded-full bg-theme-primary/15 px-3.5">
                                 <text font="semibold" class="text-base text-theme-primary-text">Undo</text>
                             </column>
                         </pressable>
