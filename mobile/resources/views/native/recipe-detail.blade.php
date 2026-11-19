@@ -239,9 +239,13 @@
                                     class="w-full px-4 py-3"
                                 >
                                     <row class="w-full items-center gap-3">
-                                        <column class="h-9 w-9 items-center justify-center rounded-full bg-theme-primary">
-                                            <icon :ios="Ios::ForkKnife" :android="Android::Restaurant" :size="16" class="text-theme-on-primary" />
-                                        </column>
+                                        @if ($related['thumb_path'] ?? $related['photo_url'] ?? null)
+                                            <image :src="$related['thumb_path'] ?? $related['photo_url']" :alt="'Photo of '.$related['name']" class="h-9 w-9 rounded-lg object-cover" />
+                                        @else
+                                            <column class="h-9 w-9 items-center justify-center rounded-lg bg-theme-primary/15">
+                                                <icon :ios="Ios::ForkKnife" :android="Android::Restaurant" :size="20" class="text-theme-primary" />
+                                            </column>
+                                        @endif
                                         <x-ui.heading class="flex-1">{{ $related['name'] }}</x-ui.heading>
                                         <icon :ios="Ios::ChevronRight" :android="Android::ChevronRight" :size="14" class="text-theme-on-surface-variant" />
                                     </row>

@@ -345,11 +345,14 @@
                         </column>
 
                         <row ref="item-copies-source" class="{{ Card::classes() }} w-full items-center gap-3 px-4 py-3">
-                            @if ($thumb)
-                                <image :src="$thumb" :alt="'Photo of '.$item['name']" class="h-12 w-12 rounded-[10] object-cover" />
-                            @else
-                                <x-ui.avatar :color="$item['type']->color()" :ios="$item['type']->iosIcon()" :android="$item['type']->androidIcon()" />
-                            @endif
+                            <x-ui.avatar
+                                size="lg"
+                                :src="$thumb"
+                                :alt="'Photo of '.$item['name']"
+                                :color="$item['type']->color()"
+                                :ios="$item['type']->iosIcon()"
+                                :android="$item['type']->androidIcon()"
+                            />
                             <column class="flex-1 gap-0.5">
                                 <x-ui.heading size="lg">{{ $item['name'] }}</x-ui.heading>
                                 <x-ui.text>Going {{ $this->copiesPlace() }}</x-ui.text>

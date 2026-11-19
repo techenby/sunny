@@ -22,6 +22,8 @@
                     'supporting' => $routine['summary'],
                     'ios' => $routine['timeOfDay']->iosIcon(),
                     'android' => $routine['timeOfDay']->androidIcon(),
+                    'iconBackground' => 'theme-primary',
+                    'iconColor' => 'theme-on-primary',
                     'owner' => $routine['owner'],
                     'last' => $loop->last,
                 ])

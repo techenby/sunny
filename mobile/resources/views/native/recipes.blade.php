@@ -11,21 +11,22 @@
     'createUrl' => '/recipes/create',
 ])
 
-<list ref="recipe-list" fill separator class="bg-theme-background">
+<list ref="recipe-list" fill class="bg-theme-background">
     @if ($this->recipes)
         <list-section :footer="trans_choice(':count recipe|:count recipes', count($this->recipes))">
             @foreach ($this->recipes as $recipe)
-                <list-item
-                    :headline="$recipe['name']"
-                    :supporting="$recipe['summary']"
-                    :leadingImage="$recipe['photo']"
-                    :leadingIconIos="$recipe['photo'] ? null : Ios::ForkKnife"
-                    :leadingIconAndroid="$recipe['photo'] ? null : Android::Restaurant"
-                    :leadingIconBgColor="theme('primary')"
-                    :trailingIconIos="Ios::ChevronRight"
-                    :trailingIconAndroid="Android::ChevronRight"
-                    @navigate="'/recipes/'.$recipe['id']"
-                />
+                @include('native.owned-row', [
+                    'ref' => 'recipe-'.$recipe['id'],
+                    'url' => '/recipes/'.$recipe['id'],
+                    'headline' => $recipe['name'],
+                    'supporting' => $recipe['summary'],
+                    'ios' => Ios::ForkKnife,
+                    'android' => Android::Restaurant,
+                    'tile' => true,
+                    'photo' => $recipe['photo'],
+                    'owner' => null,
+                    'last' => $loop->last,
+                ])
             @endforeach
         </list-section>
     @else
