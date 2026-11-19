@@ -45,9 +45,11 @@ function offlineResponse(): MockResponse
     return MockResponse::make()->throw(fn (PendingRequest $request) => new FatalRequestException(new RuntimeException('Could not resolve host'), $request));
 }
 
-function dayBarHolds(string ...$refs): Closure
+function dayBarWithToday(string $type): Closure
 {
-    return fn (array $node): bool => ($node['ref'] ?? null) === 'day-bar' && array_column($node['children'], 'ref') === $refs;
+    return fn (array $node): bool => ($node['ref'] ?? null) === 'day-bar'
+        && array_column($node['children'], 'ref') === ['previous-day', 'back-to-today', 'next-day']
+        && $node['children'][1]['type'] === $type;
 }
 
 function routineStepResponse(int $id, ?string $completedAt): MockResponse
@@ -202,7 +204,7 @@ it('removes routines that are missing from a later download', function (): void 
 it('steps forward to tomorrow from what the phone keeps', function (): void {
     Native::visit('/today')
         ->assertDontSee('Take out trash')
-        ->assertElement('row', dayBarHolds('previous-day', 'next-day'))
+        ->assertElement('row', dayBarWithToday('column'))
         ->tap('next-day')
         ->assertNavTitle('Tomorrow')
         ->assertSee(now()->addDay()->format('l, F j'))
@@ -282,7 +284,7 @@ it('steps back no further than a week before today', function (): void {
 
     $screen->assertSet('date', now()->subDays(7)->toDateString())
         ->assertElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'routines-date' && str_ends_with($node['props']['text'] ?? '', ' · 7 days ago'))
-        ->assertElement('row', dayBarHolds('previous-day', 'back-to-today', 'next-day'))
+        ->assertElement('row', dayBarWithToday('pressable'))
         ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'previous-day')
         ->assertElement('column', fn (array $node): bool => ($node['ref'] ?? null) === 'previous-day' && ($node['style']['opacity'] ?? null) === 0.4)
         ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'next-day')
@@ -305,7 +307,7 @@ it('steps forward no further than a week after tomorrow', function (): void {
 
     $screen->assertSet('date', now()->addDays(8)->toDateString())
         ->assertElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'routines-date' && str_ends_with($node['props']['text'] ?? '', ' · in 8 days'))
-        ->assertElement('row', dayBarHolds('previous-day', 'back-to-today', 'next-day'))
+        ->assertElement('row', dayBarWithToday('pressable'))
         ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'next-day')
         ->assertElement('column', fn (array $node): bool => ($node['ref'] ?? null) === 'next-day' && ($node['style']['opacity'] ?? null) === 0.4)
         ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'previous-day')
@@ -315,6 +317,16 @@ it('steps forward no further than a week after tomorrow', function (): void {
         ->tap('back-to-today')
         ->assertNavTitle('Today')
         ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'next-day');
+});
+
+it('fades the Today button on today so it can’t be tapped', function (): void {
+    Native::visit('/today')
+        ->assertElement('row', dayBarWithToday('column'))
+        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'back-to-today')
+        ->assertElement('column', fn (array $node): bool => ($node['ref'] ?? null) === 'back-to-today'
+            && ($node['style']['opacity'] ?? null) === 0.4
+            && array_column(array_column($node['children'], 'props'), 'text') === ['Today'])
+        ->assertAccessible();
 });
 
 it('has no calendar for jumping to a day', function (): void {
@@ -328,30 +340,30 @@ it('goes back to today in one tap from either side', function (): void {
     Saloon::fake([GetRoutineOccurrencesRequest::class => routineDayResponse(now()->subDays(2)->toDateString())]);
 
     Native::visit('/today')
-        ->assertElement('row', dayBarHolds('previous-day', 'next-day'))
+        ->assertElement('row', dayBarWithToday('column'))
         ->tap('previous-day')
         ->tap('previous-day')
         ->assertNavTitle(now()->subDays(2)->format('l'))
-        ->assertElement('row', dayBarHolds('previous-day', 'back-to-today', 'next-day'))
+        ->assertElement('row', dayBarWithToday('pressable'))
         ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'back-to-today'
-            && ($node['props']['a11y_label'] ?? null) === 'Back to today')
-        ->assertSee('Today')
+            && ($node['props']['a11y_label'] ?? null) === 'Back to today'
+            && array_column(array_column($node['children'], 'props'), 'text') === ['Today'])
         ->assertAccessible()
         ->tap('back-to-today')
         ->assertNavTitle('Today')
         ->assertSet('date', '')
         ->assertSee('Bedtime')
-        ->assertElement('row', dayBarHolds('previous-day', 'next-day'))
+        ->assertElement('row', dayBarWithToday('column'))
         ->tap('next-day')
         ->tap('next-day')
         ->tap('next-day')
         ->assertNavTitle(now()->addDays(3)->format('l'))
-        ->assertElement('row', dayBarHolds('previous-day', 'back-to-today', 'next-day'))
+        ->assertElement('row', dayBarWithToday('pressable'))
         ->tap('back-to-today')
         ->assertNavTitle('Today')
         ->assertSet('date', '')
         ->assertSee('Bedtime')
-        ->assertElement('row', dayBarHolds('previous-day', 'next-day'));
+        ->assertElement('row', dayBarWithToday('column'));
 });
 
 it('ticks a step off on a past day straight away', function (): void {
@@ -578,7 +590,7 @@ it('shows that other days need a connection when offline', function (): void {
         ->assertSee('You’re offline')
         ->assertSee('Your phone only keeps today and tomorrow. Connect to see '.now()->subDays(2)->format('l').'’s routines and tick things off.')
         ->assertSee('Try again')
-        ->assertElement('row', dayBarHolds('previous-day', 'next-day'))
+        ->assertElement('row', dayBarWithToday('pressable'))
         ->assertAccessible();
 
     Saloon::fake([GetRoutineOccurrencesRequest::class => routineDayResponse(now()->subDays(2)->toDateString())]);
@@ -588,6 +600,19 @@ it('shows that other days need a connection when offline', function (): void {
         ->assertSee('Get ready')
         ->tap('back-to-today')
         ->assertNavTitle('Today');
+});
+
+it('keeps the bar’s Today button working when a day fails to load', function (): void {
+    Saloon::fake([GetRoutineOccurrencesRequest::class => offlineResponse()]);
+
+    Native::visit('/today')
+        ->tap('previous-day')
+        ->assertSee('You’re offline')
+        ->assertElement('row', dayBarWithToday('pressable'))
+        ->tap('back-to-today')
+        ->assertNavTitle('Today')
+        ->assertSet('loadError', '')
+        ->assertElement('row', dayBarWithToday('column'));
 });
 
 it('takes the offline card back to today', function (): void {

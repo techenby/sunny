@@ -14,7 +14,7 @@
 </native:top-bar>
 
 <native:bottom-bar>
-    <row ref="day-bar" class="w-full items-center justify-between gap-3 px-4 pb-2">
+    <row ref="day-bar" class="w-full items-center gap-3 px-4 pb-2">
         @if ($this->canGoBack)
             <pressable
                 ref="previous-day"
@@ -29,19 +29,20 @@
                 <native:icon :ios="Ios::ChevronLeft" :android="Android::ChevronLeft" :size="22" class="text-theme-on-surface" />
             </column>
         @endif
-        @unless ($this->isToday || $loadError)
+        @if ($this->isToday)
+            <column ref="back-to-today" class="min-h-12 flex-1 items-center justify-center rounded-full px-4 glass android:bg-theme-surface opacity-40">
+                <text font="semibold" class="text-lg text-theme-on-surface">Today</text>
+            </column>
+        @else
             <pressable
                 ref="back-to-today"
                 a11y-label="Back to today"
-                class="min-h-12 items-center justify-center rounded-full bg-theme-primary px-4"
+                class="min-h-12 flex-1 items-center justify-center rounded-full px-4 glass android:bg-theme-surface"
                 @tap="showToday"
             >
-                <row class="items-center gap-1.5">
-                    <icon :ios="Ios::ArrowRight" :android="Android::ArrowForward" :size="16" class="text-theme-on-primary" />
-                    <text font="semibold" class="text-base text-theme-on-primary">Today</text>
-                </row>
+                <text font="semibold" class="text-lg text-theme-on-surface">Today</text>
             </pressable>
-        @endunless
+        @endif
         @if ($this->canGoForward)
             <pressable
                 ref="next-day"
