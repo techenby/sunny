@@ -304,9 +304,15 @@ class ListDetail extends Component
 
     public function removeDone(): void
     {
-        if ($this->checklist !== null && $this->completedItems !== []) {
-            $this->change(fn (SunnyOutbox $outbox) => $outbox->clearCompleted($this->checklist['team_id'], $this->checklist['id']));
+        if ($this->checklist === null || $this->completedItems === []) {
+            return;
         }
+
+        if (in_array($this->editingItemId, array_column($this->completedItems, 'id'), true)) {
+            $this->cancelEdit();
+        }
+
+        $this->change(fn (SunnyOutbox $outbox) => $outbox->clearCompleted($this->checklist['team_id'], $this->checklist['id']));
     }
 
     public function uncheckAll(): void

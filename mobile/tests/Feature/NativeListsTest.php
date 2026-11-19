@@ -476,6 +476,26 @@ it('removes the item being edited and closes the edit', function () {
     expect(PendingWrite::sole()->only('record_id', 'deletes'))->toBe(['record_id' => 1, 'deletes' => true]);
 });
 
+it('closes the edit when its item is removed as done, and keeps it open otherwise', function () {
+    Native::visit('/lists/1')
+        ->press('editItem(2)')
+        ->tap('remove-done')
+        ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Remove', 'id' => 'remove-done'])
+        ->assertSet('editingItemId', null)
+        ->assertDontSee('Edit item')
+        ->assertDontSee('Eggs');
+
+    ChecklistItem::query()->whereKey(1)->update(['completed_at' => now()]);
+
+    Native::visit('/lists/1')
+        ->press('editItem(3)')
+        ->tap('remove-done')
+        ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Remove', 'id' => 'remove-done'])
+        ->assertSet('editingItemId', 3)
+        ->assertSee('Edit item')
+        ->assertDontSee('Milk');
+});
+
 it('asks before deleting a list', function () {
     Native::visit('/lists/1')
         ->tap('delete-list')
