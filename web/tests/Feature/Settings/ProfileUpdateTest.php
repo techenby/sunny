@@ -2,6 +2,8 @@
 
 use App\Enums\TeamRole;
 use App\Models\User;
+use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
 
 test('profile page is displayed', function () {
@@ -79,4 +81,31 @@ test('account deletion is blocked while the user owns a team other people use', 
         ->assertHasErrors(['password']);
 
     expect($user->fresh())->not->toBeNull();
+});
+
+test('changing the email sends a verification email to the new address', function () {
+    Notification::fake();
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::settings.profile')
+        ->set('email', 'nami@example.com')
+        ->call('updateProfileInformation')
+        ->assertHasNoErrors();
+
+    Notification::assertSentTo($user, VerifyEmail::class);
+});
+
+test('keeping the same email does not send a verification email', function () {
+    Notification::fake();
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::settings.profile')
+        ->set('name', 'Nami')
+        ->set('email', $user->email)
+        ->call('updateProfileInformation')
+        ->assertHasNoErrors();
+
+    Notification::assertNothingSent();
 });

@@ -2,7 +2,9 @@
 
 use App\Models\User;
 use Illuminate\Auth\Events\Verified;
+use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
 
 test('email verification screen can be rendered', function () {
@@ -63,4 +65,33 @@ test('already verified user visiting verification link is redirected without fir
 
     expect($user->fresh()->hasVerifiedEmail())->toBeTrue();
     Event::assertNotDispatched(Verified::class);
+});
+
+test('unverified users are sent to the verification screen instead of the app', function () {
+    $user = User::factory()->unverified()->create();
+
+    $this->actingAs($user)
+        ->get(route('dashboard'))
+        ->assertRedirect(route('verification.notice'));
+});
+
+test('new users are sent a verification email when they register', function () {
+    Notification::fake();
+
+    $this->post(route('register.store'), [
+        'name' => 'Nami',
+        'email' => 'nami@example.com',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+    ])->assertSessionHasNoErrors();
+
+    Notification::assertSentTo(User::where('email', 'nami@example.com')->sole(), VerifyEmail::class);
+});
+
+test('unverified users can still use the app through the API', function () {
+    $user = User::factory()->unverified()->create();
+
+    $this->actingAs($user)
+        ->getJson(route('api.sync'))
+        ->assertOk();
 });

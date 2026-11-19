@@ -142,3 +142,14 @@ test('a verified user is not sent another verification email', function () {
 
     Notification::assertNothingSent();
 });
+
+test('changing the email through the API sends a verification email', function () {
+    Notification::fake();
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->patchJson(route('api.user.update'), ['email' => 'nami@example.com'])
+        ->assertOk();
+
+    Notification::assertSentTo($user, VerifyEmail::class);
+});
