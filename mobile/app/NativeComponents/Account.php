@@ -6,10 +6,10 @@ use App\Actions\DestroySession;
 use App\Http\Integrations\Sunny\SunnyAccount;
 use App\Http\Integrations\Sunny\SunnyStore;
 use App\Http\Integrations\Sunny\SunnyTokenStore;
+use App\Support\Toast;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\View\View;
 use Native\Mobile\AsyncTask;
-use Native\Mobile\Facades\Dialog;
 use Native\Mobile\Facades\Network;
 use RuntimeException;
 use Saloon\Exceptions\Request\FatalRequestException;
@@ -98,7 +98,7 @@ class Account extends Component
             $this->verificationSent = false;
         }
 
-        Dialog::toast($this->emailChanged && ! $this->verified ? 'Saved. Your new email isn’t verified yet.' : 'Saved');
+        Toast::success($this->emailChanged && ! $this->verified ? 'Saved. Your new email isn’t verified yet.' : 'Saved');
     }
 
     public function sendVerification(): void
@@ -133,13 +133,13 @@ class Account extends Component
 
         if ($sent) {
             $this->verificationSent = true;
-            Dialog::toast('Verification email sent to '.$this->email);
+            Toast::success('Verification email sent to '.$this->email);
 
             return;
         }
 
         $this->verified = true;
-        Dialog::toast('Your email is already verified.');
+        Toast::info('Your email is already verified.');
     }
 
     public function offlineMessage(): string

@@ -4,9 +4,9 @@ namespace App\NativeComponents;
 
 use App\Actions\DestroySession;
 use App\Http\Integrations\Sunny\SunnyAccount;
+use App\Support\Toast;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\View\View;
-use Native\Mobile\Facades\Dialog;
 use Native\Mobile\Facades\Network;
 use RuntimeException;
 use Saloon\Exceptions\Request\FatalRequestException;
@@ -76,7 +76,7 @@ class ChangePassword extends Component
         $this->currentPassword = '';
         $this->password = '';
         $this->passwordConfirmation = '';
-        Dialog::toast('Password changed');
+        Toast::success('Password changed');
         $this->back();
     }
 

@@ -115,7 +115,7 @@ it('changes the name', function (): void {
         ->assertAccessible()
         ->input('account-name', 'Andy S.')
         ->tap('account-save')
-        ->assertNativeCalled('Dialog.Toast', fn (array $params): bool => $params['message'] === 'Saved')
+        ->assertToastShown(fn (array $params): bool => $params['message'] === 'Saved' && $params['variant'] === 'success')
         ->assertDontSee('Not verified');
 
     Saloon::assertSent(fn (Request $request): bool => $request instanceof UpdateProfileRequest
@@ -135,13 +135,13 @@ it('marks a new email as not verified and sends the verification email when aske
     Native::visit('/preferences/account', platform: 'ios')
         ->input('account-email', 'andy@swickhome.com')
         ->tap('account-save')
-        ->assertNativeCalled('Dialog.Toast', fn (array $params): bool => $params['message'] === 'Saved. Your new email isn’t verified yet.')
+        ->assertToastShown(fn (array $params): bool => $params['message'] === 'Saved. Your new email isn’t verified yet.')
         ->assertSee('Not verified')
         ->assertSee('Verify your new email')
         ->assertSee('We haven’t sent anything yet. Send a link to andy@swickhome.com and tap it to confirm it’s yours.')
         ->assertAccessible()
         ->tap('account-send-verification')
-        ->assertNativeCalled('Dialog.Toast', fn (array $params): bool => $params['message'] === 'Verification email sent to andy@swickhome.com')
+        ->assertToastShown(fn (array $params): bool => $params['message'] === 'Verification email sent to andy@swickhome.com')
         ->assertSee('We sent a link to andy@swickhome.com. Tap it to confirm it’s yours.')
         ->assertSee('Send it again');
 
@@ -256,7 +256,7 @@ it('changes the password', function (): void {
         ->tap('change-password-save')
         ->assertSet('currentPassword', '')
         ->assertSet('password', '')
-        ->assertNativeCalled('Dialog.Toast', fn (array $params): bool => $params['message'] === 'Password changed')
+        ->assertToastShown(fn (array $params): bool => $params['message'] === 'Password changed')
         ->assertWentBack();
 
     Saloon::assertSent(fn (Request $request): bool => $request instanceof UpdatePasswordRequest
