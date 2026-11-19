@@ -14,6 +14,7 @@
         >
             @if ($this->completedItems)
                 <native:top-bar-action
+                    native:key="remove-done"
                     ref="remove-done"
                     id="remove-done"
                     label="Remove done"
@@ -22,6 +23,7 @@
                     @tap="confirmRemoveDone"
                 />
                 <native:top-bar-action
+                    native:key="uncheck-all"
                     ref="uncheck-all"
                     id="uncheck-all"
                     label="Uncheck all"
@@ -29,7 +31,7 @@
                     :android-icon="Android::Replay"
                     @tap="uncheckAll"
                 />
-                <native:top-bar-action id="list-actions-divider" divider />
+                <native:top-bar-action native:key="list-actions-divider" id="list-actions-divider" divider />
             @endif
             <native:top-bar-action
                 ref="edit-list"
@@ -180,7 +182,7 @@
         @else
             <column class="w-full gap-3 px-4 pb-2">
                 @if ($uncheckedIds !== [])
-                    <row ref="list-unchecked" class="w-full items-center gap-3 rounded-[18] py-1 pr-2 pl-3.5 glass android:bg-theme-surface">
+                    <row native:key="list-unchecked" ref="list-unchecked" class="w-full items-center gap-3 rounded-[18] py-1 pr-2 pl-3.5 glass android:bg-theme-surface">
                         <column class="h-8 w-8 items-center justify-center rounded-full bg-theme-primary">
                             <native:icon :ios="Ios::Checkmark" :android="Android::Check" :size="16" class="text-theme-on-primary" />
                         </column>

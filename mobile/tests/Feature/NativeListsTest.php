@@ -606,6 +606,30 @@ it('stops offering undo once something else changes', function () {
         ->assertSet('uncheckedIds', []);
 });
 
+it('keeps the items in place while the menu and the undo card come and go', function () {
+    $ids = [];
+    $items = function (array $node) use (&$ids): bool {
+        if (($node['ref'] ?? null) !== 'list-detail') {
+            return false;
+        }
+
+        $ids[] = $node['id'];
+
+        return true;
+    };
+
+    Native::visit('/lists/1')
+        ->assertElement('scroll_view', $items)
+        ->tap('uncheck-all')
+        ->assertElement('scroll_view', $items)
+        ->tap('list-item-3')
+        ->assertElement('scroll_view', $items)
+        ->tap('list-item-3')
+        ->assertElement('scroll_view', $items);
+
+    expect($ids)->toHaveCount(4)->and(array_unique($ids))->toHaveCount(1);
+});
+
 it('shows a missing list', function () {
     Native::visit('/lists/99')->assertSee('List not found');
 });
