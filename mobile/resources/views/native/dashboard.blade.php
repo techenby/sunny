@@ -55,6 +55,38 @@
             </pressable>
         @endif
 
+        @foreach ($this->invitations as $invitation)
+            <column ref="dashboard-invitation-{{ $invitation['code'] }}" class="{{ Card::classes() }} w-full gap-3 p-4">
+                <row class="w-full items-start gap-3">
+                    <x-ui.avatar circle color="red" :initials="$invitation['initials']" />
+                    <column class="flex-1 gap-0.5">
+                        <x-ui.heading>{{ $invitation['inviter'] ? $invitation['inviter'].' invited you to join '.$invitation['team'] : 'You’re invited to join '.$invitation['team'] }}</x-ui.heading>
+                        <x-ui.text size="sm">{{ collect([$invitation['sent'] ? 'Sent '.$invitation['sent'] : null, $invitation['expires']])->filter()->implode(' · ') }}</x-ui.text>
+                    </column>
+                </row>
+                <button
+                    ref="dashboard-accept-{{ $invitation['code'] }}"
+                    variant="primary"
+                    size="lg"
+                    font="semibold"
+                    class="w-full"
+                    @tap="acceptInvitation('{{ $invitation['code'] }}')"
+                >
+                    Join {{ $invitation['team'] }}
+                </button>
+                <button
+                    ref="dashboard-decline-{{ $invitation['code'] }}"
+                    variant="secondary"
+                    size="lg"
+                    font="semibold"
+                    class="w-full"
+                    @tap="declineInvitation('{{ $invitation['code'] }}')"
+                >
+                    Decline
+                </button>
+            </column>
+        @endforeach
+
         @unless ($this->teamOptions)
             <column ref="no-teams" class="{{ Card::classes() }} w-full gap-0.5 px-4 py-3">
                 <x-ui.heading>No teams available</x-ui.heading>

@@ -40,6 +40,7 @@ class SunnySyncCoordinator
         try {
             $this->writes->push($token);
             $this->sync->sync($token);
+            rescue(fn () => app(SunnyTeams::class)->refreshInvitations($token), report: false);
 
             return true;
         } finally {

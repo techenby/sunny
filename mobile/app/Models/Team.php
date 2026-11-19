@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\TeamRole;
+use App\Http\Integrations\Sunny\SunnyStore;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -18,7 +20,13 @@ class Team extends Model
     /** @return array<string, string> */
     protected function casts(): array
     {
-        return ['members' => 'array'];
+        return [
+            'is_personal' => 'boolean',
+            'week_start' => 'integer',
+            'members' => 'array',
+            'invitations' => 'array',
+            'invitations_fetched_at' => 'immutable_datetime',
+        ];
     }
 
     public function recipes(): HasMany
@@ -75,5 +83,38 @@ class Team extends Model
         return $member === null
             ? ['name' => 'Household', 'initials' => null, 'whose' => null]
             : ['name' => $member['name'], 'initials' => $member['initials'], 'whose' => Str::before($member['name'], ' ').'’s'];
+    }
+
+    /** @return list<array{id: int, name: string, initials: string, role: TeamRole}> */
+    public function memberList(): array
+    {
+        return collect($this->members ?? [])
+            ->map(fn (array $member): array => [...$member, 'role' => TeamRole::tryFrom($member['role'] ?? '') ?? TeamRole::Member])
+            ->all();
+    }
+
+    public function roleOf(?int $userId): ?TeamRole
+    {
+        return TeamRole::tryFrom($this->member($userId)['role'] ?? '');
+    }
+
+    public function currentRole(): ?TeamRole
+    {
+        return $this->roleOf(app(SunnyStore::class)->userId());
+    }
+
+    /** @return list<array{code: string, email: string, role: TeamRole, expires_at: string|null}> */
+    public function invitationList(): array
+    {
+        return collect($this->invitations ?? [])
+            ->filter(fn (mixed $invitation): bool => is_array($invitation) && is_string($invitation['code'] ?? null) && is_string($invitation['email'] ?? null))
+            ->map(fn (array $invitation): array => [
+                'code' => $invitation['code'],
+                'email' => $invitation['email'],
+                'role' => TeamRole::tryFrom($invitation['role'] ?? '') ?? TeamRole::Member,
+                'expires_at' => is_string($invitation['expires_at'] ?? null) ? $invitation['expires_at'] : null,
+            ])
+            ->values()
+            ->all();
     }
 }

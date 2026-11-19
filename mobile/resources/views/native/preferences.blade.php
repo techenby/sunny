@@ -48,6 +48,36 @@
         />
     </list-section>
 
+    @foreach ($this->invitations as $invitation)
+        <list-section :header="$loop->first ? 'Invitations' : null">
+            <list-item
+                ref="invitation-{{ $invitation['code'] }}"
+                :headline="($invitation['inviter'] ? $invitation['inviter'].' invited you to join ' : 'You’re invited to join ').$invitation['team']"
+                :supporting="$invitation['expires']"
+                :leadingMonogram="$invitation['initials']"
+                :leadingMonogramColor="theme('primary')"
+            />
+            <list-item
+                ref="accept-invitation-{{ $invitation['code'] }}"
+                headline="Accept"
+                :leadingIconIos="Ios::CheckmarkCircle"
+                :leadingIconAndroid="Android::CheckCircle"
+                :leadingIconColor="theme('primary-text')"
+                :headlineColor="theme('primary-text')"
+                a11y-hint="Joins {{ $invitation['team'] }}"
+                @tap="acceptInvitation('{{ $invitation['code'] }}')"
+            />
+            <list-item
+                ref="decline-invitation-{{ $invitation['code'] }}"
+                headline="Decline"
+                :leadingIconIos="Ios::XmarkCircle"
+                :leadingIconAndroid="Android::Cancel"
+                a11y-hint="Turns down the invitation to {{ $invitation['team'] }}"
+                @tap="declineInvitation('{{ $invitation['code'] }}')"
+            />
+        </list-section>
+    @endforeach
+
     <list-section header="Team" :footer="$this->teamOptions ? 'Recipes, inventory, routines and lists show for the team you pick.' : 'Pull down on Summary to download your teams.'">
         @forelse ($this->teamOptions as $id => $name)
             <list-item
@@ -63,6 +93,30 @@
         @empty
             <list-item ref="no-teams" headline="No teams available" />
         @endforelse
+    </list-section>
+
+    <list-section>
+        @if ($this->currentTeam)
+            <list-item
+                ref="team-settings"
+                :headline="$this->currentTeam['name']"
+                :supporting="$this->currentTeam['summary']"
+                :leadingIconIos="Ios::Person2Circle"
+                :leadingIconAndroid="Android::Group"
+                :trailingIconIos="Ios::ChevronRight"
+                :trailingIconAndroid="Android::ChevronRight"
+                @navigate="'/preferences/team'"
+            />
+        @endif
+        <list-item
+            ref="new-team"
+            headline="New team"
+            :leadingIconIos="Ios::PlusCircle"
+            :leadingIconAndroid="Android::AddCircle"
+            :leadingIconColor="theme('primary-text')"
+            :headlineColor="theme('primary-text')"
+            @navigate="'/preferences/teams/create'"
+        />
     </list-section>
 
     @if ($canShareCrashReports)

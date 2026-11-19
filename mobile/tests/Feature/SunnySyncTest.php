@@ -87,17 +87,18 @@ it('keeps each team’s members from the download, replacing them on the next on
     app(SunnySync::class)->sync();
 
     expect(Team::find(7)->members)->toBe([
-        ['id' => 3, 'name' => 'Becca Swick', 'initials' => 'BS'],
-        ['id' => 1, 'name' => 'Andy Swick', 'initials' => 'AS'],
+        ['id' => 3, 'name' => 'Becca Swick', 'initials' => 'BS', 'role' => 'member'],
+        ['id' => 1, 'name' => 'Andy Swick', 'initials' => 'AS', 'role' => 'owner'],
     ])->and(Team::find(7)->hasSeveralMembers())->toBeTrue();
 
     $this->snapshot['teams'][0]['members'] = [['id' => 1, 'name' => 'Andy Swick', 'initials' => 'AS', 'role' => 'owner']];
     Saloon::fake([SyncRequest::class => MockResponse::make($this->snapshot)]);
     app(SunnySync::class)->sync();
 
-    expect(Team::find(7)->members)->toBe([['id' => 1, 'name' => 'Andy Swick', 'initials' => 'AS']])
+    expect(Team::find(7)->members)->toBe([['id' => 1, 'name' => 'Andy Swick', 'initials' => 'AS', 'role' => 'owner']])
         ->and(Team::find(7)->hasSeveralMembers())->toBeFalse()
-        ->and(Team::find(7)->soleMember())->toBe(['id' => 1, 'name' => 'Andy Swick', 'initials' => 'AS']);
+        ->and(Team::find(7)->soleMember())->toBe(['id' => 1, 'name' => 'Andy Swick', 'initials' => 'AS', 'role' => 'owner'])
+        ->and(Team::find(7)->roleOf(1)->value)->toBe('owner');
 
     unset($this->snapshot['teams'][0]['members']);
     Saloon::fake([SyncRequest::class => MockResponse::make($this->snapshot)]);

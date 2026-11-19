@@ -5,6 +5,9 @@ namespace App\NativeComponents;
 use App\Actions\DestroySession;
 use App\Http\Integrations\Sunny\SunnyAuth;
 use App\Http\Integrations\Sunny\SunnyConnector;
+use App\Http\Integrations\Sunny\SunnyStore;
+use App\Http\Integrations\Sunny\SunnyTeam;
+use App\Models\Team;
 use App\Support\Toast;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\View\View;
@@ -81,6 +84,15 @@ class DeleteAccount extends Component
     public function openTeamSettings(string $slug): void
     {
         if (! array_key_exists($slug, $this->blockingTeams)) {
+            return;
+        }
+
+        $team = Team::query()->where('server', SunnyStore::server())->where('slug', $slug)->first();
+
+        if ($team !== null) {
+            app(SunnyTeam::class)->select($team->id);
+            $this->navigate('/preferences/team');
+
             return;
         }
 

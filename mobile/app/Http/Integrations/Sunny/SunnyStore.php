@@ -4,6 +4,7 @@ namespace App\Http\Integrations\Sunny;
 
 use App\Models\Checklist;
 use App\Models\ChecklistItem;
+use App\Models\Invitation;
 use App\Models\Item;
 use App\Models\ItemPhoto;
 use App\Models\PendingWrite;
@@ -49,13 +50,7 @@ class SunnyStore
             $pending = PendingWrite::query()->forCurrentServer()->get();
 
             foreach ($teams as $team) {
-                Team::query()->updateOrCreate(['id' => $team['id']], [
-                    'server' => self::server(),
-                    'name' => $team['name'],
-                    'slug' => $team['slug'] ?? null,
-                    'timezone' => $team['timezone'] ?? null,
-                    'members' => self::members($team['members'] ?? []),
-                ]);
+                $this->saveTeam($team);
             }
 
             if (! Team::query()->where('server', self::server())->where('is_active', true)->exists()) {
@@ -92,6 +87,31 @@ class SunnyStore
                 'synced_at' => $snapshot['synced_at'],
                 'fetched_at' => now(),
             ]);
+        });
+    }
+
+    public function saveTeam(array $team): Team
+    {
+        return Team::query()->updateOrCreate(['id' => $team['id']], [
+            'server' => self::server(),
+            'name' => $team['name'],
+            'slug' => $team['slug'] ?? null,
+            'timezone' => $team['timezone'] ?? null,
+            'is_personal' => (bool) ($team['is_personal'] ?? false),
+            'week_start' => $team['week_start'] ?? null,
+            'members' => self::members($team['members'] ?? []),
+        ]);
+    }
+
+    public function forgetTeam(Team $team): void
+    {
+        DB::transaction(function () use ($team): void {
+            PendingWrite::query()->where('team_id', $team->id)->delete();
+            $team->delete();
+
+            if (! Team::query()->where('server', self::server())->where('is_active', true)->exists()) {
+                Team::query()->where('server', self::server())->orderBy('name')->orderBy('id')->first()?->update(['is_active' => true]);
+            }
         });
     }
 
@@ -173,8 +193,16 @@ class SunnyStore
             DB::table('sunny_sync_states')->delete();
         });
         DB::table('sunny_accounts')->update(['name' => null, 'email' => null, 'email_verified_at' => null]);
+        Invitation::query()->delete();
         app(SunnyOutbox::class)->prunePhotos();
         app(SunnyThumbnails::class)->prune();
+    }
+
+    public function userId(): ?int
+    {
+        $userId = DB::table('sunny_accounts')->where('server', self::server())->value('user_id');
+
+        return $userId === null ? null : (int) $userId;
     }
 
     /** @return array{name: string, email: string, verified: bool}|null */
@@ -290,12 +318,12 @@ class SunnyStore
         return hash('sha256', rtrim((string) config('services.sunny.api_url'), '/'));
     }
 
-    /** @return list<array{id: int, name: string, initials: string}> */
+    /** @return list<array{id: int, name: string, initials: string, role?: string}> */
     private static function members(array $members): array
     {
         return collect($members)
             ->filter(fn (mixed $member): bool => is_array($member) && is_int($member['id'] ?? null))
-            ->map(fn (array $member): array => Arr::only($member, ['id', 'name', 'initials']))
+            ->map(fn (array $member): array => Arr::only($member, ['id', 'name', 'initials', 'role']))
             ->values()
             ->all();
     }

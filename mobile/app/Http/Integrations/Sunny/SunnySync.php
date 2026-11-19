@@ -49,6 +49,8 @@ class SunnySync
 
         $rules['teams.*.slug'] = ['nullable', 'string'];
         $rules['teams.*.timezone'] = ['nullable', 'timezone'];
+        $rules['teams.*.is_personal'] = ['sometimes', 'boolean'];
+        $rules['teams.*.week_start'] = ['nullable', 'integer', 'between:0,6'];
         $rules['recipes.*.photo_url'] = ['nullable', 'url'];
         $rules['items.*.photo_url'] = ['nullable', 'url'];
         $rules['recipes.*.thumb_url'] = ['nullable', 'url'];

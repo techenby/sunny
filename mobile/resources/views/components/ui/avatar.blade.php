@@ -17,14 +17,16 @@ $initials ??= $name
     ? collect(preg_split('/\s+/', trim($name)))->take(2)->map(fn ($word) => mb_strtoupper(mb_substr($word, 0, 1)))->implode('')
     : null;
 
-$box = match ($size) {
-    '2xl' => 'h-14 w-14',
-    'xl' => 'h-16 w-16',
-    'lg' => 'h-12 w-12',
-    'sm' => 'h-8 w-8',
-    'xs' => 'h-6 w-6',
-    default => 'h-10 w-10',
+$boxSize = match ($size) {
+    '2xl' => 14,
+    'xl' => 16,
+    'lg' => 12,
+    'sm' => 8,
+    'xs' => 6,
+    default => 10,
 };
+
+$box = $src || $ios || $android || ! $initials ? "h-{$boxSize} w-{$boxSize}" : "min-h-{$boxSize} min-w-{$boxSize}";
 
 $radius = $circle ? 'rounded-full' : match ($size) {
     '2xl' => 'rounded',

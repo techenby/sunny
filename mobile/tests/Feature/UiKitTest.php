@@ -85,7 +85,7 @@ it('shows an avatar’s icon, photo, or initials', function (string $platform, s
             && $node['props']['alt'] === 'Photo of tent'
             && $node['layout']['width'] == 32)
         ->assertElement('column', fn (array $node): bool => refNode('avatar-initials')($node)
-            && $node['layout']['width'] == 40
+            && $node['layout']['min_width'] == 40 && $node['layout']['min_height'] == 40
             && $node['style']['border_radius'] == 9999
             && $node['props']['a11y_label'] === 'Camping gear'
             && $node['children'][0]['props']['text'] === 'CG');
