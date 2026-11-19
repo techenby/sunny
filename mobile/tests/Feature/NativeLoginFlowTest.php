@@ -5,6 +5,7 @@ use App\Http\Integrations\Sunny\Requests\GetUserRequest;
 use App\Http\Integrations\Sunny\Requests\LogoutRequest;
 use App\Http\Integrations\Sunny\Requests\VerifyTwoFactorRequest;
 use App\Http\Integrations\Sunny\SunnyStore;
+use App\Models\Onboarding;
 use Native\Mobile\Events\Alert\ButtonPressed;
 use Native\Mobile\Testing\Native;
 use Saloon\Http\Faking\MockResponse;
@@ -86,6 +87,22 @@ it('restores a valid saved session', function (): void {
     Saloon::fake([GetUserRequest::class => MockResponse::make(['id' => 1])]);
     Native::visit('/')->assertReplacedWith('/dashboard');
 });
+
+it('opens downloaded data without waiting to check the session online', function (bool $isNewAccount, string $uri): void {
+    Native::fakeBridge()->respondTo('SecureStorage.Get', ['value' => 'saved-token']);
+    Saloon::fake([GetUserRequest::class => MockResponse::make(['id' => 1])]);
+    app(SunnyStore::class)->rememberAccount(1);
+    if ($isNewAccount) {
+        Onboarding::begin(1);
+    }
+
+    Native::visit('/')->assertReplacedWith($uri);
+
+    Saloon::assertNotSent(GetUserRequest::class);
+})->with([
+    'set up' => [false, '/dashboard'],
+    'not set up yet' => [true, '/setup'],
+]);
 
 it('deletes expired sessions but preserves tokens during outages', function (int $status): void {
     $bridge = Native::fakeBridge()->respondTo('SecureStorage.Get', ['value' => 'saved-token']);
