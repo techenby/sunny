@@ -10,6 +10,8 @@ use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Icons\Android;
 use App\Icons\Ios;
 use App\Models\PendingWrite;
+use App\Support\Toast;
+use App\Support\ToastAction;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -40,9 +42,6 @@ class ListDetail extends Component
     public string $linkError = '';
 
     public string $error = '';
-
-    /** @var list<int> */
-    public array $uncheckedIds = [];
 
     /**
      * @return array{id: int, team_id: int, user_id: int|null, type: ChecklistType, name: string, created_at: string, updated_at: string}|null
@@ -315,16 +314,27 @@ class ListDetail extends Component
         $ids = array_column($this->completedItems, 'id');
 
         if ($this->checklist !== null && $ids !== [] && $this->change(fn (SunnyOutbox $outbox) => $outbox->resetChecklist($this->checklist['team_id'], $this->checklist['id']))) {
-            $this->uncheckedIds = $ids;
+            Toast::success(trans_choice(':count item unchecked|:count items unchecked', count($ids)), action: new ToastAction('Undo', 'undo-uncheck', [
+                'list' => $this->checklist['id'],
+                'items' => $ids,
+            ]));
         }
     }
 
-    public function undoUncheckAll(): void
+    /**
+     * @param  array{list: int, items: list<int>}  $data
+     */
+    #[On(Toast::ACTION_PRESSED, when: ['actionId' => 'undo-uncheck'])]
+    public function undoUncheckAll(array $data): void
     {
-        $ids = array_values(array_intersect($this->uncheckedIds, array_column($this->items, 'id')));
-        $this->uncheckedIds = [];
+        if ($this->checklist === null || (int) $data['list'] !== $this->checklist['id']) {
+            return;
+        }
 
-        if ($this->checklist === null || $ids === []) {
+        $unchecked = array_column(array_filter($this->items, fn (array $item): bool => ! $item['completed']), 'id');
+        $ids = array_values(array_intersect(array_map(intval(...), $data['items']), $unchecked));
+
+        if ($ids === []) {
             return;
         }
 
@@ -434,7 +444,6 @@ class ListDetail extends Component
 
         app(SunnySyncCoordinator::class)->dispatch();
         $this->error = '';
-        $this->uncheckedIds = [];
         $this->refreshLocalSyncedData();
 
         return true;

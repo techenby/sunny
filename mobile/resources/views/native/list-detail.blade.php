@@ -180,49 +180,28 @@
                 </column>
             </column>
         @else
-            <column class="w-full gap-3 px-4 pb-2">
-                @if ($uncheckedIds !== [])
-                    <row native:key="list-unchecked" ref="list-unchecked" class="w-full items-center gap-3 rounded-[18] py-1 pr-2 pl-3.5 glass android:bg-theme-surface">
-                        <column class="h-8 w-8 items-center justify-center rounded-full bg-theme-primary">
-                            <native:icon :ios="Ios::Checkmark" :android="Android::Check" :size="16" class="text-theme-on-primary" />
-                        </column>
-                        <text font="semibold" class="flex-1 text-base text-theme-on-surface">{{ trans_choice(':count item unchecked|:count items unchecked', count($uncheckedIds)) }}</text>
-                        <pressable
-                            ref="list-undo-uncheck"
-                            a11y-label="Undo"
-                            a11y-hint="Checks those items again"
-                            class="min-h-12 items-center justify-center"
-                            @tap="undoUncheckAll"
-                        >
-                            <column class="min-h-9 items-center justify-center rounded-full bg-theme-primary/15 px-3.5">
-                                <text font="semibold" class="text-base text-theme-primary-text">Undo</text>
-                            </column>
-                        </pressable>
-                    </row>
-                @endif
-                <row class="w-full items-center gap-3">
-                    <row class="h-12 flex-1 items-center gap-2 rounded-full px-4 glass android:bg-theme-surface">
-                        <bare-text-input
-                            ref="list-new-item"
-                            class="flex-1"
-                            placeholder="Add an item"
-                            a11y-label="Add an item"
-                            autocapitalize="sentences"
-                            keep-focus-on-submit
-                            native:model="newItem"
-                            @submit="addItem"
-                        />
-                    </row>
-                    <pressable
-                        ref="list-add-item"
-                        a11y-label="Add item"
-                        class="h-12 w-12 items-center justify-center rounded-full glass android:bg-theme-surface"
-                        @tap="addItem"
-                    >
-                        <native:icon :ios="Ios::Plus" :android="Android::Add" :size="22" class="text-theme-on-surface" />
-                    </pressable>
+            <row class="w-full items-center gap-3 px-4 pb-2">
+                <row class="h-12 flex-1 items-center gap-2 rounded-full px-4 glass android:bg-theme-surface">
+                    <bare-text-input
+                        ref="list-new-item"
+                        class="flex-1"
+                        placeholder="Add an item"
+                        a11y-label="Add an item"
+                        autocapitalize="sentences"
+                        keep-focus-on-submit
+                        native:model="newItem"
+                        @submit="addItem"
+                    />
                 </row>
-            </column>
+                <pressable
+                    ref="list-add-item"
+                    a11y-label="Add item"
+                    class="h-12 w-12 items-center justify-center rounded-full glass android:bg-theme-surface"
+                    @tap="addItem"
+                >
+                    <native:icon :ios="Ios::Plus" :android="Android::Add" :size="22" class="text-theme-on-surface" />
+                </pressable>
+            </row>
         @endif
     </native:bottom-bar>
 

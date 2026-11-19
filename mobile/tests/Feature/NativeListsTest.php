@@ -11,6 +11,7 @@ use App\NativeComponents\EditList;
 use App\NativeComponents\ListDetail;
 use Native\Mobile\Events\Alert\ButtonPressed;
 use Native\Mobile\Testing\Native;
+use Victorycodedev\ToastKit\Events\ToastActionPressed;
 
 beforeEach(fn () => seedSunnyData());
 
@@ -560,8 +561,7 @@ it('removes done items on the phone straight away and queues one clear for Sunny
         ->assertDontSee('Milk')
         ->assertDontSee('Eggs')
         ->assertSee('Shopping · 0 of 1 done')
-        ->assertMissingElement('top_bar_action', listDetailRef('remove-done'))
-        ->assertMissingElement('row', listDetailRef('list-unchecked'));
+        ->assertMissingElement('top_bar_action', listDetailRef('remove-done'));
 
     expect(array_column($screen->get('items'), 'name'))->toBe(['Bread'])
         ->and(PendingWrite::orderBy('id')->get()->map->only('resource', 'record_id', 'deletes')->all())->toBe([
@@ -570,14 +570,18 @@ it('removes done items on the phone straight away and queues one clear for Sunny
         ]);
 });
 
-it('unchecks every item without asking, and offers to undo it', function () {
+it('unchecks every item without asking, and offers to undo it in a toast', function () {
     $screen = Native::visit('/lists/1')
         ->tap('list-item-1')
         ->tap('uncheck-all')
         ->assertNativeNotCalled('Dialog.Alert')
         ->assertSee('Shopping · 0 of 3 done')
-        ->assertSee('2 items unchecked')
+        ->assertToastShown(fn (array $params): bool => $params['message'] === '2 items unchecked' && $params['variant'] === 'success'
+            && $params['action'] === ['id' => 'undo-uncheck', 'label' => 'Undo'] && $params['data'] === ['list' => 1, 'items' => [1, 2]])
         ->assertMissingElement('top_bar_action', listDetailRef('uncheck-all'))
+        ->assertDontSee('items unchecked')
+        ->assertMissingElement('row', listDetailRef('list-unchecked'))
+        ->assertMissingElement('pressable', listDetailRef('list-undo-uncheck'))
         ->assertAccessible();
 
     expect(array_column($screen->get('items'), 'completed'))->toBe([false, false, false])
@@ -586,9 +590,8 @@ it('unchecks every item without asking, and offers to undo it', function () {
             ['resource' => 'checklist_resets', 'record_id' => 1, 'payload' => []],
         ]);
 
-    $screen->tap('list-undo-uncheck')
-        ->assertSee('Shopping · 2 of 3 done')
-        ->assertMissingElement('row', listDetailRef('list-unchecked'));
+    $screen->emitNative(ToastActionPressed::class, ['toastId' => 'unchecked', 'actionId' => 'undo-uncheck', 'data' => ['list' => 1, 'items' => [1, 2]]])
+        ->assertSee('Shopping · 2 of 3 done');
 
     expect(array_column($screen->get('items'), 'completed'))->toBe([true, true, false])
         ->and(PendingWrite::orderBy('id')->get()->map->only('resource', 'record_id', 'payload')->all())->toBe([
@@ -597,16 +600,53 @@ it('unchecks every item without asking, and offers to undo it', function () {
         ]);
 });
 
-it('stops offering undo once something else changes', function () {
+it('names a single unchecked item in the toast', function () {
     Native::visit('/lists/1')
         ->tap('uncheck-all')
-        ->assertSee('1 item unchecked')
-        ->tap('list-item-3')
-        ->assertMissingElement('row', listDetailRef('list-unchecked'))
-        ->assertSet('uncheckedIds', []);
+        ->assertToastShown(fn (array $params): bool => $params['message'] === '1 item unchecked' && $params['data'] === ['list' => 1, 'items' => [2]]);
 });
 
-it('keeps the items in place while the menu and the undo card come and go', function () {
+it('re-ticks the items with a queued change once the reset has gone out', function () {
+    $screen = Native::visit('/lists/1')->tap('uncheck-all');
+
+    PendingWrite::query()->where('resource', 'checklist_resets')->delete();
+
+    $screen->emitNative(ToastActionPressed::class, ['toastId' => 'unchecked', 'actionId' => 'undo-uncheck', 'data' => ['list' => 1, 'items' => [2]]])
+        ->assertSee('Shopping · 1 of 3 done');
+
+    expect(PendingWrite::orderBy('id')->get()->map->only('resource', 'record_id', 'payload')->all())->toBe([
+        ['resource' => 'checklist_items', 'record_id' => 2, 'payload' => ['completed' => true, 'checklist_id' => 1]],
+    ]);
+});
+
+it('ignores an undo meant for another list', function () {
+    $screen = Native::visit('/lists/1')->tap('uncheck-all');
+
+    $screen->emitNative(ToastActionPressed::class, ['toastId' => 'unchecked', 'actionId' => 'undo-uncheck', 'data' => ['list' => 2, 'items' => [2]]])
+        ->assertSee('Shopping · 0 of 3 done');
+
+    expect(ChecklistItem::find(2)->completed_at)->toBeNull()
+        ->and(PendingWrite::orderBy('id')->pluck('resource')->all())->toBe(['checklist_resets']);
+});
+
+it('skips items removed or ticked again since unchecking', function () {
+    ChecklistItem::query()->whereKey(1)->update(['completed_at' => now()]);
+
+    $screen = Native::visit('/lists/1')
+        ->tap('uncheck-all')
+        ->press('removeItem(1)')
+        ->tap('list-item-2');
+
+    $before = PendingWrite::orderBy('id')->get()->map->only('resource', 'record_id', 'payload', 'deletes', 'version')->all();
+
+    $screen->emitNative(ToastActionPressed::class, ['toastId' => 'unchecked', 'actionId' => 'undo-uncheck', 'data' => ['list' => 1, 'items' => [1, 2]]])
+        ->assertSee('Shopping · 1 of 2 done');
+
+    expect(PendingWrite::orderBy('id')->get()->map->only('resource', 'record_id', 'payload', 'deletes', 'version')->all())->toBe($before)
+        ->and(PendingWrite::query()->where('resource', 'checklist_resets')->exists())->toBeTrue();
+});
+
+it('keeps the items in place while the menu comes and goes', function () {
     $ids = [];
     $items = function (array $node) use (&$ids): bool {
         if (($node['ref'] ?? null) !== 'list-detail') {
