@@ -101,7 +101,7 @@
                 ref="team-settings"
                 :headline="$this->currentTeam['name']"
                 :supporting="$this->currentTeam['summary']"
-                :leadingIconIos="Ios::Person3"
+                :leadingIconIos="Ios::Person2Circle"
                 :leadingIconAndroid="Android::Group"
                 :trailingIconIos="Ios::ChevronRight"
                 :trailingIconAndroid="Android::ChevronRight"
