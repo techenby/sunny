@@ -51,8 +51,6 @@
                     size="lg"
                     font="semibold"
                     class="w-full"
-                    :ios-icon="Ios::Paperplane"
-                    :android-icon="Android::Send"
                     @tap="sendVerification"
                 >
                     {{ $verificationSent ? 'Send it again' : 'Send verification email' }}
