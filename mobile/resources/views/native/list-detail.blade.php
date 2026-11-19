@@ -6,21 +6,51 @@
 <native:top-bar :title="$checklist['name'] ?? 'List'" back>
     @if ($checklist)
         <native:top-bar-action
-            ref="edit-list"
-            id="edit-list"
-            label="Edit"
-            :ios-icon="Ios::Pencil"
-            :android-icon="Android::Edit"
-            @navigate('/lists/'.$checklist['id'].'/edit')
-        />
-        <native:top-bar-action
-            ref="delete-list"
-            id="delete-list"
-            label="Delete"
-            :ios-icon="Ios::Trash"
-            :android-icon="Android::Delete"
-            @tap="confirmDeleteList"
-        />
+            ref="list-actions"
+            id="list-actions"
+            label="More"
+            :ios-icon="Ios::Ellipsis"
+            :android-icon="Android::MoreVert"
+        >
+            @if ($this->completedItems)
+                <native:top-bar-action
+                    native:key="remove-done"
+                    ref="remove-done"
+                    id="remove-done"
+                    label="Remove done"
+                    :ios-icon="Ios::CheckmarkCircle"
+                    :android-icon="Android::RemoveDone"
+                    @tap="confirmRemoveDone"
+                />
+                <native:top-bar-action
+                    native:key="uncheck-all"
+                    ref="uncheck-all"
+                    id="uncheck-all"
+                    label="Uncheck all"
+                    :ios-icon="Ios::ArrowCounterclockwise"
+                    :android-icon="Android::Replay"
+                    @tap="uncheckAll"
+                />
+                <native:top-bar-action native:key="list-actions-divider" id="list-actions-divider" divider />
+            @endif
+            <native:top-bar-action
+                ref="edit-list"
+                id="edit-list"
+                label="Edit list"
+                :ios-icon="Ios::Pencil"
+                :android-icon="Android::Edit"
+                @navigate('/lists/'.$checklist['id'].'/edit')
+            />
+            <native:top-bar-action
+                ref="delete-list"
+                id="delete-list"
+                label="Delete list"
+                destructive
+                :ios-icon="Ios::Trash"
+                :android-icon="Android::Delete"
+                @tap="confirmDeleteList"
+            />
+        </native:top-bar-action>
     @endif
 </native:top-bar>
 

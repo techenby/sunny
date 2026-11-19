@@ -11,6 +11,7 @@ use App\NativeComponents\EditList;
 use App\NativeComponents\ListDetail;
 use Native\Mobile\Events\Alert\ButtonPressed;
 use Native\Mobile\Testing\Native;
+use Victorycodedev\ToastKit\Events\ToastActionPressed;
 
 beforeEach(fn () => seedSunnyData());
 
@@ -475,6 +476,26 @@ it('removes the item being edited and closes the edit', function () {
     expect(PendingWrite::sole()->only('record_id', 'deletes'))->toBe(['record_id' => 1, 'deletes' => true]);
 });
 
+it('closes the edit when its item is removed as done, and keeps it open otherwise', function () {
+    Native::visit('/lists/1')
+        ->press('editItem(2)')
+        ->tap('remove-done')
+        ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Remove', 'id' => 'remove-done'])
+        ->assertSet('editingItemId', null)
+        ->assertDontSee('Edit item')
+        ->assertDontSee('Eggs');
+
+    ChecklistItem::query()->whereKey(1)->update(['completed_at' => now()]);
+
+    Native::visit('/lists/1')
+        ->press('editItem(3)')
+        ->tap('remove-done')
+        ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Remove', 'id' => 'remove-done'])
+        ->assertSet('editingItemId', 3)
+        ->assertSee('Edit item')
+        ->assertDontSee('Milk');
+});
+
 it('asks before deleting a list', function () {
     Native::visit('/lists/1')
         ->tap('delete-list')
@@ -496,6 +517,177 @@ it('deletes a list and its items once confirmed', function () {
         ->and(ChecklistItem::where('checklist_id', 1)->count())->toBe(0)
         ->and(PendingWrite::sole()->only('resource', 'record_id', 'deletes'))->toBe(['resource' => 'checklists', 'record_id' => 1, 'deletes' => true]);
     Native::visit('/lists')->assertDontSee('Groceries');
+});
+
+function listDetailRef(string $ref): Closure
+{
+    return fn (array $node): bool => ($node['ref'] ?? null) === $ref;
+}
+
+it('keeps the list’s actions in one menu, offering Remove done and Uncheck all only while something is ticked', function () {
+    Native::visit('/lists/1')
+        ->assertElement('top_bar_action', fn (array $node): bool => ($node['ref'] ?? null) === 'list-actions'
+            && array_column($node['children'], 'ref') === ['remove-done', 'uncheck-all', 'edit-list', 'delete-list'])
+        ->assertElement('top_bar_action', fn (array $node): bool => ($node['ref'] ?? null) === 'delete-list' && $node['props']['destructive'] === true)
+        ->tap('list-item-2')
+        ->assertMissingElement('top_bar_action', listDetailRef('remove-done'))
+        ->assertMissingElement('top_bar_action', listDetailRef('uncheck-all'))
+        ->assertElement('top_bar_action', listDetailRef('edit-list'));
+
+    Native::visit('/lists/2')
+        ->assertMissingElement('top_bar_action', listDetailRef('remove-done'))
+        ->assertMissingElement('top_bar_action', listDetailRef('uncheck-all'));
+});
+
+it('asks before removing done items, naming them', function () {
+    Native::visit('/lists/1')
+        ->tap('list-item-1')
+        ->tap('remove-done')
+        ->assertNativeCalled('Dialog.Alert', fn (array $params): bool => $params['id'] === 'remove-done'
+            && $params['title'] === 'Remove 2 done items?'
+            && $params['message'] === 'Milk and Eggs will be removed from Groceries for everyone on your team.'
+            && array_column($params['buttons'], 'label') === ['Cancel', 'Remove']);
+
+    ChecklistItem::query()->where('checklist_id', 1)->update(['completed_at' => now()]);
+    ChecklistItem::query()->create(['id' => 9, 'server' => ChecklistItem::find(1)->server, 'checklist_id' => 1, 'name' => 'Butter', 'position' => 4, 'completed_at' => now()]);
+    ChecklistItem::query()->create(['id' => 10, 'server' => ChecklistItem::find(1)->server, 'checklist_id' => 1, 'name' => 'Jam', 'position' => 5, 'completed_at' => now()]);
+
+    Native::visit('/lists/1')
+        ->tap('remove-done')
+        ->assertNativeCalled('Dialog.Alert', fn (array $params): bool => $params['message'] === 'Milk, Eggs, Bread and 2 more will be removed from Groceries for everyone on your team.');
+
+    ChecklistItem::query()->where('checklist_id', 1)->where('id', '!=', 2)->delete();
+
+    Native::visit('/lists/1')
+        ->tap('remove-done')
+        ->assertNativeCalled('Dialog.Alert', fn (array $params): bool => $params['title'] === 'Remove 1 done item?'
+            && $params['message'] === 'Eggs will be removed from Groceries for everyone on your team.');
+});
+
+it('keeps done items when the removal is cancelled', function () {
+    Native::visit('/lists/1')
+        ->tap('remove-done')
+        ->emitNative(ButtonPressed::class, ['index' => 0, 'label' => 'Cancel', 'id' => 'remove-done'])
+        ->assertSee('Eggs');
+
+    expect(ChecklistItem::find(2))->not->toBeNull()->and(PendingWrite::count())->toBe(0);
+});
+
+it('removes done items on the phone straight away and queues one clear for Sunny', function () {
+    $screen = Native::visit('/lists/1')
+        ->tap('list-item-1')
+        ->tap('remove-done')
+        ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Remove', 'id' => 'remove-done'])
+        ->assertDontSee('Milk')
+        ->assertDontSee('Eggs')
+        ->assertSee('Shopping · 0 of 1 done')
+        ->assertMissingElement('top_bar_action', listDetailRef('remove-done'));
+
+    expect(array_column($screen->get('items'), 'name'))->toBe(['Bread'])
+        ->and(PendingWrite::orderBy('id')->get()->map->only('resource', 'record_id', 'deletes')->all())->toBe([
+            ['resource' => 'checklist_items', 'record_id' => 1, 'deletes' => true],
+            ['resource' => 'checklist_clears', 'record_id' => 1, 'deletes' => false],
+        ]);
+});
+
+it('unchecks every item without asking, and offers to undo it in a toast', function () {
+    $screen = Native::visit('/lists/1')
+        ->tap('list-item-1')
+        ->tap('uncheck-all')
+        ->assertNativeNotCalled('Dialog.Alert')
+        ->assertSee('Shopping · 0 of 3 done')
+        ->assertToastShown(fn (array $params): bool => $params['message'] === '2 items unchecked' && $params['variant'] === 'success'
+            && $params['action'] === ['id' => 'undo-uncheck', 'label' => 'Undo'] && $params['data'] === ['list' => 1, 'items' => [1, 2]])
+        ->assertMissingElement('top_bar_action', listDetailRef('uncheck-all'))
+        ->assertDontSee('items unchecked')
+        ->assertMissingElement('row', listDetailRef('list-unchecked'))
+        ->assertMissingElement('pressable', listDetailRef('list-undo-uncheck'))
+        ->assertAccessible();
+
+    expect(array_column($screen->get('items'), 'completed'))->toBe([false, false, false])
+        ->and(PendingWrite::orderBy('id')->get()->map->only('resource', 'record_id', 'payload')->all())->toBe([
+            ['resource' => 'checklist_items', 'record_id' => 1, 'payload' => ['completed' => false, 'checklist_id' => 1]],
+            ['resource' => 'checklist_resets', 'record_id' => 1, 'payload' => []],
+        ]);
+
+    $screen->emitNative(ToastActionPressed::class, ['toastId' => 'unchecked', 'actionId' => 'undo-uncheck', 'data' => ['list' => 1, 'items' => [1, 2]]])
+        ->assertSee('Shopping · 2 of 3 done');
+
+    expect(array_column($screen->get('items'), 'completed'))->toBe([true, true, false])
+        ->and(PendingWrite::orderBy('id')->get()->map->only('resource', 'record_id', 'payload')->all())->toBe([
+            ['resource' => 'checklist_items', 'record_id' => 1, 'payload' => ['completed' => true, 'checklist_id' => 1]],
+            ['resource' => 'checklist_items', 'record_id' => 2, 'payload' => ['completed' => true, 'checklist_id' => 1]],
+        ]);
+});
+
+it('names a single unchecked item in the toast', function () {
+    Native::visit('/lists/1')
+        ->tap('uncheck-all')
+        ->assertToastShown(fn (array $params): bool => $params['message'] === '1 item unchecked' && $params['data'] === ['list' => 1, 'items' => [2]]);
+});
+
+it('re-ticks the items with a queued change once the reset has gone out', function () {
+    $screen = Native::visit('/lists/1')->tap('uncheck-all');
+
+    PendingWrite::query()->where('resource', 'checklist_resets')->delete();
+
+    $screen->emitNative(ToastActionPressed::class, ['toastId' => 'unchecked', 'actionId' => 'undo-uncheck', 'data' => ['list' => 1, 'items' => [2]]])
+        ->assertSee('Shopping · 1 of 3 done');
+
+    expect(PendingWrite::orderBy('id')->get()->map->only('resource', 'record_id', 'payload')->all())->toBe([
+        ['resource' => 'checklist_items', 'record_id' => 2, 'payload' => ['completed' => true, 'checklist_id' => 1]],
+    ]);
+});
+
+it('ignores an undo meant for another list', function () {
+    $screen = Native::visit('/lists/1')->tap('uncheck-all');
+
+    $screen->emitNative(ToastActionPressed::class, ['toastId' => 'unchecked', 'actionId' => 'undo-uncheck', 'data' => ['list' => 2, 'items' => [2]]])
+        ->assertSee('Shopping · 0 of 3 done');
+
+    expect(ChecklistItem::find(2)->completed_at)->toBeNull()
+        ->and(PendingWrite::orderBy('id')->pluck('resource')->all())->toBe(['checklist_resets']);
+});
+
+it('skips items removed or ticked again since unchecking', function () {
+    ChecklistItem::query()->whereKey(1)->update(['completed_at' => now()]);
+
+    $screen = Native::visit('/lists/1')
+        ->tap('uncheck-all')
+        ->press('removeItem(1)')
+        ->tap('list-item-2');
+
+    $before = PendingWrite::orderBy('id')->get()->map->only('resource', 'record_id', 'payload', 'deletes', 'version')->all();
+
+    $screen->emitNative(ToastActionPressed::class, ['toastId' => 'unchecked', 'actionId' => 'undo-uncheck', 'data' => ['list' => 1, 'items' => [1, 2]]])
+        ->assertSee('Shopping · 1 of 2 done');
+
+    expect(PendingWrite::orderBy('id')->get()->map->only('resource', 'record_id', 'payload', 'deletes', 'version')->all())->toBe($before)
+        ->and(PendingWrite::query()->where('resource', 'checklist_resets')->exists())->toBeTrue();
+});
+
+it('keeps the items in place while the menu comes and goes', function () {
+    $ids = [];
+    $items = function (array $node) use (&$ids): bool {
+        if (($node['ref'] ?? null) !== 'list-detail') {
+            return false;
+        }
+
+        $ids[] = $node['id'];
+
+        return true;
+    };
+
+    Native::visit('/lists/1')
+        ->assertElement('scroll_view', $items)
+        ->tap('uncheck-all')
+        ->assertElement('scroll_view', $items)
+        ->tap('list-item-3')
+        ->assertElement('scroll_view', $items)
+        ->tap('list-item-3')
+        ->assertElement('scroll_view', $items);
+
+    expect($ids)->toHaveCount(4)->and(array_unique($ids))->toHaveCount(1);
 });
 
 it('shows a missing list', function () {

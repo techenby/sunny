@@ -2,6 +2,7 @@
 
 namespace App\Http\Integrations\Sunny;
 
+use App\Http\Integrations\Sunny\Requests\ChecklistActionRequest;
 use App\Http\Integrations\Sunny\Requests\DeleteRecordRequest;
 use App\Http\Integrations\Sunny\Requests\ForceDeleteItemRequest;
 use App\Http\Integrations\Sunny\Requests\RestoreItemRequest;
@@ -95,6 +96,12 @@ class SunnyWrites
 
         if ($write->resource === 'routine_occurrence_steps') {
             $this->sendRoutineStep($write, $team, $connector);
+
+            return;
+        }
+
+        if (in_array($write->resource, ['checklist_clears', 'checklist_resets'], true)) {
+            $this->sendChecklistAction($write, $team, $connector);
 
             return;
         }
@@ -234,6 +241,19 @@ class SunnyWrites
                 RoutineOccurrenceStep::query()->find($write->record_id)?->update(['completed_at' => $step['completed_at'] ?? null]);
             }
         });
+    }
+
+    private function sendChecklistAction(PendingWrite $write, Team $team, SunnyConnector $connector): void
+    {
+        $action = $write->resource === 'checklist_clears' ? 'clear-completed' : 'reset';
+
+        try {
+            $connector->send(new ChecklistActionRequest($team->slug, $write->record_id, $action));
+        } catch (RequestException $exception) {
+            throw_if($this->rejectionMessage($exception) === null, $exception);
+        }
+
+        $write->delete();
     }
 
     /**
