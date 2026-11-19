@@ -30,7 +30,14 @@ function fillRegistration(string $confirmation = 'Correct-Horse-9!'): TestableCo
  */
 function registeredUser(array $attributes = []): array
 {
-    return ['id' => 42, 'name' => 'Alex Rivera', 'email' => 'alex@example.com', 'onboarded_at' => null, 'token' => 'new-token', ...$attributes];
+    return ['id' => 42, 'name' => 'Alex Rivera', 'email' => 'alex@example.com', 'email_verified_at' => null, 'onboarded_at' => null, 'token' => 'new-token', ...$attributes];
+}
+
+function verifiedRegistrationProfile(): MockResponse
+{
+    return MockResponse::make(['data' => [
+        'id' => 42, 'name' => 'Alex Rivera', 'email' => 'alex@example.com', 'email_verified_at' => '2026-11-19T00:00:00.000000Z',
+    ]]);
 }
 
 it('renders the native sign-up form', function (): void {
@@ -51,19 +58,19 @@ it('renders the native sign-up form', function (): void {
         ->assertAccessible();
 });
 
-it('creates the account, signs in and sends a new account to set-up', function (): void {
+it('creates the account, signs in and waits for verification before setup', function (): void {
     Saloon::fake([
         RegisterRequest::class => MockResponse::make(registeredUser(), 201),
         GetUserRequest::class => MockResponse::make(['data' => ['id' => 42]]),
     ]);
 
-    fillRegistration()
+    $home = fillRegistration()
         ->tap('register-submit')
         ->assertSet('password', '')
         ->assertSet('passwordConfirmation', '')
         ->assertReplacedWith('/')
         ->follow()
-        ->assertReplacedWith('/setup');
+        ->assertReplacedWith('/verify-email');
 
     Saloon::assertSent(fn (Request $request): bool => $request instanceof RegisterRequest && $request->body()->all() === [
         'name' => 'Alex Rivera',
@@ -76,21 +83,27 @@ it('creates the account, signs in and sends a new account to set-up', function (
     Native::fakeBridge()->assertNothingBrowsed();
     expect(Onboarding::current())->first_name->toBe('Alex')
         ->and(app(SunnyStore::class)->profile())->toMatchArray(['name' => 'Alex Rivera', 'email' => 'alex@example.com']);
+
+    Saloon::fake([GetUserRequest::class => verifiedRegistrationProfile()]);
+    $home->follow()->tap('account-check-verification')->follow()->assertReplacedWith('/setup');
 });
 
-it('sends an invited account that is already onboarded to the dashboard', function (): void {
+it('sends an invited account to the dashboard after verification', function (): void {
     Saloon::fake([
         RegisterRequest::class => MockResponse::make(registeredUser(['onboarded_at' => '2026-11-17T00:00:00.000000Z']), 201),
         GetUserRequest::class => MockResponse::make(['data' => ['id' => 42]]),
     ]);
 
-    fillRegistration()
+    $home = fillRegistration()
         ->tap('register-submit')
         ->assertReplacedWith('/')
         ->follow()
-        ->assertReplacedWith('/dashboard');
+        ->assertReplacedWith('/verify-email');
 
     expect(Onboarding::current())->toBeNull();
+
+    Saloon::fake([GetUserRequest::class => verifiedRegistrationProfile()]);
+    $home->follow()->tap('account-check-verification')->follow()->assertReplacedWith('/dashboard');
 });
 
 it('shows each validation error under its field', function (string $field, string $ref, string $message): void {

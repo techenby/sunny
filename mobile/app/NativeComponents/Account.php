@@ -5,10 +5,12 @@ namespace App\NativeComponents;
 use App\Actions\DestroySession;
 use App\Http\Integrations\Sunny\SunnyAccount;
 use App\Http\Integrations\Sunny\SunnyStore;
+use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Http\Integrations\Sunny\SunnyTokenStore;
 use App\Support\Toast;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\View\View;
+use JsonException;
 use Native\Mobile\AsyncTask;
 use Native\Mobile\Facades\Network;
 use RuntimeException;
@@ -17,6 +19,8 @@ use Saloon\Exceptions\Request\RequestException;
 
 class Account extends Component
 {
+    protected bool $verificationRequired = false;
+
     public string $name = '';
 
     public string $email = '';
@@ -144,16 +148,67 @@ class Account extends Component
         Toast::info('Your email is already verified.');
     }
 
+    public function checkVerification(): void
+    {
+        $this->resetProblems();
+
+        if (Network::status()?->connected === false) {
+            $this->offline = 'check';
+
+            return;
+        }
+
+        try {
+            $profile = app(SunnyAccount::class)->refresh();
+        } catch (FatalRequestException) {
+            $this->offline = 'check';
+
+            return;
+        } catch (RequestException $exception) {
+            $this->failed($exception, 'Sunny couldn’t check your email right now.');
+
+            return;
+        } catch (JsonException) {
+            $this->error = 'Sunny couldn’t check your email right now.';
+
+            return;
+        } catch (AuthenticationException) {
+            $this->replace('/');
+
+            return;
+        } catch (RuntimeException) {
+            $this->error = 'Unable to read your saved login. Unlock your device and try again.';
+
+            return;
+        }
+
+        $this->verified = $profile['verified'] ?? false;
+        $this->savedEmail = $profile['email'] ?? $this->savedEmail;
+
+        if (! $this->verified) {
+            $this->error = 'Your email is still unverified. Open the link in your inbox and try again.';
+
+            return;
+        }
+
+        if ($this->verificationRequired) {
+            SunnySyncCoordinator::forgetDispatch();
+            $this->replace('/');
+        }
+    }
+
     public function offlineMessage(): string
     {
-        return $this->offline === 'verification'
-            ? 'Sending a verification email needs a connection. Nothing’s been sent yet.'
-            : 'Changes to your account need a connection. Nothing’s been saved yet.';
+        return match ($this->offline) {
+            'verification' => 'Sending a verification email needs a connection. Nothing’s been sent yet.',
+            'check' => 'Checking your verification status needs a connection.',
+            default => 'Changes to your account need a connection. Nothing’s been saved yet.',
+        };
     }
 
     public function render(): View
     {
-        return view('native.account');
+        return view('native.account', ['verificationRequired' => $this->verificationRequired]);
     }
 
     private function refreshProfile(): void

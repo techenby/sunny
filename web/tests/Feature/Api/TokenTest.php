@@ -25,7 +25,7 @@ test('valid credentials return a token', function () {
     expect($user->tokens()->count())->toBe(1);
 });
 
-test('an existing unverified user can sign in and sync their household', function () {
+test('an unverified user can sign in and recover their account before syncing', function () {
     $user = User::factory()->unverified()->create();
 
     $response = $this->postJson(route('api.token'), [
@@ -34,8 +34,20 @@ test('an existing unverified user can sign in and sync their household', functio
         'device_name' => 'iPhone',
     ])->assertOk()->assertJsonPath('email_verified_at', null);
 
-    $this->withToken($response->json('token'))
-        ->getJson(route('api.sync'))
+    $this->withToken($response->json('token'));
+    $this->getJson(route('api.user'))->assertOk()->assertJsonPath('data.email_verified_at', null);
+    $this->postJson(route('api.user.verification.send'))->assertAccepted();
+    $this->getJson(route('api.sync'))
+        ->assertStatus(423)
+        ->assertJsonPath('email_verification_required', true);
+    $this->postJson(route('api.items.store', $user->currentTeam), ['name' => 'Toolbox', 'type' => 'item'])
+        ->assertStatus(423)
+        ->assertJsonPath('email_verification_required', true);
+
+    $user->markEmailAsVerified();
+    auth()->forgetGuards();
+
+    $this->getJson(route('api.sync'))
         ->assertOk()
         ->assertJsonPath('teams.0.id', $user->current_team_id);
 });

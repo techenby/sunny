@@ -18,10 +18,6 @@ class InvitationController extends Controller
 {
     public function index(Request $request): AnonymousResourceCollection
     {
-        if (! $request->user()->hasVerifiedEmail()) {
-            return TeamInvitationResource::collection([]);
-        }
-
         $invitations = TeamInvitation::query()
             ->with(['inviter', 'team'])
             ->pendingFor($request->user())

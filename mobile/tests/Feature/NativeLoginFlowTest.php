@@ -88,6 +88,16 @@ it('restores a valid saved session', function (): void {
     Native::visit('/')->assertReplacedWith('/dashboard');
 });
 
+it('opens verification before setup or sync for an unverified account', function (): void {
+    Native::fakeBridge()->respondTo('SecureStorage.Get', ['value' => 'saved-token']);
+    Saloon::fake([GetUserRequest::class => MockResponse::make(['data' => [
+        'id' => 1, 'name' => 'Andy', 'email' => 'andy@example.com', 'email_verified_at' => null,
+    ]])]);
+    app(SunnyStore::class)->clear();
+
+    Native::visit('/')->assertReplacedWith('/verify-email');
+});
+
 it('opens downloaded data without waiting to check the session online', function (bool $isNewAccount, string $uri): void {
     Native::fakeBridge()->respondTo('SecureStorage.Get', ['value' => 'saved-token']);
     Saloon::fake([GetUserRequest::class => MockResponse::make(['id' => 1])]);

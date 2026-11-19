@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\ItemType;
+use App\Http\Integrations\Sunny\EmailVerificationRequired;
 use App\Http\Integrations\Sunny\Requests\CreateTokenRequest;
 use App\Http\Integrations\Sunny\Requests\GetUserRequest;
 use App\Http\Integrations\Sunny\Requests\LogoutRequest;
@@ -303,6 +304,27 @@ it('runs a scheduled sync while changes are waiting even when local data is fres
     Saloon::assertSent(SaveRecordRequest::class);
     Saloon::assertSent(SyncRequest::class);
     expect(PendingWrite::count())->toBe(0);
+});
+
+it('keeps queued edits when sync requires email verification and sends them after verification', function (): void {
+    seedSunnyData();
+    app(SunnyOutbox::class)->queue('recipes', 1, ['name' => 'Soup'], 1);
+    Saloon::fake([SaveRecordRequest::class => MockResponse::make(['email_verification_required' => true], 423)]);
+
+    expect(fn () => app(SunnySyncCoordinator::class)->sync())->toThrow(EmailVerificationRequired::class);
+    expect(PendingWrite::sole()->error)->toBeNull();
+
+    Native::visit('/dashboard')
+        ->emitNative('sunny-sync-complete', ['status' => 'failed', 'exceptionClass' => EmailVerificationRequired::class])
+        ->assertReplacedWith('/verify-email');
+
+    Saloon::fake([
+        SaveRecordRequest::class => MockResponse::make(['data' => [...Recipe::find(1)->toArray(), 'name' => 'Soup']]),
+        SyncRequest::class => MockResponse::make($this->snapshot),
+    ]);
+
+    expect(app(SunnySyncCoordinator::class)->sync())->toBeTrue()
+        ->and(PendingWrite::count())->toBe(0);
 });
 
 it('starts a background sync on the next poll while changes are waiting', function (): void {

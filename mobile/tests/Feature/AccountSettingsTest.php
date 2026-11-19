@@ -70,6 +70,23 @@ it('prompts an unverified user to open account settings and verify their email',
         ->assertNavigatedTo('/preferences/account');
 });
 
+it('checks the server and continues after the email is verified', function (): void {
+    rememberAndy(verified: false);
+    Saloon::fake([GetUserRequest::class => MockResponse::make(['data' => sunnyUser(['email_verified_at' => null])])]);
+
+    $screen = Native::visit('/verify-email')
+        ->assertNavTitle('Verify your email')
+        ->tap('account-check-verification')
+        ->assertSee('Your email is still unverified.')
+        ->assertNoNavigation();
+
+    Saloon::fake([GetUserRequest::class => MockResponse::make(['data' => sunnyUser()])]);
+
+    $screen->tap('account-check-verification')->assertReplacedWith('/');
+
+    expect(app(SunnyStore::class)->profile()['verified'])->toBeTrue();
+});
+
 it('downloads the name and email when the phone does not have them yet', function (): void {
     DB::table('sunny_accounts')->insert(['server' => SunnyStore::server(), 'user_id' => 7]);
     Saloon::fake([GetUserRequest::class => MockResponse::make(['data' => sunnyUser()])]);

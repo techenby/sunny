@@ -152,6 +152,7 @@ it('declines an invitation from Summary', function (): void {
 });
 
 it('accepts and declines invitations in Preferences', function (): void {
+    $this->travelTo(now()->startOfDay()->addHours(12));
     invitedToMillerCabin();
     Invitation::create(['code' => 'lake-code', 'server' => SunnyStore::server(), 'team_name' => 'Lake House', 'inviter_name' => 'Sam Lee', 'role' => 'admin', 'expires_at' => now()->addHours(3), 'created_at' => now()]);
     Saloon::fake([
@@ -186,12 +187,11 @@ it('forgets an invitation Sunny no longer has', function (): void {
 
 it('keeps an invitation when the account needs to verify its email first', function (): void {
     invitedToMillerCabin();
-    Saloon::fake([AcceptInvitationRequest::class => MockResponse::make(['message' => 'Your email address is not verified.'], 403)]);
+    Saloon::fake([AcceptInvitationRequest::class => MockResponse::make(['email_verification_required' => true], 423)]);
 
     Native::visit('/dashboard')
         ->tap('dashboard-accept-miller-code')
-        ->assertToastShown(fn (array $params): bool => $params['message'] === 'Verify your email in Preferences → Account to continue.')
-        ->assertSee('Join Miller Cabin');
+        ->assertReplacedWith('/verify-email');
 
     expect(Invitation::count())->toBe(1)->and(Team::find(3))->toBeNull();
 });

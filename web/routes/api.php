@@ -24,6 +24,7 @@ use App\Http\Controllers\Api\TeamController;
 use App\Http\Controllers\Api\TeamInvitationController;
 use App\Http\Controllers\Api\TeamMemberController;
 use App\Http\Controllers\Api\TokenController;
+use App\Http\Middleware\EnsureApiEmailIsVerified;
 use App\Http\Middleware\EnsureTeamMembership;
 use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
@@ -46,18 +47,23 @@ Route::middleware('auth:sanctum')
         Route::put('user/password', [AccountController::class, 'updatePassword'])->middleware('throttle:6,1')->name('user.password.update');
         Route::post('user/email/verification-notification', [AccountController::class, 'sendVerificationNotification'])->middleware('throttle:6,1')->name('user.verification.send');
         Route::delete('user', [AccountController::class, 'destroy'])->middleware('throttle:6,1')->name('user.destroy');
-        Route::post('user/onboarding', OnboardingController::class)->name('user.onboarding');
-        Route::get('sync', SyncController::class)->name('sync');
         Route::post('sanctum/token/refresh', [TokenController::class, 'refresh'])->name('token.refresh');
         Route::post('logout', [TokenController::class, 'destroy'])->name('logout');
+    });
+
+Route::middleware(['auth:sanctum', EnsureApiEmailIsVerified::class])
+    ->name('api.')
+    ->group(function (): void {
+        Route::post('user/onboarding', OnboardingController::class)->name('user.onboarding');
+        Route::get('sync', SyncController::class)->name('sync');
 
         Route::get('shared-recipes/{recipe:share_token}', [SharedRecipeController::class, 'show'])->name('shared-recipes.show');
         Route::post('shared-recipes/{recipe:share_token}/save', [SharedRecipeController::class, 'save'])->name('shared-recipes.save');
 
         Route::post('teams', [TeamController::class, 'store'])->name('teams.store');
         Route::get('invitations', [InvitationController::class, 'index'])->name('invitations.index');
-        Route::post('invitations/{invitation}/accept', [InvitationController::class, 'accept'])->middleware('verified')->name('invitations.accept');
-        Route::post('invitations/{invitation}/decline', [InvitationController::class, 'decline'])->middleware('verified')->name('invitations.decline');
+        Route::post('invitations/{invitation}/accept', [InvitationController::class, 'accept'])->name('invitations.accept');
+        Route::post('invitations/{invitation}/decline', [InvitationController::class, 'decline'])->name('invitations.decline');
 
         Route::prefix('teams/{team}')
             ->middleware(EnsureTeamMembership::class)
@@ -68,7 +74,7 @@ Route::middleware('auth:sanctum')
                 Route::patch('members/{member}', [TeamMemberController::class, 'update'])->name('teams.members.update');
                 Route::delete('members/{member}', [TeamMemberController::class, 'destroy'])->name('teams.members.destroy');
                 Route::get('invitations', [TeamInvitationController::class, 'index'])->name('teams.invitations.index');
-                Route::post('invitations', [TeamInvitationController::class, 'store'])->middleware('verified')->name('teams.invitations.store');
+                Route::post('invitations', [TeamInvitationController::class, 'store'])->name('teams.invitations.store');
                 Route::delete('invitations/{invitation}', [TeamInvitationController::class, 'destroy'])->name('teams.invitations.destroy');
 
                 Route::get('items', [ItemController::class, 'index'])->name('items.index');

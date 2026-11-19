@@ -76,7 +76,7 @@ test('an unverified owner cannot send an invitation', function () {
 
     $this->actingAs($this->luffy)
         ->postJson(route('api.teams.invitations.store', $this->crew), ['email' => 'usopp@strawhat.pirates', 'role' => 'member'])
-        ->assertForbidden();
+        ->assertStatus(423);
 
     expect($this->crew->invitations()->exists())->toBeFalse();
     Notification::assertNothingSent();

@@ -40,9 +40,9 @@ test('users must verify their email before seeing or answering an invitation', f
     $this->zoro->markEmailAsUnverified();
     $invitation = TeamInvitation::factory()->for($this->crew)->create(['email' => $this->zoro->email]);
 
-    $this->actingAs($this->zoro)->getJson(route('api.invitations.index'))->assertOk()->assertJsonCount(0, 'data');
-    $this->postJson(route('api.invitations.accept', $invitation))->assertForbidden();
-    $this->postJson(route('api.invitations.decline', $invitation))->assertForbidden();
+    $this->actingAs($this->zoro)->getJson(route('api.invitations.index'))->assertStatus(423);
+    $this->postJson(route('api.invitations.accept', $invitation))->assertStatus(423)->assertJsonPath('email_verification_required', true);
+    $this->postJson(route('api.invitations.decline', $invitation))->assertStatus(423);
 
     expect($invitation->fresh())->not->toBeNull()
         ->and($this->zoro->belongsToTeam($this->crew))->toBeFalse();

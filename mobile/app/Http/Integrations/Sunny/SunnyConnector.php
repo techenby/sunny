@@ -7,6 +7,7 @@ use Saloon\Http\Connector;
 use Saloon\Http\Response;
 use Saloon\Traits\Plugins\AcceptsJson;
 use Saloon\Traits\Plugins\AlwaysThrowOnErrors;
+use Throwable;
 
 class SunnyConnector extends Connector
 {
@@ -44,6 +45,15 @@ class SunnyConnector extends Connector
     public function hasRequestFailed(Response $response): ?bool
     {
         return $response->status() >= 300;
+    }
+
+    public function getRequestException(Response $response, ?Throwable $senderException): ?Throwable
+    {
+        if ($response->status() === 423 && (json_decode($response->body(), true)['email_verification_required'] ?? false) === true) {
+            return new EmailVerificationRequired($response, previous: $senderException);
+        }
+
+        return null;
     }
 
     /**

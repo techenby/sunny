@@ -257,6 +257,17 @@ the link and `204` when the email is already verified. Password changes return
 `204`, and password changes and verification emails are limited to 6 requests
 a minute.
 
+## Email verification
+
+Household endpoints, including sync, onboarding, and invitations, require a
+verified email. An unverified account receives `423` with
+`"email_verification_required": true`. Keep queued changes and retry after
+verification. Use `GET /api/user` to check `email_verified_at`.
+
+Sign-in, token refresh, sign-out, password reset, and profile, password,
+verification email, and account deletion endpoints are available before
+verification.
+
 ## Teams
 
 Team endpoints follow the same rules and permissions as the web's team
@@ -496,6 +507,7 @@ Expect standard Laravel JSON errors:
 - `403` when the user doesn't belong to the team in the URL or isn't allowed to do something.
 - `404` when the record doesn't exist or belongs to a different team.
 - `422` when validation fails.
+- `423` when the account must [verify its email](#email-verification).
 - `424` when a recipe import can't open the page.
 - `429` when too many token, two-factor, registration or password reset requests are made.
 

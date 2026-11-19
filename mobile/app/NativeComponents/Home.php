@@ -34,16 +34,18 @@ class Home extends Component
                 $connector = app(SunnyAuth::class)->authenticatedConnector();
 
                 if (app(SunnyStore::class)->lastSyncedAt() && app(SunnyStore::class)->rememberedAccount() !== null) {
-                    $this->replace(Onboarding::needsSetUp() ? '/setup' : '/dashboard');
+                    $this->replace($this->signedInDestination());
 
                     return;
                 }
 
-                $userId = $connector->send(new GetUserRequest)->json('data.id');
+                $profile = $connector->send(new GetUserRequest)->json('data');
+                $userId = $profile['id'] ?? null;
                 if (is_int($userId)) {
                     app(SunnyStore::class)->rememberAccount($userId);
+                    app(SunnyStore::class)->rememberProfile($profile);
                 }
-                $this->replace(Onboarding::needsSetUp() ? '/setup' : '/dashboard');
+                $this->replace($this->signedInDestination());
             } catch (UnauthorizedException) {
                 app(DestroySession::class)->handle();
             }
@@ -60,6 +62,15 @@ class Home extends Component
         } catch (RuntimeException) {
             $this->error = 'Unable to read your saved login. Unlock your device and try again.';
         }
+    }
+
+    private function signedInDestination(): string
+    {
+        if ((app(SunnyStore::class)->profile()['verified'] ?? null) === false) {
+            return '/verify-email';
+        }
+
+        return Onboarding::needsSetUp() ? '/setup' : '/dashboard';
     }
 
     public function render(): View

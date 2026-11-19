@@ -34,7 +34,7 @@ class RestrictKioskSession
             return to_route('kiosk.index');
         }
 
-        if ($request->routeIs('verification.notice') || $this->isKioskPath($request, $device)) {
+        if ($this->isKioskPath($request, $device)) {
             return $next($request);
         }
 
