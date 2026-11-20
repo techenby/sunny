@@ -18,7 +18,7 @@
 @php
 $iconOnly = $slot->isEmpty();
 $inactive = $disabled || $loading;
-$pressOpacity = 0.7;
+$pressOpacity = null;
 
 if ($variant === 'destructive') {
     [$ios, $android, $iconTrailing] = [\App\Icons\Ios::Trash, \App\Icons\Android::Delete, false];
