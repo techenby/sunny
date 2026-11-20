@@ -15,25 +15,24 @@
     @else
     <native:bottom-bar>
         <row class="w-full items-center gap-3 px-4 pb-2">
-            <pressable
+            <x-ui.button
                 ref="edit-item"
+                variant="glass"
+                size="lg"
+                class="flex-1"
+                :ios="Ios::Pencil"
+                :android="Android::Edit"
                 a11y-label="Edit"
-                class="min-h-12 flex-1 items-center justify-center rounded-full px-4 glass android:bg-theme-surface"
-                @navigate('/inventory/'.$item['id'].'/edit')
-            >
-                <row class="items-center gap-2">
-                    <native:icon :ios="Ios::Pencil" :android="Android::Edit" :size="18" class="text-theme-on-surface" />
-                    <text font="semibold" class="text-lg text-theme-on-surface">Edit</text>
-                </row>
-            </pressable>
-            <pressable
+                :navigate="'/inventory/'.$item['id'].'/edit'"
+            >Edit</x-ui.button>
+            <x-ui.button
                 ref="item-more"
+                variant="glass"
+                :ios="Ios::Ellipsis"
+                :android="Android::MoreHoriz"
                 a11y-label="More"
-                class="h-12 w-12 items-center justify-center rounded-full glass android:bg-theme-surface"
                 :menu="$this->moreMenu()"
-            >
-                <native:icon :ios="Ios::Ellipsis" :android="Android::MoreHoriz" :size="22" class="text-theme-on-surface" />
-            </pressable>
+            />
         </row>
     </native:bottom-bar>
     @endif
@@ -148,18 +147,16 @@
             <column class="w-full gap-3">
                 <row class="w-full items-center gap-3 px-1">
                     <x-ui.heading size="lg" class="flex-1">Where it is</x-ui.heading>
-                    <pressable
+                    <x-ui.button
                         ref="item-move"
+                        variant="neutral"
+                        :ios="Ios::ArrowRight"
+                        :android="Android::ArrowForward"
+                        :icon-size="14"
                         a11y-label="Move"
                         a11y-hint="Choose a new place for this"
-                        class="min-h-12 items-center justify-center rounded-full bg-theme-surface-variant px-4"
-                        @tap="startMove"
-                    >
-                        <row class="items-center gap-1.5">
-                            <icon :ios="Ios::ArrowRight" :android="Android::ArrowForward" :size="14" class="text-theme-on-surface" />
-                            <text font="semibold" class="text-base text-theme-on-surface">Move</text>
-                        </row>
-                    </pressable>
+                        tap="startMove"
+                    >Move</x-ui.button>
                 </row>
                 <column class="{{ Card::classes() }} w-full py-2">
                     @forelse ($this->path as $ancestor)
@@ -217,27 +214,18 @@
                 <row class="w-full items-center gap-3 px-1">
                     <x-ui.heading size="lg" class="flex-1">{{ $this->children ? 'What’s inside ('.count($this->children).')' : 'What’s inside' }}</x-ui.heading>
                     @if ($selecting)
-                        <pressable
-                            ref="item-select-done"
-                            a11y-label="Done"
-                            class="min-h-12 items-center justify-center rounded-full bg-theme-surface-variant px-4"
-                            @tap="stopSelecting"
-                        >
-                            <text font="semibold" class="text-base text-theme-on-surface">Done</text>
-                        </pressable>
+                        <x-ui.button ref="item-select-done" variant="neutral" a11y-label="Done" tap="stopSelecting">Done</x-ui.button>
                     @elseif ($this->children)
-                        <pressable
+                        <x-ui.button
                             ref="item-select"
+                            variant="neutral"
+                            :ios="Ios::CheckmarkCircle"
+                            :android="Android::CheckCircleOutline"
+                            :icon-size="18"
                             a11y-label="Select"
                             a11y-hint="Pick several things to move or delete"
-                            class="min-h-12 items-center justify-center rounded-full bg-theme-surface-variant px-4"
-                            @tap="startSelecting"
-                        >
-                            <row class="items-center gap-1.5">
-                                <icon :ios="Ios::CheckmarkCircle" :android="Android::CheckCircleOutline" :size="18" class="text-theme-on-surface" />
-                                <text font="semibold" class="text-base text-theme-on-surface">Select</text>
-                            </row>
-                        </pressable>
+                            tap="startSelecting"
+                        >Select</x-ui.button>
                     @endif
                 </row>
                 <column class="{{ Card::classes() }} w-full">
@@ -311,14 +299,16 @@
             @endif
 
             @unless ($selecting)
-            <pressable
+            <x-ui.button
                 ref="delete-item"
-                a11y-label="Delete {{ $item['name'] }}"
-                class="min-h-12 w-full items-center justify-center"
-                @tap="confirmDeleteItem"
-            >
-                <text font="semibold" class="text-center text-lg text-theme-destructive">Delete {{ $item['name'] }}</text>
-            </pressable>
+                variant="plain"
+                tone="destructive"
+                size="lg"
+                class="w-full items-center"
+                label-class="text-center"
+                :a11y-label="'Delete '.$item['name']"
+                tap="confirmDeleteItem"
+            >Delete {{ $item['name'] }}</x-ui.button>
             @endunless
         </column>
     </scroll-view>
@@ -361,26 +351,30 @@
 
                         <column class="w-full gap-3">
                             <row ref="item-copies-stepper" class="{{ Card::classes() }} w-full items-center justify-between p-4">
-                                <pressable
+                                <x-ui.button
                                     ref="item-copies-fewer"
+                                    variant="neutral"
+                                    class="h-[52] w-[52]"
+                                    :ios="Ios::Minus"
+                                    :android="Android::Remove"
+                                    :icon-class="($copies <= 1 ? 'opacity-40 ' : '').'text-theme-on-surface'"
                                     a11y-label="Fewer copies"
-                                    class="h-[52] w-[52] items-center justify-center rounded-full bg-theme-surface-variant"
-                                    @tap="changeCopies(-1)"
-                                >
-                                    <icon :ios="Ios::Minus" :android="Android::Remove" :size="22" class="{{ $copies <= 1 ? 'opacity-40' : '' }} text-theme-on-surface" />
-                                </pressable>
+                                    tap="changeCopies(-1)"
+                                />
                                 <column class="items-center gap-0.5">
                                     <text ref="item-copies-count" font="accent" class="text-5xl text-theme-on-surface">{{ $copies }}</text>
                                     <text font="medium" class="text-base text-theme-on-surface-variant">{{ $copies === 1 ? 'copy' : 'copies' }}</text>
                                 </column>
-                                <pressable
+                                <x-ui.button
                                     ref="item-copies-more"
+                                    variant="tint"
+                                    class="h-[52] w-[52]"
+                                    :ios="Ios::Plus"
+                                    :android="Android::Add"
+                                    :icon-class="($copies >= DuplicateItem::MAX_COPIES ? 'opacity-40 ' : '').'text-theme-primary-text'"
                                     a11y-label="More copies"
-                                    class="h-[52] w-[52] items-center justify-center rounded-full bg-theme-primary/15"
-                                    @tap="changeCopies(1)"
-                                >
-                                    <icon :ios="Ios::Plus" :android="Android::Add" :size="22" class="{{ $copies >= DuplicateItem::MAX_COPIES ? 'opacity-40' : '' }} text-theme-primary-text" />
-                                </pressable>
+                                    tap="changeCopies(1)"
+                                />
                             </row>
                             <text font="medium" class="w-full text-center text-xs text-theme-on-surface-variant">Up to {{ DuplicateItem::MAX_COPIES }} at a time</text>
                         </column>
@@ -404,21 +398,24 @@
                 </scroll-view>
 
                 <column class="w-full gap-1 px-4 pt-3 pb-8">
-                    <button
+                    <x-ui.button
                         ref="item-copies-submit"
-                        variant="primary"
-                        size="lg"
-                        font="semibold"
                         class="w-full"
-                        :ios-icon="$copiesProblem === null ? Ios::SquareOnSquare : Ios::ArrowClockwise"
-                        :android-icon="$copiesProblem === null ? Android::ContentCopy : Android::Refresh"
-                        @tap="makeCopies"
+                        :ios="$copiesProblem === null ? Ios::SquareOnSquare : Ios::ArrowClockwise"
+                        :android="$copiesProblem === null ? Android::ContentCopy : Android::Refresh"
+                        tap="makeCopies"
                     >
                         {{ $copiesProblem === null ? trans_choice('Make :count copy|Make :count copies', $copies) : 'Try again' }}
-                    </button>
-                    <pressable ref="item-copies-cancel" a11y-label="Cancel" class="min-h-12 w-full items-center justify-center" @tap="closeCopies">
-                        <text font="semibold" class="text-lg text-theme-on-surface">Cancel</text>
-                    </pressable>
+                    </x-ui.button>
+                    <x-ui.button
+                        ref="item-copies-cancel"
+                        variant="plain"
+                        tone="neutral"
+                        size="lg"
+                        class="w-full items-center"
+                        a11y-label="Cancel"
+                        tap="closeCopies"
+                    >Cancel</x-ui.button>
                 </column>
             </column>
         @endif
@@ -482,21 +479,24 @@
                 </scroll-view>
 
                 <column class="w-full gap-1 px-4 pt-3 pb-8">
-                    <button
+                    <x-ui.button
                         ref="item-team-move-submit"
-                        variant="primary"
-                        size="lg"
-                        font="semibold"
                         class="w-full"
-                        :ios-icon="$teamMoveProblem === null ? Ios::ArrowLeftArrowRight : Ios::ArrowClockwise"
-                        :android-icon="$teamMoveProblem === null ? Android::SwapHoriz : Android::Refresh"
-                        @tap="moveToTeam"
+                        :ios="$teamMoveProblem === null ? Ios::ArrowLeftArrowRight : Ios::ArrowClockwise"
+                        :android="$teamMoveProblem === null ? Android::SwapHoriz : Android::Refresh"
+                        tap="moveToTeam"
                     >
                         {{ $teamMoveProblem === null ? 'Move to '.($moveTeams[$teamMoveTeamId] ?? 'another team') : 'Try again' }}
-                    </button>
-                    <pressable ref="item-team-move-cancel" a11y-label="Cancel" class="min-h-12 w-full items-center justify-center" @tap="closeTeamMove">
-                        <text font="semibold" class="text-lg text-theme-on-surface">Cancel</text>
-                    </pressable>
+                    </x-ui.button>
+                    <x-ui.button
+                        ref="item-team-move-cancel"
+                        variant="plain"
+                        tone="neutral"
+                        size="lg"
+                        class="w-full items-center"
+                        a11y-label="Cancel"
+                        tap="closeTeamMove"
+                    >Cancel</x-ui.button>
                 </column>
             </column>
         @endif

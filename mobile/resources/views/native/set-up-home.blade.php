@@ -16,18 +16,15 @@
 <native:bottom-bar>
     <column class="w-full gap-2 px-4 pb-2">
         <text ref="setup-summary" max-lines="1" class="w-full text-center text-sm text-theme-on-surface-variant">{{ $this->summary }}</text>
-        <button
+        <x-ui.button
             ref="setup-submit"
-            variant="primary"
-            size="lg"
-            font="semibold"
             class="w-full"
             a11y-hint="Creates what you picked, then opens Sunny"
             :disabled="$saving"
-            @tap="setUp"
+            tap="setUp"
         >
             {{ $saving ? 'Setting up…' : 'Set up my home' }}
-        </button>
+        </x-ui.button>
     </column>
 </native:bottom-bar>
 
@@ -82,14 +79,16 @@
                             native:model="newPlace"
                             @submit="addOwnPlace"
                         />
-                        <pressable
+                        <x-ui.button
                             ref="setup-add-place"
+                            variant="filled"
+                            class="h-10 w-10"
+                            :ios="Ios::Checkmark"
+                            :android="Android::Check"
+                            :icon-size="18"
                             a11y-label="Add place"
-                            class="h-10 w-10 items-center justify-center rounded-full bg-theme-primary"
-                            @tap="addOwnPlace"
-                        >
-                            <icon :ios="Ios::Checkmark" :android="Android::Check" :size="18" class="text-theme-on-primary" />
-                        </pressable>
+                            tap="addOwnPlace"
+                        />
                     </row>
                 @else
                     <pressable

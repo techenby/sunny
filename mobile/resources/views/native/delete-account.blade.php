@@ -35,28 +35,24 @@
         @endif
 
         @foreach ($blockingTeams as $slug => $name)
-            <button
+            <x-ui.button
                 ref="delete-account-team-{{ $slug }}"
                 variant="secondary"
-                size="lg"
-                font="semibold"
                 a11y-hint="Opens the team’s settings"
                 class="w-full"
-                @tap="openTeamSettings('{{ $slug }}')"
+                tap="openTeamSettings('{{ $slug }}')"
             >
                 Open {{ $name }} settings
-            </button>
+            </x-ui.button>
         @endforeach
 
-        <button
+        <x-ui.button
             ref="delete-account-submit"
             variant="destructive"
-            size="lg"
-            font="semibold"
             class="w-full"
-            @tap="submit"
+            tap="submit"
         >
             Delete my account
-        </button>
+        </x-ui.button>
     </column>
 </scroll-view>

@@ -54,18 +54,15 @@
             <text ref="create-team-error" class="text-sm text-theme-destructive">{{ $error }}</text>
         @endif
 
-        <button
+        <x-ui.button
             ref="create-team-submit"
-            variant="primary"
-            size="lg"
-            font="semibold"
             class="w-full"
-            :ios-icon="$offline ? Ios::ArrowClockwise : null"
-            :android-icon="$offline ? Android::Refresh : null"
+            :ios="$offline ? Ios::ArrowClockwise : null"
+            :android="$offline ? Android::Refresh : null"
             :disabled="$creating"
-            @tap="create"
+            tap="create"
         >
             {{ $offline ? 'Try again' : 'Create team' }}
-        </button>
+        </x-ui.button>
     </column>
 </scroll-view>

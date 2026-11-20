@@ -8,12 +8,17 @@
 
 <native:bottom-bar>
     <row class="w-full items-center px-4 pb-2">
-        <pressable ref="add-calendar" a11y-label="Add calendar" class="min-h-12 flex-1 items-center justify-center rounded-full bg-theme-primary" @navigate('/calendar/feeds/create')>
-            <row class="items-center gap-2">
-                <icon :ios="Ios::Plus" :android="Android::Add" :size="18" class="text-theme-on-primary" />
-                <text font="semibold" class="text-lg text-theme-on-primary">Add calendar</text>
-            </row>
-        </pressable>
+        <x-ui.button
+            ref="add-calendar"
+            variant="filled"
+            size="lg"
+            class="flex-1"
+            flush
+            :ios="Ios::Plus"
+            :android="Android::Add"
+            a11y-label="Add calendar"
+            navigate="/calendar/feeds/create"
+        >Add calendar</x-ui.button>
     </row>
 </native:bottom-bar>
 
@@ -31,12 +36,14 @@
                     </column>
                 </row>
                 <row class="w-full pl-8">
-                    <pressable ref="calendar-feeds-retry" a11y-label="Try again" class="min-h-12 items-center justify-center rounded-full bg-theme-primary px-4" @tap="refresh">
-                        <row class="items-center gap-1.5">
-                            <icon :ios="Ios::ArrowClockwise" :android="Android::Refresh" :size="16" class="text-theme-on-primary" />
-                            <text font="semibold" class="text-base text-theme-on-primary">Try again</text>
-                        </row>
-                    </pressable>
+                    <x-ui.button
+                        ref="calendar-feeds-retry"
+                        variant="filled"
+                        :ios="Ios::ArrowClockwise"
+                        :android="Android::Refresh"
+                        a11y-label="Try again"
+                        tap="refresh"
+                    >Try again</x-ui.button>
                 </row>
             </column>
         @endif

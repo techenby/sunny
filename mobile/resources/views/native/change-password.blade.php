@@ -58,18 +58,15 @@
             <text ref="change-password-error" class="text-sm text-theme-destructive">{{ $error }}</text>
         @endif
 
-        <button
+        <x-ui.button
             ref="change-password-save"
-            variant="primary"
-            size="lg"
-            font="semibold"
             class="w-full"
-            :ios-icon="$offline ? Ios::ArrowClockwise : null"
-            :android-icon="$offline ? Android::Refresh : null"
+            :ios="$offline ? Ios::ArrowClockwise : null"
+            :android="$offline ? Android::Refresh : null"
             :disabled="$saving"
-            @tap="save"
+            tap="save"
         >
             {{ $offline ? 'Try again' : 'Save password' }}
-        </button>
+        </x-ui.button>
     </column>
 </scroll-view>

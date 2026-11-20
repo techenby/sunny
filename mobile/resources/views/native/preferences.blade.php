@@ -179,5 +179,23 @@
                 'last' => true,
             ])
         </column>
+
+        @if (app()->environment('local'))
+            <column ref="developer" class="w-full gap-2">
+                <x-ui.subheading class="px-1">Developer</x-ui.subheading>
+                <column class="{{ Card::classes() }} w-full">
+                    @include('native.settings-row', [
+                        'ref' => 'ui-kit',
+                        'headline' => 'UI kit',
+                        'ios' => Ios::Swatchpalette,
+                        'android' => Android::Palette,
+                        'trailing' => 'chevron',
+                        'url' => '/ui-kit',
+                        'last' => true,
+                    ])
+                </column>
+                <x-ui.text size="sm" class="px-1">Only on development builds.</x-ui.text>
+            </column>
+        @endif
     </column>
 </scroll-view>

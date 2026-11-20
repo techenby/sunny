@@ -28,25 +28,32 @@ $notice = match ($card['state']) {
             @endif
         </column>
         @if ($card['state'] === 'imported')
-            <pressable
+            <x-ui.button
                 ref="recipe-import-dismiss"
+                variant="neutral"
+                tone="muted"
+                :ios="Ios::Xmark"
+                :android="Android::Close"
+                :icon-size="16"
                 a11y-label="Dismiss"
-                class="h-12 w-12 items-center justify-center rounded-full bg-theme-surface-variant"
-                @tap="dismissImported"
-            >
-                <icon :ios="Ios::Xmark" :android="Android::Close" :size="16" class="text-theme-on-surface-variant" />
-            </pressable>
+                tap="dismissImported"
+            />
         @endif
     </row>
 
     @if ($card['state'] === 'ready')
         <text class="text-sm text-theme-on-surface-variant">Sunny can read this page and fill in the name, photo, ingredients, steps and times for you.</text>
-        <pressable ref="recipe-import" a11y-label="Import this recipe" class="min-h-12 w-full items-center justify-center rounded-full bg-theme-primary px-4" @tap="importRecipe">
-            <row class="items-center gap-2">
-                <icon :ios="Ios::ArrowDownToLine" :android="Android::Download" :size="18" class="text-theme-on-primary" />
-                <text font="semibold" class="text-base text-theme-on-primary">Import this recipe</text>
-            </row>
-        </pressable>
+        <x-ui.button
+            ref="recipe-import"
+            variant="filled"
+            class="w-full"
+            gap="2"
+            :ios="Ios::ArrowDownToLine"
+            :android="Android::Download"
+            :icon-size="18"
+            a11y-label="Import this recipe"
+            tap="importRecipe"
+        >Import this recipe</x-ui.button>
     @elseif ($card['state'] === 'importing')
         @unless (System::isIos())
             <progress-bar ref="recipe-import-progress" indeterminate class="w-full" a11y-label="Importing" />
@@ -71,23 +78,26 @@ $notice = match ($card['state']) {
         @if ($card['state'] !== 'imported')
             <column class="w-full gap-2">
                 @if (in_array($card['state'], ['no-recipe', 'unreachable'], true))
-                    <pressable ref="recipe-import-change-link" a11y-hint="Clears Source so you can paste another link" class="min-h-12 w-full items-center justify-center rounded-full bg-theme-primary px-4" @tap="changeImportLink">
-                        <row class="items-center gap-1.5">
-                            <icon :ios="Ios::Pencil" :android="Android::Edit" :size="16" class="text-theme-on-primary" />
-                            <text font="semibold" class="text-base text-theme-on-primary">Change link</text>
-                        </row>
-                    </pressable>
+                    <x-ui.button
+                        ref="recipe-import-change-link"
+                        variant="filled"
+                        class="w-full"
+                        :ios="Ios::Pencil"
+                        :android="Android::Edit"
+                        a11y-hint="Clears Source so you can paste another link"
+                        tap="changeImportLink"
+                    >Change link</x-ui.button>
                 @else
-                    <pressable ref="recipe-import-retry" class="min-h-12 w-full items-center justify-center rounded-full bg-theme-primary px-4" @tap="importRecipe">
-                        <row class="items-center gap-1.5">
-                            <icon :ios="Ios::ArrowClockwise" :android="Android::Refresh" :size="16" class="text-theme-on-primary" />
-                            <text font="semibold" class="text-base text-theme-on-primary">Try again</text>
-                        </row>
-                    </pressable>
+                    <x-ui.button
+                        ref="recipe-import-retry"
+                        variant="filled"
+                        class="w-full"
+                        :ios="Ios::ArrowClockwise"
+                        :android="Android::Refresh"
+                        tap="importRecipe"
+                    >Try again</x-ui.button>
                 @endif
-                <pressable ref="recipe-import-fill-in" class="min-h-12 w-full items-center justify-center rounded-full border border-theme-outline bg-theme-surface px-4" @tap="fillInMyself">
-                    <text font="semibold" class="text-base text-theme-on-surface">Fill it in myself</text>
-                </pressable>
+                <x-ui.button ref="recipe-import-fill-in" variant="outline-pill" class="w-full" tap="fillInMyself">Fill it in myself</x-ui.button>
             </column>
         @endif
     @endif

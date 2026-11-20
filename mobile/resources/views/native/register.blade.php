@@ -38,15 +38,14 @@
                 />
                 @if ($emailTaken)
                     <row class="w-full justify-start">
-                        <button
+                        <x-ui.button
                             ref="register-login-instead"
                             variant="ghost"
-                            font="semibold"
                             a11y-hint="Opens the login screen with this email"
-                            @tap="showLogin"
+                            tap="showLogin"
                         >
                             Log in instead
-                        </button>
+                        </x-ui.button>
                     </row>
                 @endif
             </column>
@@ -104,32 +103,28 @@
         @endif
 
         @php($retry = in_array($failure, ['offline', 'server'], true))
-        <button
+        <x-ui.button
             ref="register-submit"
-            variant="primary"
-            size="lg"
-            font="semibold"
             class="w-full"
-            :ios-icon="$retry && ! $saving ? Ios::ArrowClockwise : null"
-            :android-icon="$retry && ! $saving ? Android::Refresh : null"
+            :ios="$retry && ! $saving ? Ios::ArrowClockwise : null"
+            :android="$retry && ! $saving ? Android::Refresh : null"
             :disabled="$saving || $this->throttled()"
-            @tap="submit"
+            tap="submit"
         >
             {{ $saving ? 'Creating account…' : ($retry ? 'Try again' : 'Create account') }}
-        </button>
+        </x-ui.button>
 
         <row class="w-full items-center justify-center gap-1">
             <text class="text-sm text-theme-on-surface-variant">Already have an account?</text>
-            <button
+            <x-ui.button
                 ref="register-login-link"
                 variant="ghost"
-                font="semibold"
                 a11y-hint="Opens the login screen"
                 :disabled="$saving"
-                @tap="showLogin"
+                tap="showLogin"
             >
                 Log in
-            </button>
+            </x-ui.button>
         </row>
     </column>
 </scroll-view>

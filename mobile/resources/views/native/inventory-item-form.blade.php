@@ -85,29 +85,30 @@
                             sync-mode="blur"
                             @change="setMetadataValue({{ $index }})"
                         />
-                        <pressable
+                        <x-ui.button
                             ref="metadata-remove-{{ $index }}"
-                            class="h-12 w-12 items-center justify-center"
+                            variant="plain"
+                            tone="muted"
+                            :ios="Ios::Xmark"
+                            :android="Android::Close"
+                            :icon-size="18"
                             a11y-label="Remove detail {{ $index + 1 }}"
-                            @tap="removeMetadata({{ $index }})"
-                        >
-                            <native:icon :ios="Ios::Xmark" :android="Android::Close" :size="18" class="text-theme-on-surface-variant" />
-                        </pressable>
+                            tap="removeMetadata({{ $index }})"
+                        />
                     </row>
                     <divider class="ml-3" />
                 @endforeach
 
-                <pressable
+                <x-ui.button
                     ref="metadata-add"
+                    variant="plain"
+                    class="w-full px-4"
+                    gap="2"
+                    :ios="Ios::Plus"
+                    :android="Android::Add"
                     a11y-label="Add a detail, like color or size"
-                    class="min-h-12 w-full justify-center px-4"
-                    @tap="addMetadata"
-                >
-                    <row class="items-center gap-2">
-                        <icon :ios="Ios::Plus" :android="Android::Add" :size="16" class="text-theme-primary-text" />
-                        <text font="semibold" class="text-base text-theme-primary-text">Add a detail, like color or size</text>
-                    </row>
-                </pressable>
+                    tap="addMetadata"
+                >Add a detail, like color or size</x-ui.button>
             </column>
         </column>
 
@@ -117,17 +118,14 @@
             </text>
         @endif
 
-        <button
+        <x-ui.button
             ref="{{ $formRef }}-submit"
-            variant="primary"
-            size="lg"
-            font="semibold"
             class="w-full"
             :disabled="$saving || $savedId !== null"
-            @tap="save"
+            tap="save"
         >
             {{ $submitLabel }}
-        </button>
+        </x-ui.button>
     </column>
 </scroll-view>
 

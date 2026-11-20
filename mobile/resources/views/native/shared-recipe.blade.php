@@ -25,14 +25,7 @@
                             <x-ui.text size="sm">In {{ $teamName }}</x-ui.text>
                         @endif
                     </column>
-                    <pressable
-                        ref="shared-recipe-open"
-                        a11y-label="Open your copy"
-                        class="min-h-12 items-center justify-center rounded-full bg-theme-primary px-4"
-                        @tap="openSaved"
-                    >
-                        <text font="semibold" class="text-base text-theme-on-primary">Open</text>
-                    </pressable>
+                    <x-ui.button ref="shared-recipe-open" variant="filled" a11y-label="Open your copy" tap="openSaved">Open</x-ui.button>
                 </row>
             @else
                 @if ($saveProblem !== null)
@@ -52,18 +45,15 @@
                         </column>
                     </row>
                 @endif
-                <button
+                <x-ui.button
                     ref="shared-recipe-save"
-                    variant="primary"
-                    size="lg"
-                    font="semibold"
                     class="w-full"
-                    :ios-icon="$saveProblem === null ? Ios::SquareAndArrowDown : Ios::ArrowClockwise"
-                    :android-icon="$saveProblem === null ? Android::Download : Android::Refresh"
-                    @tap="save"
+                    :ios="$saveProblem === null ? Ios::SquareAndArrowDown : Ios::ArrowClockwise"
+                    :android="$saveProblem === null ? Android::Download : Android::Refresh"
+                    tap="save"
                 >
                     {{ $saveProblem === null ? 'Save to '.($teamName ?? 'my recipes') : 'Try again' }}
-                </button>
+                </x-ui.button>
             @endif
         </column>
     </native:bottom-bar>
@@ -226,9 +216,9 @@
             <x-ui.text class="text-center">{{ $body }}</x-ui.text>
         </column>
         @if ($state === 'gone')
-            <button ref="shared-recipe-go-to-recipes" variant="primary" size="lg" font="semibold" @tap="goToRecipes">Go to my recipes</button>
+            <x-ui.button ref="shared-recipe-go-to-recipes" tap="goToRecipes">Go to my recipes</x-ui.button>
         @else
-            <button ref="shared-recipe-retry" variant="primary" size="lg" font="semibold" :ios-icon="Ios::ArrowClockwise" :android-icon="Android::Refresh" @tap="load">Try again</button>
+            <x-ui.button ref="shared-recipe-retry" :ios="Ios::ArrowClockwise" :android="Android::Refresh" tap="load">Try again</x-ui.button>
         @endif
     </column>
 @endif

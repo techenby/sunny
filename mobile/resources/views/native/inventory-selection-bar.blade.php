@@ -10,28 +10,27 @@
                 <text ref="selection-count" font="semibold" max-lines="1" class="flex-1 text-base text-theme-on-surface">
                     {{ trans_choice('{0} Nothing picked yet|{1} :count thing picked|[2,*] :count things picked', $count) }}
                 </text>
-                <pressable
+                <x-ui.button
                     ref="selection-all"
-                    a11y-label="{{ $selectedAll ? 'Deselect all' : 'Select all' }}"
-                    class="min-h-11 justify-center"
-                    @tap="toggleSelectAll"
-                >
-                    <text font="semibold" max-lines="1" class="text-base text-theme-primary-text">{{ $selectedAll ? 'Deselect all' : 'Select all' }}</text>
-                </pressable>
+                    variant="plain"
+                    class="min-h-11"
+                    max-lines="1"
+                    :a11y-label="$selectedAll ? 'Deselect all' : 'Select all'"
+                    tap="toggleSelectAll"
+                >{{ $selectedAll ? 'Deselect all' : 'Select all' }}</x-ui.button>
             </row>
             <column class="w-full gap-2.5 {{ $count === 0 ? 'opacity-40' : '' }}">
-                <pressable
+                <x-ui.button
                     ref="selection-move"
+                    variant="filled"
+                    size="lg"
+                    class="w-full"
+                    :ios="Ios::ArrowRight"
+                    :android="Android::ArrowForward"
                     a11y-label="Move"
                     a11y-hint="Choose a new place for what you picked"
-                    class="min-h-12 w-full items-center justify-center rounded-full bg-theme-primary px-4"
-                    @tap="startMoveSelected"
-                >
-                    <row class="items-center gap-2">
-                        <native:icon :ios="Ios::ArrowRight" :android="Android::ArrowForward" :size="18" class="text-theme-on-primary" />
-                        <text font="semibold" class="text-lg text-theme-on-primary">Move</text>
-                    </row>
-                </pressable>
+                    tap="startMoveSelected"
+                >Move</x-ui.button>
                 <pressable
                     ref="selection-delete"
                     a11y-label="Delete"

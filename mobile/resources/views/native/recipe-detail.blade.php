@@ -22,35 +22,34 @@
                 </row>
             @endif
             <row class="w-full items-center justify-end gap-3">
-                <pressable
+                <x-ui.button
                     ref="edit-recipe"
+                    variant="glass"
+                    :ios="Ios::Pencil"
+                    :android="Android::Edit"
                     a11y-label="Edit"
-                    class="h-12 w-12 items-center justify-center rounded-full glass android:bg-theme-surface"
-                    @navigate('/recipes/'.$recipe['id'].'/edit')
-                >
-                    <native:icon :ios="Ios::Pencil" :android="Android::Edit" :size="22" class="text-theme-on-surface" />
-                </pressable>
+                    :navigate="'/recipes/'.$recipe['id'].'/edit'"
+                />
                 @if ($this->ingredients || $this->instructions)
-                    <pressable
+                    <x-ui.button
                         ref="cook-recipe"
+                        variant="filled"
+                        size="lg"
+                        class="flex-1 px-5"
+                        :ios="Ios::Flame"
+                        :android="Android::LocalFireDepartment"
                         a11y-label="Cook"
-                        class="min-h-12 flex-1 items-center justify-center rounded-full bg-theme-primary px-5"
-                        @navigate('/recipes/'.$recipe['id'].'/cook')
-                    >
-                        <row class="items-center gap-2">
-                            <native:icon :ios="Ios::Flame" :android="Android::LocalFireDepartment" :size="18" class="text-theme-on-primary" />
-                            <text font="semibold" class="text-lg text-theme-on-primary">Cook</text>
-                        </row>
-                    </pressable>
+                        :navigate="'/recipes/'.$recipe['id'].'/cook'"
+                    >Cook</x-ui.button>
                 @endif
-                <pressable
+                <x-ui.button
                     ref="recipe-more"
+                    variant="glass"
+                    :ios="Ios::Ellipsis"
+                    :android="Android::MoreHoriz"
                     a11y-label="More"
-                    class="h-12 w-12 items-center justify-center rounded-full glass android:bg-theme-surface"
                     :menu="$this->moreMenu()"
-                >
-                    <native:icon :ios="Ios::Ellipsis" :android="Android::MoreHoriz" :size="22" class="text-theme-on-surface" />
-                </pressable>
+                />
             </row>
         </column>
     </native:bottom-bar>
@@ -259,14 +258,16 @@
                 @endif
             @endforeach
 
-            <pressable
+            <x-ui.button
                 ref="delete-recipe"
-                a11y-label="Delete {{ $recipe['name'] }}"
-                class="min-h-12 w-full items-center justify-center"
-                @tap="confirmDeleteRecipe"
-            >
-                <text font="semibold" class="text-center text-lg text-theme-destructive">Delete {{ $recipe['name'] }}</text>
-            </pressable>
+                variant="plain"
+                tone="destructive"
+                size="lg"
+                class="w-full items-center"
+                label-class="text-center"
+                :a11y-label="'Delete '.$recipe['name']"
+                tap="confirmDeleteRecipe"
+            >Delete {{ $recipe['name'] }}</x-ui.button>
         </column>
     </scroll-view>
 
@@ -341,21 +342,24 @@
                 @endif
 
                 <column class="w-full gap-1">
-                    <button
+                    <x-ui.button
                         ref="recipe-copy-submit"
-                        variant="primary"
-                        size="lg"
-                        font="semibold"
                         class="w-full"
-                        :ios-icon="$copyProblem === null ? Ios::SquareOnSquare : Ios::ArrowClockwise"
-                        :android-icon="$copyProblem === null ? Android::FileCopy : Android::Refresh"
-                        @tap="copyToTeam"
+                        :ios="$copyProblem === null ? Ios::SquareOnSquare : Ios::ArrowClockwise"
+                        :android="$copyProblem === null ? Android::FileCopy : Android::Refresh"
+                        tap="copyToTeam"
                     >
                         {{ $copyProblem === null ? 'Copy to '.($copyTeams[$copyTeamId] ?? 'another team') : 'Try again' }}
-                    </button>
-                    <pressable ref="recipe-copy-cancel" a11y-label="Cancel" class="min-h-12 w-full items-center justify-center" @tap="closeCopy">
-                        <text font="semibold" class="text-lg text-theme-on-surface">Cancel</text>
-                    </pressable>
+                    </x-ui.button>
+                    <x-ui.button
+                        ref="recipe-copy-cancel"
+                        variant="plain"
+                        tone="neutral"
+                        size="lg"
+                        class="w-full items-center"
+                        a11y-label="Cancel"
+                        tap="closeCopy"
+                    >Cancel</x-ui.button>
                 </column>
             </column>
         @endif
@@ -395,17 +399,14 @@
                                 <x-ui.text size="sm">Public link</x-ui.text>
                                 <text ref="recipe-share-url" class="text-base text-theme-on-surface">{{ preg_replace('~^https?://~', '', $shareUrl) }}</text>
                             </column>
-                            <pressable
+                            <x-ui.button
                                 ref="recipe-share-copy"
+                                variant="tint"
+                                :ios="$linkCopied ? Ios::Checkmark : Ios::DocOnDoc"
+                                :android="$linkCopied ? Android::Check : Android::ContentCopy"
                                 :a11y-label="$linkCopied ? 'Link copied' : 'Copy link'"
-                                class="min-h-12 items-center justify-center rounded-full bg-theme-primary/15 px-4"
-                                @tap="copyLink"
-                            >
-                                <row class="items-center gap-1.5">
-                                    <icon :ios="$linkCopied ? Ios::Checkmark : Ios::DocOnDoc" :android="$linkCopied ? Android::Check : Android::ContentCopy" :size="16" class="text-theme-primary-text" />
-                                    <text font="semibold" class="text-base text-theme-primary-text">{{ $linkCopied ? 'Copied' : 'Copy' }}</text>
-                                </row>
-                            </pressable>
+                                tap="copyLink"
+                            >{{ $linkCopied ? 'Copied' : 'Copy' }}</x-ui.button>
                         </row>
                         <divider class="ml-4" />
                         <pressable ref="recipe-share-turn-off" a11y-label="Turn off link" class="min-h-12 w-full justify-center px-4 py-2" @tap="turnOffLink">
@@ -455,22 +456,28 @@
 
                 <column class="w-full gap-1">
                     @if ($shareProblem !== null)
-                        <button ref="recipe-share-submit" variant="primary" size="lg" font="semibold" class="w-full" :ios-icon="Ios::ArrowClockwise" :android-icon="Android::Refresh" @tap="retryShare">
+                        <x-ui.button ref="recipe-share-submit" class="w-full" :ios="Ios::ArrowClockwise" :android="Android::Refresh" tap="retryShare">
                             Try again
-                        </button>
+                        </x-ui.button>
                     @elseif ($shareUrl)
-                        <button ref="recipe-share-submit" variant="primary" size="lg" font="semibold" class="w-full" :ios-icon="Ios::SquareAndArrowUp" :android-icon="Android::Share" @tap="sendLink">
+                        <x-ui.button ref="recipe-share-submit" class="w-full" :ios="Ios::SquareAndArrowUp" :android="Android::Share" tap="sendLink">
                             Send link
-                        </button>
+                        </x-ui.button>
                     @else
-                        <button ref="recipe-share-submit" variant="primary" size="lg" font="semibold" class="w-full" :ios-icon="Ios::Link" :android-icon="Android::Link" @tap="turnOnLink">
+                        <x-ui.button ref="recipe-share-submit" class="w-full" :ios="Ios::Link" :android="Android::Link" tap="turnOnLink">
                             Turn on public link
-                        </button>
+                        </x-ui.button>
                     @endif
                     @php($dismissLabel = $shareProblem !== null ? 'Cancel' : ($shareUrl ? 'Done' : 'Not now'))
-                    <pressable ref="recipe-share-cancel" :a11y-label="$dismissLabel" class="min-h-12 w-full items-center justify-center" @tap="closeShare">
-                        <text font="semibold" class="text-lg text-theme-on-surface">{{ $dismissLabel }}</text>
-                    </pressable>
+                    <x-ui.button
+                        ref="recipe-share-cancel"
+                        variant="plain"
+                        tone="neutral"
+                        size="lg"
+                        class="w-full items-center"
+                        :a11y-label="$dismissLabel"
+                        tap="closeShare"
+                    >{{ $dismissLabel }}</x-ui.button>
                 </column>
             </column>
         @endif

@@ -30,50 +30,45 @@
                     native:model="password"
                 />
                 <row class="w-full justify-end">
-                    <button
+                    <x-ui.button
                         ref="login-forgot-password"
                         variant="ghost"
-                        font="semibold"
                         a11y-hint="Opens password reset"
-                        @tap="forgotPassword"
+                        tap="forgotPassword"
                     >
                         Forgot password?
-                    </button>
+                    </x-ui.button>
                 </row>
             </column>
         @else
             <text class="text-base text-theme-on-surface-variant">{{ $useRecoveryCode ? 'Enter one of your recovery codes.' : 'Enter the code from your authenticator app.' }}</text>
             <outlined-text-input ref="login-code" :label="$useRecoveryCode ? 'Recovery code' : 'Authentication code'" native:model="code" />
-            <button ref="login-recovery" variant="ghost" @tap="toggleRecoveryCode">{{ $useRecoveryCode ? 'Use authenticator code' : 'Use recovery code' }}</button>
-            <button ref="login-restart" variant="ghost" @tap="startOver">Restart login</button>
+            <x-ui.button ref="login-recovery" variant="ghost" :font="false" tap="toggleRecoveryCode">{{ $useRecoveryCode ? 'Use authenticator code' : 'Use recovery code' }}</x-ui.button>
+            <x-ui.button ref="login-restart" variant="ghost" :font="false" tap="startOver">Restart login</x-ui.button>
         @endif
 
         @if ($error)
             <text ref="login-error" class="text-sm text-theme-destructive">{{ $error }}</text>
         @endif
 
-        <button
+        <x-ui.button
             ref="login-submit"
-            variant="primary"
-            size="lg"
-            font="semibold"
             class="w-full"
-            @tap="submit"
+            tap="submit"
         >
             {{ $twoFactor ? 'Verify code' : 'Log in' }}
-        </button>
+        </x-ui.button>
 
         <row class="w-full items-center justify-center gap-1">
             <text class="text-sm text-theme-on-surface-variant">Don’t have an account?</text>
-            <button
+            <x-ui.button
                 ref="login-register-link"
                 variant="ghost"
-                font="semibold"
                 a11y-hint="Opens the registration screen"
-                @tap="showRegister"
+                tap="showRegister"
             >
                 Sign up
-            </button>
+            </x-ui.button>
         </row>
     </column>
 </scroll-view>

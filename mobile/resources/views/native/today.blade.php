@@ -16,14 +16,14 @@
 <native:bottom-bar>
     <row ref="day-bar" class="w-full items-center gap-3 px-4 pb-2">
         @if ($this->canGoBack)
-            <pressable
+            <x-ui.button
                 ref="previous-day"
+                variant="glass"
+                :ios="Ios::ChevronLeft"
+                :android="Android::ChevronLeft"
                 a11y-label="Previous day"
-                class="h-12 w-12 items-center justify-center rounded-full glass android:bg-theme-surface"
-                @tap="previousDay"
-            >
-                <native:icon :ios="Ios::ChevronLeft" :android="Android::ChevronLeft" :size="22" class="text-theme-on-surface" />
-            </pressable>
+                tap="previousDay"
+            />
         @else
             <column ref="previous-day" class="h-12 w-12 items-center justify-center rounded-full glass android:bg-theme-surface opacity-40">
                 <native:icon :ios="Ios::ChevronLeft" :android="Android::ChevronLeft" :size="22" class="text-theme-on-surface" />
@@ -34,24 +34,17 @@
                 <text font="semibold" class="text-lg text-theme-on-surface">Today</text>
             </column>
         @else
-            <pressable
-                ref="back-to-today"
-                a11y-label="Back to today"
-                class="min-h-12 flex-1 items-center justify-center rounded-full px-4 glass android:bg-theme-surface"
-                @tap="showToday"
-            >
-                <text font="semibold" class="text-lg text-theme-on-surface">Today</text>
-            </pressable>
+            <x-ui.button ref="back-to-today" variant="glass" size="lg" class="flex-1" a11y-label="Back to today" tap="showToday">Today</x-ui.button>
         @endif
         @if ($this->canGoForward)
-            <pressable
+            <x-ui.button
                 ref="next-day"
+                variant="glass"
+                :ios="Ios::ChevronRight"
+                :android="Android::ChevronRight"
                 a11y-label="Next day"
-                class="h-12 w-12 items-center justify-center rounded-full glass android:bg-theme-surface"
-                @tap="nextDay"
-            >
-                <native:icon :ios="Ios::ChevronRight" :android="Android::ChevronRight" :size="22" class="text-theme-on-surface" />
-            </pressable>
+                tap="nextDay"
+            />
         @else
             <column ref="next-day" class="h-12 w-12 items-center justify-center rounded-full glass android:bg-theme-surface opacity-40">
                 <native:icon :ios="Ios::ChevronRight" :android="Android::ChevronRight" :size="22" class="text-theme-on-surface" />
@@ -131,9 +124,7 @@
                             <text font="semibold" class="text-base text-theme-on-surface">Try again</text>
                         </row>
                     </pressable>
-                    <pressable ref="day-back-to-today" a11y-label="Back to today" class="min-h-12 justify-center" @tap="showToday">
-                        <text font="semibold" class="text-base text-theme-primary-text">Back to today</text>
-                    </pressable>
+                    <x-ui.button ref="day-back-to-today" variant="plain" a11y-label="Back to today" tap="showToday">Back to today</x-ui.button>
                 </row>
             </column>
         @elseif ($loading)

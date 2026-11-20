@@ -26,9 +26,14 @@
         <column fill class="bg-theme-background">
             <column class="w-full gap-3 px-4 pt-4 pb-2">
                 <row class="w-full items-center">
-                    <pressable ref="{{ $refPrefix }}-parent-cancel" class="min-h-12 w-20 justify-center" @tap="closeParentPicker">
-                        <text class="text-lg text-theme-primary-text">Cancel</text>
-                    </pressable>
+                    <x-ui.button
+                        ref="{{ $refPrefix }}-parent-cancel"
+                        variant="plain"
+                        size="lg"
+                        :font="false"
+                        class="w-20"
+                        tap="closeParentPicker"
+                    >Cancel</x-ui.button>
                     <text font="semibold" class="flex-1 text-center text-lg text-theme-on-surface">{{ $title ?? 'Where does it go?' }}</text>
                     <column class="w-20" />
                 </row>
@@ -153,27 +158,21 @@
             @if ($parentSearch === '')
                 <column class="w-full gap-2 px-4 pt-3 pb-8">
                     @if ($browsedParent)
-                        <button
+                        <x-ui.button
                             ref="{{ $refPrefix }}-parent-choose"
-                            variant="primary"
-                            size="lg"
-                            font="semibold"
                             class="w-full"
-                            @tap="selectParent({{ $browsedParent['id'] }})"
+                            tap="selectParent({{ $browsedParent['id'] }})"
                         >
                             {{ $choosePrefix ?? 'Put it in' }} {{ $browsedParent['name'] }}
-                        </button>
+                        </x-ui.button>
                     @else
-                        <button
+                        <x-ui.button
                             ref="{{ $refPrefix }}-parent-choose"
-                            variant="primary"
-                            size="lg"
-                            font="semibold"
                             class="w-full"
-                            @tap="selectTopLevel"
+                            tap="selectTopLevel"
                         >
                             {{ $topLevelLabel ?? 'Don’t put it in a place yet' }}
-                        </button>
+                        </x-ui.button>
                     @endif
                     @if ($openableRows)
                         <text class="text-center text-sm text-theme-on-surface-variant">Or tap one above to look inside it</text>

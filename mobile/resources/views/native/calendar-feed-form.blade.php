@@ -64,17 +64,14 @@
         @endif
 
         <column class="w-full gap-2.5">
-            <button
+            <x-ui.button
                 ref="{{ $formRef }}-submit"
-                variant="primary"
-                size="lg"
-                font="semibold"
                 class="w-full"
                 :disabled="$saving"
-                @tap="save"
+                tap="save"
             >
                 Save calendar
-            </button>
+            </x-ui.button>
             <row class="w-full items-center justify-center gap-1.5">
                 <icon :ios="Ios::Wifi" :android="Android::Wifi" :size="14" class="text-theme-on-surface-variant" />
                 <x-ui.text size="sm">Needs a connection</x-ui.text>
@@ -82,9 +79,16 @@
         </column>
 
         @if ($removeLabel ?? null)
-            <pressable ref="{{ $formRef }}-remove" :a11y-label="$removeLabel" class="min-h-12 w-full items-center justify-center" @tap="confirmRemove">
-                <text class="text-lg text-theme-destructive">{{ $removeLabel }}</text>
-            </pressable>
+            <x-ui.button
+                ref="{{ $formRef }}-remove"
+                variant="plain"
+                tone="destructive"
+                size="lg"
+                :font="false"
+                class="w-full items-center"
+                :a11y-label="$removeLabel"
+                tap="confirmRemove"
+            >{{ $removeLabel }}</x-ui.button>
         @endif
     </column>
 </scroll-view>

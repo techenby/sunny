@@ -19,26 +19,17 @@
                 debounce-ms="300"
                 @change="updateSearch"
             />
-            <pressable
+            <x-ui.button
                 ref="inventory-scan-label"
+                variant="neutral"
+                class="min-h-10 px-3"
+                :ios="Ios::QrcodeViewfinder"
+                :android="Android::QrCodeScanner"
                 a11y-label="Scan label"
-                class="min-h-10 items-center justify-center rounded-full bg-theme-surface-variant px-3"
-                @tap="scanCode"
-            >
-                <row class="items-center gap-1.5">
-                    <icon :ios="Ios::QrcodeViewfinder" :android="Android::QrCodeScanner" :size="16" class="text-theme-on-surface" />
-                    <text font="semibold" class="text-base text-theme-on-surface">Scan</text>
-                </row>
-            </pressable>
+                tap="scanCode"
+            >Scan</x-ui.button>
         </row>
-        <pressable
-            ref="inventory-add"
-            a11y-label="Add"
-            class="h-12 w-12 items-center justify-center rounded-full glass android:bg-theme-surface"
-            :menu="$this->addMenu()"
-        >
-            <native:icon :ios="Ios::Plus" :android="Android::Add" :size="22" class="text-theme-on-surface" />
-        </pressable>
+        <x-ui.button ref="inventory-add" variant="glass" :ios="Ios::Plus" :android="Android::Add" a11y-label="Add" :menu="$this->addMenu()" />
     </row>
 </native:bottom-bar>
 
@@ -60,11 +51,13 @@
                     @endforeach
                 </column>
             @else
-                <column ref="inventory-no-matches" class="{{ Card::classes() }} w-full items-center gap-2 px-4 py-6">
-                    <icon :ios="Ios::Magnifyingglass" :android="Android::SearchOff" :size="28" class="text-theme-primary" />
-                    <x-ui.heading class="text-center">Nothing called “{{ $search }}”</x-ui.heading>
-                    <x-ui.text size="sm" class="text-center">Check the spelling, or try a shorter word.</x-ui.text>
-                </column>
+                <x-ui.empty-state
+                    ref="inventory-no-matches"
+                    :ios="Ios::Magnifyingglass"
+                    :android="Android::SearchOff"
+                    :heading="'Nothing called “'.$search.'”'"
+                    text="Check the spelling, or try a shorter word."
+                />
             @endif
         @else
             @if ($this->places)
@@ -99,11 +92,13 @@
             @endif
 
             @if ($this->items === [])
-                <column ref="inventory-empty" class="{{ Card::classes() }} w-full items-center gap-2 px-4 py-6">
-                    <icon :ios="Ios::Archivebox" :android="Android::Inventory2" :size="28" class="text-theme-primary" />
-                    <x-ui.heading class="text-center">Nothing here yet</x-ui.heading>
-                    <x-ui.text size="sm" class="text-center">Tap + to start with a room, like Garage. If you've added things on the website, pull down on the Summary tab to bring them in.</x-ui.text>
-                </column>
+                <x-ui.empty-state
+                    ref="inventory-empty"
+                    :ios="Ios::Archivebox"
+                    :android="Android::Inventory2"
+                    heading="Nothing here yet"
+                    text="Tap + to start with a room, like Garage. If you've added things on the website, pull down on the Summary tab to bring them in."
+                />
             @endif
 
             @if ($this->deletedCount > 0)

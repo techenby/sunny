@@ -45,16 +45,14 @@
                         </x-ui.text>
                     </column>
                 </row>
-                <button
+                <x-ui.button
                     ref="account-send-verification"
                     variant="secondary"
-                    size="lg"
-                    font="semibold"
                     class="w-full"
-                    @tap="sendVerification"
+                    tap="sendVerification"
                 >
                     {{ $verificationSent ? 'Send it again' : 'Send verification email' }}
-                </button>
+                </x-ui.button>
                 <x-ui.text size="sm" class="text-center">Didn’t get it? You can resend a few times a minute.</x-ui.text>
             </column>
         @endunless
@@ -73,18 +71,15 @@
             <text ref="account-error" class="text-sm text-theme-destructive">{{ $error }}</text>
         @endif
 
-        <button
+        <x-ui.button
             ref="account-save"
-            variant="primary"
-            size="lg"
-            font="semibold"
             class="w-full"
-            :ios-icon="$offline === 'save' ? Ios::ArrowClockwise : null"
-            :android-icon="$offline === 'save' ? Android::Refresh : null"
+            :ios="$offline === 'save' ? Ios::ArrowClockwise : null"
+            :android="$offline === 'save' ? Android::Refresh : null"
             :disabled="$saving"
-            @tap="save"
+            tap="save"
         >
             {{ $offline === 'save' ? 'Try again' : 'Save' }}
-        </button>
+        </x-ui.button>
     </column>
 </scroll-view>

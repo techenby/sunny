@@ -46,17 +46,15 @@
                             </row>
                         @endif
                         <column class="w-full gap-2">
-                            <pressable
+                            <x-ui.button
                                 ref="deleted-restore-{{ $item['id'] }}"
-                                a11y-label="Restore {{ $item['name'] }}"
-                                class="min-h-12 w-full items-center justify-center rounded-full bg-theme-primary/15 px-4"
-                                @tap="restore({{ $item['id'] }})"
-                            >
-                                <row class="items-center gap-1.5">
-                                    <icon :ios="Ios::ArrowUturnBackward" :android="Android::Undo" :size="16" class="text-theme-primary-text" />
-                                    <text font="semibold" class="text-base text-theme-primary-text">Restore</text>
-                                </row>
-                            </pressable>
+                                variant="tint"
+                                class="w-full"
+                                :ios="Ios::ArrowUturnBackward"
+                                :android="Android::Undo"
+                                :a11y-label="'Restore '.$item['name']"
+                                tap="restore({{ $item['id'] }})"
+                            >Restore</x-ui.button>
                             <pressable
                                 ref="deleted-forever-{{ $item['id'] }}"
                                 a11y-label="Delete {{ $item['name'] }} forever"

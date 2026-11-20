@@ -33,11 +33,13 @@
             </column>
             <x-ui.text ref="recipes-count" size="sm" class="px-1">{{ trans_choice(':count recipe|:count recipes', count($this->recipes)) }}</x-ui.text>
         @else
-            <column ref="recipes-empty" class="{{ Card::classes() }} w-full items-center gap-2 px-4 py-6">
-                <icon :ios="$search !== '' ? Ios::Magnifyingglass : Ios::ForkKnife" :android="$search !== '' ? Android::SearchOff : Android::Restaurant" :size="28" class="text-theme-primary" />
-                <x-ui.heading class="text-center">{{ $search !== '' ? 'No recipes match “'.$search.'”' : 'No recipes downloaded' }}</x-ui.heading>
-                <x-ui.text size="sm" class="text-center">{{ $search !== '' ? 'Try a different search.' : 'Pull down on the dashboard to refresh.' }}</x-ui.text>
-            </column>
+            <x-ui.empty-state
+                ref="recipes-empty"
+                :ios="$search !== '' ? Ios::Magnifyingglass : Ios::ForkKnife"
+                :android="$search !== '' ? Android::SearchOff : Android::Restaurant"
+                :heading="$search !== '' ? 'No recipes match “'.$search.'”' : 'No recipes downloaded'"
+                :text="$search !== '' ? 'Try a different search.' : 'Pull down on the dashboard to refresh.'"
+            />
         @endif
     </column>
 </scroll-view>

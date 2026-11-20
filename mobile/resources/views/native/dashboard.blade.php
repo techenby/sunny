@@ -25,14 +25,7 @@
 
 <native:bottom-bar>
     <row class="w-full items-center justify-end px-4 pb-2">
-        <pressable
-            ref="dashboard-add"
-            a11y-label="Add"
-            :menu="$addMenu"
-            class="h-12 w-12 items-center justify-center rounded-full glass android:bg-theme-surface"
-        >
-            <native:icon :ios="Ios::Plus" :android="Android::Add" :size="22" class="text-theme-on-surface" />
-        </pressable>
+        <x-ui.button ref="dashboard-add" variant="glass" :ios="Ios::Plus" :android="Android::Add" a11y-label="Add" :menu="$addMenu" />
     </row>
 </native:bottom-bar>
 
@@ -64,26 +57,21 @@
                         <x-ui.text size="sm">{{ collect([$invitation['sent'] ? 'Sent '.$invitation['sent'] : null, $invitation['expires']])->filter()->implode(' · ') }}</x-ui.text>
                     </column>
                 </row>
-                <button
+                <x-ui.button
                     ref="dashboard-accept-{{ $invitation['code'] }}"
-                    variant="primary"
-                    size="lg"
-                    font="semibold"
                     class="w-full"
-                    @tap="acceptInvitation('{{ $invitation['code'] }}')"
+                    tap="acceptInvitation('{{ $invitation['code'] }}')"
                 >
                     Join {{ $invitation['team'] }}
-                </button>
-                <button
+                </x-ui.button>
+                <x-ui.button
                     ref="dashboard-decline-{{ $invitation['code'] }}"
                     variant="secondary"
-                    size="lg"
-                    font="semibold"
                     class="w-full"
-                    @tap="declineInvitation('{{ $invitation['code'] }}')"
+                    tap="declineInvitation('{{ $invitation['code'] }}')"
                 >
                     Decline
-                </button>
+                </x-ui.button>
             </column>
         @endforeach
 

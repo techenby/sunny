@@ -72,16 +72,13 @@
                             <text ref="invite-error" class="text-sm text-theme-destructive">{{ $error }}</text>
                         @endif
 
-                        <button
+                        <x-ui.button
                             ref="invite-send"
-                            variant="primary"
-                            size="lg"
-                            font="semibold"
                             class="w-full"
-                            @tap="send"
+                            tap="send"
                         >
                             {{ $offline ? 'Try again' : 'Send invitation' }}
-                        </button>
+                        </x-ui.button>
                     </column>
                     <x-ui.text size="sm" class="px-2">We’ll email them a link that lasts 3 days.</x-ui.text>
                 </column>
@@ -121,14 +118,16 @@
                                 <text class="text-sm {{ $invitation['soon'] ? 'text-theme-destructive' : 'text-theme-on-surface-variant' }}">{{ $invitation['expires'] }}</text>
                             </column>
                             @if ($canInvite)
-                                <pressable
+                                <x-ui.button
                                     ref="cancel-invitation-{{ $invitation['code'] }}"
-                                    a11y-label="Cancel the invitation to {{ $invitation['email'] }}"
-                                    class="h-12 w-12 items-center justify-center rounded-full bg-theme-surface-variant"
-                                    @tap="confirmCancel('{{ $invitation['code'] }}')"
-                                >
-                                    <icon :ios="Ios::Xmark" :android="Android::Close" :size="16" class="text-theme-on-surface-variant" />
-                                </pressable>
+                                    variant="neutral"
+                                    tone="muted"
+                                    :ios="Ios::Xmark"
+                                    :android="Android::Close"
+                                    :icon-size="16"
+                                    :a11y-label="'Cancel the invitation to '.$invitation['email']"
+                                    tap="confirmCancel('{{ $invitation['code'] }}')"
+                                />
                             @endif
                         </row>
                         @unless ($loop->last)

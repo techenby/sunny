@@ -38,38 +38,38 @@
             <row class="w-full items-center gap-3">
                 @if ($onPrep)
                     @if ($this->stepCount)
-                        <pressable
+                        <x-ui.button
                             ref="cook-go-to-steps"
-                            @press="goToStep({{ $step }})"
-                            class="min-h-12 flex-1 items-center justify-center rounded-full bg-theme-primary px-5"
-                        >
-                            <row class="items-center gap-2">
-                                <text font="semibold" class="text-lg text-theme-on-primary">{{ $step === 1 ? 'Start cooking' : 'Back to step '.$step }}</text>
-                                <icon :ios="Ios::ArrowRight" :android="Android::ArrowForward" :size="18" class="text-theme-on-primary" />
-                            </row>
-                        </pressable>
+                            variant="filled"
+                            size="lg"
+                            class="flex-1 px-5"
+                            :ios="Ios::ArrowRight"
+                            :android="Android::ArrowForward"
+                            icon-trailing
+                            tap="goToStep({{ $step }})"
+                        >{{ $step === 1 ? 'Start cooking' : 'Back to step '.$step }}</x-ui.button>
                     @endif
                 @else
                     @if ($step > 1)
-                        <pressable
+                        <x-ui.button
                             ref="cook-previous-step"
-                            @press="previousStep"
+                            variant="glass"
+                            :ios="Ios::ChevronLeft"
+                            :android="Android::ChevronLeft"
                             a11y-label="Previous step"
-                            class="h-12 w-12 items-center justify-center rounded-full glass android:bg-theme-surface"
-                        >
-                            <icon :ios="Ios::ChevronLeft" :android="Android::ChevronLeft" :size="22" class="text-theme-on-surface" />
-                        </pressable>
+                            tap="previousStep"
+                        />
                     @endif
-                    <pressable
+                    <x-ui.button
                         ref="cook-next-step"
-                        @press="nextStep"
-                        class="min-h-12 flex-1 items-center justify-center rounded-full bg-theme-primary px-5"
-                    >
-                        <row class="items-center gap-2">
-                            <text font="semibold" class="text-lg text-theme-on-primary">{{ $step >= $this->stepCount ? 'Done cooking' : 'Next: step '.($step + 1) }}</text>
-                            <icon :ios="Ios::ArrowRight" :android="Android::ArrowForward" :size="18" class="text-theme-on-primary" />
-                        </row>
-                    </pressable>
+                        variant="filled"
+                        size="lg"
+                        class="flex-1 px-5"
+                        :ios="Ios::ArrowRight"
+                        :android="Android::ArrowForward"
+                        icon-trailing
+                        tap="nextStep"
+                    >{{ $step >= $this->stepCount ? 'Done cooking' : 'Next: step '.($step + 1) }}</x-ui.button>
                 @endif
             </row>
         </column>
@@ -117,23 +117,25 @@
                             <x-ui.heading>Servings</x-ui.heading>
                             <x-ui.text size="sm">Amounts scale to match</x-ui.text>
                         </column>
-                        <pressable
+                        <x-ui.button
                             ref="cook-fewer-servings"
-                            @press="changeServings(-1)"
+                            variant="tint"
+                            :ios="Ios::Minus"
+                            :android="Android::Remove"
+                            :icon-size="20"
                             a11y-label="Fewer servings"
-                            class="h-12 w-12 items-center justify-center rounded-full bg-theme-primary/15"
-                        >
-                            <icon :ios="Ios::Minus" :android="Android::Remove" :size="20" class="text-theme-primary-text" />
-                        </pressable>
+                            tap="changeServings(-1)"
+                        />
                         <text ref="cook-servings-count" font="accent" class="w-10 text-center text-xl text-theme-on-surface">{{ $servings }}</text>
-                        <pressable
+                        <x-ui.button
                             ref="cook-more-servings"
-                            @press="changeServings(1)"
+                            variant="tint"
+                            :ios="Ios::Plus"
+                            :android="Android::Add"
+                            :icon-size="20"
                             a11y-label="More servings"
-                            class="h-12 w-12 items-center justify-center rounded-full bg-theme-primary/15"
-                        >
-                            <icon :ios="Ios::Plus" :android="Android::Add" :size="20" class="text-theme-primary-text" />
-                        </pressable>
+                            tap="changeServings(1)"
+                        />
                     </row>
                 </column>
             @endif
