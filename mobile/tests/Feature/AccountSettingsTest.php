@@ -52,8 +52,9 @@ it('shows the account at the top of preferences', function (): void {
     Native::visit('/preferences', platform: 'ios')
         ->assertSee('Andy Swick')
         ->assertSee('andy@swick.family')
-        ->assertElement('list_item', fn (array $node): bool => ($node['ref'] ?? null) === 'account' && ($node['props']['leading_value'] ?? null) === 'AS')
-        ->assertElement('list_section', fn (array $node): bool => ($node['props']['footer'] ?? null) === 'Two-factor authentication, passkeys and API tokens open on sunny.example.')
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'account')
+        ->assertSee('AS')
+        ->assertSee('Two-factor authentication, passkeys and API tokens open on sunny.example.')
         ->assertAccessible()
         ->tap('account')
         ->assertNavigatedTo('/preferences/account');

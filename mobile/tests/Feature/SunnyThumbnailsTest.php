@@ -47,8 +47,7 @@ it('keeps a downloaded thumbnail on the phone and shows it in lists', function (
         ->input('updateSearch', 'kitchen')
         ->assertElement('image', fn (array $node): bool => ($node['props']['src'] ?? null) === $itemThumb);
     Native::visit('/recipes')
-        ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === 'Soup'
-            && ($node['props']['leading_value'] ?? null) === Recipe::find(42)->thumb_path);
+        ->assertElement('image', fn (array $node): bool => ($node['props']['src'] ?? null) === Recipe::find(42)->thumb_path);
     expect(Native::visit('/dashboard')->get('recentItems')[0]['photo'])->toBe($itemThumb);
 });
 

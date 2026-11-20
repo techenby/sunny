@@ -173,7 +173,7 @@
                                 </row>
                             </pressable>
                             @unless ($loop->last || $this->isHeading($this->ingredients[$position + 1]))
-                                <divider class="ml-14" />
+                                <divider class="ml-[54]" />
                             @endunless
                         @endforeach
                     </column>

@@ -1,5 +1,6 @@
 @use('App\Icons\Android')
 @use('App\Icons\Ios')
+@use('App\Ui\Card')
 
 @php($routine = $this->routine)
 
@@ -95,12 +96,12 @@
             </row>
 
             @if ($this->steps && $reordering)
-                <column class="w-full rounded-xl bg-theme-surface">
+                <column class="w-full {{ Card::classes() }}">
                     @foreach ($this->steps as $step)
                         @php($moved = $movedStepId === $step['id'])
                         <row
                             ref="routine-step-{{ $step['id'] }}"
-                            class="w-full items-center gap-3 py-1 pr-2 pl-4 {{ $moved ? 'bg-theme-primary/10' : '' }} {{ $loop->first ? 'rounded-t-xl' : '' }} {{ $loop->last ? 'rounded-b-xl' : '' }}"
+                            class="w-full items-center gap-3 py-1 pr-2 pl-4 {{ $moved ? 'bg-theme-primary/10' : '' }} {{ $loop->first ? 'rounded-t-[17]' : '' }} {{ $loop->last ? 'rounded-b-[17]' : '' }}"
                         >
                             @if ($moved)
                                 <text font="semibold" class="w-6 text-center text-sm text-theme-primary-text">{{ $loop->iteration }}</text>
@@ -130,12 +131,12 @@
                             @endforeach
                         </row>
                         @unless ($loop->last)
-                            <divider class="ml-14" />
+                            <divider class="ml-[52]" />
                         @endunless
                     @endforeach
                 </column>
             @elseif ($this->steps)
-                <column class="w-full rounded-xl bg-theme-surface">
+                <column class="w-full {{ Card::classes() }}">
                     @foreach ($this->steps as $step)
                         <row ref="routine-step-{{ $step['id'] }}" class="w-full items-center">
                             @if ($editingStepId === $step['id'])
@@ -187,15 +188,15 @@
                             </pressable>
                         </row>
                         @unless ($loop->last)
-                            <divider class="ml-14" />
+                            <divider class="ml-[52]" />
                         @endunless
                     @endforeach
                 </column>
             @else
-                <column ref="routine-empty" class="w-full items-center gap-2 rounded-xl bg-theme-surface px-4 py-6">
-                    <icon :ios="Ios::ChecklistChecked" :android="Android::Checklist" :size="26" class="text-theme-primary" />
-                    <text font="semibold" class="text-base text-theme-on-surface">This routine has no steps.</text>
-                    <text class="text-sm text-theme-on-surface-variant">Add a step below.</text>
+                <column ref="routine-empty" class="{{ Card::classes() }} w-full items-center gap-2 px-4 py-6">
+                    <icon :ios="Ios::ChecklistChecked" :android="Android::Checklist" :size="28" class="text-theme-primary" />
+                    <x-ui.heading class="text-center">This routine has no steps.</x-ui.heading>
+                    <x-ui.text size="sm" class="text-center">Add a step below.</x-ui.text>
                 </column>
             @endif
         </column>

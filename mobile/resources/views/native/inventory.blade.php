@@ -4,12 +4,10 @@
 
 <native:top-bar title="Inventory" display-mode="large" :back="false" />
 
-{{-- Search with Scan inside it and a labeled Add beside it. The row wraps
-     in reverse, so when large text leaves no room the Add button moves up
-     onto its own line instead of squeezing the search field. --}}
+{{-- Search with Scan inside it and the add button beside it. --}}
 <native:bottom-bar>
-    <row class="w-full flex-wrap-reverse items-center gap-3 px-4 pb-2">
-        <row class="min-h-12 min-w-[220] flex-1 items-center gap-2 rounded-full pr-1 pl-4 glass android:bg-theme-surface">
+    <row class="w-full items-center gap-3 px-4 pb-2">
+        <row class="min-h-12 flex-1 items-center gap-2 rounded-full pr-1 pl-4 glass android:bg-theme-surface">
             <native:icon :ios="Ios::Magnifyingglass" :android="Android::Search" :size="18" class="text-theme-on-surface-variant" />
             <bare-text-input
                 ref="inventory-search"
@@ -36,13 +34,10 @@
         <pressable
             ref="inventory-add"
             a11y-label="Add"
-            class="min-h-12 items-center justify-center rounded-full bg-theme-primary px-4"
+            class="h-12 w-12 items-center justify-center rounded-full glass android:bg-theme-surface"
             :menu="$this->addMenu()"
         >
-            <row class="items-center gap-1.5">
-                <icon :ios="Ios::Plus" :android="Android::Add" :size="16" class="text-theme-on-primary" />
-                <text font="semibold" class="text-base text-theme-on-primary">Add</text>
-            </row>
+            <native:icon :ios="Ios::Plus" :android="Android::Add" :size="22" class="text-theme-on-surface" />
         </pressable>
     </row>
 </native:bottom-bar>
@@ -65,10 +60,10 @@
                     @endforeach
                 </column>
             @else
-                <column ref="inventory-no-matches" class="w-full items-center gap-2 px-4 py-8">
-                    <icon :ios="Ios::Magnifyingglass" :android="Android::SearchOff" :size="28" class="text-theme-on-surface-variant" />
-                    <x-ui.heading size="lg">Nothing called “{{ $search }}”</x-ui.heading>
-                    <x-ui.text>Check the spelling, or try a shorter word.</x-ui.text>
+                <column ref="inventory-no-matches" class="{{ Card::classes() }} w-full items-center gap-2 px-4 py-6">
+                    <icon :ios="Ios::Magnifyingglass" :android="Android::SearchOff" :size="28" class="text-theme-primary" />
+                    <x-ui.heading class="text-center">Nothing called “{{ $search }}”</x-ui.heading>
+                    <x-ui.text size="sm" class="text-center">Check the spelling, or try a shorter word.</x-ui.text>
                 </column>
             @endif
         @else
@@ -104,10 +99,10 @@
             @endif
 
             @if ($this->items === [])
-                <column ref="inventory-empty" class="w-full items-center gap-2 px-4 py-8">
-                    <icon :ios="Ios::Archivebox" :android="Android::Inventory2" :size="28" class="text-theme-on-surface-variant" />
-                    <x-ui.heading size="lg">Nothing here yet</x-ui.heading>
-                    <x-ui.text>Tap Add to start with a room, like Garage. If you've added things on the website, pull down on the Summary tab to bring them in.</x-ui.text>
+                <column ref="inventory-empty" class="{{ Card::classes() }} w-full items-center gap-2 px-4 py-6">
+                    <icon :ios="Ios::Archivebox" :android="Android::Inventory2" :size="28" class="text-theme-primary" />
+                    <x-ui.heading class="text-center">Nothing here yet</x-ui.heading>
+                    <x-ui.text size="sm" class="text-center">Tap + to start with a room, like Garage. If you've added things on the website, pull down on the Summary tab to bring them in.</x-ui.text>
                 </column>
             @endif
 

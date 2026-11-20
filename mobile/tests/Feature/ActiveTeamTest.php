@@ -39,7 +39,7 @@ it('switches browsing and recent activity locally and remembers the team', funct
 it('shows a lone team as the active one', function (): void {
     Team::find(2)->delete();
     Native::visit('/preferences')->assertSet('activeTeamId', 1)
-        ->assertMissingElement('list_item', fn (array $node): bool => ($node['ref'] ?? null) === 'team-2');
+        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'team-2');
 });
 
 it('creates records in the active team without a form picker', function (string $route, string $ref, string $model): void {

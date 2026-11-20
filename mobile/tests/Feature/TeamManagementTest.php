@@ -69,11 +69,6 @@ function signInAs(int $userId): void
     DB::table('sunny_accounts')->updateOrInsert(['server' => SunnyStore::server()], ['user_id' => $userId]);
 }
 
-function sectionFooter(string $footer): Closure
-{
-    return fn (array $node): bool => ($node['props']['footer'] ?? null) === $footer;
-}
-
 function offlineTeamResponse(): MockResponse
 {
     return MockResponse::make()->throw(fn (PendingRequest $pending) => new FatalRequestException(new ConnectException('Could not resolve host', new GuzzleRequest('POST', 'https://sunny.example')), $pending));
@@ -103,7 +98,7 @@ it('opens the picked team from preferences, and offers a new team', function ():
     signInAs(7);
 
     Native::visit('/preferences', platform: 'ios')
-        ->assertElement('list_item', fn (array $node): bool => ($node['ref'] ?? null) === 'team-settings' && $node['props']['headline'] === 'Family' && $node['props']['supporting'] === '4 members · 2 invitations')
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'team-settings' && $node['props']['a11y_label'] === 'Family, 4 members · 2 invitations')
         ->assertSee('New team')
         ->assertAccessible()
         ->tap('team-settings')
@@ -117,19 +112,20 @@ it('shows the owner everything they can change', function (): void {
 
     Native::visit('/preferences/team', platform: 'ios')
         ->assertNavTitle('Family')
-        ->assertElement('list_item', fn (array $node): bool => ($node['ref'] ?? null) === 'team-name' && ($node['props']['trailing_value'] ?? null) === 'Rename')
+        ->assertElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'team-name-trailing' && $node['props']['text'] === 'Rename')
         ->assertSee('America/Chicago')
         ->assertSee('Sunday')
-        ->assertElement('list_item', fn (array $node): bool => ($node['ref'] ?? null) === 'member-7' && $node['props']['supporting'] === 'Owner · You')
-        ->assertElement('list_item', fn (array $node): bool => ($node['ref'] ?? null) === 'member-8' && $node['props']['supporting'] === 'Admin' && ($node['props']['trailing_icon'] ?? null) === 'chevron.right')
-        ->assertElement('list_item', fn (array $node): bool => ($node['ref'] ?? null) === 'member-7' && ! isset($node['props']['trailing_icon']))
-        ->assertElement('list_section', sectionFooter('Tap someone to make them an admin or a member, or to remove them from the team.'))
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'member-7' && str_ends_with($node['props']['a11y_label'], ', Owner · You'))
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'member-8' && str_ends_with($node['props']['a11y_label'], ', Admin'))
+        ->assertElement('icon', fn (array $node): bool => ($node['ref'] ?? null) === 'member-8-trailing' && $node['props']['name'] === 'chevron.right')
+        ->assertMissingElement('icon', listItem('member-7-trailing'))
+        ->assertSee('Tap someone to make them an admin or a member, or to remove them from the team.')
         ->assertSee('sam.ortega@gmail.com')
         ->assertSee('Member · expires in 2 days')
         ->assertSee('Admin · expires tomorrow')
         ->assertSee('Invite someone')
         ->assertSee('Open team page')
-        ->assertMissingElement('list_item', listItem('leave-team'))
+        ->assertMissingElement('pressable', listItem('leave-team'))->assertMissingElement('column', listItem('leave-team'))
         ->assertAccessible();
 });
 
@@ -137,13 +133,13 @@ it('lets an admin change the team but not its members', function (): void {
     signInAs(8);
 
     Native::visit('/preferences/team', platform: 'ios')
-        ->assertElement('list_item', fn (array $node): bool => ($node['ref'] ?? null) === 'team-name' && ($node['props']['trailing_value'] ?? null) === 'Rename')
-        ->assertElement('list_item', fn (array $node): bool => ($node['ref'] ?? null) === 'member-9' && ! isset($node['props']['trailing_icon']))
-        ->assertElement('list_section', sectionFooter('Only Andy, the owner, can change someone’s role or remove them from the team.'))
+        ->assertElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'team-name-trailing' && $node['props']['text'] === 'Rename')
+        ->assertMissingElement('icon', listItem('member-9-trailing'))
+        ->assertSee('Only Andy, the owner, can change someone’s role or remove them from the team.')
         ->assertSee('Invite someone')
         ->assertDontSee('Open team page')
         ->assertSee('Leave Family')
-        ->assertElement('list_section', sectionFooter('You’ll lose access to its recipes, inventory, routines and lists. Andy can invite you back.'))
+        ->assertSee('You’ll lose access to its recipes, inventory, routines and lists. Andy can invite you back.')
         ->assertAccessible()
         ->tap('member-9')
         ->assertSet('memberId', null);
@@ -154,12 +150,12 @@ it('shows a member the team without anything to change', function (): void {
     Saloon::fake([UpdateTeamRequest::class => MockResponse::make(['data' => familyTeam()])]);
 
     Native::visit('/preferences/team', platform: 'ios')
-        ->assertMissingElement('list_item', fn (array $node): bool => ($node['ref'] ?? null) === 'team-name' && isset($node['props']['trailing_value']))
-        ->assertMissingElement('list_item', listItem('invite-someone'))
-        ->assertElement('list_section', sectionFooter('Andy and Jamie can rename the team, change its settings and handle invitations. Only Andy can change roles or remove someone.'))
-        ->assertElement('list_section', sectionFooter('They’ll join the team once they accept.'))
+        ->assertMissingElement('text', listItem('team-name-trailing'))
+        ->assertMissingElement('pressable', listItem('invite-someone'))->assertMissingElement('column', listItem('invite-someone'))
+        ->assertSee('Andy and Jamie can rename the team, change its settings and handle invitations. Only Andy can change roles or remove someone.')
+        ->assertSee('They’ll join the team once they accept.')
         ->assertSee('Leave Family')
-        ->assertElement('list_section', sectionFooter('You’ll lose access to its recipes, inventory, routines and lists. Andy or Jamie can invite you back.'))
+        ->assertSee('You’ll lose access to its recipes, inventory, routines and lists. Andy or Jamie can invite you back.')
         ->assertAccessible()
         ->tap('team-name')
         ->assertSet('showRename', false)
@@ -305,7 +301,7 @@ it('does not offer leaving to the owner or on a personal team', function (): voi
     signInAs(8);
     Team::find(1)->update(['is_personal' => true]);
 
-    Native::visit('/preferences/team')->assertMissingElement('list_item', listItem('leave-team'));
+    Native::visit('/preferences/team')->assertMissingElement('pressable', listItem('leave-team'))->assertMissingElement('column', listItem('leave-team'));
 });
 
 it('opens the team page on the website for the owner', function (): void {
@@ -334,13 +330,15 @@ it('shows the team look-only while offline', function (): void {
     Native::visit('/preferences/team', platform: 'ios')
         ->assertSet('offline', true)
         ->assertSee('You’re offline')
-        ->assertElement('list_item', fn (array $node): bool => ($node['ref'] ?? null) === 'team-name' && ($node['props']['disabled'] ?? false) === true)
-        ->assertElement('list_item', fn (array $node): bool => ($node['ref'] ?? null) === 'member-9' && ($node['props']['disabled'] ?? false) === true)
-        ->assertElement('list_section', sectionFooter('Roles can be changed and people removed once you’re back online.'))
+        ->assertElement('column', listItem('team-name'))
+        ->assertElement('column', listItem('member-9'))
+        ->assertSee('Roles can be changed and people removed once you’re back online.')
         ->assertAccessible()
-        ->tap('team-name')
+        ->assertMissingElement('pressable', listItem('team-name'))
+        ->assertMissingElement('pressable', listItem('member-9'))
+        ->call('openRename')
         ->assertSet('showRename', false)
-        ->tap('member-9')
+        ->call('openMember', 9)
         ->assertSet('memberId', null)
         ->tap('team-offline')
         ->assertToastShown(fn (array $params): bool => $params['message'] === 'Still offline. Try again once you’re connected.');

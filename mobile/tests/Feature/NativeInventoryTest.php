@@ -237,7 +237,7 @@ it('invites adding to an empty container', function () {
         ->assertNavigatedTo('/inventory/create');
 });
 
-it('puts a labeled add button and a scan button inside search in the bottom bar', function () {
+it('puts an add button and a scan button inside search in the bottom bar', function () {
     Native::visit('/inventory')
         ->assertElement('bottom_bar', function (array $node): bool {
             $refs = [];

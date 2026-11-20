@@ -220,7 +220,6 @@
                         >
                             <row class="w-full items-start gap-4">
                                 <x-ui.avatar
-                                    :size="$item['photo'] ? '2xl' : 'md'"
                                     :src="$item['photo']"
                                     :alt="'Photo of '.$item['name']"
                                     :color="$item['type']->color()"

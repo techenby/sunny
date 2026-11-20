@@ -179,7 +179,7 @@
                                 </row>
                             </pressable>
                             @unless ($loop->last)
-                                <divider class="ml-14" />
+                                <divider class="ml-[50]" />
                             @endunless
                         @empty
                             <text class="w-full px-4 py-3 text-sm text-theme-on-surface-variant">No steps yet.</text>

@@ -21,7 +21,7 @@ it('lists the team’s lists alphabetically with their progress', function () {
         ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'checklist-1'
             && ($node['props']['a11y_label'] ?? null) === 'Groceries, Shopping · 1 of 3 done')
         ->assertSee('Wish list · No items')
-        ->assertElement('list_section', fn (array $node): bool => ($node['props']['footer'] ?? null) === '3 lists')
+        ->assertElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'lists-count' && $node['props']['text'] === '3 lists')
         ->assertAccessible();
 
     expect(array_column($screen->get('lists'), 'name'))->toBe(['Birthday ideas', 'Chores', 'Groceries']);
@@ -48,7 +48,7 @@ it('shows who each list belongs to when the team has several members', function 
             && ($node['props']['a11y_label'] ?? null) === 'Household')
         ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'checklist-1'
             && ($node['props']['a11y_label'] ?? null) === 'Groceries, Household, Shopping · 1 of 3 done')
-        ->assertElement('list_section', fn (array $node): bool => ($node['props']['footer'] ?? null) === '3 lists · 2 for the household')
+        ->assertElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'lists-count' && $node['props']['text'] === '3 lists · 2 for the household')
         ->assertAccessible();
 });
 
