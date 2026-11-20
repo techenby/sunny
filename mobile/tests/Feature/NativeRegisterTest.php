@@ -230,8 +230,9 @@ it('asks people to wait after too many tries', function (): void {
         ->tap('register-submit')
         ->assertSee('Too many tries')
         ->assertSee('Wait a minute and try again.')
-        ->assertElement('button', fn (array $node): bool => ($node['ref'] ?? null) === 'register-submit' && ($node['props']['disabled'] ?? null) === true)
-        ->tap('register-submit');
+        ->assertElement('column', fn (array $node): bool => ($node['ref'] ?? null) === 'register-submit')
+        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'register-submit')
+        ->call('submit');
 
     Saloon::assertSentCount(1);
 
@@ -239,7 +240,7 @@ it('asks people to wait after too many tries', function (): void {
 
     $screen->firePolls()
         ->assertDontSee('Too many tries')
-        ->assertElement('button', fn (array $node): bool => ($node['ref'] ?? null) === 'register-submit' && ($node['props']['disabled'] ?? false) === false);
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'register-submit');
 });
 
 it('says when sign-up is turned off', function (): void {
@@ -265,7 +266,8 @@ it('shows the button as working while the account is created', function (): void
     Native::visit('/register')
         ->set('saving', true)
         ->assertSee('Creating account…')
-        ->assertElement('button', fn (array $node): bool => ($node['ref'] ?? null) === 'register-submit' && ($node['props']['disabled'] ?? null) === true)
+        ->assertElement('column', fn (array $node): bool => ($node['ref'] ?? null) === 'register-submit' && $node['props']['a11y_label'] === 'Creating account…, unavailable')
+        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'register-submit')
         ->assertElement('outlined_text_input', fn (array $node): bool => ($node['ref'] ?? null) === 'register-email' && ($node['props']['disabled'] ?? null) === true);
 });
 

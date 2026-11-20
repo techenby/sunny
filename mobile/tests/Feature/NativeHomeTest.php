@@ -97,15 +97,14 @@ it('provides accessible authentication actions', function () {
     $screen = Native::visit('/');
 
     foreach ([
-        'login-button' => ['Log in', 'Opens the login screen', 'secondary'],
-        'register-button' => ['Register', 'Opens the registration screen', 'primary'],
-    ] as $ref => [$label, $hint, $variant]) {
-        $screen->assertElement('button', fn (array $node): bool => ($node['ref'] ?? null) === $ref
-            && ($node['props']['label'] ?? null) === $label
+        'login-button' => ['Log in', 'Opens the login screen'],
+        'register-button' => ['Register', 'Opens the registration screen'],
+    ] as $ref => [$label, $hint]) {
+        $screen->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === $ref
+            && ($node['children'][0]['props']['text'] ?? null) === $label
             && ($node['props']['a11y_label'] ?? null) === $label
             && ($node['props']['a11y_hint'] ?? null) === $hint
-            && ($node['props']['variant'] ?? null) === $variant
-            && ($node['props']['size'] ?? null) === 'lg');
+            && $node['layout']['min_height'] == 48);
     }
 
     $screen->assertAccessible();

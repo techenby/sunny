@@ -32,7 +32,7 @@
                 <row class="w-full justify-end">
                     <x-ui.button
                         ref="login-forgot-password"
-                        variant="ghost"
+                        variant="text"
                         a11y-hint="Opens password reset"
                         tap="forgotPassword"
                     >
@@ -43,8 +43,8 @@
         @else
             <text class="text-base text-theme-on-surface-variant">{{ $useRecoveryCode ? 'Enter one of your recovery codes.' : 'Enter the code from your authenticator app.' }}</text>
             <outlined-text-input ref="login-code" :label="$useRecoveryCode ? 'Recovery code' : 'Authentication code'" native:model="code" />
-            <x-ui.button ref="login-recovery" variant="ghost" :font="false" tap="toggleRecoveryCode">{{ $useRecoveryCode ? 'Use authenticator code' : 'Use recovery code' }}</x-ui.button>
-            <x-ui.button ref="login-restart" variant="ghost" :font="false" tap="startOver">Restart login</x-ui.button>
+            <x-ui.button ref="login-recovery" variant="text" tap="toggleRecoveryCode">{{ $useRecoveryCode ? 'Use authenticator code' : 'Use recovery code' }}</x-ui.button>
+            <x-ui.button ref="login-restart" variant="text" tap="startOver">Restart login</x-ui.button>
         @endif
 
         @if ($error)
@@ -63,7 +63,7 @@
             <text class="text-sm text-theme-on-surface-variant">Don’t have an account?</text>
             <x-ui.button
                 ref="login-register-link"
-                variant="ghost"
+                variant="text"
                 a11y-hint="Opens the registration screen"
                 tap="showRegister"
             >

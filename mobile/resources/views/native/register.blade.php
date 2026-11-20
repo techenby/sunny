@@ -40,7 +40,7 @@
                     <row class="w-full justify-start">
                         <x-ui.button
                             ref="register-login-instead"
-                            variant="ghost"
+                            variant="text"
                             a11y-hint="Opens the login screen with this email"
                             tap="showLogin"
                         >
@@ -118,7 +118,7 @@
             <text class="text-sm text-theme-on-surface-variant">Already have an account?</text>
             <x-ui.button
                 ref="register-login-link"
-                variant="ghost"
+                variant="text"
                 a11y-hint="Opens the login screen"
                 :disabled="$saving"
                 tap="showLogin"

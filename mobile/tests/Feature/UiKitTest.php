@@ -30,15 +30,16 @@ it('renders kit components in place among their siblings', function () {
                 'avatar-photo',
                 'avatar-initials',
                 'button-primary',
-                'button-ghost',
-                'button-filled',
-                'button-tint',
-                'button-neutral',
+                'button-secondary',
                 'button-glass',
-                'button-outline',
-                'button-outline-pill',
-                'button-plain',
-                'button-icon',
+                'button-destructive',
+                'button-text',
+                'button-disabled',
+                'button-loading',
+                'button-circle',
+                'button-row-icon',
+                'button-glass-disabled',
+                'button-row-icon-disabled',
                 'empty-state',
                 'after',
             ]);
@@ -113,72 +114,100 @@ it('gives cards a flux card surface', function () {
             && $node['style']['border_radius'] == 18);
 });
 
-it('draws platform buttons for the primary, secondary, destructive and ghost variants', function () {
-    Native::test(UiKitScreen::class, platform: 'ios')
-        ->assertElement('button', fn (array $node): bool => refNode('button-primary')($node)
-            && $node['props']['label'] === 'Save'
-            && $node['props']['variant'] === 'primary'
-            && $node['props']['size'] === 'lg'
-            && $node['props']['font_name'] === 'semibold'
-            && $node['props']['leading_icon'] === 'arrow.clockwise'
-            && ! isset($node['props']['disabled']))
-        ->assertElement('button', fn (array $node): bool => refNode('button-ghost')($node)
-            && $node['props']['variant'] === 'ghost'
-            && ! isset($node['props']['size'])
-            && ! isset($node['props']['font_name']));
-});
-
-it('draws each pill variant from the theme', function (string $ref, ?string $surface, string $content, int $radius) {
+it('draws each filled look from the theme, 48pt tall and fully rounded', function (string $ref, ?string $surface, string $content) {
     Native::test(UiKitScreen::class)
         ->assertElement('pressable', fn (array $node): bool => refNode($ref)($node)
             && $node['layout']['min_height'] == 48
             && $node['layout']['padding'] == [0, 16, 0, 16]
-            && ($node['style']['bg_color'] ?? null) === match ($surface) {
-                null => null,
-                'tint' => '#26E85A48',
-                default => theme($surface),
-            }
+            && $node['style']['border_radius'] == 9999
+            && ($node['style']['bg_color'] ?? null) === ($surface === null ? null : theme($surface))
             && isset($node['props']['glass']) === ($surface === null)
-            && $node['style']['border_radius'] == $radius
             && collect($node['children'])->flatMap(fn (array $child): array => [$child, ...($child['children'] ?? [])])
                 ->contains(fn (array $child): bool => $child['type'] === 'text'
-                    && $child['props']['color'] === theme($content)
-                    && $child['props']['font_name'] === 'semibold'));
+                    && $child['props']['font_size'] == 16
+                    && $child['props']['font_name'] === 'semibold'
+                    && $child['props']['color'] === theme($content)));
 })->with([
-    'filled' => ['button-filled', 'primary', 'on-primary', 9999],
-    'tint' => ['button-tint', 'tint', 'primary-text', 9999],
-    'neutral' => ['button-neutral', 'surface-variant', 'on-surface', 9999],
-    'glass with an accent tone' => ['button-glass', null, 'primary-text', 9999],
-    'outline' => ['button-outline', 'surface', 'on-surface', 12],
-    'outline-pill' => ['button-outline-pill', 'surface', 'on-surface', 9999],
+    'primary' => ['button-primary', 'primary', 'on-primary'],
+    'secondary' => ['button-secondary', 'surface-variant', 'on-surface'],
+    'glass' => ['button-glass', null, 'on-surface'],
+    'destructive' => ['button-destructive', 'destructive', 'on-destructive'],
 ]);
 
-it('gives a button an icon beside its label, sized with the label', function () {
+it('draws a text button with no surface, in the secondary colour', function () {
+    Native::test(UiKitScreen::class)
+        ->assertElement('pressable', fn (array $node): bool => refNode('button-text')($node)
+            && $node['layout'] == ['min_height' => 48, 'justify_content' => 1]
+            && ! isset($node['style'])
+            && $node['props']['a11y_label'] === 'Rename Camping gear'
+            && $node['children'][0]['props']['text'] === 'Rename Camping gear'
+            && $node['children'][0]['props']['font_size'] == 16
+            && $node['children'][0]['props']['font_name'] === 'semibold'
+            && $node['children'][0]['props']['color'] === theme('secondary'));
+});
+
+it('puts an 18pt icon in the label’s colour beside the label', function () {
     Native::test(UiKitScreen::class, platform: 'ios')
-        ->assertElement('pressable', fn (array $node): bool => refNode('button-filled')($node)
+        ->assertElement('pressable', fn (array $node): bool => refNode('button-primary')($node)
             && $node['props']['a11y_label'] === 'Add a calendar'
             && $node['children'][0]['type'] === 'row'
             && $node['children'][0]['layout']['gap'] == 8
             && $node['children'][0]['children'][0]['props']['name'] === 'plus'
             && $node['children'][0]['children'][0]['props']['size'] == 18
-            && $node['children'][0]['children'][1]['props']['text'] === 'Add calendar'
-            && $node['children'][0]['children'][1]['props']['font_size'] == 18);
+            && $node['children'][0]['children'][0]['props']['color'] === theme('on-primary')
+            && $node['children'][0]['children'][1]['props']['text'] === 'Add calendar');
 });
 
-it('leaves a plain button without a surface or side padding', function () {
-    Native::test(UiKitScreen::class)
-        ->assertElement('pressable', fn (array $node): bool => refNode('button-plain')($node)
-            && $node['layout'] == ['min_height' => 48, 'justify_content' => 1]
-            && ! isset($node['style'])
-            && $node['props']['a11y_label'] === 'Delete Camping gear'
-            && $node['children'][0]['props']['text'] === 'Delete Camping gear'
-            && $node['children'][0]['props']['color'] === theme('destructive'));
-});
-
-it('makes a button with no label a 48pt icon button', function (string $platform, string $iconName) {
+it('always gives a destructive button a trash icon', function (string $platform, string $iconName) {
     Native::test(UiKitScreen::class, platform: $platform)
-        ->assertElement('pressable', fn (array $node): bool => refNode('button-icon')($node)
+        ->assertElement('pressable', fn (array $node): bool => refNode('button-destructive')($node)
+            && $node['children'][0]['children'][0]['props']['name'] === $iconName
+            && $node['children'][0]['children'][1]['props']['text'] === 'Delete');
+})->with([
+    'ios' => ['ios', 'trash'],
+    'android' => ['android', 'delete'],
+]);
+
+it('gives a disabled or loading button a grey fill, a lighter label and nothing to tap', function () {
+    $lighter = '#66'.substr(theme('on-surface'), 1);
+
+    Native::test(UiKitScreen::class)
+        ->assertElement('pressable', refNode('button-disabled'))
+        ->tap('button-disabled')
+        ->tap('button-disabled')
+        ->assertSet('saves', 2)
+        ->assertMissingElement('pressable', refNode('button-disabled'))
+        ->assertElement('column', fn (array $node): bool => refNode('button-disabled')($node)
+            && $node['layout']['min_height'] == 48
+            && $node['style']['bg_color'] === theme('surface-variant')
+            && $node['props']['a11y_label'] === 'Save, unavailable'
+            && $node['children'][0]['props']['color'] === $lighter)
+        ->assertElement('column', fn (array $node): bool => refNode('button-loading')($node)
+            && $node['style']['bg_color'] === theme('surface-variant')
+            && $node['props']['a11y_label'] === 'Deleting…, unavailable'
+            && array_column($node['children'][0]['children'], 'type') === ['activity_indicator', 'text']);
+});
+
+it('keeps a disabled glass or text button on its own surface and only lightens it', function () {
+    $lighter = '#66'.substr(theme('on-surface'), 1);
+
+    Native::test(UiKitScreen::class)
+        ->assertElement('column', fn (array $node): bool => refNode('button-glass-disabled')($node)
+            && isset($node['props']['glass'])
+            && ($node['style']['bg_color'] ?? null) !== theme('surface-variant')
+            && $node['props']['a11y_label'] === 'Today, unavailable'
+            && $node['children'][0]['props']['color'] === $lighter)
+        ->assertElement('column', fn (array $node): bool => refNode('button-row-icon-disabled')($node)
+            && ! isset($node['style'])
+            && $node['props']['a11y_label'] === 'Move up, unavailable'
+            && $node['children'][0]['props']['color'] === $lighter);
+});
+
+it('makes a filled button with no label a 48pt circle', function (string $platform, string $iconName) {
+    Native::test(UiKitScreen::class, platform: $platform)
+        ->assertElement('pressable', fn (array $node): bool => refNode('button-circle')($node)
             && $node['layout']['width'] == 48 && $node['layout']['height'] == 48
+            && $node['style']['border_radius'] == 9999
             && $node['props']['a11y_label'] === 'More'
             && $node['props']['has_menu'] === true
             && collect($node['children'])->contains(fn (array $child): bool => $child['type'] === 'icon'
@@ -190,14 +219,24 @@ it('makes a button with no label a 48pt icon button', function (string $platform
     'android' => ['android', 'more_horiz'],
 ]);
 
+it('makes a text button with no label a row icon with a 48pt tap area', function () {
+    Native::test(UiKitScreen::class, platform: 'ios')
+        ->assertElement('pressable', fn (array $node): bool => refNode('button-row-icon')($node)
+            && $node['layout']['width'] == 48 && $node['layout']['height'] == 48
+            && ! isset($node['style'])
+            && $node['props']['a11y_label'] === 'Remove'
+            && $node['children'][0]['props']['name'] === 'xmark'
+            && $node['children'][0]['props']['size'] == 18
+            && $node['children'][0]['props']['color'] === theme('secondary'));
+});
+
 it('runs a button’s tap and follows its link', function () {
     Native::test(UiKitScreen::class)
         ->tap('button-primary')
         ->assertSet('saves', 1)
-        ->tap('button-filled')
+        ->tap('button-row-icon')
         ->assertSet('saves', 2)
-        ->assertElement('button', fn (array $node): bool => refNode('button-primary')($node) && $node['props']['disabled'] === true)
-        ->tap('button-ghost')
+        ->tap('button-glass')
         ->assertNavigatedTo('/login');
 });
 

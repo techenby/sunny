@@ -89,15 +89,19 @@ it('makes several copies at once', function (): void {
 it('keeps the number of copies between 1 and 25', function (): void {
     $screen = Native::visit('/inventory/12')
         ->tap('Make copies')
-        ->tap('item-copies-fewer')
+        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'item-copies-fewer')
+        ->call('changeCopies', -1)
         ->assertSet('copies', 1)
         ->assertSee('Up to 25 at a time');
 
-    foreach (range(1, 30) as $tap) {
+    foreach (range(1, 24) as $tap) {
         $screen->tap('item-copies-more');
     }
 
     $screen->assertSet('copies', 25)
+        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'item-copies-more')
+        ->call('changeCopies', 1)
+        ->assertSet('copies', 25)
         ->assertSee('Make 25 copies')
         ->tap('item-copies-fewer')
         ->assertSet('copies', 24);

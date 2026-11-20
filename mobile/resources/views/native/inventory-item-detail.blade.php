@@ -18,7 +18,6 @@
             <x-ui.button
                 ref="edit-item"
                 variant="glass"
-                size="lg"
                 class="flex-1"
                 :ios="Ios::Pencil"
                 :android="Android::Edit"
@@ -149,10 +148,9 @@
                     <x-ui.heading size="lg" class="flex-1">Where it is</x-ui.heading>
                     <x-ui.button
                         ref="item-move"
-                        variant="neutral"
+                        variant="secondary"
                         :ios="Ios::ArrowRight"
                         :android="Android::ArrowForward"
-                        :icon-size="14"
                         a11y-label="Move"
                         a11y-hint="Choose a new place for this"
                         tap="startMove"
@@ -214,14 +212,13 @@
                 <row class="w-full items-center gap-3 px-1">
                     <x-ui.heading size="lg" class="flex-1">{{ $this->children ? 'What’s inside ('.count($this->children).')' : 'What’s inside' }}</x-ui.heading>
                     @if ($selecting)
-                        <x-ui.button ref="item-select-done" variant="neutral" a11y-label="Done" tap="stopSelecting">Done</x-ui.button>
+                        <x-ui.button ref="item-select-done" variant="secondary" a11y-label="Done" tap="stopSelecting">Done</x-ui.button>
                     @elseif ($this->children)
                         <x-ui.button
                             ref="item-select"
-                            variant="neutral"
+                            variant="secondary"
                             :ios="Ios::CheckmarkCircle"
                             :android="Android::CheckCircleOutline"
-                            :icon-size="18"
                             a11y-label="Select"
                             a11y-hint="Pick several things to move or delete"
                             tap="startSelecting"
@@ -301,11 +298,8 @@
             @unless ($selecting)
             <x-ui.button
                 ref="delete-item"
-                variant="plain"
-                tone="destructive"
-                size="lg"
+                variant="text"
                 class="w-full items-center"
-                label-class="text-center"
                 :a11y-label="'Delete '.$item['name']"
                 tap="confirmDeleteItem"
             >Delete {{ $item['name'] }}</x-ui.button>
@@ -353,13 +347,12 @@
                             <row ref="item-copies-stepper" class="{{ Card::classes() }} w-full items-center justify-between p-4">
                                 <x-ui.button
                                     ref="item-copies-fewer"
-                                    variant="neutral"
-                                    class="h-[52] w-[52]"
+                                    variant="secondary"
                                     :ios="Ios::Minus"
                                     :android="Android::Remove"
-                                    :icon-class="($copies <= 1 ? 'opacity-40 ' : '').'text-theme-on-surface'"
                                     a11y-label="Fewer copies"
                                     tap="changeCopies(-1)"
+                                    :disabled="$copies <= 1"
                                 />
                                 <column class="items-center gap-0.5">
                                     <text ref="item-copies-count" font="accent" class="text-5xl text-theme-on-surface">{{ $copies }}</text>
@@ -367,13 +360,12 @@
                                 </column>
                                 <x-ui.button
                                     ref="item-copies-more"
-                                    variant="tint"
-                                    class="h-[52] w-[52]"
+                                    variant="secondary"
                                     :ios="Ios::Plus"
                                     :android="Android::Add"
-                                    :icon-class="($copies >= DuplicateItem::MAX_COPIES ? 'opacity-40 ' : '').'text-theme-primary-text'"
                                     a11y-label="More copies"
                                     tap="changeCopies(1)"
+                                    :disabled="$copies >= DuplicateItem::MAX_COPIES"
                                 />
                             </row>
                             <text font="medium" class="w-full text-center text-xs text-theme-on-surface-variant">Up to {{ DuplicateItem::MAX_COPIES }} at a time</text>
@@ -409,9 +401,7 @@
                     </x-ui.button>
                     <x-ui.button
                         ref="item-copies-cancel"
-                        variant="plain"
-                        tone="neutral"
-                        size="lg"
+                        variant="text"
                         class="w-full items-center"
                         a11y-label="Cancel"
                         tap="closeCopies"
@@ -490,9 +480,7 @@
                     </x-ui.button>
                     <x-ui.button
                         ref="item-team-move-cancel"
-                        variant="plain"
-                        tone="neutral"
-                        size="lg"
+                        variant="text"
                         class="w-full items-center"
                         a11y-label="Cancel"
                         tap="closeTeamMove"

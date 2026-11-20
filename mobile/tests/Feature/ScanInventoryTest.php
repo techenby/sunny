@@ -474,8 +474,13 @@ it('refuses to add nothing, an unnamed item, or one still being identified', fun
         $screen->emitNative(ItemIdentified::class, ['id' => $scan, 'item' => ['name' => $name]]);
     }
 
-    $screen->call(...$changes)
-        ->tap('scan-submit')
+    $screen->call(...$changes);
+
+    if ($screen->get('candidates') === []) {
+        $screen->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'scan-submit');
+    }
+
+    $screen->call('confirmSave')
         ->assertNativeNotCalled('Dialog.Alert')
         ->assertNoNavigation()
         ->assertSet('error', $message);

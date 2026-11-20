@@ -120,11 +120,9 @@
                             @if ($canInvite)
                                 <x-ui.button
                                     ref="cancel-invitation-{{ $invitation['code'] }}"
-                                    variant="neutral"
-                                    tone="muted"
+                                    variant="secondary"
                                     :ios="Ios::Xmark"
                                     :android="Android::Close"
-                                    :icon-size="16"
                                     :a11y-label="'Cancel the invitation to '.$invitation['email']"
                                     tap="confirmCancel('{{ $invitation['code'] }}')"
                                 />

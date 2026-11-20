@@ -62,10 +62,9 @@
                 @if ($reordering)
                     <x-ui.button
                         ref="routine-reorder-done"
-                        variant="tint"
+                        variant="secondary"
                         :ios="Ios::Checkmark"
                         :android="Android::Check"
-                        :icon-size="18"
                         a11y-label="Done"
                         a11y-hint="Saves the new order"
                         tap="finishReordering"
@@ -73,10 +72,9 @@
                 @elseif (count($this->steps) > 1)
                     <x-ui.button
                         ref="routine-reorder"
-                        variant="neutral"
+                        variant="secondary"
                         :ios="Ios::ArrowUpArrowDown"
                         :android="Android::SwapVert"
-                        :icon-size="18"
                         a11y-label="Reorder"
                         a11y-hint="Move steps up or down"
                         tap="startReordering"
@@ -99,24 +97,15 @@
                             @endif
                             <text class="flex-1 text-base text-theme-on-surface">{{ $step['name'] }}</text>
                             @foreach ([['up', 'moveStepUp', Ios::ChevronUp, Android::KeyboardArrowUp, $loop->first], ['down', 'moveStepDown', Ios::ChevronDown, Android::KeyboardArrowDown, $loop->last]] as [$direction, $action, $iosIcon, $androidIcon, $atEnd])
-                                @if ($atEnd)
-                                    <column ref="routine-step-{{ $step['id'] }}-{{ $direction }}" class="h-12 w-11 items-center justify-center">
-                                        <column class="h-10 w-10 items-center justify-center rounded-full border border-theme-outline opacity-40">
-                                            <icon :ios="$iosIcon" :android="$androidIcon" :size="18" class="text-theme-on-surface-variant" />
-                                        </column>
-                                    </column>
-                                @else
-                                    <pressable
-                                        ref="routine-step-{{ $step['id'] }}-{{ $direction }}"
-                                        :a11y-label="'Move '.$step['name'].' '.$direction"
-                                        class="h-12 w-11 items-center justify-center"
-                                        @tap="{{ $action }}({{ $step['id'] }})"
-                                    >
-                                        <column class="h-10 w-10 items-center justify-center rounded-full bg-theme-surface-variant">
-                                            <icon :ios="$iosIcon" :android="$androidIcon" :size="18" class="text-theme-on-surface" />
-                                        </column>
-                                    </pressable>
-                                @endif
+                                <x-ui.button
+                                    ref="routine-step-{{ $step['id'] }}-{{ $direction }}"
+                                    variant="text"
+                                    :ios="$iosIcon"
+                                    :android="$androidIcon"
+                                    :a11y-label="'Move '.$step['name'].' '.$direction"
+                                    :disabled="$atEnd"
+                                    tap="{{ $action }}({{ $step['id'] }})"
+                                />
                             @endforeach
                         </row>
                         @unless ($loop->last)
@@ -143,11 +132,9 @@
                                 </row>
                                 <x-ui.button
                                     ref="routine-step-{{ $step['id'] }}-save"
-                                    variant="plain"
+                                    variant="text"
                                     :ios="Ios::Checkmark"
                                     :android="Android::Check"
-                                    :icon-size="20"
-                                    icon-class="text-theme-primary"
                                     a11y-label="Save step"
                                     tap="renameStep"
                                 />
@@ -171,11 +158,9 @@
                             @endif
                             <x-ui.button
                                 ref="routine-step-{{ $step['id'] }}-remove"
-                                variant="plain"
-                                tone="muted"
+                                variant="text"
                                 :ios="Ios::Trash"
                                 :android="Android::Delete"
-                                :icon-size="18"
                                 :a11y-label="'Remove '.$step['name']"
                                 tap="removeStep({{ $step['id'] }})"
                             />

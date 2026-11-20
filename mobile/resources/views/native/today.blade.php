@@ -15,41 +15,25 @@
 
 <native:bottom-bar>
     <row ref="day-bar" class="w-full items-center gap-3 px-4 pb-2">
-        @if ($this->canGoBack)
-            <x-ui.button
-                ref="previous-day"
-                variant="glass"
-                :ios="Ios::ChevronLeft"
-                :android="Android::ChevronLeft"
-                a11y-label="Previous day"
-                tap="previousDay"
-            />
-        @else
-            <column ref="previous-day" class="h-12 w-12 items-center justify-center rounded-full glass android:bg-theme-surface opacity-40">
-                <native:icon :ios="Ios::ChevronLeft" :android="Android::ChevronLeft" :size="22" class="text-theme-on-surface" />
-            </column>
-        @endif
-        @if ($this->isToday)
-            <column ref="back-to-today" class="min-h-12 flex-1 items-center justify-center rounded-full px-4 glass android:bg-theme-surface opacity-40">
-                <text font="semibold" class="text-lg text-theme-on-surface">Today</text>
-            </column>
-        @else
-            <x-ui.button ref="back-to-today" variant="glass" size="lg" class="flex-1" a11y-label="Back to today" tap="showToday">Today</x-ui.button>
-        @endif
-        @if ($this->canGoForward)
-            <x-ui.button
-                ref="next-day"
-                variant="glass"
-                :ios="Ios::ChevronRight"
-                :android="Android::ChevronRight"
-                a11y-label="Next day"
-                tap="nextDay"
-            />
-        @else
-            <column ref="next-day" class="h-12 w-12 items-center justify-center rounded-full glass android:bg-theme-surface opacity-40">
-                <native:icon :ios="Ios::ChevronRight" :android="Android::ChevronRight" :size="22" class="text-theme-on-surface" />
-            </column>
-        @endif
+        <x-ui.button
+            ref="previous-day"
+            variant="glass"
+            :ios="Ios::ChevronLeft"
+            :android="Android::ChevronLeft"
+            a11y-label="Previous day"
+            :disabled="! $this->canGoBack"
+            tap="previousDay"
+        />
+        <x-ui.button ref="back-to-today" variant="glass" class="flex-1" a11y-label="Back to today" :disabled="$this->isToday" tap="showToday">Today</x-ui.button>
+        <x-ui.button
+            ref="next-day"
+            variant="glass"
+            :ios="Ios::ChevronRight"
+            :android="Android::ChevronRight"
+            a11y-label="Next day"
+            :disabled="! $this->canGoForward"
+            tap="nextDay"
+        />
     </row>
 </native:bottom-bar>
 
@@ -118,13 +102,15 @@
                     </column>
                 </row>
                 <row class="w-full items-center gap-4 pl-9">
-                    <pressable ref="day-retry" a11y-label="Try again" class="min-h-12 items-center justify-center rounded-full bg-theme-surface px-4" @tap="retry">
-                        <row class="items-center gap-1.5">
-                            <icon :ios="Ios::ArrowClockwise" :android="Android::Refresh" :size="16" class="text-theme-on-surface" />
-                            <text font="semibold" class="text-base text-theme-on-surface">Try again</text>
-                        </row>
-                    </pressable>
-                    <x-ui.button ref="day-back-to-today" variant="plain" a11y-label="Back to today" tap="showToday">Back to today</x-ui.button>
+                    <x-ui.button
+                        ref="day-retry"
+                        variant="secondary"
+                        :ios="Ios::ArrowClockwise"
+                        :android="Android::Refresh"
+                        a11y-label="Try again"
+                        tap="retry"
+                    >Try again</x-ui.button>
+                    <x-ui.button ref="day-back-to-today" variant="text" a11y-label="Back to today" tap="showToday">Back to today</x-ui.button>
                 </row>
             </column>
         @elseif ($loading)
@@ -178,11 +164,13 @@
                     </column>
                 </column>
             @empty
-                <column ref="routines-empty" class="{{ Card::classes() }} w-full items-center gap-2 px-4 py-6">
-                    <icon :ios="Ios::ChecklistChecked" :android="Android::Checklist" :size="28" class="text-theme-primary" />
-                    <x-ui.heading>{{ $this->labels['empty'] }}</x-ui.heading>
-                    <x-ui.text size="sm" class="text-center">{{ $this->labels['emptyDetail'] }}</x-ui.text>
-                </column>
+                <x-ui.empty-state
+                    ref="routines-empty"
+                    :ios="Ios::ChecklistChecked"
+                    :android="Android::Checklist"
+                    :heading="$this->labels['empty']"
+                    :text="$this->labels['emptyDetail']"
+                />
             @endforelse
         @endif
     </column>
