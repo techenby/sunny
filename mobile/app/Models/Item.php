@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\StoredFilePath;
 use App\Enums\ItemType;
 use App\Http\Integrations\Sunny\SunnyStore;
 use App\Http\Integrations\Sunny\SunnyTeam;
@@ -24,7 +25,7 @@ class Item extends Model
     /** @return array<string, string> */
     protected function casts(): array
     {
-        return ['metadata' => 'array', 'type' => ItemType::class, 'created_at' => 'immutable_datetime', 'updated_at' => 'immutable_datetime', 'deleted_at' => 'immutable_datetime'];
+        return ['photo_url' => StoredFilePath::class, 'thumb_path' => StoredFilePath::class, 'metadata' => 'array', 'type' => ItemType::class, 'created_at' => 'immutable_datetime', 'updated_at' => 'immutable_datetime', 'deleted_at' => 'immutable_datetime'];
     }
 
     public function scopeForCurrentServer(Builder $query): void

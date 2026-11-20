@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\StoredFilePath;
 use App\Http\Integrations\Sunny\SunnyStore;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -20,7 +21,7 @@ class ItemPhoto extends Model
     /** @return array<string, string> */
     protected function casts(): array
     {
-        return ['position' => 'integer', 'created_at' => 'immutable_datetime', 'updated_at' => 'immutable_datetime'];
+        return ['url' => StoredFilePath::class, 'thumb_path' => StoredFilePath::class, 'position' => 'integer', 'created_at' => 'immutable_datetime', 'updated_at' => 'immutable_datetime'];
     }
 
     public function scopeForCurrentServer(Builder $query): void
