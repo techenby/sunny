@@ -30,14 +30,34 @@ test('renders successfully', function () {
         ->assertOk();
 })->group('smoke');
 
-test('a paired kiosk keeps showing when its owner has not verified their email', function () {
+test('a paired kiosk keeps showing when its owner has not verified their email', function (string $page) {
     $user = User::factory()->unverified()->create();
     $device = KioskDevice::factory()->paired($user, $user->currentTeam)->create();
 
     actingAs($user)
         ->withSession(['kiosk_device_id' => $device->id])
-        ->get(route('kiosk.calendar', ['current_team' => $user->currentTeam]))
+        ->get(route($page, ['current_team' => $user->currentTeam]))
         ->assertOk();
+})->with(['kiosk.calendar', 'kiosk.routines', 'kiosk.lists', 'kiosk.meal-planning']);
+
+test('an unverified member in a regular browser session is sent to verify before opening kiosk pages', function (string $page) {
+    $user = User::factory()->unverified()->create();
+
+    actingAs($user)
+        ->get(route($page, ['current_team' => $user->currentTeam]))
+        ->assertRedirect(route('verification.notice'));
+})->with(['kiosk.calendar', 'kiosk.routines', 'kiosk.lists', 'kiosk.meal-planning']);
+
+test('an unverified member cannot borrow another account\'s kiosk device to skip verifying', function () {
+    $user = User::factory()->unverified()->create();
+    $device = KioskDevice::factory()->paired(User::factory()->create(), $user->currentTeam)->create();
+
+    actingAs($user)
+        ->withSession(['kiosk_device_id' => $device->id])
+        ->get(route('kiosk.lists', ['current_team' => $user->currentTeam]))
+        ->assertRedirect(route('kiosk.index'));
+
+    $this->assertGuest();
 });
 
 test('kiosk layout follows the team appearance setting', function () {

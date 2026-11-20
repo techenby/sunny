@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureEmailIsVerifiedUnlessPairedKiosk;
 use App\Http\Middleware\EnsureTeamMembership;
 use Illuminate\Support\Facades\Route;
 
@@ -20,8 +21,10 @@ Route::prefix('{current_team}/kiosk')
             Route::livewire('configure/settings', 'pages::kiosk.configure.settings')->name('.configure.settings')->withHead(title: 'Kiosk settings');
         });
 
-        Route::livewire('calendar', 'pages::kiosk.calendar')->name('.calendar')->withHead(title: 'Calendar');
-        Route::livewire('routines', 'pages::kiosk.routines')->name('.routines')->withHead(title: 'Routines');
-        Route::livewire('lists', 'pages::kiosk.lists')->name('.lists')->withHead(title: 'Lists');
-        Route::livewire('meal-planning', 'pages::kiosk.meal-planning')->name('.meal-planning')->withHead(title: 'Meal planning');
+        Route::middleware(EnsureEmailIsVerifiedUnlessPairedKiosk::class)->group(function (): void {
+            Route::livewire('calendar', 'pages::kiosk.calendar')->name('.calendar')->withHead(title: 'Calendar');
+            Route::livewire('routines', 'pages::kiosk.routines')->name('.routines')->withHead(title: 'Routines');
+            Route::livewire('lists', 'pages::kiosk.lists')->name('.lists')->withHead(title: 'Lists');
+            Route::livewire('meal-planning', 'pages::kiosk.meal-planning')->name('.meal-planning')->withHead(title: 'Meal planning');
+        });
     });

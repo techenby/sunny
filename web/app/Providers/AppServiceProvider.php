@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Http\Middleware\EnsureEmailIsVerifiedUnlessPairedKiosk;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterval;
@@ -32,7 +33,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->configureDefaults();
         $this->configureGates();
-        Livewire::addPersistentMiddleware(EnsureEmailIsVerified::class);
+        Livewire::addPersistentMiddleware([EnsureEmailIsVerified::class, EnsureEmailIsVerifiedUnlessPairedKiosk::class]);
         $this->configureHead();
         $this->configurePassport();
     }
