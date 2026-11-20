@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\StoredFilePath;
 use App\Http\Integrations\Sunny\SunnyStore;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -17,7 +18,7 @@ class PendingWrite extends Model
     /** @return array<string, string> */
     protected function casts(): array
     {
-        return ['payload' => 'array', 'deletes' => 'boolean'];
+        return ['payload' => 'array', 'photo_path' => StoredFilePath::class, 'deletes' => 'boolean'];
     }
 
     public function scopeForCurrentServer(Builder $query): void
