@@ -31,6 +31,17 @@ test('an oauth user can access the mcp server', function () {
         ->assertOk();
 });
 
+test('an unverified user cannot use the mcp server', function () {
+    Passport::actingAs(User::factory()->unverified()->create(), ['mcp:use']);
+
+    $this->postJson('/mcp', [
+        'jsonrpc' => '2.0',
+        'id' => 1,
+        'method' => 'ping',
+    ])
+        ->assertForbidden();
+});
+
 test('api tokens cannot access the mcp server', function () {
     $token = User::factory()->create()->createToken('Test')->plainTextToken;
 

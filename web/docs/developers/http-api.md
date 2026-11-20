@@ -138,7 +138,9 @@ The response is `201` with the same body as
 [the token endpoint](#create-a-token). `onboarded_at` is `null` for a new
 account, so the client should show onboarding; someone who registers with a
 pending team invitation skips onboarding, so theirs is already set. The token
-lasts 30 days, like a token from signing in.
+lasts 30 days, like a token from signing in. The new user is sent a link to
+verify their email, and needs to verify it before onboarding or syncing; see
+[Email verification](#email-verification).
 
 This endpoint allows 6 requests a minute for each IP address, then returns
 `429`. It returns `404` when registration is turned off.
@@ -251,11 +253,24 @@ Collections and single resources use Laravel's standard `data` wrapper.
 ## Account
 
 Profile changes use the same rules as Settings on the web. Fields left out of
-`PATCH /api/user` are unchanged. Changing the email clears `email_verified_at`.
+`PATCH /api/user` are unchanged. Changing the email clears `email_verified_at`
+and sends a link to verify the new address.
 `POST /api/user/email/verification-notification` returns `202` when it sends
 the link and `204` when the email is already verified. Password changes return
 `204`, and password changes and verification emails are limited to 6 requests
 a minute.
+
+## Email verification
+
+An account needs a verified email before it can use its household, the same
+as on the web. Until `email_verified_at` is set, every endpoint except signing
+in, signing out, refreshing a token, and the `/api/user` account endpoints
+returns `423` with `"email_verification_required": true`. Use `423` to show a
+"verify your email" screen rather than treating it as a permission error, and
+keep queued changes to send once the email is verified.
+
+This includes answering team invitations, which are matched to the account by
+its email address.
 
 ## Teams
 
@@ -496,6 +511,7 @@ Expect standard Laravel JSON errors:
 - `403` when the user doesn't belong to the team in the URL or isn't allowed to do something.
 - `404` when the record doesn't exist or belongs to a different team.
 - `422` when validation fails.
+- `423` when the user's email needs verifying. See [Email verification](#email-verification).
 - `424` when a recipe import can't open the page.
 - `429` when too many token, two-factor, registration or password reset requests are made.
 

@@ -41,6 +41,7 @@ use App\NativeComponents\SetUpHome;
 use App\NativeComponents\SharedRecipe;
 use App\NativeComponents\TeamSettings;
 use App\NativeComponents\Today;
+use App\NativeComponents\VerifyEmail;
 use Illuminate\Support\Facades\Route;
 
 Route::native('/', Home::class);
@@ -48,6 +49,7 @@ Route::native('/login', Login::class);
 Route::native('/register', Register::class);
 Route::native('/forgot-password', ForgotPassword::class);
 Route::native('/setup', SetUpHome::class);
+Route::native('/verify-email', VerifyEmail::class);
 Route::nativeGroup(TabsLayout::class, function () {
     Route::native('/dashboard', Dashboard::class);
     Route::native('/calendar', Calendar::class);

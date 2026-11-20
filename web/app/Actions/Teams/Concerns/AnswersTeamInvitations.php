@@ -29,5 +29,11 @@ trait AnswersTeamInvitations
                 'invitation' => [__('This invitation was sent to a different email address.')],
             ]);
         }
+
+        if (! $user->hasVerifiedEmail()) {
+            throw ValidationException::withMessages([
+                'invitation' => [__('Verify your email address before you answer this invitation.')],
+            ]);
+        }
     }
 }

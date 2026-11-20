@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Concerns\HasTeams;
 use App\Http\Integrations\Bento\Requests\CreateDataDeletionRequest;
 use Bentonow\BentoLaravel\Facades\Bento;
 use Database\Factories\UserFactory;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Builder;
@@ -26,7 +26,7 @@ use LogicException;
 
 #[Fillable(['name', 'email', 'password', 'current_team_id', 'timezone', 'onboarded_at'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
-class User extends Authenticatable implements PasskeyUser
+class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
 {
     use HasApiTokens;
     /** @use HasFactory<UserFactory> */
@@ -85,14 +85,7 @@ class User extends Authenticatable implements PasskeyUser
             Routine::withTrashed()->where('user_id', $this->id)->forceDelete();
 
             $this->teamMemberships()->delete();
-            $this->tokens()->delete();
-
-            $oauthTokens = DB::table('oauth_access_tokens')->where('user_id', $this->id);
-            DB::table('oauth_refresh_tokens')->whereIn('access_token_id', $oauthTokens->clone()->select('id'))->delete();
-            $oauthTokens->delete();
-            DB::table('oauth_auth_codes')->where('user_id', $this->id)->delete();
-            DB::table('oauth_device_codes')->where('user_id', $this->id)->delete();
-            DB::table('sessions')->where('user_id', $this->id)->delete();
+            $this->signOutEverywhere();
 
             $this->delete();
         });
@@ -100,6 +93,18 @@ class User extends Authenticatable implements PasskeyUser
         if (app()->isProduction() && filled(config('bentonow.secret_key'))) {
             rescue(fn () => Bento::send(new CreateDataDeletionRequest($this->email)));
         }
+    }
+
+    public function signOutEverywhere(): void
+    {
+        $this->tokens()->delete();
+
+        $oauthTokens = DB::table('oauth_access_tokens')->where('user_id', $this->id);
+        DB::table('oauth_refresh_tokens')->whereIn('access_token_id', $oauthTokens->clone()->select('id'))->delete();
+        $oauthTokens->delete();
+        DB::table('oauth_auth_codes')->where('user_id', $this->id)->delete();
+        DB::table('oauth_device_codes')->where('user_id', $this->id)->delete();
+        DB::table('sessions')->where('user_id', $this->id)->delete();
     }
 
     /** @return array<string, string> */

@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Http\Integrations\Sunny\EmailVerificationRequired;
 use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Console\Attributes\Description;
@@ -26,6 +27,8 @@ class SunnySyncCommand extends Command
             $coordinator->sync();
         } catch (AuthenticationException|UnauthorizedException) {
             $this->warn('Sunny authentication is unavailable.');
+        } catch (EmailVerificationRequired) {
+            $this->warn('Sunny needs this account to verify its email.');
         } catch (RequestException|FatalRequestException|RuntimeException $exception) {
             report($exception);
         }

@@ -2,6 +2,8 @@
 
 use App\Enums\TeamRole;
 use App\Models\User;
+use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
 
 test('profile page is displayed', function () {
@@ -11,6 +13,7 @@ test('profile page is displayed', function () {
 });
 
 test('profile information can be updated', function () {
+    Notification::fake();
     $user = User::factory()->create();
 
     Livewire::actingAs($user)
@@ -24,9 +27,12 @@ test('profile information can be updated', function () {
         ->name->toEqual('Test User')
         ->email->toEqual('test@example.com')
         ->email_verified_at->toBeNull();
+
+    Notification::assertSentTo($user, VerifyEmail::class);
 });
 
 test('email verification status is unchanged when email address is unchanged', function () {
+    Notification::fake();
     $user = User::factory()->create();
 
     Livewire::actingAs($user)
@@ -37,6 +43,15 @@ test('email verification status is unchanged when email address is unchanged', f
         ->assertHasNoErrors();
 
     expect($user->fresh()->email_verified_at)->not->toBeNull();
+
+    Notification::assertNothingSent();
+});
+
+test('an unverified user can still change their email and delete their account', function () {
+    $this->actingAs(User::factory()->unverified()->create())
+        ->get(route('profile.edit'))
+        ->assertOk()
+        ->assertSeeLivewire('pages::settings.delete-user-form');
 });
 
 test('user can delete their account', function () {

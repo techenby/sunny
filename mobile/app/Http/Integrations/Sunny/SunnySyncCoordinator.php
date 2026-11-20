@@ -5,6 +5,7 @@ namespace App\Http\Integrations\Sunny;
 use Illuminate\Support\Facades\Cache;
 use Native\Mobile\AsyncTask;
 use RuntimeException;
+use Saloon\Exceptions\Request\RequestException;
 
 class SunnySyncCoordinator
 {
@@ -38,14 +39,34 @@ class SunnySyncCoordinator
         }
 
         try {
+            $this->ensureEmailIsVerified($token);
             $this->writes->push($token);
             $this->sync->sync($token);
             rescue(fn () => app(SunnyTeams::class)->refreshInvitations($token), report: false);
 
             return true;
+        } catch (RequestException $exception) {
+            if ($exception->getResponse()->status() !== 423) {
+                throw $exception;
+            }
+
+            $this->store->requireEmailVerification();
+
+            throw new EmailVerificationRequired($exception);
         } finally {
             $lock->release();
         }
+    }
+
+    private function ensureEmailIsVerified(#[\SensitiveParameter] ?string $token): void
+    {
+        if ($this->store->profile()['verified'] ?? true) {
+            return;
+        }
+
+        rescue(fn () => app(SunnyAccount::class)->refresh($token), report: false);
+
+        throw_if($this->store->needsEmailVerification(), new EmailVerificationRequired);
     }
 
     public function isDue(): bool

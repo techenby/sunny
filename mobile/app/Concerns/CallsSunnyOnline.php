@@ -69,6 +69,7 @@ trait CallsSunnyOnline
         return match (true) {
             $problem === 'locked' => 'Unable to read your saved login. Unlock your device and try again.',
             $response?->status() === 403 => 'You can’t do that in this team anymore.',
+            $response?->status() === 423 => 'Verify your email to keep using Sunny. You can send a new link from Preferences → Account.',
             $response?->status() === 429 => 'Too many attempts. Please wait a minute and try again.',
             default => self::firstError($response) ?? $fallback,
         };

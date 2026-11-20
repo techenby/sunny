@@ -96,7 +96,7 @@ test('people who register with a pending invitation skip onboarding', function (
         ->and($user->currentTeam->checklists()->exists())->toBeFalse();
 });
 
-test('someone who registers with a pending invitation can accept it, which joins the team and deletes it', function () {
+test('someone who registers with a pending invitation can accept it once they verify their email, which joins the team and deletes it', function () {
     $luffy = User::factory()->create();
     $invitation = TeamInvitation::factory()->for($luffy->currentTeam)->create(['email' => 'Zoro@Example.com']);
 
@@ -108,6 +108,13 @@ test('someone who registers with a pending invitation can accept it, which joins
     ]);
 
     $user = User::where('email', 'zoro@example.com')->sole();
+
+    Livewire::actingAs($user)
+        ->test('pages::teams.pending-invitations-modal')
+        ->call('acceptInvitation', $invitation->code)
+        ->assertHasErrors('invitation');
+
+    $user->markEmailAsVerified();
 
     Livewire::actingAs($user)
         ->test('pages::teams.pending-invitations-modal')

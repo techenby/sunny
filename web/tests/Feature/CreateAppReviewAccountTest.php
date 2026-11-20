@@ -38,6 +38,23 @@ test('it creates a review account whose household only it belongs to', function 
     Storage::assertExists(ItemPhoto::first()->path);
 });
 
+test('the review account can sign in on the app and sync its household', function () {
+    Storage::fake();
+
+    $this->artisan('demo:app-review', ['--password' => 'review-password'])->assertSuccessful();
+
+    $token = $this->postJson(route('api.token'), [
+        'email' => 'appreview@sunnyhome.app',
+        'password' => 'review-password',
+        'device_name' => 'App Review',
+    ])->assertOk()->json('token');
+
+    $this->withToken($token)
+        ->getJson(route('api.sync'))
+        ->assertOk()
+        ->assertJsonPath('teams.0.id', User::sole()->current_team_id);
+});
+
 test('running it again replaces the account and its data', function () {
     Storage::fake();
 
