@@ -229,7 +229,9 @@ it('reorders photos with taps', function () {
     $screen->tap('create-item-photo-0-down');
     expect(array_column($screen->get('photos'), 'path'))->toBe(['/tmp/front.jpg', '/tmp/scratch.jpg', '/tmp/back.jpg']);
 
-    $screen->tap('create-item-photo-2-up')->tap('create-item-photo-0-up');
+    $screen->tap('create-item-photo-2-up')
+        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'create-item-photo-0-up')
+        ->call('movePhotoUp', 0);
     expect(array_column($screen->get('photos'), 'path'))->toBe(['/tmp/front.jpg', '/tmp/back.jpg', '/tmp/scratch.jpg']);
 });
 

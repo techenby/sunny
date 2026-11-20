@@ -61,16 +61,15 @@ it('shows every kit piece under the name a developer types', function (string $p
         ->assertSee('native.settings-row')
         ->assertAccessible();
 
-    foreach (['primary', 'secondary', 'destructive', 'ghost'] as $variant) {
-        $gallery->assertSee('variant="'.$variant.'"')
-            ->assertElement('button', fn (array $node): bool => ($node['ref'] ?? null) === 'ui-kit-button-'.$variant && $node['props']['variant'] === $variant)
-            ->assertElement('button', fn (array $node): bool => ($node['ref'] ?? null) === 'ui-kit-button-'.$variant.'-disabled' && $node['props']['disabled'] === true);
+    foreach (['primary', 'secondary', 'glass', 'text', 'destructive'] as $look) {
+        $gallery->assertSee('variant="'.$look.'"')
+            ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'ui-kit-button-'.$look)
+            ->assertElement('column', fn (array $node): bool => ($node['ref'] ?? null) === 'ui-kit-button-'.$look.'-disabled'
+                && str_ends_with($node['props']['a11y_label'], ', unavailable'));
     }
 
-    foreach (['filled', 'tint', 'neutral', 'glass', 'outline', 'outline-pill', 'plain'] as $variant) {
-        $gallery->assertSee('variant="'.$variant.'": label, with an icon, no label')
-            ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'ui-kit-button-'.$variant)
-            ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'ui-kit-button-'.$variant.'-icon-only' && $node['layout']['width'] == 48);
+    foreach (['secondary', 'glass', 'text'] as $look) {
+        $gallery->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'ui-kit-button-'.$look.'-icon-only' && $node['layout']['width'] == 48);
     }
 })->with(['ios', 'android']);
 
@@ -79,8 +78,8 @@ it('answers a tap on a gallery example', function () {
 
     Native::visit('/ui-kit')
         ->assertSee('Tap an example to check it responds.')
-        ->tap('ui-kit-button-filled')
-        ->assertSee('Last tapped: filled')
+        ->tap('ui-kit-button-secondary')
+        ->assertSee('Last tapped: secondary')
         ->tap('ui-kit-button-primary')
         ->assertSee('Last tapped: primary')
         ->toggle('ui-kit-settings-row-toggle-toggle', false)

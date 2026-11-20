@@ -87,11 +87,9 @@
                         />
                         <x-ui.button
                             ref="metadata-remove-{{ $index }}"
-                            variant="plain"
-                            tone="muted"
+                            variant="text"
                             :ios="Ios::Xmark"
                             :android="Android::Close"
-                            :icon-size="18"
                             a11y-label="Remove detail {{ $index + 1 }}"
                             tap="removeMetadata({{ $index }})"
                         />
@@ -101,9 +99,8 @@
 
                 <x-ui.button
                     ref="metadata-add"
-                    variant="plain"
+                    variant="text"
                     class="w-full px-4"
-                    gap="2"
                     :ios="Ios::Plus"
                     :android="Android::Add"
                     a11y-label="Add a detail, like color or size"

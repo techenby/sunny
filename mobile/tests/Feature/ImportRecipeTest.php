@@ -87,7 +87,8 @@ it('reads the page in the background while showing progress', function (): void 
         ->assertSee('Reading the recipe from seriouseats.com… this takes a few seconds.')
         ->assertSee('Importing')
         ->assertElement('progress_bar')
-        ->assertElement('button', fn (array $node): bool => ($node['ref'] ?? null) === 'create-recipe-submit' && ($node['props']['disabled'] ?? false) === true);
+        ->assertElement('column', fn (array $node): bool => ($node['ref'] ?? null) === 'create-recipe-submit')
+        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'create-recipe-submit');
 });
 
 it('leaves out the progress bar on iOS, where it only draws a second spinner', function (): void {

@@ -48,7 +48,7 @@
                         <column class="w-full gap-2">
                             <x-ui.button
                                 ref="deleted-restore-{{ $item['id'] }}"
-                                variant="tint"
+                                variant="secondary"
                                 class="w-full"
                                 :ios="Ios::ArrowUturnBackward"
                                 :android="Android::Undo"

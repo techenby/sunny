@@ -143,37 +143,20 @@ it('keeps native list elements out of the views', function () {
 it('keeps hand-written buttons out of the views', function () {
     $exceptions = [
         'cook-recipe' => [
-            'cook-timer-stop' => 'A filled pill with a running clock beside the label. The only one.',
-            'cook-step-{{ $number }}-timer' => 'A coral-outlined pill with a clock beside the label. The only one.',
             'cook-tab-{{ strtolower($label) }}' => 'A segmented tab, not a button.',
         ],
-        'inventory-selection-bar' => [
-            'selection-delete' => 'A red tint pill. The only one.',
-        ],
         'list-detail' => [
-            "list-item-{{ \$item['id'] }}-link" => 'An inline link under a list item, not a button.',
+            "list-item-{{ \$item['id'] }}-link" => 'An inline link under a list item, too small for a 48pt button. Recoloured with the row text in a later pass.',
         ],
         'parent-picker-sheet' => [
             '{{ $refPrefix }}-parent-crumb-home' => 'A breadcrumb chip, not a button.',
             "{{ \$refPrefix }}-parent-crumb-{{ \$crumb['id'] }}" => 'A breadcrumb chip, not a button.',
         ],
-        'photo-field' => [
-            '{{ $refPrefix }}-photo-remove' => 'A text action with a fixed height and a class-based weight. Converting it changes its size and weight.',
-        ],
-        'queued-change' => [
-            '{{ $refPrefix }}-sync-discard' => 'A text action with a fixed height and a class-based weight. Converting it changes its size and weight.',
-        ],
         'recently-deleted-inventory' => [
-            "deleted-forever-{{ \$item['id'] }}" => 'An outlined pill with no fill and red text. The only one.',
-        ],
-        'scan-inventory' => [
-            "scan-candidate-{{ \$candidate['id'] }}-use-suggestion" => 'A text action with a fixed height and a class-based weight. Converting it changes its size and weight.',
+            "deleted-forever-{{ \$item['id'] }}" => 'Moves into a row menu in a later pass.',
         ],
         'team-settings' => [
-            'member-remove' => 'A bordered rectangle with a 24pt radius and red text. The only one.',
-        ],
-        'today' => [
-            'day-retry' => 'A surface-coloured pill with no border. The only one.',
+            'member-remove' => 'Its confirmation moves to the system alert in a later pass.',
         ],
     ];
 
@@ -187,7 +170,7 @@ it('keeps hand-written buttons out of the views', function () {
 
         foreach ($buttons as $button) {
             $violations[] = sprintf(
-                'resources/views/native/%s.blade.php:%d: <button> is written by hand. Use <x-ui.button> with variant primary, secondary, destructive or ghost.',
+                'resources/views/native/%s.blade.php:%d: <button> is written by hand. Use <x-ui.button> with variant primary, secondary, glass, text or destructive.',
                 $view,
                 nativeViewLine($source, $button[0][1]),
             );
@@ -196,7 +179,7 @@ it('keeps hand-written buttons out of the views', function () {
 
     $violations = [
         ...$violations,
-        ...kitViolations($found, $exceptions, 'this <pressable> holds only a label or an icon, so it is a hand-written button. Use <x-ui.button> with variant filled, tint, neutral, glass, outline, outline-pill or plain (no label makes it an icon button). If it is not a button, or its look exists nowhere else, add its ref and the reason to the exceptions in tests/Unit/UiKitGuardTest.php.'),
+        ...kitViolations($found, $exceptions, 'this <pressable> holds only a label or an icon, so it is a hand-written button. Use <x-ui.button> with variant primary, secondary, glass, text or destructive (no label makes it a circle, or a row icon for text). If it is not a button, add its ref and the reason to the exceptions in tests/Unit/UiKitGuardTest.php.'),
         ...staleKitExceptions($found, $exceptions),
     ];
 
@@ -205,21 +188,12 @@ it('keeps hand-written buttons out of the views', function () {
 
 it('keeps hand-written empty states out of the views', function () {
     $exceptions = [
-        'calendar' => [
-            'calendar-nothing' => 'Its heading is not centred, so it would change if it wrapped onto two lines.',
-        ],
-        'calendar-feeds' => [
-            'calendar-feeds-empty' => 'Its heading is not centred, so it would change if it wrapped onto two lines.',
-        ],
         'dashboard' => [
             'recipes-empty' => 'A tappable card with nothing centred.',
             'items-empty' => 'A tappable card with nothing centred and an accent-coloured icon.',
         ],
         'recipe-detail' => [
             'recipe-add-steps' => 'A tappable card with nothing centred and a smaller icon.',
-        ],
-        'today' => [
-            'routines-empty' => 'Its heading is not centred, so it would change if it wrapped onto two lines.',
         ],
     ];
 
@@ -233,6 +207,50 @@ it('keeps hand-written empty states out of the views', function () {
         ...kitViolations($found, $exceptions, 'this card holds only an icon, a heading and a line of text, so it is a hand-written empty state. Use <x-ui.empty-state> with ios, android, heading and text. If it has to differ, add its ref and the reason to the exceptions in tests/Unit/UiKitGuardTest.php.'),
         ...staleKitExceptions($found, $exceptions),
     ];
+
+    expect($violations)->toBe([], implode("\n", $violations));
+});
+
+it('keeps every kit button to the five looks', function () {
+    $looks = ['primary', 'secondary', 'glass', 'text', 'destructive'];
+    $props = ['ref', 'variant', 'ios', 'android', 'icon-trailing', 'max-lines', 'tap', 'navigate', 'menu', 'disabled', 'loading', 'a11y-label', 'a11y-hint', 'class'];
+    $violations = [];
+
+    foreach (nativeViewSources() as $view => $source) {
+        preg_match_all('/<x-ui\.button\b'.NATIVE_TAG_ATTRIBUTES.'>/s', $source, $buttons, PREG_SET_ORDER | PREG_OFFSET_CAPTURE);
+
+        foreach ($buttons as $button) {
+            $attributes = rtrim($button[1][0]);
+            $hasLabel = ! str_ends_with($attributes, '/');
+            $where = sprintf('resources/views/native/%s.blade.php:%d (ref "%s")', $view, nativeViewLine($source, $button[0][1]), nativeTagRef($attributes) ?? 'none');
+
+            preg_match_all('/(?<=\s):?([a-z][\w-]*)(?:="([^"]*)")?/', ' '.rtrim($attributes, '/'), $pairs, PREG_SET_ORDER);
+
+            $given = [];
+
+            foreach ($pairs as $pair) {
+                $given[$pair[1]] = $pair[2] ?? '';
+            }
+
+            foreach (array_diff(array_keys($given), $props) as $unknown) {
+                $violations[] = "{$where}: x-ui.button has no \"{$unknown}\". A look comes whole from its variant: ".implode(', ', $looks).'.';
+            }
+
+            if (isset($given['variant']) && ! in_array($given['variant'], $looks, true) && ! str_contains($button[1][0], ':variant=')) {
+                $violations[] = "{$where}: \"{$given['variant']}\" is not a button look. Use ".implode(', ', $looks).'.';
+            }
+
+            foreach (preg_split('/\s+/', $given['class'] ?? '', -1, PREG_SPLIT_NO_EMPTY) as $class) {
+                if (! preg_match('/^(w-full|w-\d+|flex-1|shrink-0|self-(start|center|end)|items-(start|center|end)|p[xlr]-[\d.]+)$/', $class)) {
+                    $violations[] = "{$where}: class \"{$class}\" restyles the button. class may only place it (w-full, flex-1, shrink-0, self-*, items-*, side padding on a text button).";
+                }
+            }
+
+            if (! $hasLabel && ! isset($given['a11y-label'])) {
+                $violations[] = "{$where}: a button with no label needs an a11y-label.";
+            }
+        }
+    }
 
     expect($violations)->toBe([], implode("\n", $violations));
 });

@@ -33,9 +33,7 @@
                 @if ($this->ingredients || $this->instructions)
                     <x-ui.button
                         ref="cook-recipe"
-                        variant="filled"
-                        size="lg"
-                        class="flex-1 px-5"
+                        class="flex-1"
                         :ios="Ios::Flame"
                         :android="Android::LocalFireDepartment"
                         a11y-label="Cook"
@@ -260,11 +258,8 @@
 
             <x-ui.button
                 ref="delete-recipe"
-                variant="plain"
-                tone="destructive"
-                size="lg"
+                variant="text"
                 class="w-full items-center"
-                label-class="text-center"
                 :a11y-label="'Delete '.$recipe['name']"
                 tap="confirmDeleteRecipe"
             >Delete {{ $recipe['name'] }}</x-ui.button>
@@ -353,9 +348,7 @@
                     </x-ui.button>
                     <x-ui.button
                         ref="recipe-copy-cancel"
-                        variant="plain"
-                        tone="neutral"
-                        size="lg"
+                        variant="text"
                         class="w-full items-center"
                         a11y-label="Cancel"
                         tap="closeCopy"
@@ -401,7 +394,7 @@
                             </column>
                             <x-ui.button
                                 ref="recipe-share-copy"
-                                variant="tint"
+                                variant="secondary"
                                 :ios="$linkCopied ? Ios::Checkmark : Ios::DocOnDoc"
                                 :android="$linkCopied ? Android::Check : Android::ContentCopy"
                                 :a11y-label="$linkCopied ? 'Link copied' : 'Copy link'"
@@ -471,9 +464,7 @@
                     @php($dismissLabel = $shareProblem !== null ? 'Cancel' : ($shareUrl ? 'Done' : 'Not now'))
                     <x-ui.button
                         ref="recipe-share-cancel"
-                        variant="plain"
-                        tone="neutral"
-                        size="lg"
+                        variant="text"
                         class="w-full items-center"
                         :a11y-label="$dismissLabel"
                         tap="closeShare"

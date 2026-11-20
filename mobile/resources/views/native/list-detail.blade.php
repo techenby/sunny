@@ -67,11 +67,8 @@
                         <text class="flex-1 text-sm text-theme-on-surface-variant">Edit item</text>
                         <x-ui.button
                             ref="list-edit-cancel"
-                            variant="plain"
-                            tone="muted"
-                            size="sm"
-                            :font="false"
-                            class="min-h-8 pl-3"
+                            variant="text"
+                            class="pl-3"
                             a11y-label="Cancel"
                             tap="cancelEdit"
                         >Cancel</x-ui.button>
@@ -109,12 +106,9 @@
                                 @if ($editingUrl !== '')
                                     <x-ui.button
                                         ref="list-edit-url-clear"
-                                        variant="plain"
-                                        tone="muted"
-                                        class="h-8 w-8"
+                                        variant="text"
                                         :ios="Ios::XmarkCircleFill"
                                         :android="Android::Cancel"
-                                        :icon-size="18"
                                         a11y-label="Clear link"
                                         tap="clearEditingUrl"
                                     />
@@ -134,10 +128,7 @@
                         @if ($editingItem['url'] !== null)
                             <x-ui.button
                                 ref="list-edit-remove-link"
-                                variant="plain"
-                                size="sm"
-                                class="min-h-10"
-                                gap="1.5"
+                                variant="text"
                                 :ios="Ios::Xmark"
                                 :android="Android::LinkOff"
                                 a11y-label="Remove link"
@@ -147,8 +138,7 @@
                         <column class="flex-1" />
                         <x-ui.button
                             ref="list-edit-save"
-                            variant="filled"
-                            class="min-h-10 shrink-0 px-5"
+                            class="shrink-0"
                             a11y-label="Save"
                             tap="saveItem"
                         >Save</x-ui.button>
@@ -185,12 +175,9 @@
                             @if ($newItemUrl !== '')
                                 <x-ui.button
                                     ref="list-new-item-url-clear"
-                                    variant="plain"
-                                    tone="muted"
-                                    class="h-8 w-8"
+                                    variant="text"
                                     :ios="Ios::XmarkCircleFill"
                                     :android="Android::Cancel"
-                                    :icon-size="18"
                                     a11y-label="Clear link"
                                     tap="clearNewItemUrl"
                                 />
@@ -289,11 +276,9 @@
                             </column>
                             <x-ui.button
                                 ref="list-item-{{ $item['id'] }}-actions"
-                                variant="plain"
-                                tone="muted"
+                                variant="text"
                                 :ios="Ios::Ellipsis"
                                 :android="Android::MoreHoriz"
-                                :icon-size="18"
                                 :a11y-label="'Edit or remove '.$item['name']"
                                 :menu="$this->itemMenu($item)"
                             />

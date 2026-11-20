@@ -200,7 +200,7 @@
                         native:model="newName"
                     />
                     <x-ui.button ref="team-rename-save" class="w-full" tap="rename">Save name</x-ui.button>
-                    <x-ui.button ref="team-rename-cancel" variant="ghost" :font="false" class="w-full" tap="closeRename">Cancel</x-ui.button>
+                    <x-ui.button ref="team-rename-cancel" variant="text" class="w-full" tap="closeRename">Cancel</x-ui.button>
                 </column>
             </scroll-view>
         @endif
@@ -229,9 +229,7 @@
                     <row class="w-full items-center">
                         <x-ui.button
                             ref="team-timezone-cancel"
-                            variant="plain"
-                            size="lg"
-                            :font="false"
+                            variant="text"
                             class="w-20"
                             tap="closeTimezone"
                         >Cancel</x-ui.button>
@@ -295,7 +293,7 @@
                             <x-ui.text>{{ $this->firstName($member['name']) }} will lose access to the team’s recipes, inventory, routines and lists.</x-ui.text>
                         </column>
                         <x-ui.button ref="member-remove-confirm-button" variant="destructive" class="w-full" tap="removeMember">Remove {{ $this->firstName($member['name']) }}</x-ui.button>
-                        <x-ui.button ref="member-remove-keep" variant="ghost" :font="false" class="w-full" tap="keepMember">Keep {{ $this->firstName($member['name']) }}</x-ui.button>
+                        <x-ui.button ref="member-remove-keep" variant="text" class="w-full" tap="keepMember">Keep {{ $this->firstName($member['name']) }}</x-ui.button>
                     @else
                         <column class="w-full gap-2">
                             @include('native.role-options', ['ref' => 'member-role', 'roles' => [TeamRole::Admin, TeamRole::Member], 'selected' => $member['role'], 'action' => 'changeRole'])
@@ -310,7 +308,7 @@
                         >
                             <text font="semibold" class="text-center text-base text-theme-destructive">Remove from {{ $team->name }}</text>
                         </pressable>
-                        <x-ui.button ref="member-done" variant="ghost" :font="false" class="w-full" tap="closeMember">Done</x-ui.button>
+                        <x-ui.button ref="member-done" variant="text" class="w-full" tap="closeMember">Done</x-ui.button>
                     @endif
                 </column>
             </scroll-view>

@@ -12,36 +12,33 @@
                 </text>
                 <x-ui.button
                     ref="selection-all"
-                    variant="plain"
-                    class="min-h-11"
+                    variant="text"
                     max-lines="1"
                     :a11y-label="$selectedAll ? 'Deselect all' : 'Select all'"
                     tap="toggleSelectAll"
                 >{{ $selectedAll ? 'Deselect all' : 'Select all' }}</x-ui.button>
             </row>
-            <column class="w-full gap-2.5 {{ $count === 0 ? 'opacity-40' : '' }}">
+            <column class="w-full gap-2.5">
                 <x-ui.button
                     ref="selection-move"
-                    variant="filled"
-                    size="lg"
                     class="w-full"
                     :ios="Ios::ArrowRight"
                     :android="Android::ArrowForward"
                     a11y-label="Move"
                     a11y-hint="Choose a new place for what you picked"
+                    :disabled="$count === 0"
                     tap="startMoveSelected"
                 >Move</x-ui.button>
-                <pressable
+                <x-ui.button
                     ref="selection-delete"
+                    variant="secondary"
+                    class="w-full"
+                    :ios="Ios::Trash"
+                    :android="Android::Delete"
                     a11y-label="Delete"
-                    class="min-h-12 w-full items-center justify-center rounded-full bg-theme-destructive/10 px-4"
-                    @tap="confirmDeleteSelected"
-                >
-                    <row class="items-center gap-2">
-                        <native:icon :ios="Ios::Trash" :android="Android::Delete" :size="18" class="text-theme-destructive" />
-                        <text font="semibold" class="text-lg text-theme-destructive">Delete</text>
-                    </row>
-                </pressable>
+                    :disabled="$count === 0"
+                    tap="confirmDeleteSelected"
+                >Delete</x-ui.button>
             </column>
         </column>
     </column>

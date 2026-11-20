@@ -28,9 +28,7 @@
                 <row class="w-full items-center">
                     <x-ui.button
                         ref="{{ $refPrefix }}-parent-cancel"
-                        variant="plain"
-                        size="lg"
-                        :font="false"
+                        variant="text"
                         class="w-20"
                         tap="closeParentPicker"
                     >Cancel</x-ui.button>

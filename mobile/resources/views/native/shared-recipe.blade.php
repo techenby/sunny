@@ -25,7 +25,7 @@
                             <x-ui.text size="sm">In {{ $teamName }}</x-ui.text>
                         @endif
                     </column>
-                    <x-ui.button ref="shared-recipe-open" variant="filled" a11y-label="Open your copy" tap="openSaved">Open</x-ui.button>
+                    <x-ui.button ref="shared-recipe-open" a11y-label="Open your copy" tap="openSaved">Open</x-ui.button>
                 </row>
             @else
                 @if ($saveProblem !== null)

@@ -81,11 +81,8 @@
                         />
                         <x-ui.button
                             ref="setup-add-place"
-                            variant="filled"
-                            class="h-10 w-10"
                             :ios="Ios::Checkmark"
                             :android="Android::Check"
-                            :icon-size="18"
                             a11y-label="Add place"
                             tap="addOwnPlace"
                         />
