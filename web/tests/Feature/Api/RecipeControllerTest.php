@@ -253,6 +253,99 @@ test('store rejects a parent from another team', function () {
         ->assertJsonValidationErrors('parent_id');
 });
 
+test('store gives a recipe created from a parent a copy of the parent photo', function () {
+    Storage::fake();
+    $user = User::factory()->create();
+    $parent = Recipe::factory()->for($user->currentTeam)->create([
+        'name' => 'Pancakes',
+        'photo_path' => "teams/{$user->current_team_id}/recipes/pancakes.jpg",
+        'thumb_path' => "teams/{$user->current_team_id}/recipes/thumbs/pancakes-abcd1234.jpg",
+    ]);
+    Storage::put($parent->photo_path, 'pancake photo');
+    Storage::put($parent->thumb_path, 'pancake thumb');
+
+    $response = $this->actingAs($user)
+        ->postJson(route('api.recipes.store', $user->currentTeam), ['name' => 'Pancakes (Remix)', 'parent_id' => $parent->id])
+        ->assertCreated()
+        ->assertJsonPath('data.parent_id', $parent->id);
+
+    $remix = Recipe::findOrFail($response->json('data.id'));
+
+    expect($response->json('data.photo_url'))->toContain('/recipes/pancakes-remix-')
+        ->and($response->json('data.thumb_url'))->toContain('/recipes/thumbs/pancakes-remix-')
+        ->and($remix->photo_path)->not->toBe($parent->photo_path)
+        ->and(Storage::get($remix->photo_path))->toBe('pancake photo')
+        ->and(Storage::get($remix->thumb_path))->toBe('pancake thumb');
+});
+
+test('store does not copy the parent photo again when a client uuid is retried', function () {
+    Storage::fake();
+    $user = User::factory()->create();
+    $parent = Recipe::factory()->for($user->currentTeam)->create(['name' => 'Pancakes', 'photo_path' => "teams/{$user->current_team_id}/recipes/pancakes.jpg"]);
+    Storage::put($parent->photo_path, 'pancake photo');
+    $data = ['name' => 'Pancakes (Remix)', 'parent_id' => $parent->id, 'client_uuid' => '9b2f6c1e-3d4a-4f5b-8c7d-1e2f3a4b5c6d'];
+
+    $first = $this->actingAs($user)
+        ->postJson(route('api.recipes.store', $user->currentTeam), $data)
+        ->assertCreated();
+    $photoPath = Recipe::findOrFail($first->json('data.id'))->photo_path;
+
+    $this->actingAs($user)
+        ->postJson(route('api.recipes.store', $user->currentTeam), $data)
+        ->assertOk()
+        ->assertJsonPath('data.id', $first->json('data.id'));
+
+    expect(Recipe::findOrFail($first->json('data.id'))->photo_path)->toBe($photoPath)
+        ->and(Storage::allFiles())->toHaveCount(2);
+});
+
+test('store leaves a recipe created from a parent without a photo when remove_photo is true', function () {
+    Storage::fake();
+    $user = User::factory()->create();
+    $parent = Recipe::factory()->for($user->currentTeam)->create(['name' => 'Pancakes', 'photo_path' => "teams/{$user->current_team_id}/recipes/pancakes.jpg"]);
+    Storage::put($parent->photo_path, 'pancake photo');
+
+    $response = $this->actingAs($user)
+        ->postJson(route('api.recipes.store', $user->currentTeam), ['name' => 'Pancakes (Remix)', 'parent_id' => $parent->id, 'remove_photo' => true])
+        ->assertCreated()
+        ->assertJsonPath('data.parent_id', $parent->id)
+        ->assertJsonPath('data.photo_url', null)
+        ->assertJsonPath('data.thumb_url', null)
+        ->assertJsonMissingPath('data.remove_photo');
+
+    expect(Recipe::findOrFail($response->json('data.id'))->photo_path)->toBeNull()
+        ->and(Storage::allFiles())->toBe([$parent->photo_path]);
+});
+
+test('store keeps the photo uploaded with a recipe created from a parent', function () {
+    Storage::fake();
+    $user = User::factory()->create();
+    $parent = Recipe::factory()->for($user->currentTeam)->create(['name' => 'Pancakes', 'photo_path' => "teams/{$user->current_team_id}/recipes/pancakes.jpg"]);
+    Storage::put($parent->photo_path, 'pancake photo');
+    $photo = UploadedFile::fake()->image('mine.png');
+
+    $response = $this->actingAs($user)->post(route('api.recipes.store', $user->currentTeam), [
+        'name' => 'Pancakes (Remix)', 'parent_id' => $parent->id, 'remove_photo' => '0', 'photo' => $photo,
+    ], ['Accept' => 'application/json'])->assertCreated();
+
+    $remix = Recipe::findOrFail($response->json('data.id'));
+
+    expect($remix->photo_path)->toBe("teams/{$user->current_team_id}/recipes/pancakes-remix.png")
+        ->and(Storage::get($remix->photo_path))->toBe($photo->getContent())
+        ->and(Storage::allFiles())->toHaveCount(3);
+});
+
+test('store returns 422 when remove_photo is not true or false', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->postJson(route('api.recipes.store', $user->currentTeam), ['name' => 'Pancakes', 'remove_photo' => 'maybe'])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['remove_photo' => 'The remove photo field must be true or false.']);
+
+    expect(Recipe::count())->toBe(0);
+});
+
 test('recipe API stores tags and a photo and supports replacing and removing them', function () {
     Storage::fake();
     $user = User::factory()->create();
