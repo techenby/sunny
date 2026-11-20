@@ -160,12 +160,12 @@ it('accepts and declines invitations in Preferences', function (): void {
     ]);
 
     Native::visit('/preferences', platform: 'ios')
-        ->assertElement('list_item', fn (array $node): bool => ($node['ref'] ?? null) === 'invitation-miller-code' && $node['props']['headline'] === 'Pat Miller invited you to join Miller Cabin' && $node['props']['supporting'] === 'Expires in 2 days')
-        ->assertElement('list_item', fn (array $node): bool => ($node['ref'] ?? null) === 'invitation-lake-code' && $node['props']['supporting'] === 'Expires today')
+        ->assertElement('column', fn (array $node): bool => ($node['ref'] ?? null) === 'invitation-miller-code' && $node['props']['a11y_label'] === 'Pat Miller invited you to join Miller Cabin, Expires in 2 days')
+        ->assertElement('column', fn (array $node): bool => ($node['ref'] ?? null) === 'invitation-lake-code' && str_ends_with($node['props']['a11y_label'], ', Expires today'))
         ->assertAccessible()
         ->tap('accept-invitation-miller-code')
         ->assertSee('Miller Cabin')
-        ->assertMissingElement('list_item', fn (array $node): bool => ($node['ref'] ?? null) === 'invitation-miller-code')
+        ->assertMissingElement('column', fn (array $node): bool => ($node['ref'] ?? null) === 'invitation-miller-code')
         ->tap('decline-invitation-lake-code')
         ->assertDontSee('Lake House');
 

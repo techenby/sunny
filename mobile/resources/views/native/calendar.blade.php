@@ -48,12 +48,12 @@
 
 <refreshable ref="calendar" fill class="bg-theme-background" @refresh="refresh">
     @if ($this->hasNoCalendars)
-        <column ref="calendar-empty" fill center class="gap-3 px-8 py-24">
-            <column class="h-16 w-16 items-center justify-center rounded-full bg-theme-primary/15">
-                <icon :ios="Ios::Calendar" :android="Android::CalendarMonth" :size="30" class="text-theme-primary" />
+        <column class="w-full px-4 pt-2 pb-8">
+            <column ref="calendar-empty" class="{{ Card::classes() }} w-full items-center gap-2 px-4 py-6">
+                <icon :ios="Ios::Calendar" :android="Android::CalendarMonth" :size="28" class="text-theme-primary" />
+                <x-ui.heading class="text-center">No calendars yet</x-ui.heading>
+                <x-ui.text size="sm" class="text-center">Connect Google Calendar, Proton or any calendar with an iCal link to see the next six weeks of plans here.</x-ui.text>
             </column>
-            <x-ui.heading size="xl" class="text-center">No calendars yet</x-ui.heading>
-            <x-ui.text class="text-center">Connect Google Calendar, Proton or any calendar with an iCal link to see the next six weeks of plans here.</x-ui.text>
         </column>
     @else
         <column class="w-full gap-5 px-4 pt-2 pb-8">
@@ -133,7 +133,7 @@
                         </column>
                     </column>
                 @empty
-                    <column ref="calendar-nothing" class="w-full items-center gap-2 py-12">
+                    <column ref="calendar-nothing" class="{{ Card::classes() }} w-full items-center gap-2 px-4 py-6">
                         <icon :ios="Ios::SunMax" :android="Android::WbSunny" :size="28" class="text-theme-primary" />
                         <x-ui.heading>Nothing in the next six weeks</x-ui.heading>
                         <x-ui.text size="sm" class="text-center">Events from your calendars will show up here.</x-ui.text>

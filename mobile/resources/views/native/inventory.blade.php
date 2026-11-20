@@ -65,10 +65,10 @@
                     @endforeach
                 </column>
             @else
-                <column ref="inventory-no-matches" class="w-full items-center gap-2 px-4 py-8">
-                    <icon :ios="Ios::Magnifyingglass" :android="Android::SearchOff" :size="28" class="text-theme-on-surface-variant" />
-                    <x-ui.heading size="lg">Nothing called “{{ $search }}”</x-ui.heading>
-                    <x-ui.text>Check the spelling, or try a shorter word.</x-ui.text>
+                <column ref="inventory-no-matches" class="{{ Card::classes() }} w-full items-center gap-2 px-4 py-6">
+                    <icon :ios="Ios::Magnifyingglass" :android="Android::SearchOff" :size="28" class="text-theme-primary" />
+                    <x-ui.heading class="text-center">Nothing called “{{ $search }}”</x-ui.heading>
+                    <x-ui.text size="sm" class="text-center">Check the spelling, or try a shorter word.</x-ui.text>
                 </column>
             @endif
         @else
@@ -104,10 +104,10 @@
             @endif
 
             @if ($this->items === [])
-                <column ref="inventory-empty" class="w-full items-center gap-2 px-4 py-8">
-                    <icon :ios="Ios::Archivebox" :android="Android::Inventory2" :size="28" class="text-theme-on-surface-variant" />
-                    <x-ui.heading size="lg">Nothing here yet</x-ui.heading>
-                    <x-ui.text>Tap Add to start with a room, like Garage. If you've added things on the website, pull down on the Summary tab to bring them in.</x-ui.text>
+                <column ref="inventory-empty" class="{{ Card::classes() }} w-full items-center gap-2 px-4 py-6">
+                    <icon :ios="Ios::Archivebox" :android="Android::Inventory2" :size="28" class="text-theme-primary" />
+                    <x-ui.heading class="text-center">Nothing here yet</x-ui.heading>
+                    <x-ui.text size="sm" class="text-center">Tap Add to start with a room, like Garage. If you've added things on the website, pull down on the Summary tab to bring them in.</x-ui.text>
                 </column>
             @endif
 

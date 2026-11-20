@@ -1,5 +1,6 @@
 @use('App\Icons\Android')
 @use('App\Icons\Ios')
+@use('App\Ui\Card')
 
 @php($checklist = $this->checklist)
 
@@ -219,9 +220,9 @@
             @endif
 
             @if ($this->items)
-                <column class="w-full rounded-xl bg-theme-surface">
+                <column class="w-full {{ Card::classes() }}">
                     @foreach ($this->items as $item)
-                        <row class="w-full items-center {{ $editingItemId === $item['id'] ? 'bg-theme-primary/10' : '' }}">
+                        <row class="w-full items-center {{ $editingItemId === $item['id'] ? 'bg-theme-primary/10' : '' }} {{ $loop->first ? 'rounded-t-[17]' : '' }} {{ $loop->last ? 'rounded-b-[17]' : '' }}">
                             <column class="flex-1">
                                 <pressable
                                     ref="list-item-{{ $item['id'] }}"
@@ -276,10 +277,10 @@
                     @endforeach
                 </column>
             @else
-                <column ref="list-empty" class="w-full items-center gap-2 rounded-xl bg-theme-surface px-4 py-6">
-                    <icon :ios="Ios::ListBullet" :android="Android::FormatListBulleted" :size="26" class="text-theme-primary" />
-                    <text font="semibold" class="text-base text-theme-on-surface">This list is empty.</text>
-                    <text class="text-sm text-theme-on-surface-variant">Add an item below.</text>
+                <column ref="list-empty" class="{{ Card::classes() }} w-full items-center gap-2 px-4 py-6">
+                    <icon :ios="Ios::ListBullet" :android="Android::FormatListBulleted" :size="28" class="text-theme-primary" />
+                    <x-ui.heading class="text-center">This list is empty.</x-ui.heading>
+                    <x-ui.text size="sm" class="text-center">Add an item below.</x-ui.text>
                 </column>
             @endif
         </column>

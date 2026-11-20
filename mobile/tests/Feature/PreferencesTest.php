@@ -22,9 +22,9 @@ it('lists the teams with a check on the active one', function () {
         ->assertSee('Family')
         ->assertSee('Work')
         ->assertSet('activeTeamId', 1)
-        ->assertElement('list_item', fn (array $node): bool => ($node['ref'] ?? null) === 'team-1' && ($node['props']['trailing_icon'] ?? null) === 'checkmark')
-        ->assertElement('list_item', fn (array $node): bool => ($node['ref'] ?? null) === 'team-2' && ! isset($node['props']['trailing_icon']))
-        ->assertElement('list_item', fn (array $node): bool => ($node['ref'] ?? null) === 'log-out' && ($node['props']['leading_icon'] ?? null) === 'rectangle.portrait.and.arrow.right')
+        ->assertElement('icon', fn (array $node): bool => ($node['ref'] ?? null) === 'team-1-trailing' && $node['props']['name'] === 'checkmark')
+        ->assertMissingElement('icon', fn (array $node): bool => ($node['ref'] ?? null) === 'team-2-trailing')
+        ->assertElement('icon', fn (array $node): bool => $node['props']['name'] === 'rectangle.portrait.and.arrow.right')
         ->assertAccessible();
 });
 
@@ -50,7 +50,7 @@ it('explains when there are no teams yet', function () {
 
     Native::visit('/preferences')
         ->assertSee('No teams available')
-        ->assertElement('list_section', fn (array $node): bool => ($node['props']['footer'] ?? null) === 'Pull down on Summary to download your teams.');
+        ->assertSee('Pull down on Summary to download your teams.');
 });
 
 it('asks for confirmation before logging out', function () {

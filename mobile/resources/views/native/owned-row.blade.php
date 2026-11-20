@@ -42,6 +42,6 @@
         </row>
     </pressable>
     @unless ($last)
-        <divider class="{{ $tile || $iconBackground ? 'ml-[72]' : 'ml-14' }} mr-5" />
+        <divider class="{{ $tile || $iconBackground ? 'ml-[72]' : 'ml-14' }}" />
     @endunless
 </column>

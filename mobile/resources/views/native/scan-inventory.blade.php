@@ -1,5 +1,6 @@
 @use('App\Icons\Android')
 @use('App\Icons\Ios')
+@use('App\Ui\Card')
 
 <native:top-bar title="Bulk add" back />
 
@@ -81,7 +82,7 @@
                     {{ trans_choice(':count item|:count items', count($candidates)) }}@if ($this->identifyingCount > 0) · {{ $this->identifyingCount }} identifying…@endif
                 </text>
 
-                <column class="w-full rounded-xl bg-theme-surface">
+                <column class="w-full {{ Card::classes() }}">
                     @foreach ($candidates as $candidate)
                         @php
                             $details = collect([
