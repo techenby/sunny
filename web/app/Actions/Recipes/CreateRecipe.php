@@ -15,7 +15,7 @@ class CreateRecipe
     /**
      * @param  array<string, mixed>  $data
      */
-    public function handle(Team $team, array $data): Recipe
+    public function handle(Team $team, array $data, bool $withoutParentPhoto = false): Recipe
     {
         $photo = Arr::pull($data, 'photo');
 
@@ -27,6 +27,12 @@ class CreateRecipe
             $path = $photo->storeAs("teams/{$team->id}/recipes", $filename);
 
             $recipe->update(['photo_path' => $path, 'thumb_path' => (new CreateThumbnail)->handle($path)]);
+        } elseif ($recipe->parent_id !== null && ! $withoutParentPhoto) {
+            $parent = $team->recipes()->withTrashed()->find($recipe->parent_id);
+
+            if ($parent !== null) {
+                (new CopyRecipePhoto)->handle($parent, $recipe);
+            }
         }
 
         return $recipe;

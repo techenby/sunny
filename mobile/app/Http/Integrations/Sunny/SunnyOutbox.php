@@ -68,6 +68,8 @@ class SunnyOutbox
                 $record->photo_url = $photoPath;
                 $record->thumb_url = null;
                 $record->thumb_path = null;
+            } elseif ($resource === 'recipes' && $id === null && ($payload['parent_id'] ?? null) !== null) {
+                $record->fill(SunnyStore::inTeam('recipes', $teamId)->find($payload['parent_id'])?->only(['photo_url', 'thumb_url', 'thumb_path']) ?? []);
             }
             if (array_key_exists('completed', $payload)) {
                 $record->completed_at = $payload['completed'] ? ($record->completed_at ?? now()) : null;

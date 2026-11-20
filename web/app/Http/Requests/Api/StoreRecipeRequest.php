@@ -38,6 +38,7 @@ class StoreRecipeRequest extends FormRequest
             'tags' => ['nullable', 'array', 'list'],
             'tags.*' => ['string', 'max:255'],
             'photo' => ['nullable', 'image', 'max:10240'],
+            'remove_photo' => ['sometimes', 'boolean'],
             'client_uuid' => ['nullable', 'uuid'],
             'parent_id' => ['nullable', 'integer', Rule::exists('recipes', 'id')->where('team_id', $this->route('team')->id)],
         ];
