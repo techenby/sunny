@@ -4,6 +4,7 @@ namespace App\Support;
 
 use Carbon\CarbonImmutable;
 use DateTimeInterface;
+use Native\Mobile\Facades\Device;
 
 class InvitationExpiry
 {
@@ -13,9 +14,10 @@ class InvitationExpiry
             return null;
         }
 
-        $expires = CarbonImmutable::parse($expiresAt)->setTimezone(config('app.timezone'));
+        $today = CarbonImmutable::today(Device::getTimezone() ?? config('app.timezone'));
+        $expires = CarbonImmutable::parse($expiresAt)->setTimezone($today->getTimezone());
 
-        return $expires->isPast() ? -1 : (int) CarbonImmutable::today(config('app.timezone'))->diffInDays($expires->startOfDay());
+        return $expires->isPast() ? -1 : (int) $today->diffInDays($expires->startOfDay());
     }
 
     public static function label(DateTimeInterface|string|null $expiresAt): string

@@ -152,6 +152,7 @@ it('declines an invitation from Summary', function (): void {
 });
 
 it('accepts and declines invitations in Preferences', function (): void {
+    $this->travelTo(now()->setTime(12, 0));
     invitedToMillerCabin();
     Invitation::create(['code' => 'lake-code', 'server' => SunnyStore::server(), 'team_name' => 'Lake House', 'inviter_name' => 'Sam Lee', 'role' => 'admin', 'expires_at' => now()->addHours(3), 'created_at' => now()]);
     Saloon::fake([
@@ -324,3 +325,18 @@ it('shows members who can’t invite who to ask', function (): void {
 
     Saloon::assertNotSent(CancelTeamInvitationRequest::class);
 });
+
+it('counts the days until an invitation expires on the phone’s calendar', function (string $now, string $expiresAt, ?string $timezone, string $label): void {
+    $this->travelTo($now);
+    Native::fakeBridge()->respondTo('Device.GetInfo', ['info' => json_encode(['timezone' => $timezone])]);
+    Invitation::create(['code' => 'lake-code', 'server' => SunnyStore::server(), 'team_name' => 'Lake House', 'inviter_name' => 'Sam Lee', 'role' => 'admin', 'expires_at' => $expiresAt, 'created_at' => now()]);
+
+    Native::visit('/preferences', platform: 'ios')
+        ->assertElement('column', fn (array $node): bool => ($node['ref'] ?? null) === 'invitation-lake-code' && str_ends_with($node['props']['a11y_label'], ', '.$label));
+})->with([
+    'this evening, before midnight UTC' => ['2026-11-19 21:45:00', '2026-11-20T00:45:00+00:00', 'America/Chicago', 'Expires today'],
+    'tomorrow morning, after midnight UTC' => ['2026-11-20 01:00:00', '2026-11-20T15:00:00+00:00', 'America/Chicago', 'Expires tomorrow'],
+    'late tonight, east of UTC' => ['2026-11-19 12:00:00', '2026-11-19T14:30:00+00:00', 'Asia/Tokyo', 'Expires today'],
+    'early tomorrow, east of UTC' => ['2026-11-19 12:00:00', '2026-11-19T16:00:00+00:00', 'Asia/Tokyo', 'Expires tomorrow'],
+    'a phone that doesn’t say its timezone' => ['2026-11-19 21:45:00', '2026-11-20T00:45:00+00:00', null, 'Expires tomorrow'],
+]);
