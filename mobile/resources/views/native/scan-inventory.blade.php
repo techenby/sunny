@@ -6,28 +6,28 @@
 
 <native:bottom-bar>
     <column class="w-full gap-3 px-4 pb-2">
-        <pressable
+        <x-ui.button
             ref="scan-take-photos"
+            variant="glass"
+            tone="accent"
+            class="w-full"
+            gap="2"
+            :ios="Ios::CameraFill"
+            :android="Android::PhotoCamera"
+            :icon-size="20"
             a11y-label="Take photos"
-            class="min-h-12 w-full items-center justify-center rounded-full px-4 glass android:bg-theme-surface"
-            @tap="takePhotos"
-        >
-            <row class="items-center gap-2">
-                <native:icon :ios="Ios::CameraFill" :android="Android::PhotoCamera" :size="20" class="text-theme-primary-text" />
-                <text font="semibold" class="text-base text-theme-primary-text">Take photos</text>
-            </row>
-        </pressable>
-        <button
+            tap="takePhotos"
+        >Take photos</x-ui.button>
+        <x-ui.button
             ref="scan-submit"
-            variant="primary"
-            font="semibold"
+            :size="false"
             class="h-12 w-full"
             :disabled="$saving || $candidates === []"
             :loading="$saving"
-            @tap="confirmSave"
+            tap="confirmSave"
         >
             {{ $candidates === [] ? 'Add items' : trans_choice('Add :count item|Add :count items', count($candidates)) }}
-        </button>
+        </x-ui.button>
     </column>
 </native:bottom-bar>
 
@@ -59,18 +59,18 @@
             />
         @endif
 
-        <pressable
+        <x-ui.button
             ref="scan-choose-photos"
+            variant="outline"
+            class="w-full"
+            gap="2"
+            :ios="Ios::Photo"
+            :android="Android::Photo"
+            :icon-size="20"
             a11y-label="Choose photos"
             a11y-hint="Pick photos you already took"
-            class="min-h-12 w-full items-center justify-center rounded-xl border border-theme-outline bg-theme-surface px-4"
-            @tap="choosePhotos"
-        >
-            <row class="items-center gap-2">
-                <native:icon :ios="Ios::Photo" :android="Android::Photo" :size="20" class="text-theme-on-surface" />
-                <text font="semibold" class="text-base text-theme-on-surface">Choose photos</text>
-            </row>
-        </pressable>
+            tap="choosePhotos"
+        >Choose photos</x-ui.button>
 
         @if ($error !== '')
             <text ref="scan-error" class="text-sm text-theme-destructive">{{ $error }}</text>
@@ -136,14 +136,16 @@
                                     <text ref="scan-candidate-{{ $candidate['id'] }}-error" class="text-sm text-theme-destructive">{{ $candidate['error'] }}</text>
                                 @endif
                             </column>
-                            <pressable
+                            <x-ui.button
                                 ref="scan-candidate-{{ $candidate['id'] }}-actions"
+                                variant="plain"
+                                tone="muted"
+                                :ios="Ios::Ellipsis"
+                                :android="Android::MoreHoriz"
+                                :icon-size="18"
                                 a11y-label="Retake or remove"
-                                class="h-12 w-12 items-center justify-center"
                                 :menu="$this->candidateMenu($candidate['id'])"
-                            >
-                                <icon :ios="Ios::Ellipsis" :android="Android::MoreHoriz" :size="18" class="text-theme-on-surface-variant" />
-                            </pressable>
+                            />
                         </row>
                         @if (! $loop->last)
                             <divider key="candidate-{{ $candidate['id'] }}-divider" class="ml-[84]" />
@@ -152,15 +154,17 @@
                 </column>
             </column>
 
-            <pressable
+            <x-ui.button
                 ref="scan-start-over"
+                variant="plain"
+                tone="destructive"
+                size="lg"
+                class="w-full items-center"
+                label-class="text-center"
                 a11y-label="Start over"
                 a11y-hint="Clears these photos and names"
-                class="min-h-12 w-full items-center justify-center"
-                @tap="confirmStartOver"
-            >
-                <text font="semibold" class="text-center text-lg text-theme-destructive">Start over</text>
-            </pressable>
+                tap="confirmStartOver"
+            >Start over</x-ui.button>
         @endif
     </column>
 </scroll-view>

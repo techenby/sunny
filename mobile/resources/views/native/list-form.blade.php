@@ -38,16 +38,13 @@
             </text>
         @endif
 
-        <button
+        <x-ui.button
             ref="{{ $formRef }}-submit"
-            variant="primary"
-            size="lg"
-            font="semibold"
             class="w-full"
             :disabled="$saving || $savedId !== null"
-            @tap="save"
+            tap="save"
         >
             {{ $submitLabel }}
-        </button>
+        </x-ui.button>
     </column>
 </scroll-view>

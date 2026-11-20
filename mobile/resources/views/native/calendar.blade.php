@@ -36,12 +36,16 @@
 @if ($this->hasNoCalendars)
     <native:bottom-bar>
         <row class="w-full items-center justify-center px-4 pb-2">
-            <pressable ref="add-first-calendar" a11y-label="Add a calendar" class="min-h-12 items-center justify-center rounded-full bg-theme-primary px-6" @navigate('/calendar/feeds/create')>
-                <row class="items-center gap-2">
-                    <icon :ios="Ios::Plus" :android="Android::Add" :size="18" class="text-theme-on-primary" />
-                    <text font="semibold" class="text-lg text-theme-on-primary">Add a calendar</text>
-                </row>
-            </pressable>
+            <x-ui.button
+                ref="add-first-calendar"
+                variant="filled"
+                size="lg"
+                class="px-6"
+                :ios="Ios::Plus"
+                :android="Android::Add"
+                a11y-label="Add a calendar"
+                navigate="/calendar/feeds/create"
+            >Add a calendar</x-ui.button>
         </row>
     </native:bottom-bar>
 @endif
@@ -49,11 +53,13 @@
 <refreshable ref="calendar" fill class="bg-theme-background" @refresh="refresh">
     @if ($this->hasNoCalendars)
         <column class="w-full px-4 pt-2 pb-8">
-            <column ref="calendar-empty" class="{{ Card::classes() }} w-full items-center gap-2 px-4 py-6">
-                <icon :ios="Ios::Calendar" :android="Android::CalendarMonth" :size="28" class="text-theme-primary" />
-                <x-ui.heading class="text-center">No calendars yet</x-ui.heading>
-                <x-ui.text size="sm" class="text-center">Connect Google Calendar, Proton or any calendar with an iCal link to see the next six weeks of plans here.</x-ui.text>
-            </column>
+            <x-ui.empty-state
+                ref="calendar-empty"
+                :ios="Ios::Calendar"
+                :android="Android::CalendarMonth"
+                heading="No calendars yet"
+                text="Connect Google Calendar, Proton or any calendar with an iCal link to see the next six weeks of plans here."
+            />
         </column>
     @else
         <column class="w-full gap-5 px-4 pt-2 pb-8">
@@ -73,12 +79,14 @@
                         </column>
                     </row>
                     <row class="w-full pl-8">
-                        <pressable ref="calendar-retry" a11y-label="Try again" class="min-h-12 items-center justify-center rounded-full bg-theme-primary px-4" @tap="refresh">
-                            <row class="items-center gap-1.5">
-                                <icon :ios="Ios::ArrowClockwise" :android="Android::Refresh" :size="16" class="text-theme-on-primary" />
-                                <text font="semibold" class="text-base text-theme-on-primary">Try again</text>
-                            </row>
-                        </pressable>
+                        <x-ui.button
+                            ref="calendar-retry"
+                            variant="filled"
+                            :ios="Ios::ArrowClockwise"
+                            :android="Android::Refresh"
+                            a11y-label="Try again"
+                            tap="refresh"
+                        >Try again</x-ui.button>
                     </row>
                 </column>
             @elseif ($this->updatedLabel)
@@ -107,12 +115,17 @@
                             @endif
                         </column>
                     </row>
-                    <pressable ref="calendar-warning-{{ $warning['feed_id'] }}-fix" a11y-label="Fix it in Calendars" class="min-h-12 w-full items-center justify-center rounded-full bg-theme-primary" @navigate('/calendar/feeds')>
-                        <row class="items-center gap-1.5">
-                            <text font="semibold" class="text-base text-theme-on-primary">Fix it in Calendars</text>
-                            <icon :ios="Ios::ArrowRight" :android="Android::ArrowForward" :size="16" class="text-theme-on-primary" />
-                        </row>
-                    </pressable>
+                    <x-ui.button
+                        ref="calendar-warning-{{ $warning['feed_id'] }}-fix"
+                        variant="filled"
+                        class="w-full"
+                        flush
+                        :ios="Ios::ArrowRight"
+                        :android="Android::ArrowForward"
+                        icon-trailing
+                        a11y-label="Fix it in Calendars"
+                        navigate="/calendar/feeds"
+                    >Fix it in Calendars</x-ui.button>
                 </column>
             @endforeach
 

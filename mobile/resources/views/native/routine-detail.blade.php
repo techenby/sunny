@@ -40,14 +40,7 @@
                     @submit="addStep"
                 />
             </row>
-            <pressable
-                ref="routine-add-step"
-                a11y-label="Add step"
-                class="h-12 w-12 items-center justify-center rounded-full glass android:bg-theme-surface"
-                @tap="addStep"
-            >
-                <native:icon :ios="Ios::Plus" :android="Android::Add" :size="22" class="text-theme-on-surface" />
-            </pressable>
+            <x-ui.button ref="routine-add-step" variant="glass" :ios="Ios::Plus" :android="Android::Add" a11y-label="Add step" tap="addStep" />
         </row>
     </native:bottom-bar>
 
@@ -67,31 +60,27 @@
             <row class="w-full items-center gap-3 px-1">
                 <x-ui.heading size="lg" class="flex-1">{{ $this->steps ? 'Steps ('.count($this->steps).')' : 'Steps' }}</x-ui.heading>
                 @if ($reordering)
-                    <pressable
+                    <x-ui.button
                         ref="routine-reorder-done"
+                        variant="tint"
+                        :ios="Ios::Checkmark"
+                        :android="Android::Check"
+                        :icon-size="18"
                         a11y-label="Done"
                         a11y-hint="Saves the new order"
-                        class="min-h-12 items-center justify-center rounded-full bg-theme-primary/15 px-4"
-                        @tap="finishReordering"
-                    >
-                        <row class="items-center gap-1.5">
-                            <icon :ios="Ios::Checkmark" :android="Android::Check" :size="18" class="text-theme-primary-text" />
-                            <text font="semibold" class="text-base text-theme-primary-text">Done</text>
-                        </row>
-                    </pressable>
+                        tap="finishReordering"
+                    >Done</x-ui.button>
                 @elseif (count($this->steps) > 1)
-                    <pressable
+                    <x-ui.button
                         ref="routine-reorder"
+                        variant="neutral"
+                        :ios="Ios::ArrowUpArrowDown"
+                        :android="Android::SwapVert"
+                        :icon-size="18"
                         a11y-label="Reorder"
                         a11y-hint="Move steps up or down"
-                        class="min-h-12 items-center justify-center rounded-full bg-theme-surface-variant px-4"
-                        @tap="startReordering"
-                    >
-                        <row class="items-center gap-1.5">
-                            <icon :ios="Ios::ArrowUpArrowDown" :android="Android::SwapVert" :size="18" class="text-theme-on-surface" />
-                            <text font="semibold" class="text-base text-theme-on-surface">Reorder</text>
-                        </row>
-                    </pressable>
+                        tap="startReordering"
+                    >Reorder</x-ui.button>
                 @endif
             </row>
 
@@ -152,14 +141,16 @@
                                         @submit="renameStep"
                                     />
                                 </row>
-                                <pressable
+                                <x-ui.button
                                     ref="routine-step-{{ $step['id'] }}-save"
+                                    variant="plain"
+                                    :ios="Ios::Checkmark"
+                                    :android="Android::Check"
+                                    :icon-size="20"
+                                    icon-class="text-theme-primary"
                                     a11y-label="Save step"
-                                    class="h-12 w-12 items-center justify-center"
-                                    @tap="renameStep"
-                                >
-                                    <icon :ios="Ios::Checkmark" :android="Android::Check" :size="20" class="text-theme-primary" />
-                                </pressable>
+                                    tap="renameStep"
+                                />
                             @else
                                 <pressable
                                     ref="routine-step-{{ $step['id'] }}-edit"
@@ -178,14 +169,16 @@
                                     </row>
                                 </pressable>
                             @endif
-                            <pressable
+                            <x-ui.button
                                 ref="routine-step-{{ $step['id'] }}-remove"
+                                variant="plain"
+                                tone="muted"
+                                :ios="Ios::Trash"
+                                :android="Android::Delete"
+                                :icon-size="18"
                                 :a11y-label="'Remove '.$step['name']"
-                                class="h-12 w-12 items-center justify-center"
-                                @tap="removeStep({{ $step['id'] }})"
-                            >
-                                <icon :ios="Ios::Trash" :android="Android::Delete" :size="18" class="text-theme-on-surface-variant" />
-                            </pressable>
+                                tap="removeStep({{ $step['id'] }})"
+                            />
                         </row>
                         @unless ($loop->last)
                             <divider class="ml-[52]" />
@@ -193,11 +186,13 @@
                     @endforeach
                 </column>
             @else
-                <column ref="routine-empty" class="{{ Card::classes() }} w-full items-center gap-2 px-4 py-6">
-                    <icon :ios="Ios::ChecklistChecked" :android="Android::Checklist" :size="28" class="text-theme-primary" />
-                    <x-ui.heading class="text-center">This routine has no steps.</x-ui.heading>
-                    <x-ui.text size="sm" class="text-center">Add a step below.</x-ui.text>
-                </column>
+                <x-ui.empty-state
+                    ref="routine-empty"
+                    :ios="Ios::ChecklistChecked"
+                    :android="Android::Checklist"
+                    heading="This routine has no steps."
+                    text="Add a step below."
+                />
             @endif
         </column>
     </scroll-view>

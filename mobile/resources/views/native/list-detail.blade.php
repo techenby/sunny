@@ -65,9 +65,16 @@
                 <column ref="list-edit-item" class="w-full gap-2.5 rounded-[24] p-3 glass android:bg-theme-surface">
                     <row class="w-full items-center">
                         <text class="flex-1 text-sm text-theme-on-surface-variant">Edit item</text>
-                        <pressable ref="list-edit-cancel" a11y-label="Cancel" class="min-h-8 justify-center pl-3" @tap="cancelEdit">
-                            <text class="text-sm text-theme-on-surface-variant">Cancel</text>
-                        </pressable>
+                        <x-ui.button
+                            ref="list-edit-cancel"
+                            variant="plain"
+                            tone="muted"
+                            size="sm"
+                            :font="false"
+                            class="min-h-8 pl-3"
+                            a11y-label="Cancel"
+                            tap="cancelEdit"
+                        >Cancel</x-ui.button>
                     </row>
 
                     <column class="w-full gap-1">
@@ -100,9 +107,17 @@
                                     @submit="submitEditingUrl"
                                 />
                                 @if ($editingUrl !== '')
-                                    <pressable ref="list-edit-url-clear" a11y-label="Clear link" class="h-8 w-8 items-center justify-center" @tap="clearEditingUrl">
-                                        <icon :ios="Ios::XmarkCircleFill" :android="Android::Cancel" :size="18" class="text-theme-on-surface-variant" />
-                                    </pressable>
+                                    <x-ui.button
+                                        ref="list-edit-url-clear"
+                                        variant="plain"
+                                        tone="muted"
+                                        class="h-8 w-8"
+                                        :ios="Ios::XmarkCircleFill"
+                                        :android="Android::Cancel"
+                                        :icon-size="18"
+                                        a11y-label="Clear link"
+                                        tap="clearEditingUrl"
+                                    />
                                 @endif
                             </row>
                             @if ($linkError !== '')
@@ -117,17 +132,26 @@
 
                     <row class="w-full items-center gap-3">
                         @if ($editingItem['url'] !== null)
-                            <pressable ref="list-edit-remove-link" a11y-label="Remove link" class="min-h-10 justify-center" @tap="removeLink">
-                                <row class="items-center gap-1.5">
-                                    <icon :ios="Ios::Xmark" :android="Android::LinkOff" :size="14" class="text-theme-primary-text" />
-                                    <text font="semibold" class="text-sm text-theme-primary-text">Remove link</text>
-                                </row>
-                            </pressable>
+                            <x-ui.button
+                                ref="list-edit-remove-link"
+                                variant="plain"
+                                size="sm"
+                                class="min-h-10"
+                                gap="1.5"
+                                :ios="Ios::Xmark"
+                                :android="Android::LinkOff"
+                                a11y-label="Remove link"
+                                tap="removeLink"
+                            >Remove link</x-ui.button>
                         @endif
                         <column class="flex-1" />
-                        <pressable ref="list-edit-save" a11y-label="Save" class="min-h-10 shrink-0 items-center justify-center rounded-full bg-theme-primary px-5" @tap="saveItem">
-                            <text font="semibold" class="text-base text-theme-on-primary">Save</text>
-                        </pressable>
+                        <x-ui.button
+                            ref="list-edit-save"
+                            variant="filled"
+                            class="min-h-10 shrink-0 px-5"
+                            a11y-label="Save"
+                            tap="saveItem"
+                        >Save</x-ui.button>
                     </row>
                 </column>
             </column>
@@ -159,19 +183,27 @@
                                 @submit="submitNewItemUrl"
                             />
                             @if ($newItemUrl !== '')
-                                <pressable ref="list-new-item-url-clear" a11y-label="Clear link" class="h-8 w-8 items-center justify-center" @tap="clearNewItemUrl">
-                                    <icon :ios="Ios::XmarkCircleFill" :android="Android::Cancel" :size="18" class="text-theme-on-surface-variant" />
-                                </pressable>
+                                <x-ui.button
+                                    ref="list-new-item-url-clear"
+                                    variant="plain"
+                                    tone="muted"
+                                    class="h-8 w-8"
+                                    :ios="Ios::XmarkCircleFill"
+                                    :android="Android::Cancel"
+                                    :icon-size="18"
+                                    a11y-label="Clear link"
+                                    tap="clearNewItemUrl"
+                                />
                             @endif
                         </row>
-                        <pressable
+                        <x-ui.button
                             ref="list-add-item"
+                            variant="glass"
+                            :ios="Ios::Plus"
+                            :android="Android::Add"
                             a11y-label="Add item"
-                            class="h-12 w-12 items-center justify-center rounded-full glass android:bg-theme-surface"
-                            @tap="addItem"
-                        >
-                            <native:icon :ios="Ios::Plus" :android="Android::Add" :size="22" class="text-theme-on-surface" />
-                        </pressable>
+                            tap="addItem"
+                        />
                     </row>
                     @if ($linkError !== '')
                         @include('native.list-link-error')
@@ -194,14 +226,7 @@
                         @submit="addItem"
                     />
                 </row>
-                <pressable
-                    ref="list-add-item"
-                    a11y-label="Add item"
-                    class="h-12 w-12 items-center justify-center rounded-full glass android:bg-theme-surface"
-                    @tap="addItem"
-                >
-                    <native:icon :ios="Ios::Plus" :android="Android::Add" :size="22" class="text-theme-on-surface" />
-                </pressable>
+                <x-ui.button ref="list-add-item" variant="glass" :ios="Ios::Plus" :android="Android::Add" a11y-label="Add item" tap="addItem" />
             </row>
         @endif
     </native:bottom-bar>
@@ -262,14 +287,16 @@
                                     </row>
                                 @endif
                             </column>
-                            <pressable
+                            <x-ui.button
                                 ref="list-item-{{ $item['id'] }}-actions"
+                                variant="plain"
+                                tone="muted"
+                                :ios="Ios::Ellipsis"
+                                :android="Android::MoreHoriz"
+                                :icon-size="18"
                                 :a11y-label="'Edit or remove '.$item['name']"
-                                class="h-12 w-12 items-center justify-center"
                                 :menu="$this->itemMenu($item)"
-                            >
-                                <icon :ios="Ios::Ellipsis" :android="Android::MoreHoriz" :size="18" class="text-theme-on-surface-variant" />
-                            </pressable>
+                            />
                         </row>
                         @unless ($loop->last)
                             <divider class="ml-[50]" />
@@ -277,11 +304,13 @@
                     @endforeach
                 </column>
             @else
-                <column ref="list-empty" class="{{ Card::classes() }} w-full items-center gap-2 px-4 py-6">
-                    <icon :ios="Ios::ListBullet" :android="Android::FormatListBulleted" :size="28" class="text-theme-primary" />
-                    <x-ui.heading class="text-center">This list is empty.</x-ui.heading>
-                    <x-ui.text size="sm" class="text-center">Add an item below.</x-ui.text>
-                </column>
+                <x-ui.empty-state
+                    ref="list-empty"
+                    :ios="Ios::ListBullet"
+                    :android="Android::FormatListBulleted"
+                    heading="This list is empty."
+                    text="Add an item below."
+                />
             @endif
         </column>
     </scroll-view>

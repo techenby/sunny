@@ -39,31 +39,27 @@
             @endif
 
             @php($offline = $failure === 'offline')
-            <button
+            <x-ui.button
                 ref="forgot-password-submit"
-                variant="primary"
-                size="lg"
-                font="semibold"
                 class="w-full"
-                :ios-icon="$offline && ! $sending ? Ios::ArrowClockwise : null"
-                :android-icon="$offline && ! $sending ? Android::Refresh : null"
+                :ios="$offline && ! $sending ? Ios::ArrowClockwise : null"
+                :android="$offline && ! $sending ? Android::Refresh : null"
                 :disabled="$sending || $this->throttled()"
-                @tap="send"
+                tap="send"
             >
                 {{ $sending ? 'Sending link…' : ($offline ? 'Try again' : 'Send link') }}
-            </button>
+            </x-ui.button>
 
             <row class="w-full items-center justify-center gap-1">
                 <text class="text-sm text-theme-on-surface-variant">Remember your password?</text>
-                <button
+                <x-ui.button
                     ref="forgot-password-login-link"
                     variant="ghost"
-                    font="semibold"
                     a11y-hint="Goes back to the login screen"
-                    @tap="backToLogin"
+                    tap="backToLogin"
                 >
                     Log in
-                </button>
+                </x-ui.button>
             </row>
         </column>
     @else
@@ -90,22 +86,20 @@
             </column>
 
             <column class="w-full gap-3">
-                <button ref="forgot-password-back" variant="primary" size="lg" font="semibold" class="w-full" @tap="backToLogin">
+                <x-ui.button ref="forgot-password-back" class="w-full" tap="backToLogin">
                     Back to log in
-                </button>
+                </x-ui.button>
                 @if (System::isIos())
-                    <button
+                    <x-ui.button
                         ref="forgot-password-open-mail"
                         variant="secondary"
-                        size="lg"
-                        font="semibold"
                         class="w-full"
-                        :ios-icon="Ios::EnvelopeOpen"
+                        :ios="Ios::EnvelopeOpen"
                         a11y-hint="Opens the Mail app"
-                        @tap="openMail"
+                        tap="openMail"
                     >
                         Open Mail
-                    </button>
+                    </x-ui.button>
                 @endif
             </column>
         </column>

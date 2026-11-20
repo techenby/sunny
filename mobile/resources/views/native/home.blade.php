@@ -56,33 +56,28 @@
 
     @if ($error)
         <text ref="session-error" class="text-sm text-theme-destructive">{{ $error }}</text>
-        <button ref="session-retry" variant="ghost" @tap="restoreSession">Retry</button>
+        <x-ui.button ref="session-retry" variant="ghost" :font="false" tap="restoreSession">Retry</x-ui.button>
     @endif
 
     <column ref="auth-actions" class="w-full gap-3 pt-6">
-        <button
+        <x-ui.button
             ref="register-button"
-            variant="primary"
-            size="lg"
-            font="semibold"
             a11y-label="Register"
             a11y-hint="Opens the registration screen"
             class="w-full"
-            @navigate='/register'
+            navigate="/register"
         >
             Register
-        </button>
-        <button
+        </x-ui.button>
+        <x-ui.button
             ref="login-button"
             variant="secondary"
-            size="lg"
-            font="semibold"
             a11y-label="Log in"
             a11y-hint="Opens the login screen"
             class="w-full"
-            @navigate='/login'
+            navigate="/login"
         >
             Log in
-        </button>
+        </x-ui.button>
     </column>
 </column>

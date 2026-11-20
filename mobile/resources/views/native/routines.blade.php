@@ -33,11 +33,13 @@
             </column>
             <x-ui.text ref="routines-count" size="sm" class="px-1">{{ trans_choice(':count routine|:count routines', count($this->routines)) }}</x-ui.text>
         @else
-            <column ref="all-routines-empty" class="{{ Card::classes() }} w-full items-center gap-2 px-4 py-6">
-                <icon :ios="$search !== '' ? Ios::Magnifyingglass : Ios::ChecklistChecked" :android="$search !== '' ? Android::SearchOff : Android::Checklist" :size="28" class="text-theme-primary" />
-                <x-ui.heading class="text-center">{{ $search !== '' ? 'No routines match “'.$search.'”' : 'No routines yet' }}</x-ui.heading>
-                <x-ui.text size="sm" class="text-center">{{ $search !== '' ? 'Try a different search.' : 'Tap + to set up a morning, bedtime, or chore routine.' }}</x-ui.text>
-            </column>
+            <x-ui.empty-state
+                ref="all-routines-empty"
+                :ios="$search !== '' ? Ios::Magnifyingglass : Ios::ChecklistChecked"
+                :android="$search !== '' ? Android::SearchOff : Android::Checklist"
+                :heading="$search !== '' ? 'No routines match “'.$search.'”' : 'No routines yet'"
+                :text="$search !== '' ? 'Try a different search.' : 'Tap + to set up a morning, bedtime, or chore routine.'"
+            />
         @endif
     </column>
 </scroll-view>

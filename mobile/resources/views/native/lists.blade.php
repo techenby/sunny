@@ -32,11 +32,13 @@
             </column>
             <x-ui.text ref="lists-count" size="sm" class="px-1">{{ $this->footer }}</x-ui.text>
         @else
-            <column ref="lists-empty" class="{{ Card::classes() }} w-full items-center gap-2 px-4 py-6">
-                <icon :ios="$search !== '' ? Ios::Magnifyingglass : Ios::ListBullet" :android="$search !== '' ? Android::SearchOff : Android::FormatListBulleted" :size="28" class="text-theme-primary" />
-                <x-ui.heading class="text-center">{{ $search !== '' ? 'No lists match “'.$search.'”' : 'No lists yet' }}</x-ui.heading>
-                <x-ui.text size="sm" class="text-center">{{ $search !== '' ? 'Try a different search.' : 'Tap + to start a to-do, shopping, or wish list.' }}</x-ui.text>
-            </column>
+            <x-ui.empty-state
+                ref="lists-empty"
+                :ios="$search !== '' ? Ios::Magnifyingglass : Ios::ListBullet"
+                :android="$search !== '' ? Android::SearchOff : Android::FormatListBulleted"
+                :heading="$search !== '' ? 'No lists match “'.$search.'”' : 'No lists yet'"
+                :text="$search !== '' ? 'Try a different search.' : 'Tap + to start a to-do, shopping, or wish list.'"
+            />
         @endif
     </column>
 </scroll-view>
