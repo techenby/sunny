@@ -206,7 +206,7 @@ it('puts edit and a more menu above the tab bar, with delete last in the menu', 
     Native::visit('/inventory/7')
         ->assertElement('bottom_bar', fn (array $node): bool => array_column($node['children'][0]['children'], 'ref') === ['edit-item', 'item-more'])
         ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'item-more'
-            && array_column(array_column($node['children'], 'props'), 'label') === ['Print label', 'Make copies', 'Delete storage'])
+            && array_column(array_column($node['children'], 'props'), 'label') === ['Edit', 'Print label', 'Make copies', 'Delete storage'])
         ->assertElement('top_bar_action', fn (array $node): bool => ($node['ref'] ?? null) === 'delete-item'
             && $node['props']['destructive'] === true
             && $node['props']['a11y_label'] === 'Delete Tool chest')

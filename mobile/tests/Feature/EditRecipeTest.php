@@ -11,7 +11,7 @@ beforeEach(fn () => seedSunnyData());
 
 it('opens the edit screen from the recipe', function () {
     Native::visit('/recipes/1')
-        ->tap('edit-recipe')
+        ->tap('recipe-edit')
         ->assertNavigatedTo('/recipes/1/edit')
         ->follow()
         ->assertScreen(EditRecipe::class);

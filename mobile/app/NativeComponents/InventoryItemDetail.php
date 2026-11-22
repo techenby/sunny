@@ -197,12 +197,18 @@ class InventoryItemDetail extends Component
         return $this->item['team_id'] ?? null;
     }
 
+    public function edit(): void
+    {
+        $this->navigate('/inventory/'.$this->item['id'].'/edit');
+    }
+
     /**
      * @return list<NavAction|TopBarAction>
      */
     public function moreMenu(): array
     {
         return array_values(array_filter([
+            Menu::item('item-edit', 'Edit', Ios::Pencil, Android::Edit, 'edit'),
             NavAction::make('item-print-label')->label('Print label')->icon(ios: Ios::Qrcode->value, android: Android::QrCode2->value)->press('showQrCode'),
             NavAction::make('item-make-copies')->label('Make copies')->icon(ios: Ios::SquareOnSquare->value, android: Android::ContentCopy->value)->press('openCopies'),
             $this->teamMoveTeams() === [] ? null : NavAction::make('item-move-to-team')->label('Move to another team')->icon(ios: Ios::ArrowLeftArrowRight->value, android: Android::SwapHoriz->value)->press('openTeamMove'),

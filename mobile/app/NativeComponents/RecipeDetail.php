@@ -234,7 +234,7 @@ class RecipeDetail extends Component
     public function moreMenu(): array
     {
         return array_values(array_filter([
-            $this->canCook() ? Menu::item('edit-recipe', 'Edit', Ios::Pencil, Android::Edit, 'edit') : null,
+            Menu::item('recipe-edit', 'Edit', Ios::Pencil, Android::Edit, 'edit'),
             NavAction::make('recipe-remix')->label('Remix')->icon(ios: Ios::DocOnDoc->value, android: Android::ContentCopy->value)->press('remix'),
             NavAction::make('recipe-share')->label('Share')->icon(ios: Ios::SquareAndArrowUp->value, android: Android::Share->value)->press('openShare'),
             $this->copyTeams() === [] ? null : NavAction::make('recipe-copy-to-team')->label('Copy to another team')->icon(ios: Ios::SquareOnSquare->value, android: Android::FileCopy->value)->press('openCopy'),

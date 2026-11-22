@@ -36,7 +36,7 @@ function connectionDropped(): MockResponse
 it('offers Share in the More menu', function (): void {
     Native::visit('/recipes/1')
         ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'recipe-more'
-            && array_column(array_column(array_filter($node['children'], fn (array $child): bool => $child['type'] === 'top_bar_action'), 'props'), 'id') === ['edit-recipe', 'recipe-remix', 'recipe-share', 'delete-recipe']);
+            && array_column(array_column(array_filter($node['children'], fn (array $child): bool => $child['type'] === 'top_bar_action'), 'props'), 'id') === ['recipe-edit', 'recipe-remix', 'recipe-share', 'delete-recipe']);
 });
 
 it('explains the public link while it is off', function (): void {
