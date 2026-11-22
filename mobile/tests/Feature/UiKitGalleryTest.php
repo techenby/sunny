@@ -68,6 +68,9 @@ it('shows every kit piece under the name a developer types', function (string $p
                 && str_ends_with($node['props']['a11y_label'], ', unavailable'));
     }
 
+    $gallery->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'ui-kit-button-menu-icon'
+        && collect($node['children'])->where('type', 'top_bar_action')->map(fn (array $item): array => [$item['ref'], $item['props']['destructive'] ?? false])->values()->all() === [['ui-kit-menu-edit', false], ['ui-kit-menu-share', false], ['ui-kit-menu-delete', true]]);
+
     foreach (['secondary', 'glass', 'text'] as $look) {
         $gallery->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'ui-kit-button-'.$look.'-icon-only' && $node['layout']['width'] == 48);
     }

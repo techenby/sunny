@@ -4,31 +4,12 @@
 
 @php($routine = $this->routine)
 
-<native:top-bar :title="$routine['name'] ?? 'Routine'" back>
-    @if ($routine)
-        <native:top-bar-action
-            ref="edit-routine"
-            id="edit-routine"
-            label="Edit"
-            :ios-icon="Ios::Pencil"
-            :android-icon="Android::Edit"
-            @navigate('/routines/'.$routine['id'].'/edit')
-        />
-        <native:top-bar-action
-            ref="delete-routine"
-            id="delete-routine"
-            label="Delete"
-            :ios-icon="Ios::Trash"
-            :android-icon="Android::Delete"
-            @tap="confirmDeleteRoutine"
-        />
-    @endif
-</native:top-bar>
+<native:top-bar :title="$routine['name'] ?? 'Routine'" display-mode="large" back />
 
 @if ($routine)
     <native:bottom-bar>
         <row class="w-full items-center gap-3 px-4 pb-2">
-            <row class="h-12 flex-1 items-center gap-2 rounded-full px-4 glass android:bg-theme-surface">
+            <row class="h-12 flex-1 items-center gap-2 rounded-full pr-1 pl-4 glass android:bg-theme-surface">
                 <bare-text-input
                     ref="routine-new-step"
                     class="flex-1"
@@ -39,8 +20,9 @@
                     native:model="newStep"
                     @submit="addStep"
                 />
+                <x-ui.button ref="routine-add-step" variant="text" :ios="Ios::Plus" :android="Android::Add" a11y-label="Add step" tap="addStep" />
             </row>
-            <x-ui.button ref="routine-add-step" variant="glass" :ios="Ios::Plus" :android="Android::Add" a11y-label="Add step" tap="addStep" />
+            <x-ui.button ref="routine-more" variant="glass" :ios="Ios::Ellipsis" :android="Android::MoreHoriz" a11y-label="More" :menu="$this->moreMenu()" />
         </row>
     </native:bottom-bar>
 

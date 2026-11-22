@@ -1,5 +1,6 @@
 @use('App\Icons\Android')
 @use('App\Icons\Ios')
+@use('App\Ui\Menu')
 
 <scroll-view ref="{{ $formRef }}-screen" fill class="bg-theme-background ios:bg-theme-grouped-background">
     <column class="w-full gap-6 px-6 py-6">
@@ -64,28 +65,39 @@
         @endif
 
         <column class="w-full gap-2.5">
-            <x-ui.button
-                ref="{{ $formRef }}-submit"
-                class="w-full"
-                :disabled="$saving"
-                tap="save"
-            >
-                Save calendar
-            </x-ui.button>
+            @if ($removeLabel ?? null)
+                <row class="w-full items-center gap-3">
+                    <x-ui.button
+                        ref="{{ $formRef }}-submit"
+                        class="flex-1"
+                        :disabled="$saving"
+                        tap="save"
+                    >
+                        Save calendar
+                    </x-ui.button>
+                    <x-ui.button
+                        ref="{{ $formRef }}-more"
+                        variant="secondary"
+                        :ios="Ios::Ellipsis"
+                        :android="Android::MoreHoriz"
+                        a11y-label="More"
+                        :menu="[Menu::delete($formRef.'-remove', 'Remove calendar', 'confirmRemove', $removeLabel)]"
+                    />
+                </row>
+            @else
+                <x-ui.button
+                    ref="{{ $formRef }}-submit"
+                    class="w-full"
+                    :disabled="$saving"
+                    tap="save"
+                >
+                    Save calendar
+                </x-ui.button>
+            @endif
             <row class="w-full items-center justify-center gap-1.5">
                 <icon :ios="Ios::Wifi" :android="Android::Wifi" :size="14" class="text-theme-on-surface-variant" />
                 <x-ui.text size="sm">Needs a connection</x-ui.text>
             </row>
         </column>
-
-        @if ($removeLabel ?? null)
-            <x-ui.button
-                ref="{{ $formRef }}-remove"
-                variant="text"
-                class="w-full items-center"
-                :a11y-label="$removeLabel"
-                tap="confirmRemove"
-            >{{ $removeLabel }}</x-ui.button>
-        @endif
     </column>
 </scroll-view>

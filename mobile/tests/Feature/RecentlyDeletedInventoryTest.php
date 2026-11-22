@@ -120,6 +120,22 @@ it('lists deleted things newest first with their type, where they were and when'
     ]);
 });
 
+it('gives each deleted thing a compact row with Restore and a more menu that holds Delete forever', function () {
+    seedDeletedSunnyItems();
+
+    Native::visit('/inventory/deleted', platform: 'ios')
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'deleted-restore-20'
+            && $node['style']['bg_color'] === theme('surface-variant')
+            && ($node['layout']['width'] ?? null) !== 'fill'
+            && $node['children'][0]['props']['text'] === 'Restore')
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'deleted-more-20'
+            && ! isset($node['style'])
+            && $node['layout']['width'] == 48
+            && str_starts_with($node['props']['a11y_label'], 'More for ')
+            && collect($node['children'])->where('type', 'top_bar_action')->map(fn (array $item): array => [$item['ref'], $item['props']['label'], $item['props']['destructive'], $item['props']['icon']])->values()->all() === [['deleted-forever-20', 'Delete forever', true, 'trash']])
+        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'deleted-forever-20');
+});
+
 it('counts days in the team’s time zone', function () {
     seedDeletedSunnyItems();
     Team::find(1)->update(['timezone' => 'Pacific/Auckland']);

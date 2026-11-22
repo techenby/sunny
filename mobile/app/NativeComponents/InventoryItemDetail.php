@@ -19,12 +19,14 @@ use App\Models\PendingWrite;
 use App\Models\Team;
 use App\Support\Toast;
 use App\Support\ToastAction;
+use App\Ui\Menu;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use JsonException;
 use Native\Mobile\Attributes\Computed;
 use Native\Mobile\Attributes\On;
+use Native\Mobile\Edge\Elements\TopBarAction;
 use Native\Mobile\Edge\Layouts\Builders\NavAction;
 use Native\Mobile\Events\Alert\ButtonPressed;
 use Native\Mobile\Facades\Dialog;
@@ -196,7 +198,7 @@ class InventoryItemDetail extends Component
     }
 
     /**
-     * @return list<NavAction>
+     * @return list<NavAction|TopBarAction>
      */
     public function moreMenu(): array
     {
@@ -204,6 +206,7 @@ class InventoryItemDetail extends Component
             NavAction::make('item-print-label')->label('Print label')->icon(ios: Ios::Qrcode->value, android: Android::QrCode2->value)->press('showQrCode'),
             NavAction::make('item-make-copies')->label('Make copies')->icon(ios: Ios::SquareOnSquare->value, android: Android::ContentCopy->value)->press('openCopies'),
             $this->teamMoveTeams() === [] ? null : NavAction::make('item-move-to-team')->label('Move to another team')->icon(ios: Ios::ArrowLeftArrowRight->value, android: Android::SwapHoriz->value)->press('openTeamMove'),
+            Menu::delete('delete-item', 'Delete '.mb_strtolower($this->item['type']->label()), 'confirmDeleteItem', 'Delete '.$this->item['name']),
         ]));
     }
 

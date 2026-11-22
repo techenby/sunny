@@ -22,15 +22,7 @@
                 </row>
             @endif
             <row class="w-full items-center justify-end gap-3">
-                <x-ui.button
-                    ref="edit-recipe"
-                    variant="glass"
-                    :ios="Ios::Pencil"
-                    :android="Android::Edit"
-                    a11y-label="Edit"
-                    :navigate="'/recipes/'.$recipe['id'].'/edit'"
-                />
-                @if ($this->ingredients || $this->instructions)
+                @if ($this->canCook())
                     <x-ui.button
                         ref="cook-recipe"
                         class="flex-1"
@@ -39,6 +31,16 @@
                         a11y-label="Cook"
                         :navigate="'/recipes/'.$recipe['id'].'/cook'"
                     >Cook</x-ui.button>
+                @else
+                    <x-ui.button
+                        ref="edit-recipe"
+                        variant="glass"
+                        class="flex-1"
+                        :ios="Ios::Pencil"
+                        :android="Android::Edit"
+                        a11y-label="Edit"
+                        :navigate="'/recipes/'.$recipe['id'].'/edit'"
+                    >Edit</x-ui.button>
                 @endif
                 <x-ui.button
                     ref="recipe-more"
@@ -255,14 +257,6 @@
                     </column>
                 @endif
             @endforeach
-
-            <x-ui.button
-                ref="delete-recipe"
-                variant="text"
-                class="w-full items-center"
-                :a11y-label="'Delete '.$recipe['name']"
-                tap="confirmDeleteRecipe"
-            >Delete {{ $recipe['name'] }}</x-ui.button>
         </column>
     </scroll-view>
 

@@ -4,56 +4,7 @@
 
 @php($checklist = $this->checklist)
 
-<native:top-bar :title="$checklist['name'] ?? 'List'" back>
-    @if ($checklist)
-        <native:top-bar-action
-            ref="list-actions"
-            id="list-actions"
-            label="More"
-            :ios-icon="Ios::Ellipsis"
-            :android-icon="Android::MoreVert"
-        >
-            @if ($this->completedItems)
-                <native:top-bar-action
-                    native:key="remove-done"
-                    ref="remove-done"
-                    id="remove-done"
-                    label="Remove done"
-                    :ios-icon="Ios::CheckmarkCircle"
-                    :android-icon="Android::RemoveDone"
-                    @tap="confirmRemoveDone"
-                />
-                <native:top-bar-action
-                    native:key="uncheck-all"
-                    ref="uncheck-all"
-                    id="uncheck-all"
-                    label="Uncheck all"
-                    :ios-icon="Ios::ArrowCounterclockwise"
-                    :android-icon="Android::Replay"
-                    @tap="uncheckAll"
-                />
-                <native:top-bar-action native:key="list-actions-divider" id="list-actions-divider" divider />
-            @endif
-            <native:top-bar-action
-                ref="edit-list"
-                id="edit-list"
-                label="Edit list"
-                :ios-icon="Ios::Pencil"
-                :android-icon="Android::Edit"
-                @navigate('/lists/'.$checklist['id'].'/edit')
-            />
-            <native:top-bar-action
-                ref="delete-list"
-                id="delete-list"
-                label="Delete list"
-                destructive
-                :ios-icon="Ios::Trash"
-                :android-icon="Android::Delete"
-                @tap="confirmDeleteList"
-            />
-        </native:top-bar-action>
-    @endif
-</native:top-bar>
+<native:top-bar :title="$checklist['name'] ?? 'List'" display-mode="large" back />
 
 @if ($checklist)
     @php($editingItem = $editingItemId !== null ? collect($this->items)->firstWhere('id', $editingItemId) : null)
@@ -148,7 +99,7 @@
         @elseif ($this->takesLinks)
             <column class="w-full px-3 pb-2">
                 <column ref="list-new-item-card" class="w-full gap-1.5 rounded-[24] p-2 glass android:bg-theme-surface">
-                    <row class="min-h-10 w-full items-center px-3">
+                    <row class="min-h-10 w-full items-center pl-3">
                         <bare-text-input
                             ref="list-new-item"
                             class="flex-1"
@@ -158,6 +109,7 @@
                             next-focus="list-new-item-url"
                             native:model="newItem"
                         />
+                        <x-ui.button ref="list-add-item" variant="text" :ios="Ios::Plus" :android="Android::Add" a11y-label="Add item" tap="addItem" />
                     </row>
                     <row class="w-full items-center gap-2">
                         <row class="min-h-12 flex-1 items-center gap-2 rounded-full border bg-theme-surface pr-1 pl-3 {{ $linkError !== '' ? 'border-theme-primary' : 'border-theme-outline' }}">
@@ -183,14 +135,7 @@
                                 />
                             @endif
                         </row>
-                        <x-ui.button
-                            ref="list-add-item"
-                            variant="glass"
-                            :ios="Ios::Plus"
-                            :android="Android::Add"
-                            a11y-label="Add item"
-                            tap="addItem"
-                        />
+                        <x-ui.button ref="list-more" variant="glass" :ios="Ios::Ellipsis" :android="Android::MoreHoriz" a11y-label="More" :menu="$this->moreMenu()" />
                     </row>
                     @if ($linkError !== '')
                         @include('native.list-link-error')
@@ -201,7 +146,7 @@
             </column>
         @else
             <row class="w-full items-center gap-3 px-4 pb-2">
-                <row class="h-12 flex-1 items-center gap-2 rounded-full px-4 glass android:bg-theme-surface">
+                <row class="h-12 flex-1 items-center gap-2 rounded-full pr-1 pl-4 glass android:bg-theme-surface">
                     <bare-text-input
                         ref="list-new-item"
                         class="flex-1"
@@ -212,8 +157,9 @@
                         native:model="newItem"
                         @submit="addItem"
                     />
+                    <x-ui.button ref="list-add-item" variant="text" :ios="Ios::Plus" :android="Android::Add" a11y-label="Add item" tap="addItem" />
                 </row>
-                <x-ui.button ref="list-add-item" variant="glass" :ios="Ios::Plus" :android="Android::Add" a11y-label="Add item" tap="addItem" />
+                <x-ui.button ref="list-more" variant="glass" :ios="Ios::Ellipsis" :android="Android::MoreHoriz" a11y-label="More" :menu="$this->moreMenu()" />
             </row>
         @endif
     </native:bottom-bar>

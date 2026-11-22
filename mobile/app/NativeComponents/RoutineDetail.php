@@ -8,13 +8,17 @@ use App\Enums\RoutineFrequency;
 use App\Enums\TimeOfDay;
 use App\Http\Integrations\Sunny\SunnyOutbox;
 use App\Http\Integrations\Sunny\SunnySyncCoordinator;
+use App\Icons\Android;
+use App\Icons\Ios;
 use App\Models\PendingWrite;
 use App\Models\RoutineStep;
+use App\Ui\Menu;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
 use Native\Mobile\Attributes\On;
+use Native\Mobile\Edge\Elements\TopBarAction;
 use Native\Mobile\Events\Alert\ButtonPressed;
 use Native\Mobile\Facades\Dialog;
 
@@ -158,6 +162,22 @@ class RoutineDetail extends Component
                 RoutineStep::query()->whereKey($id)->update(['position' => $index + 1]);
             }
         });
+    }
+
+    public function edit(): void
+    {
+        $this->navigate('/routines/'.$this->routine['id'].'/edit');
+    }
+
+    /**
+     * @return list<TopBarAction>
+     */
+    public function moreMenu(): array
+    {
+        return [
+            Menu::item('edit-routine', 'Edit', Ios::Pencil, Android::Edit, 'edit'),
+            Menu::delete('delete-routine', 'Delete routine', 'confirmDeleteRoutine', 'Delete '.$this->routine['name']),
+        ];
     }
 
     public function confirmDeleteRoutine(): void

@@ -12,6 +12,7 @@ use App\Icons\Ios;
 use App\Models\PendingWrite;
 use App\Support\Toast;
 use App\Support\ToastAction;
+use App\Ui\Menu;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -19,6 +20,7 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
 use Native\Mobile\Attributes\On;
+use Native\Mobile\Edge\Elements\TopBarAction;
 use Native\Mobile\Edge\Layouts\Builders\NavAction;
 use Native\Mobile\Events\Alert\ButtonPressed;
 use Native\Mobile\Facades\Browser;
@@ -268,6 +270,26 @@ class ListDetail extends Component
             $item['url'] !== null ? NavAction::make('list-item-'.$item['id'].'-open-link')->label('Open link')->icon(ios: Ios::ArrowUpRight->value, android: Android::OpenInNew->value)->press('openItemLink('.$item['id'].')') : null,
             NavAction::make('list-item-'.$item['id'].'-remove')->label('Remove')->icon(ios: Ios::Trash->value, android: Android::Delete->value)->press('removeItem('.$item['id'].')')->destructive(),
         ]));
+    }
+
+    public function editList(): void
+    {
+        $this->navigate('/lists/'.$this->checklist['id'].'/edit');
+    }
+
+    /**
+     * @return list<TopBarAction>
+     */
+    public function moreMenu(): array
+    {
+        return [
+            Menu::item('edit-list', 'Edit list', Ios::Pencil, Android::Edit, 'editList'),
+            ...($this->completedItems ? [
+                Menu::item('remove-done', 'Remove done', Ios::CheckmarkCircle, Android::RemoveDone, 'confirmRemoveDone'),
+                Menu::item('uncheck-all', 'Uncheck all', Ios::ArrowCounterclockwise, Android::Replay, 'uncheckAll'),
+            ] : []),
+            Menu::delete('delete-list', 'Delete list', 'confirmDeleteList', 'Delete '.$this->checklist['name']),
+        ];
     }
 
     public function confirmDeleteList(): void

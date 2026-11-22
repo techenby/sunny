@@ -202,14 +202,15 @@ it('stops walking descendants when the synced data contains a parent cycle', fun
     expect(Inventory::descendantIdsOf(6))->toEqualCanonicalizing([7, 8, 9, 10]);
 });
 
-it('puts edit and a more menu above the tab bar and delete at the end of the page', function () {
+it('puts edit and a more menu above the tab bar, with delete last in the menu', function () {
     Native::visit('/inventory/7')
         ->assertElement('bottom_bar', fn (array $node): bool => array_column($node['children'][0]['children'], 'ref') === ['edit-item', 'item-more'])
         ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'item-more'
-            && array_column(array_column($node['children'], 'props'), 'label') === ['Print label', 'Make copies'])
-        ->assertMissingElement('top_bar_action', fn (array $node): bool => ($node['ref'] ?? null) === 'delete-item')
-        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'delete-item')
-        ->assertSee('Delete Tool chest')
+            && array_column(array_column($node['children'], 'props'), 'label') === ['Print label', 'Make copies', 'Delete storage'])
+        ->assertElement('top_bar_action', fn (array $node): bool => ($node['ref'] ?? null) === 'delete-item'
+            && $node['props']['destructive'] === true
+            && $node['props']['a11y_label'] === 'Delete Tool chest')
+        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'delete-item')
         ->tap('Print label')
         ->assertNavigatedTo('/inventory/7/qr-code');
 });

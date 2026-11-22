@@ -254,8 +254,10 @@ describe('Calendar', function (): void {
         seedCalendar(sampleEvents(), days: 42);
 
         Native::visit('/calendar')
-            ->assertElement('top_bar_action', fn (array $node): bool => ($node['props']['id'] ?? null) === 'calendar-more'
-                && collect($node['children'] ?? [])->pluck('props.label')->all() === ['Calendars', 'Refresh'])
+            ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'calendar-more'
+                && collect($node['children'])->where('type', 'top_bar_action')->pluck('props.label')->all() === ['Calendars', 'Refresh'])
+            ->assertElement('bottom_bar', fn (array $node): bool => array_column($node['children'][0]['children'], 'ref') === ['calendar-more'])
+            ->assertMissingElement('top_bar_action', fn (array $node): bool => ($node['props']['id'] ?? null) === 'calendar-more')
             ->tap('calendar-feeds')
             ->assertNavigatedTo('/calendar/feeds');
     });
@@ -272,8 +274,8 @@ describe('Calendar', function (): void {
             ->assertSee('HTTP 401')
             ->assertSee('Maya’s swim lesson')
             ->assertDontSee('Design sync')
-            ->assertElement('top_bar_action', fn (array $node): bool => ($node['props']['id'] ?? null) === 'calendar-more'
-                && ($node['props']['label'] ?? null) === 'More, a calendar isn’t showing')
+            ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'calendar-more'
+                && $node['props']['a11y_label'] === 'More, a calendar isn’t showing')
             ->tap('calendar-warning-2-fix')
             ->assertNavigatedTo('/calendar/feeds');
     });
@@ -494,6 +496,22 @@ describe('Calendars', function (): void {
             ->assertNoNavigation();
 
         expect(app(SunnyCalendar::class)->feeds(1)['feeds'][0]['name'])->toBe('Family');
+    });
+
+    it('keeps Remove in a more menu beside Save, and only when editing', function (): void {
+        seedCalendar(sampleEvents(), feeds: [calendarFeed(1, 'Family', '#2563eb'), failingWorkFeed()]);
+
+        Native::visit('/calendar/feeds/2/edit', platform: 'ios')
+            ->assertElement('row', fn (array $node): bool => array_column($node['children'] ?? [], 'ref') === ['edit-calendar-submit', 'edit-calendar-more'])
+            ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'edit-calendar-more'
+                && $node['style']['bg_color'] === theme('surface-variant')
+                && $node['layout']['width'] == 48
+                && $node['props']['a11y_label'] === 'More'
+                && collect($node['children'])->where('type', 'top_bar_action')->map(fn (array $item): array => [$item['ref'], $item['props']['label'], $item['props']['a11y_label'], $item['props']['destructive'], $item['props']['icon']])->values()->all() === [['edit-calendar-remove', 'Remove calendar', 'Remove Work', true, 'trash']])
+            ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'edit-calendar-remove');
+
+        Native::visit('/calendar/feeds/create')
+            ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'create-calendar-more');
     });
 
     it('removes a calendar once confirmed', function (): void {

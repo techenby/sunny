@@ -69,10 +69,11 @@
                 <x-ui.button ref="ui-kit-button-loading" class="w-full" loading tap="tapped('loading')">Saving…</x-ui.button>
                 <x-ui.text size="sm">icon-trailing</x-ui.text>
                 <x-ui.button ref="ui-kit-button-trailing" class="w-full" :ios="Ios::ArrowRight" :android="Android::ArrowForward" icon-trailing tap="tapped('icon-trailing')">Label</x-ui.button>
-                <x-ui.text size="sm">:menu, on a label and on a circle</x-ui.text>
+                <x-ui.text size="sm">:menu, built with App\Ui\Menu::item() and Menu::delete(), which goes last. On a label, on the more circle of a bottom bar, and on a row icon.</x-ui.text>
                 <row class="w-full items-center gap-3">
                     <x-ui.button ref="ui-kit-button-menu" variant="secondary" :menu="$menu">Open menu</x-ui.button>
                     <x-ui.button ref="ui-kit-button-menu-icon" variant="glass" :ios="Ios::Ellipsis" :android="Android::MoreHoriz" a11y-label="More" :menu="$menu" />
+                    <x-ui.button ref="ui-kit-button-menu-row" variant="text" :ios="Ios::Ellipsis" :android="Android::MoreHoriz" a11y-label="More" :menu="$menu" />
                 </row>
                 <x-ui.text size="sm">navigate="/inventory/0", which opens x-ui.not-found</x-ui.text>
                 <x-ui.button ref="ui-kit-button-navigate" variant="secondary" class="w-full" navigate="/inventory/0">Open a screen</x-ui.button>

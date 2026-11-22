@@ -1,6 +1,7 @@
 @use('App\Icons\Android')
 @use('App\Icons\Ios')
 @use('App\Ui\Card')
+@use('App\Ui\Menu')
 
 <native:top-bar title="Recently deleted" back />
 
@@ -23,10 +24,9 @@
 
             <column class="{{ Card::classes() }} w-full">
                 @foreach ($this->items as $item)
-                    <column ref="deleted-item-{{ $item['id'] }}" class="w-full gap-3 px-4 py-3">
-                        <row class="w-full items-start gap-4">
+                    <column ref="deleted-item-{{ $item['id'] }}" class="w-full">
+                        <row class="min-h-12 w-full items-center gap-4 py-2 pr-1 pl-4">
                             <x-ui.avatar
-                                size="lg"
                                 :src="$item['photo']"
                                 :alt="'Photo of '.$item['name']"
                                 :color="$item['type']->color()"
@@ -35,38 +35,37 @@
                             />
                             <column class="flex-1 gap-0.5">
                                 <x-ui.heading size="lg">{{ $item['name'] }}</x-ui.heading>
-                                <x-ui.text>{{ $item['supporting'] }}</x-ui.text>
+                                <x-ui.text size="sm">{{ $item['supporting'] }}</x-ui.text>
                                 <x-ui.text size="sm">{{ $item['deleted'] }}</x-ui.text>
                             </column>
+                            <row class="items-center">
+                                <x-ui.button
+                                    ref="deleted-restore-{{ $item['id'] }}"
+                                    variant="secondary"
+                                    :a11y-label="'Restore '.$item['name']"
+                                    tap="restore({{ $item['id'] }})"
+                                >Restore</x-ui.button>
+                                <x-ui.button
+                                    ref="deleted-more-{{ $item['id'] }}"
+                                    variant="text"
+                                    :ios="Ios::Ellipsis"
+                                    :android="Android::MoreHoriz"
+                                    :a11y-label="'More for '.$item['name']"
+                                    :menu="[Menu::delete('deleted-forever-'.$item['id'], 'Delete forever', 'confirmDeleteForever('.$item['id'].')', 'Delete '.$item['name'].' forever')]"
+                                />
+                            </row>
                         </row>
                         @if ($item['emptied'])
-                            <row class="w-full items-start gap-2 rounded-xl bg-theme-surface-variant px-3 py-2">
-                                <icon :ios="Ios::InfoCircle" :android="Android::Info" :size="16" class="text-theme-on-surface-variant" />
-                                <x-ui.text size="sm" class="flex-1">Anything inside went to “Not in a place yet”, so it comes back empty.</x-ui.text>
+                            <row class="w-full px-4 pb-3">
+                                <row class="w-full items-start gap-2 rounded-xl bg-theme-surface-variant px-3 py-2">
+                                    <icon :ios="Ios::InfoCircle" :android="Android::Info" :size="16" class="text-theme-on-surface-variant" />
+                                    <x-ui.text size="sm" class="flex-1">Anything inside went to “Not in a place yet”, so it comes back empty.</x-ui.text>
+                                </row>
                             </row>
                         @endif
-                        <column class="w-full gap-2">
-                            <x-ui.button
-                                ref="deleted-restore-{{ $item['id'] }}"
-                                variant="secondary"
-                                class="w-full"
-                                :ios="Ios::ArrowUturnBackward"
-                                :android="Android::Undo"
-                                :a11y-label="'Restore '.$item['name']"
-                                tap="restore({{ $item['id'] }})"
-                            >Restore</x-ui.button>
-                            <pressable
-                                ref="deleted-forever-{{ $item['id'] }}"
-                                a11y-label="Delete {{ $item['name'] }} forever"
-                                class="min-h-12 w-full items-center justify-center rounded-full border border-theme-outline px-4"
-                                @tap="confirmDeleteForever({{ $item['id'] }})"
-                            >
-                                <text font="semibold" class="text-base text-theme-destructive">Delete forever</text>
-                            </pressable>
-                        </column>
                     </column>
                     @unless ($loop->last)
-                        <divider class="ml-[80]" />
+                        <divider class="ml-[72]" />
                     @endunless
                 @endforeach
             </column>

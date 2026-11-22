@@ -357,10 +357,10 @@ it('adds https:// to a link typed without one', function (string $typed, string 
     'http' => ['http://lego.com/product/123', 'http://lego.com/product/123'],
 ]);
 
-it('uses the same glass add button on a wish list as on other lists', function () {
-    $button = function (string $path): array {
-        $find = function (array $node) use (&$find): ?array {
-            if (($node['ref'] ?? null) === 'list-add-item') {
+it('uses the same add and more buttons on a wish list as on other lists', function () {
+    $button = function (string $path, string $ref): array {
+        $find = function (array $node) use (&$find, $ref): ?array {
+            if (($node['ref'] ?? null) === $ref) {
                 return $node;
             }
 
@@ -374,11 +374,13 @@ it('uses the same glass add button on a wish list as on other lists', function (
         };
         $node = $find(Native::visit($path)->tree());
 
-        return [$node['layout'], $node['style'], $node['props'], array_map(fn (array $child): array => [$child['type'], $child['props']], $node['children'])];
+        return [$node['layout'], $node['style'] ?? null, $node['props'], array_map(fn (array $child): array => [$child['type'], $child['props']], $node['children'])];
     };
 
-    expect($button('/lists/3'))->toBe($button('/lists/1'))
-        ->and($button('/lists/3')[2]['glass'])->toBe(1);
+    expect($button('/lists/3', 'list-add-item'))->toBe($button('/lists/1', 'list-add-item'))
+        ->and($button('/lists/3', 'list-add-item')[1])->toBeNull()
+        ->and(array_slice($button('/lists/3', 'list-more'), 0, 3))->toBe(array_slice($button('/lists/1', 'list-more'), 0, 3))
+        ->and($button('/lists/3', 'list-more')[2]['glass'])->toBe(1);
 });
 
 it('waits for the rest of a web address before calling it wrong', function () {
@@ -479,7 +481,7 @@ it('removes the item being edited and closes the edit', function () {
 it('closes the edit when its item is removed as done, and keeps it open otherwise', function () {
     Native::visit('/lists/1')
         ->press('editItem(2)')
-        ->tap('remove-done')
+        ->call('confirmRemoveDone')
         ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Remove', 'id' => 'remove-done'])
         ->assertSet('editingItemId', null)
         ->assertDontSee('Edit item')
@@ -489,7 +491,7 @@ it('closes the edit when its item is removed as done, and keeps it open otherwis
 
     Native::visit('/lists/1')
         ->press('editItem(3)')
-        ->tap('remove-done')
+        ->call('confirmRemoveDone')
         ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Remove', 'id' => 'remove-done'])
         ->assertSet('editingItemId', 3)
         ->assertSee('Edit item')
@@ -526,8 +528,8 @@ function listDetailRef(string $ref): Closure
 
 it('keeps the list’s actions in one menu, offering Remove done and Uncheck all only while something is ticked', function () {
     Native::visit('/lists/1')
-        ->assertElement('top_bar_action', fn (array $node): bool => ($node['ref'] ?? null) === 'list-actions'
-            && array_column($node['children'], 'ref') === ['remove-done', 'uncheck-all', 'edit-list', 'delete-list'])
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'list-more'
+            && collect($node['children'])->where('type', 'top_bar_action')->pluck('ref')->all() === ['edit-list', 'remove-done', 'uncheck-all', 'delete-list'])
         ->assertElement('top_bar_action', fn (array $node): bool => ($node['ref'] ?? null) === 'delete-list' && $node['props']['destructive'] === true)
         ->tap('list-item-2')
         ->assertMissingElement('top_bar_action', listDetailRef('remove-done'))

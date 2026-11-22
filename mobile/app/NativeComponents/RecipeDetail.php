@@ -12,11 +12,13 @@ use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Http\Integrations\Sunny\SunnyTeam;
 use App\Icons\Android;
 use App\Icons\Ios;
+use App\Ui\Menu;
 use Illuminate\Support\Arr;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
 use Native\Mobile\Attributes\On;
+use Native\Mobile\Edge\Elements\TopBarAction;
 use Native\Mobile\Edge\Layouts\Builders\NavAction;
 use Native\Mobile\Events\Alert\ButtonPressed;
 use Native\Mobile\Facades\Browser;
@@ -216,15 +218,27 @@ class RecipeDetail extends Component
         $this->back();
     }
 
+    public function canCook(): bool
+    {
+        return $this->ingredients !== [] || $this->instructions !== [];
+    }
+
+    public function edit(): void
+    {
+        $this->navigate('/recipes/'.$this->recipe['id'].'/edit');
+    }
+
     /**
-     * @return list<NavAction>
+     * @return list<NavAction|TopBarAction>
      */
     public function moreMenu(): array
     {
         return array_values(array_filter([
+            $this->canCook() ? Menu::item('edit-recipe', 'Edit', Ios::Pencil, Android::Edit, 'edit') : null,
             NavAction::make('recipe-remix')->label('Remix')->icon(ios: Ios::DocOnDoc->value, android: Android::ContentCopy->value)->press('remix'),
             NavAction::make('recipe-share')->label('Share')->icon(ios: Ios::SquareAndArrowUp->value, android: Android::Share->value)->press('openShare'),
             $this->copyTeams() === [] ? null : NavAction::make('recipe-copy-to-team')->label('Copy to another team')->icon(ios: Ios::SquareOnSquare->value, android: Android::FileCopy->value)->press('openCopy'),
+            Menu::delete('delete-recipe', 'Delete recipe', 'confirmDeleteRecipe', 'Delete '.$this->recipe['name']),
         ]));
     }
 

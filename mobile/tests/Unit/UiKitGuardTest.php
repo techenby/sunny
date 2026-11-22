@@ -152,9 +152,6 @@ it('keeps hand-written buttons out of the views', function () {
             '{{ $refPrefix }}-parent-crumb-home' => 'A breadcrumb chip, not a button.',
             "{{ \$refPrefix }}-parent-crumb-{{ \$crumb['id'] }}" => 'A breadcrumb chip, not a button.',
         ],
-        'recently-deleted-inventory' => [
-            "deleted-forever-{{ \$item['id'] }}" => 'Moves into a row menu in a later pass.',
-        ],
         'team-settings' => [
             'member-remove' => 'Its confirmation moves to the system alert in a later pass.',
         ],
@@ -248,6 +245,27 @@ it('keeps every kit button to the five looks', function () {
 
             if (! $hasLabel && ! isset($given['a11y-label'])) {
                 $violations[] = "{$where}: a button with no label needs an a11y-label.";
+            }
+        }
+    }
+
+    expect($violations)->toBe([], implode("\n", $violations));
+});
+
+it('keeps delete out of the top bar', function () {
+    $violations = [];
+
+    foreach (nativeViewSources() as $view => $source) {
+        preg_match_all('/<native:top-bar-action\b'.NATIVE_TAG_ATTRIBUTES.'>/s', $source, $actions, PREG_SET_ORDER | PREG_OFFSET_CAPTURE);
+
+        foreach ($actions as $action) {
+            if (preg_match('/(?<![\w-])destructive(?![\w-])|Ios::Trash\b/', $action[1][0]) === 1) {
+                $violations[] = sprintf(
+                    'resources/views/native/%s.blade.php:%d (ref "%s"): delete does not go in the top bar. Put it last in the screen’s more menu with App\Ui\Menu::delete().',
+                    $view,
+                    nativeViewLine($source, $action[0][1]),
+                    nativeTagRef($action[1][0]) ?? 'none',
+                );
             }
         }
     }
