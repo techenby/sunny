@@ -28,8 +28,7 @@
                         @else
                             <x-ui.button
                                 ref="{{ $refPrefix }}-photo-{{ $index }}-primary"
-                                variant="plain"
-                                size="sm"
+                                variant="text"
                                 :ios="Ios::StarFill"
                                 :android="Android::Star"
                                 a11y-label="Make photo {{ $index + 1 }} the primary photo"
@@ -40,31 +39,27 @@
 
                     <x-ui.button
                         ref="{{ $refPrefix }}-photo-{{ $index }}-up"
-                        variant="plain"
+                        variant="text"
                         :ios="Ios::ArrowUp"
                         :android="Android::ArrowUpward"
-                        :icon-size="18"
-                        :icon-class="$index === 0 ? 'text-theme-on-surface-variant/40' : 'text-theme-on-surface'"
                         a11y-label="Move photo {{ $index + 1 }} up"
                         tap="movePhotoUp({{ $index }})"
+                        :disabled="$index === 0"
                     />
                     <x-ui.button
                         ref="{{ $refPrefix }}-photo-{{ $index }}-down"
-                        variant="plain"
+                        variant="text"
                         :ios="Ios::ArrowDown"
                         :android="Android::ArrowDownward"
-                        :icon-size="18"
-                        :icon-class="$loop->last ? 'text-theme-on-surface-variant/40' : 'text-theme-on-surface'"
                         a11y-label="Move photo {{ $index + 1 }} down"
                         tap="movePhotoDown({{ $index }})"
+                        :disabled="$loop->last"
                     />
                     <x-ui.button
                         ref="{{ $refPrefix }}-photo-{{ $index }}-remove"
-                        variant="plain"
-                        tone="muted"
+                        variant="text"
                         :ios="Ios::Trash"
                         :android="Android::Delete"
-                        :icon-size="18"
                         a11y-label="Remove photo {{ $index + 1 }}"
                         tap="removePhoto({{ $index }})"
                     />
@@ -80,10 +75,8 @@
         <row class="w-full flex-wrap gap-3">
             <x-ui.button
                 ref="{{ $refPrefix }}-photo-camera"
-                variant="outline"
+                variant="secondary"
                 class="flex-1"
-                gap="2"
-                :icon-size="20"
                 :ios="Ios::Camera"
                 :android="Android::PhotoCamera"
                 a11y-label="Take photo"
@@ -91,10 +84,8 @@
             >Take photo</x-ui.button>
             <x-ui.button
                 ref="{{ $refPrefix }}-photo-library"
-                variant="outline"
+                variant="secondary"
                 class="flex-1"
-                gap="2"
-                :icon-size="20"
                 :ios="Ios::Photo"
                 :android="Android::Image"
                 a11y-label="Choose photos"

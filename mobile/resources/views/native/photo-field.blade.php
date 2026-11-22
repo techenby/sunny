@@ -17,21 +17,13 @@
             :height="180"
             :fit="2"
         />
-        <pressable
-            ref="{{ $refPrefix }}-photo-remove"
-            class="h-12 items-start justify-center self-start px-2"
-            @tap="removePhoto"
-        >
-            <text class="text-sm font-semibold text-theme-primary-text">Remove photo</text>
-        </pressable>
+        <x-ui.button ref="{{ $refPrefix }}-photo-remove" variant="text" class="self-start px-2" tap="removePhoto">Remove photo</x-ui.button>
     @else
         <row class="w-full flex-wrap gap-3">
             <x-ui.button
                 ref="{{ $refPrefix }}-photo-camera"
-                variant="outline"
+                variant="secondary"
                 class="flex-1"
-                gap="2"
-                :icon-size="20"
                 :ios="Ios::Camera"
                 :android="Android::PhotoCamera"
                 a11y-label="Take photo"
@@ -39,10 +31,8 @@
             >Take photo</x-ui.button>
             <x-ui.button
                 ref="{{ $refPrefix }}-photo-library"
-                variant="outline"
+                variant="secondary"
                 class="flex-1"
-                gap="2"
-                :icon-size="20"
                 :ios="Ios::Photo"
                 :android="Android::Image"
                 a11y-label="Choose photo"

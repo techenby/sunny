@@ -7,7 +7,7 @@
     @if ($error)
         <text ref="item-link-error" class="text-center text-sm text-theme-destructive">{{ $error }}</text>
     @endif
-    <x-ui.button ref="item-link-open-browser" variant="ghost" tap="openInBrowser">
+    <x-ui.button ref="item-link-open-browser" variant="text" tap="openInBrowser">
         Open in browser
     </x-ui.button>
 </column>

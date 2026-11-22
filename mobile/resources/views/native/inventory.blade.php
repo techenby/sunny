@@ -21,13 +21,12 @@
             />
             <x-ui.button
                 ref="inventory-scan-label"
-                variant="neutral"
-                class="min-h-10 px-3"
+                variant="text"
                 :ios="Ios::QrcodeViewfinder"
                 :android="Android::QrCodeScanner"
                 a11y-label="Scan label"
                 tap="scanCode"
-            >Scan</x-ui.button>
+            />
         </row>
         <x-ui.button ref="inventory-add" variant="glass" :ios="Ios::Plus" :android="Android::Add" a11y-label="Add" :menu="$this->addMenu()" />
     </row>

@@ -30,11 +30,9 @@ $notice = match ($card['state']) {
         @if ($card['state'] === 'imported')
             <x-ui.button
                 ref="recipe-import-dismiss"
-                variant="neutral"
-                tone="muted"
+                variant="secondary"
                 :ios="Ios::Xmark"
                 :android="Android::Close"
-                :icon-size="16"
                 a11y-label="Dismiss"
                 tap="dismissImported"
             />
@@ -45,12 +43,10 @@ $notice = match ($card['state']) {
         <text class="text-sm text-theme-on-surface-variant">Sunny can read this page and fill in the name, photo, ingredients, steps and times for you.</text>
         <x-ui.button
             ref="recipe-import"
-            variant="filled"
+            variant="secondary"
             class="w-full"
-            gap="2"
             :ios="Ios::ArrowDownToLine"
             :android="Android::Download"
-            :icon-size="18"
             a11y-label="Import this recipe"
             tap="importRecipe"
         >Import this recipe</x-ui.button>
@@ -80,7 +76,7 @@ $notice = match ($card['state']) {
                 @if (in_array($card['state'], ['no-recipe', 'unreachable'], true))
                     <x-ui.button
                         ref="recipe-import-change-link"
-                        variant="filled"
+                        variant="secondary"
                         class="w-full"
                         :ios="Ios::Pencil"
                         :android="Android::Edit"
@@ -90,14 +86,14 @@ $notice = match ($card['state']) {
                 @else
                     <x-ui.button
                         ref="recipe-import-retry"
-                        variant="filled"
+                        variant="secondary"
                         class="w-full"
                         :ios="Ios::ArrowClockwise"
                         :android="Android::Refresh"
                         tap="importRecipe"
                     >Try again</x-ui.button>
                 @endif
-                <x-ui.button ref="recipe-import-fill-in" variant="outline-pill" class="w-full" tap="fillInMyself">Fill it in myself</x-ui.button>
+                <x-ui.button ref="recipe-import-fill-in" variant="secondary" class="w-full" tap="fillInMyself">Fill it in myself</x-ui.button>
             </column>
         @endif
     @endif

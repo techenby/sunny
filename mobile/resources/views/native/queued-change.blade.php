@@ -12,9 +12,12 @@
                 <text font="semibold" class="flex-1 text-base text-theme-on-surface">Not saved to Sunny</text>
             </row>
             <text class="text-sm text-theme-on-surface-variant">{{ $change['error'] }} Edit to try again, or discard the change.</text>
-            <pressable ref="{{ $refPrefix }}-sync-discard" class="h-10 justify-center self-start" @tap="confirmDiscardQueuedChange">
-                <text class="text-sm font-semibold text-theme-destructive">Discard change</text>
-            </pressable>
+            <x-ui.button
+                ref="{{ $refPrefix }}-sync-discard"
+                variant="text"
+                class="self-start"
+                tap="confirmDiscardQueuedChange"
+            >Discard change</x-ui.button>
         </column>
     @else
         <row ref="{{ $refPrefix }}-sync-pending" class="w-full items-center gap-2">

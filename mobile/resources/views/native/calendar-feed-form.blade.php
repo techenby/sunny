@@ -81,10 +81,7 @@
         @if ($removeLabel ?? null)
             <x-ui.button
                 ref="{{ $formRef }}-remove"
-                variant="plain"
-                tone="destructive"
-                size="lg"
-                :font="false"
+                variant="text"
                 class="w-full items-center"
                 :a11y-label="$removeLabel"
                 tap="confirmRemove"

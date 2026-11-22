@@ -10,10 +10,7 @@
     <row class="w-full items-center px-4 pb-2">
         <x-ui.button
             ref="add-calendar"
-            variant="filled"
-            size="lg"
             class="flex-1"
-            flush
             :ios="Ios::Plus"
             :android="Android::Add"
             a11y-label="Add calendar"
@@ -38,7 +35,7 @@
                 <row class="w-full pl-8">
                     <x-ui.button
                         ref="calendar-feeds-retry"
-                        variant="filled"
+                        variant="secondary"
                         :ios="Ios::ArrowClockwise"
                         :android="Android::Refresh"
                         a11y-label="Try again"
@@ -56,11 +53,13 @@
                 </column>
             @endif
         @elseif (! $feeds['failing'] && ! $feeds['working'])
-            <column ref="calendar-feeds-empty" class="{{ Card::classes() }} w-full items-center gap-2 px-4 py-6">
-                <icon :ios="Ios::Calendar" :android="Android::CalendarMonth" :size="28" class="text-theme-primary" />
-                <x-ui.heading>No calendars yet</x-ui.heading>
-                <x-ui.text size="sm" class="text-center">Add Google Calendar, Proton or any calendar with an iCal link.</x-ui.text>
-            </column>
+            <x-ui.empty-state
+                ref="calendar-feeds-empty"
+                :ios="Ios::Calendar"
+                :android="Android::CalendarMonth"
+                heading="No calendars yet"
+                text="Add Google Calendar, Proton or any calendar with an iCal link."
+            />
         @else
             @foreach ($feeds['failing'] as $feed)
                 <column ref="calendar-feed-{{ $feed['id'] }}-card" class="{{ Card::classes() }} w-full pb-3">

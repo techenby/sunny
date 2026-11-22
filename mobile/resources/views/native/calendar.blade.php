@@ -38,9 +38,6 @@
         <row class="w-full items-center justify-center px-4 pb-2">
             <x-ui.button
                 ref="add-first-calendar"
-                variant="filled"
-                size="lg"
-                class="px-6"
                 :ios="Ios::Plus"
                 :android="Android::Add"
                 a11y-label="Add a calendar"
@@ -81,7 +78,6 @@
                     <row class="w-full pl-8">
                         <x-ui.button
                             ref="calendar-retry"
-                            variant="filled"
                             :ios="Ios::ArrowClockwise"
                             :android="Android::Refresh"
                             a11y-label="Try again"
@@ -117,9 +113,7 @@
                     </row>
                     <x-ui.button
                         ref="calendar-warning-{{ $warning['feed_id'] }}-fix"
-                        variant="filled"
                         class="w-full"
-                        flush
                         :ios="Ios::ArrowRight"
                         :android="Android::ArrowForward"
                         icon-trailing
@@ -146,11 +140,13 @@
                         </column>
                     </column>
                 @empty
-                    <column ref="calendar-nothing" class="{{ Card::classes() }} w-full items-center gap-2 px-4 py-6">
-                        <icon :ios="Ios::SunMax" :android="Android::WbSunny" :size="28" class="text-theme-primary" />
-                        <x-ui.heading>Nothing in the next six weeks</x-ui.heading>
-                        <x-ui.text size="sm" class="text-center">Events from your calendars will show up here.</x-ui.text>
-                    </column>
+                    <x-ui.empty-state
+                        ref="calendar-nothing"
+                        :ios="Ios::SunMax"
+                        :android="Android::WbSunny"
+                        heading="Nothing in the next six weeks"
+                        text="Events from your calendars will show up here."
+                    />
                 @endforelse
             @elseif ($this->calendarIsLoading)
                 <column ref="calendar-loading" class="w-full items-center gap-3 py-12">

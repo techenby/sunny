@@ -9,19 +9,15 @@
         <x-ui.button
             ref="scan-take-photos"
             variant="glass"
-            tone="accent"
             class="w-full"
-            gap="2"
             :ios="Ios::CameraFill"
             :android="Android::PhotoCamera"
-            :icon-size="20"
             a11y-label="Take photos"
             tap="takePhotos"
         >Take photos</x-ui.button>
         <x-ui.button
             ref="scan-submit"
-            :size="false"
-            class="h-12 w-full"
+            class="w-full"
             :disabled="$saving || $candidates === []"
             :loading="$saving"
             tap="confirmSave"
@@ -61,12 +57,10 @@
 
         <x-ui.button
             ref="scan-choose-photos"
-            variant="outline"
+            variant="secondary"
             class="w-full"
-            gap="2"
             :ios="Ios::Photo"
             :android="Android::Photo"
-            :icon-size="20"
             a11y-label="Choose photos"
             a11y-hint="Pick photos you already took"
             tap="choosePhotos"
@@ -108,17 +102,15 @@
                                     @change="renameCandidate({{ $candidate['id'] }})"
                                 />
                                 @if ($candidate['suggestedName'] !== '' && trim($candidate['name']) === '')
-                                    <pressable
+                                    <x-ui.button
                                         ref="scan-candidate-{{ $candidate['id'] }}-use-suggestion"
+                                        variant="text"
+                                        class="self-start"
+                                        :ios="Ios::Sparkles"
+                                        :android="Android::AutoAwesome"
                                         :a11y-label="'Use '.$candidate['suggestedName'].' as the name'"
-                                        class="h-8 justify-center self-start"
-                                        @tap="useSuggestion({{ $candidate['id'] }})"
-                                    >
-                                        <row class="items-center gap-1">
-                                            <icon :ios="Ios::Sparkles" :android="Android::AutoAwesome" :size="14" class="text-theme-primary-text" />
-                                            <text class="text-sm font-semibold text-theme-primary-text">Use “{{ $candidate['suggestedName'] }}”</text>
-                                        </row>
-                                    </pressable>
+                                        tap="useSuggestion({{ $candidate['id'] }})"
+                                    >Use “{{ $candidate['suggestedName'] }}”</x-ui.button>
                                 @endif
                                 @if ($candidate['scanId'])
                                     <row ref="scan-candidate-{{ $candidate['id'] }}-identifying" class="items-center gap-2">
@@ -138,11 +130,9 @@
                             </column>
                             <x-ui.button
                                 ref="scan-candidate-{{ $candidate['id'] }}-actions"
-                                variant="plain"
-                                tone="muted"
+                                variant="text"
                                 :ios="Ios::Ellipsis"
                                 :android="Android::MoreHoriz"
-                                :icon-size="18"
                                 a11y-label="Retake or remove"
                                 :menu="$this->candidateMenu($candidate['id'])"
                             />
@@ -156,11 +146,8 @@
 
             <x-ui.button
                 ref="scan-start-over"
-                variant="plain"
-                tone="destructive"
-                size="lg"
+                variant="text"
                 class="w-full items-center"
-                label-class="text-center"
                 a11y-label="Start over"
                 a11y-hint="Clears these photos and names"
                 tap="confirmStartOver"

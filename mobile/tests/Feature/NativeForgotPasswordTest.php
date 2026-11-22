@@ -149,8 +149,9 @@ it('asks people to wait after too many tries', function (): void {
         ->tap('forgot-password-submit')
         ->assertSee('Too many tries')
         ->assertSee('Wait a minute and try again. In the meantime, check your inbox for the links we sent.')
-        ->assertElement('button', fn (array $node): bool => ($node['ref'] ?? null) === 'forgot-password-submit' && ($node['props']['disabled'] ?? null) === true)
-        ->tap('forgot-password-submit');
+        ->assertElement('column', fn (array $node): bool => ($node['ref'] ?? null) === 'forgot-password-submit')
+        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'forgot-password-submit')
+        ->call('send');
 
     Saloon::assertSentCount(1);
 

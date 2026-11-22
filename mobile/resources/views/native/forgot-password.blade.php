@@ -54,7 +54,7 @@
                 <text class="text-sm text-theme-on-surface-variant">Remember your password?</text>
                 <x-ui.button
                     ref="forgot-password-login-link"
-                    variant="ghost"
+                    variant="text"
                     a11y-hint="Goes back to the login screen"
                     tap="backToLogin"
                 >
@@ -86,13 +86,12 @@
             </column>
 
             <column class="w-full gap-3">
-                <x-ui.button ref="forgot-password-back" class="w-full" tap="backToLogin">
+                <x-ui.button ref="forgot-password-back" variant="secondary" class="w-full" tap="backToLogin">
                     Back to log in
                 </x-ui.button>
                 @if (System::isIos())
                     <x-ui.button
                         ref="forgot-password-open-mail"
-                        variant="secondary"
                         class="w-full"
                         :ios="Ios::EnvelopeOpen"
                         a11y-hint="Opens the Mail app"

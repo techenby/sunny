@@ -16,58 +16,66 @@
             </column>
         </column>
 
-        <column ref="ui-kit-platform-buttons" class="w-full gap-2">
-            <x-ui.subheading class="px-1">x-ui.button, drawn by the platform</x-ui.subheading>
+        <column ref="ui-kit-buttons" class="w-full gap-2">
+            <x-ui.subheading class="px-1">x-ui.button</x-ui.subheading>
             <column class="{{ Card::classes() }} w-full gap-3 p-4">
-                @foreach (['primary', 'secondary', 'destructive', 'ghost'] as $variant)
-                    <x-ui.text size="sm">variant="{{ $variant }}"</x-ui.text>
-                    <x-ui.button ref="ui-kit-button-{{ $variant }}" :variant="$variant" class="w-full" tap="tapped('{{ $variant }}')">Label</x-ui.button>
-                    <x-ui.button ref="ui-kit-button-{{ $variant }}-icon" :variant="$variant" class="w-full" :ios="Ios::ArrowClockwise" :android="Android::Refresh" tap="tapped('{{ $variant }} with ios and android')">With an icon</x-ui.button>
-                    <x-ui.button ref="ui-kit-button-{{ $variant }}-disabled" :variant="$variant" class="w-full" disabled tap="tapped('{{ $variant }} disabled')">disabled</x-ui.button>
-                @endforeach
-                <x-ui.text size="sm">variant="primary" loading</x-ui.text>
-                <x-ui.button ref="ui-kit-button-primary-loading" class="w-full" loading tap="tapped('primary loading')">loading</x-ui.button>
-                <x-ui.text size="sm">variant="ghost" :font="false"</x-ui.text>
-                <x-ui.button ref="ui-kit-button-ghost-regular" variant="ghost" :font="false" class="w-full" tap="tapped('ghost without the semibold font')">Label</x-ui.button>
-            </column>
-        </column>
-
-        <column ref="ui-kit-drawn-buttons" class="w-full gap-2">
-            <x-ui.subheading class="px-1">x-ui.button, drawn by the app</x-ui.subheading>
-            <column class="{{ Card::classes() }} w-full gap-3 p-4">
-                @foreach (['filled', 'tint', 'neutral', 'glass', 'outline', 'outline-pill', 'plain'] as $variant)
-                    <x-ui.text size="sm">variant="{{ $variant }}": label, with an icon, no label</x-ui.text>
-                    <row class="w-full items-center gap-3">
-                        <x-ui.button ref="ui-kit-button-{{ $variant }}" :variant="$variant" tap="tapped('{{ $variant }}')">Label</x-ui.button>
-                        <x-ui.button ref="ui-kit-button-{{ $variant }}-icon" :variant="$variant" :ios="Ios::Plus" :android="Android::Add" tap="tapped('{{ $variant }} with ios and android')">Label</x-ui.button>
-                        <x-ui.button ref="ui-kit-button-{{ $variant }}-icon-only" :variant="$variant" :ios="Ios::Plus" :android="Android::Add" a11y-label="Add" tap="tapped('{{ $variant }} with no label')" />
-                    </row>
-                @endforeach
-            </column>
-            <column class="{{ Card::classes() }} w-full gap-3 p-4">
-                <x-ui.text size="sm">size="sm", the default, size="lg"</x-ui.text>
+                <x-ui.text size="sm">variant="primary", the default. The action the screen exists for, one per screen. Disabled, a filled look turns grey with a lighter label.</x-ui.text>
                 <row class="w-full items-center gap-3">
-                    <x-ui.button ref="ui-kit-button-size-sm" variant="filled" size="sm" :ios="Ios::Plus" :android="Android::Add" tap="tapped('size sm')">Label</x-ui.button>
-                    <x-ui.button ref="ui-kit-button-size-base" variant="filled" :ios="Ios::Plus" :android="Android::Add" tap="tapped('default size')">Label</x-ui.button>
-                    <x-ui.button ref="ui-kit-button-size-lg" variant="filled" size="lg" :ios="Ios::Plus" :android="Android::Add" tap="tapped('size lg')">Label</x-ui.button>
+                    <x-ui.button ref="ui-kit-button-primary" tap="tapped('primary')">Label</x-ui.button>
+                    <x-ui.button ref="ui-kit-button-primary-icon" :ios="Ios::Plus" :android="Android::Add" tap="tapped('primary with ios and android')">Label</x-ui.button>
+                    <x-ui.button ref="ui-kit-button-primary-disabled" disabled tap="tapped('primary disabled')">disabled</x-ui.button>
                 </row>
-                <x-ui.text size="sm">variant="plain" with tone="accent" (its default), "destructive", "neutral", "muted"</x-ui.text>
+                <x-ui.text size="sm">variant="secondary". Every other action that does something. With no label it is a circle.</x-ui.text>
+                <row class="w-full items-center gap-3">
+                    <x-ui.button ref="ui-kit-button-secondary" variant="secondary" tap="tapped('secondary')">Label</x-ui.button>
+                    <x-ui.button ref="ui-kit-button-secondary-icon" variant="secondary" :ios="Ios::Plus" :android="Android::Add" tap="tapped('secondary with ios and android')">Label</x-ui.button>
+                    <x-ui.button ref="ui-kit-button-secondary-icon-only" variant="secondary" :ios="Ios::Plus" :android="Android::Add" a11y-label="Add" tap="tapped('secondary with no label')" />
+                    <x-ui.button ref="ui-kit-button-secondary-disabled" variant="secondary" :ios="Ios::Plus" :android="Android::Add" a11y-label="Add" disabled tap="tapped('secondary disabled')" />
+                </row>
+                <x-ui.button ref="ui-kit-button-secondary-disabled-label" variant="secondary" class="w-full" disabled tap="tapped('secondary disabled')">disabled</x-ui.button>
+                <x-ui.text size="sm">variant="glass". Secondary when it floats in a bottom bar. Disabled, it stays glass with a lighter label.</x-ui.text>
+                <row class="w-full items-center gap-3">
+                    <x-ui.button ref="ui-kit-button-glass" variant="glass" tap="tapped('glass')">Label</x-ui.button>
+                    <x-ui.button ref="ui-kit-button-glass-icon" variant="glass" :ios="Ios::Pencil" :android="Android::Edit" tap="tapped('glass with ios and android')">Label</x-ui.button>
+                    <x-ui.button ref="ui-kit-button-glass-icon-only" variant="glass" :ios="Ios::Plus" :android="Android::Add" a11y-label="Add" tap="tapped('glass with no label')" />
+                    <x-ui.button ref="ui-kit-button-glass-disabled" variant="glass" :ios="Ios::ChevronRight" :android="Android::ChevronRight" a11y-label="Next" disabled tap="tapped('glass disabled')" />
+                    <x-ui.button ref="ui-kit-button-glass-disabled-label" variant="glass" disabled tap="tapped('glass disabled')">disabled</x-ui.button>
+                </row>
+                <x-ui.text size="sm">variant="text". Leaving a sheet and small inline edits. With no label it is a row icon, for inside a row or a field only. Disabled, both only get lighter.</x-ui.text>
                 <row class="w-full items-center gap-4">
-                    @foreach (['accent', 'destructive', 'neutral', 'muted'] as $tone)
-                        <x-ui.button ref="ui-kit-button-tone-{{ $tone }}" variant="plain" :tone="$tone" tap="tapped('plain with tone {{ $tone }}')">Label</x-ui.button>
-                    @endforeach
+                    <x-ui.button ref="ui-kit-button-text" variant="text" tap="tapped('text')">Label</x-ui.button>
+                    <x-ui.button ref="ui-kit-button-text-icon" variant="text" :ios="Ios::Plus" :android="Android::Add" tap="tapped('text with ios and android')">Label</x-ui.button>
+                    <x-ui.button ref="ui-kit-button-text-icon-only" variant="text" :ios="Ios::Ellipsis" :android="Android::MoreHoriz" a11y-label="More" tap="tapped('text with no label')" />
+                    <x-ui.button ref="ui-kit-button-text-disabled" variant="text" disabled tap="tapped('text disabled')">disabled</x-ui.button>
+                    <x-ui.button ref="ui-kit-button-text-icon-only-disabled" variant="text" :ios="Ios::ChevronUp" :android="Android::KeyboardArrowUp" a11y-label="Move up" disabled tap="tapped('text with no label, disabled')" />
                 </row>
-                <x-ui.text size="sm">variant="glass" tone="accent"</x-ui.text>
-                <x-ui.button ref="ui-kit-button-glass-accent" variant="glass" tone="accent" class="w-full" :ios="Ios::CameraFill" :android="Android::PhotoCamera" tap="tapped('glass with tone accent')">Label</x-ui.button>
-                <x-ui.text size="sm">icon-trailing</x-ui.text>
-                <x-ui.button ref="ui-kit-button-trailing" variant="filled" class="w-full" :ios="Ios::ArrowRight" :android="Android::ArrowForward" icon-trailing tap="tapped('icon-trailing')">Label</x-ui.button>
-                <x-ui.text size="sm">:menu, on a label and on an icon button</x-ui.text>
+                <x-ui.text size="sm">variant="destructive". Only to confirm a delete. The trash icon is built in.</x-ui.text>
                 <row class="w-full items-center gap-3">
-                    <x-ui.button ref="ui-kit-button-menu" variant="neutral" :menu="$menu">Open menu</x-ui.button>
+                    <x-ui.button ref="ui-kit-button-destructive" variant="destructive" tap="tapped('destructive')">Delete</x-ui.button>
+                    <x-ui.button ref="ui-kit-button-destructive-disabled" variant="destructive" disabled tap="tapped('destructive disabled')">disabled</x-ui.button>
+                </row>
+            </column>
+            <column class="{{ Card::classes() }} w-full gap-3 p-4">
+                <x-ui.text size="sm">Any two looks in one row</x-ui.text>
+                <row class="w-full items-center gap-3">
+                    <x-ui.button ref="ui-kit-button-row-secondary" variant="secondary" class="flex-1" tap="tapped('secondary beside primary')">Secondary</x-ui.button>
+                    <x-ui.button ref="ui-kit-button-row-primary" class="flex-1" tap="tapped('primary beside secondary')">Primary</x-ui.button>
+                </row>
+                <row class="w-full items-center gap-3">
+                    <x-ui.button ref="ui-kit-button-row-text" variant="text" class="flex-1 items-center" tap="tapped('text beside destructive')">Cancel</x-ui.button>
+                    <x-ui.button ref="ui-kit-button-row-destructive" variant="destructive" class="flex-1" tap="tapped('destructive beside text')">Delete</x-ui.button>
+                </row>
+                <x-ui.text size="sm">loading</x-ui.text>
+                <x-ui.button ref="ui-kit-button-loading" class="w-full" loading tap="tapped('loading')">Saving…</x-ui.button>
+                <x-ui.text size="sm">icon-trailing</x-ui.text>
+                <x-ui.button ref="ui-kit-button-trailing" class="w-full" :ios="Ios::ArrowRight" :android="Android::ArrowForward" icon-trailing tap="tapped('icon-trailing')">Label</x-ui.button>
+                <x-ui.text size="sm">:menu, on a label and on a circle</x-ui.text>
+                <row class="w-full items-center gap-3">
+                    <x-ui.button ref="ui-kit-button-menu" variant="secondary" :menu="$menu">Open menu</x-ui.button>
                     <x-ui.button ref="ui-kit-button-menu-icon" variant="glass" :ios="Ios::Ellipsis" :android="Android::MoreHoriz" a11y-label="More" :menu="$menu" />
                 </row>
                 <x-ui.text size="sm">navigate="/inventory/0", which opens x-ui.not-found</x-ui.text>
-                <x-ui.button ref="ui-kit-button-navigate" variant="tint" class="w-full" navigate="/inventory/0">Open a screen</x-ui.button>
+                <x-ui.button ref="ui-kit-button-navigate" variant="secondary" class="w-full" navigate="/inventory/0">Open a screen</x-ui.button>
             </column>
         </column>
 
