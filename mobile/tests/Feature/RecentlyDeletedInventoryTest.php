@@ -99,7 +99,7 @@ it('shows the way into Recently deleted only while something is deleted', functi
         ->assertDontSee('Recently deleted');
 });
 
-it('lists deleted things newest first with their type, where they were and when', function () {
+it('lists deleted things newest first with where they were and when', function () {
     seedDeletedSunnyItems();
     app(SunnyStore::class)->saveRecord('items', deletedSunnyItem(23, 'Attic', 'location', null, '2025-10-01T12:00:00Z'));
     app(SunnyStore::class)->saveRecord('items', deletedSunnyItem(24, 'Sled', 'item', null, '2026-11-12T12:00:00Z'));
@@ -112,28 +112,37 @@ it('lists deleted things newest first with their type, where they were and when'
         ->assertAccessible();
 
     expect(collect($screen->get('items'))->map(fn (array $item): array => [$item['name'], $item['supporting'], $item['deleted'], $item['emptied']])->all())->toBe([
-        ['Old lamp', 'Thing · was in Garage', 'Deleted today', false],
-        ['Toy bin', 'Storage · was in Basement', 'Deleted yesterday', true],
-        ['Bike pump', 'Thing · was in Garage', 'Deleted 12 Nov', false],
-        ['Sled', 'Thing · wasn’t in a place', 'Deleted 12 Nov', false],
-        ['Attic', 'Place', 'Deleted 1 Oct 2025', true],
+        ['Old lamp', 'Was in Garage · Deleted today', 'Deleted today', false],
+        ['Toy bin', 'Was in Basement · Deleted yesterday', 'Deleted yesterday', true],
+        ['Bike pump', 'Was in Garage · Deleted 12 Nov', 'Deleted 12 Nov', false],
+        ['Sled', 'Deleted 12 Nov', 'Deleted 12 Nov', false],
+        ['Attic', 'Deleted 1 Oct 2025', 'Deleted 1 Oct 2025', true],
     ]);
 });
 
-it('gives each deleted thing a compact row with Restore and a more menu that holds Delete forever', function () {
+it('gives each deleted thing one row whose tap and more icon open Restore, then Delete forever', function () {
     seedDeletedSunnyItems();
 
+    $menu = fn (array $node): array => collect($node['children'])->where('type', 'top_bar_action')
+        ->map(fn (array $item): array => [$item['ref'], $item['props']['label'], $item['props']['a11y_label'], $item['props']['icon'], $item['props']['destructive'] ?? false])
+        ->values()->all();
+    $items = [
+        ['deleted-restore-20', 'Restore', 'Restore Old lamp', 'arrow.uturn.backward', false],
+        ['deleted-forever-20', 'Delete forever', 'Delete Old lamp forever', 'trash', true],
+    ];
+
     Native::visit('/inventory/deleted', platform: 'ios')
-        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'deleted-restore-20'
-            && $node['style']['bg_color'] === theme('surface-variant')
-            && ($node['layout']['width'] ?? null) !== 'fill'
-            && $node['children'][0]['props']['text'] === 'Restore')
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'deleted-row-20'
+            && $node['props']['a11y_label'] === 'Old lamp, Was in Garage · Deleted today'
+            && $menu($node) === $items
+            && array_column(array_column(collect($node['children'])->firstWhere('type', 'row')['children'][1]['children'], 'props'), 'text') === ['Old lamp', 'Was in Garage · Deleted today'])
         ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'deleted-more-20'
             && ! isset($node['style'])
             && $node['layout']['width'] == 48
-            && str_starts_with($node['props']['a11y_label'], 'More for ')
-            && collect($node['children'])->where('type', 'top_bar_action')->map(fn (array $item): array => [$item['ref'], $item['props']['label'], $item['props']['destructive'], $item['props']['icon']])->values()->all() === [['deleted-forever-20', 'Delete forever', true, 'trash']])
-        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'deleted-forever-20');
+            && $node['props']['a11y_label'] === 'More for Old lamp'
+            && $menu($node) === $items)
+        ->assertMissingElement('pressable', fn (array $node): bool => in_array($node['ref'] ?? null, ['deleted-restore-20', 'deleted-forever-20'], true))
+        ->assertAccessible();
 });
 
 it('counts days in the team’s time zone', function () {
@@ -210,7 +219,7 @@ it('brings a thing back to the top level when its place is still deleted, like S
     app(SunnyStore::class)->saveRecord('items', deletedSunnyItem(26, 'Shed', 'location', 21, '2026-11-16T17:00:00Z'));
 
     Native::visit('/inventory/deleted')
-        ->assertSee('Thing · was in Toy bin')
+        ->assertSee('Was in Toy bin')
         ->tap('deleted-restore-25')
         ->assertToastShown(fn (array $params): bool => $params['message'] === 'Restored Lego to “Not in a place yet”' && $params['data'] === ['url' => '/inventory'])
         ->emitNative(ToastActionPressed::class, ['toastId' => 'restored', 'actionId' => 'go-to-restored', 'data' => ['url' => '/inventory']])
@@ -304,7 +313,8 @@ it('deletes forever once confirmed, with its photos', function () {
         ->tap('deleted-forever-20')
         ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Delete', 'id' => 'delete-forever-20'])
         ->assertDontSee('Old lamp')
-        ->assertSee('Thing · wasn’t in a place');
+        ->assertSee('Lamp shade')
+        ->assertDontSee('Was in Old lamp');
 
     expect(Item::withTrashed()->find(20))->toBeNull()
         ->and(ItemPhoto::query()->where('item_id', 20)->exists())->toBeFalse()
@@ -385,8 +395,7 @@ it('keeps a thing deleted on the phone in Recently deleted with its photos', fun
         ->and(ItemPhoto::query()->where('item_id', 7)->pluck('id')->all())->toBe([702]);
     Native::visit('/inventory/deleted')
         ->assertSee('Tool chest')
-        ->assertSee('Storage · was in Garage')
-        ->assertSee('Deleted today');
+        ->assertSee('Was in Garage · Deleted today');
 });
 
 it('keeps deleted things and their photos from Sunny, and drops them once Sunny deletes them forever', function () {

@@ -1,7 +1,6 @@
 @use('App\Icons\Android')
 @use('App\Icons\Ios')
 @use('App\Ui\Card')
-@use('App\Ui\Menu')
 
 <native:top-bar title="Recently deleted" back />
 
@@ -25,35 +24,35 @@
             <column class="{{ Card::classes() }} w-full">
                 @foreach ($this->items as $item)
                     <column ref="deleted-item-{{ $item['id'] }}" class="w-full">
-                        <row class="min-h-12 w-full items-center gap-4 py-2 pr-1 pl-4">
-                            <x-ui.avatar
-                                :src="$item['photo']"
-                                :alt="'Photo of '.$item['name']"
-                                :color="$item['type']->color()"
-                                :ios="$item['type']->iosIcon()"
-                                :android="$item['type']->androidIcon()"
+                        <row class="w-full items-center pr-1">
+                            <pressable
+                                ref="deleted-row-{{ $item['id'] }}"
+                                :a11y-label="$item['name'].', '.$item['supporting']"
+                                class="min-h-12 flex-1 justify-center py-2 pl-4"
+                                :menu="$this->itemMenu($item)"
+                            >
+                                <row class="w-full items-center gap-4">
+                                    <x-ui.avatar
+                                        :src="$item['photo']"
+                                        :alt="'Photo of '.$item['name']"
+                                        :color="$item['type']->color()"
+                                        :ios="$item['type']->iosIcon()"
+                                        :android="$item['type']->androidIcon()"
+                                    />
+                                    <column class="flex-1 gap-0.5">
+                                        <x-ui.heading size="lg">{{ $item['name'] }}</x-ui.heading>
+                                        <x-ui.text>{{ $item['supporting'] }}</x-ui.text>
+                                    </column>
+                                </row>
+                            </pressable>
+                            <x-ui.button
+                                ref="deleted-more-{{ $item['id'] }}"
+                                variant="text"
+                                :ios="Ios::Ellipsis"
+                                :android="Android::MoreHoriz"
+                                :a11y-label="'More for '.$item['name']"
+                                :menu="$this->itemMenu($item)"
                             />
-                            <column class="flex-1 gap-0.5">
-                                <x-ui.heading size="lg">{{ $item['name'] }}</x-ui.heading>
-                                <x-ui.text size="sm">{{ $item['supporting'] }}</x-ui.text>
-                                <x-ui.text size="sm">{{ $item['deleted'] }}</x-ui.text>
-                            </column>
-                            <row class="items-center">
-                                <x-ui.button
-                                    ref="deleted-restore-{{ $item['id'] }}"
-                                    variant="secondary"
-                                    :a11y-label="'Restore '.$item['name']"
-                                    tap="restore({{ $item['id'] }})"
-                                >Restore</x-ui.button>
-                                <x-ui.button
-                                    ref="deleted-more-{{ $item['id'] }}"
-                                    variant="text"
-                                    :ios="Ios::Ellipsis"
-                                    :android="Android::MoreHoriz"
-                                    :a11y-label="'More for '.$item['name']"
-                                    :menu="[Menu::delete('deleted-forever-'.$item['id'], 'Delete forever', 'confirmDeleteForever('.$item['id'].')', 'Delete '.$item['name'].' forever')]"
-                                />
-                            </row>
                         </row>
                         @if ($item['emptied'])
                             <row class="w-full px-4 pb-3">
