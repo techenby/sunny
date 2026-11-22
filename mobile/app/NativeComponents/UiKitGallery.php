@@ -3,8 +3,10 @@
 namespace App\NativeComponents;
 
 use App\Enums\ItemType;
+use App\Icons\Android;
+use App\Icons\Ios;
+use App\Ui\Menu;
 use Illuminate\View\View;
-use Native\Mobile\Edge\Layouts\Builders\NavAction;
 
 class UiKitGallery extends Component
 {
@@ -36,8 +38,9 @@ class UiKitGallery extends Component
     {
         return view('native.ui-kit-gallery', [
             'menu' => [
-                NavAction::make('ui-kit-menu-first')->label('First')->press('tappedMenu'),
-                NavAction::make('ui-kit-menu-second')->label('Second')->press('tappedMenu'),
+                Menu::item('ui-kit-menu-edit', 'Edit', Ios::Pencil, Android::Edit, 'tappedMenu'),
+                Menu::item('ui-kit-menu-share', 'Share', Ios::SquareAndArrowUp, Android::Share, 'tappedMenu'),
+                Menu::delete('ui-kit-menu-delete', 'Delete', 'tappedMenu'),
             ],
             'item' => [
                 'id' => 0,

@@ -5,10 +5,14 @@ namespace App\NativeComponents;
 use App\Concerns\ChecksSunnySync;
 use App\Concerns\ShowsCalendarEvents;
 use App\Http\Integrations\Sunny\SunnyTeam;
+use App\Icons\Android;
+use App\Icons\Ios;
 use App\Support\CalendarAgenda;
+use App\Ui\Menu;
 use Carbon\CarbonImmutable;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
+use Native\Mobile\Edge\Elements\TopBarAction;
 
 class Calendar extends Component
 {
@@ -24,6 +28,24 @@ class Calendar extends Component
     {
         $this->refreshLocalSyncedData();
         $this->refreshCalendar();
+    }
+
+    public function openFeeds(): void
+    {
+        $this->navigate('/calendar/feeds');
+    }
+
+    /**
+     * @return list<TopBarAction>
+     */
+    public function moreMenu(): array
+    {
+        $warning = (bool) ($this->calendarSnapshot['warnings'] ?? []);
+
+        return [
+            Menu::item('calendar-feeds', 'Calendars', $warning ? Ios::ExclamationmarkTriangle : Ios::Calendar, $warning ? Android::Warning : Android::CalendarMonth, 'openFeeds'),
+            Menu::item('calendar-refresh', 'Refresh', Ios::ArrowClockwise, Android::Refresh, 'refresh'),
+        ];
     }
 
     public function refresh(): void

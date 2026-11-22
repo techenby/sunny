@@ -294,16 +294,6 @@
                     </row>
                 </pressable>
             @endif
-
-            @unless ($selecting)
-            <x-ui.button
-                ref="delete-item"
-                variant="text"
-                class="w-full items-center"
-                :a11y-label="'Delete '.$item['name']"
-                tap="confirmDeleteItem"
-            >Delete {{ $item['name'] }}</x-ui.button>
-            @endunless
         </column>
     </scroll-view>
 

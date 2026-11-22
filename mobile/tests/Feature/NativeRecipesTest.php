@@ -181,6 +181,6 @@ it('keeps a recipe’s edit action above the tab bar', function () {
     seedSunnyData();
 
     Native::visit('/recipes/1')
-        ->assertElement('bottom_bar', fn (array $node): bool => str_contains(json_encode($node), '"ref":"edit-recipe"'))
+        ->assertElement('bottom_bar', fn (array $node): bool => str_contains(json_encode($node), '"ref":"recipe-edit"'))
         ->assertMissingElement('top_bar', fn (array $node): bool => str_contains(json_encode($node), 'top_bar_action'));
 });

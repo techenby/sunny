@@ -54,13 +54,13 @@ function bottomBarRefs(array $tree): array
     return $refs;
 }
 
-it('puts Edit, Cook and More in the bottom bar, with Remix in the More menu', function () {
+it('puts Cook and More in the bottom bar, with Edit and Remix in the More menu', function () {
     $screen = Native::visit('/recipes/1')
         ->assertSee('Cook')
         ->assertElement('top_bar_action', fn (array $node): bool => $node['props']['id'] === 'recipe-remix' && $node['props']['label'] === 'Remix')
         ->assertAccessible();
 
-    expect(bottomBarRefs($screen->tree()))->toBe(['edit-recipe', 'cook-recipe', 'recipe-more']);
+    expect(bottomBarRefs($screen->tree()))->toBe(['cook-recipe', 'recipe-more']);
 });
 
 it('offers More without Cook when a recipe has no ingredients or steps', function () {

@@ -6,46 +6,30 @@
 @php($snapshot = $this->calendarSnapshot)
 @php($feedColors = collect($this->calendarFeeds['feeds'] ?? [])->pluck('color', 'id'))
 
-<native:top-bar title="Calendar" back>
-    <native:top-bar-action
-        ref="calendar-more"
-        id="calendar-more"
-        :label="$snapshot && $snapshot['warnings'] ? 'More, a calendar isn’t showing' : 'More'"
-        :ios-icon="Ios::Ellipsis"
-        :android-icon="Android::MoreHoriz"
-    >
-        <native:top-bar-action
-            ref="calendar-feeds"
-            id="calendar-feeds"
-            label="Calendars"
-            :ios-icon="$snapshot && $snapshot['warnings'] ? Ios::ExclamationmarkTriangle : Ios::Calendar"
-            :android-icon="$snapshot && $snapshot['warnings'] ? Android::Warning : Android::CalendarMonth"
-            @navigate('/calendar/feeds')
-        />
-        <native:top-bar-action
-            ref="calendar-refresh"
-            id="calendar-refresh"
-            label="Refresh"
-            :ios-icon="Ios::ArrowClockwise"
-            :android-icon="Android::Refresh"
-            @tap="refresh"
-        />
-    </native:top-bar-action>
-</native:top-bar>
+<native:top-bar title="Calendar" back />
 
-@if ($this->hasNoCalendars)
-    <native:bottom-bar>
-        <row class="w-full items-center justify-center px-4 pb-2">
+<native:bottom-bar>
+    <row class="w-full items-center justify-end gap-3 px-4 pb-2">
+        @if ($this->hasNoCalendars)
             <x-ui.button
                 ref="add-first-calendar"
+                class="flex-1"
                 :ios="Ios::Plus"
                 :android="Android::Add"
                 a11y-label="Add a calendar"
                 navigate="/calendar/feeds/create"
             >Add a calendar</x-ui.button>
-        </row>
-    </native:bottom-bar>
-@endif
+        @endif
+        <x-ui.button
+            ref="calendar-more"
+            variant="glass"
+            :ios="Ios::Ellipsis"
+            :android="Android::MoreHoriz"
+            :a11y-label="$snapshot && $snapshot['warnings'] ? 'More, a calendar isn’t showing' : 'More'"
+            :menu="$this->moreMenu()"
+        />
+    </row>
+</native:bottom-bar>
 
 <refreshable ref="calendar" fill class="bg-theme-background" @refresh="refresh">
     @if ($this->hasNoCalendars)
