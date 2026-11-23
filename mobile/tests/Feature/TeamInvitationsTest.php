@@ -128,7 +128,7 @@ it('accepts an invitation from Summary', function (): void {
         ->assertSee('Join Miller Cabin')
         ->assertAccessible()
         ->tap('dashboard-accept-miller-code')
-        ->assertToastShown(fn (array $params): bool => $params['message'] === 'You joined Miller Cabin. Switch to it in Preferences.')
+        ->assertToastShown(fn (array $params): bool => $params['message'] === 'You joined Miller Cabin. Switch to it in Settings.')
         ->assertDontSee('Pat Miller invited you');
 
     Saloon::assertSent(fn (Request $request): bool => $request instanceof AcceptInvitationRequest && $request->resolveEndpoint() === '/invitations/miller-code/accept');

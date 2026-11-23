@@ -199,7 +199,7 @@
                         :supporting="$renameError !== '' ? $renameError : null"
                         native:model="newName"
                     />
-                    <x-ui.button ref="team-rename-save" class="w-full" tap="rename">Save name</x-ui.button>
+                    <x-ui.button ref="team-rename-save" class="w-full" tap="rename">Save</x-ui.button>
                     <x-ui.button ref="team-rename-cancel" variant="text" class="w-full" tap="closeRename">Cancel</x-ui.button>
                 </column>
             </scroll-view>

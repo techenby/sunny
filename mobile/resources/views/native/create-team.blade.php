@@ -35,7 +35,7 @@
                 </column>
                 <column class="flex-1 gap-0.5">
                     <x-ui.heading>We’ll switch you to it</x-ui.heading>
-                    <x-ui.text size="sm">Your other teams stay just as they are in Preferences.</x-ui.text>
+                    <x-ui.text size="sm">Your other teams stay just as they are in Settings.</x-ui.text>
                 </column>
             </row>
         </column>

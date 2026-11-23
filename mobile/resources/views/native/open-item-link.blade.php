@@ -1,4 +1,4 @@
-<native:top-bar title="Item" back />
+<native:top-bar title="Inventory" back />
 
 <column ref="item-link-missing" fill center class="gap-4 bg-theme-background px-6">
     <text class="text-center text-base text-theme-on-surface-variant">

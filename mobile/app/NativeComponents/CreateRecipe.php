@@ -86,7 +86,7 @@ class CreateRecipe extends Component
         $team = app(SunnyTeam::class)->current();
 
         if ($team === null || $team->id !== $this->teamId || blank($team->slug)) {
-            $this->importFinished(['status' => 'error', 'message' => 'Select a team on the dashboard. If none are listed, sync with Sunny first.']);
+            $this->importFinished(['status' => 'error', 'message' => 'Select a team in Settings. If none are listed, sync with Sunny first.']);
 
             return;
         }

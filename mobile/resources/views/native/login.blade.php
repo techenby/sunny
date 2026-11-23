@@ -64,10 +64,10 @@
             <x-ui.button
                 ref="login-register-link"
                 variant="text"
-                a11y-hint="Opens the registration screen"
+                a11y-hint="Opens the Create account screen"
                 tap="showRegister"
             >
-                Sign up
+                Create account
             </x-ui.button>
         </row>
     </column>

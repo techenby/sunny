@@ -69,7 +69,7 @@ trait ManagesCalendarFeedForm
         $team = app(SunnyTeam::class)->current();
 
         if ($team === null) {
-            $this->error = 'Select a team on the dashboard. If none are listed, sync with Sunny first.';
+            $this->error = 'Select a team in Settings. If none are listed, sync with Sunny first.';
 
             return;
         }

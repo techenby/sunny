@@ -38,7 +38,7 @@
                 :ios="$search !== '' ? Ios::Magnifyingglass : Ios::ForkKnife"
                 :android="$search !== '' ? Android::SearchOff : Android::Restaurant"
                 :heading="$search !== '' ? 'No recipes match “'.$search.'”' : 'No recipes downloaded'"
-                :text="$search !== '' ? 'Try a different search.' : 'Pull down on the dashboard to refresh.'"
+                :text="$search !== '' ? 'Try a different search.' : 'Pull down on Summary to refresh.'"
             />
         @endif
     </column>

@@ -34,7 +34,7 @@
             <text ref="setup-title" font="accent" class="text-3xl leading-tight text-theme-on-background">
                 {{ $this->firstName ? 'What’s in your home, '.$this->firstName.'?' : 'What’s in your home?' }}
             </text>
-            <x-ui.text size="lg">Tick what fits and we’ll set it up. You can rename or remove anything later.</x-ui.text>
+            <x-ui.text size="lg">Tick what fits and we’ll set it up. You can rename or delete anything later.</x-ui.text>
         </column>
 
         @if ($error)
@@ -83,7 +83,7 @@
                             ref="setup-add-place"
                             :ios="Ios::Checkmark"
                             :android="Android::Check"
-                            a11y-label="Add place"
+                            a11y-label="Add a place"
                             tap="addOwnPlace"
                         />
                     </row>

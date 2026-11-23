@@ -209,7 +209,7 @@ enum ItemScannerModel {
 
     static let unreadablePhotoMessage = "Couldn't read that photo. Try taking it again."
 
-    static let cameraDeniedMessage = "Allow camera access for Sunny in Settings to scan items."
+    static let cameraDeniedMessage = "Allow camera access for Sunny in the Settings app to scan things."
 
     static func unavailableReason() -> String? {
         #if compiler(>=6.4)
@@ -267,7 +267,7 @@ enum ItemScannerModel {
         } catch let error as LanguageModelSession.GenerationError {
             ItemScannerEvents.failed(id: id, message: message(for: error), detail: String(describing: error))
         } catch {
-            ItemScannerEvents.failed(id: id, message: "Couldn't identify that item. Type a name instead.", detail: String(describing: error))
+            ItemScannerEvents.failed(id: id, message: "Couldn't tell what that is. Type a name instead.", detail: String(describing: error))
         }
     }
     #endif
@@ -319,11 +319,11 @@ enum ItemScannerModel {
     static func message(forUnavailable reason: String) -> String {
         switch reason {
         case "unsupportedOS":
-            return "Naming items with Apple Intelligence needs iOS 27 or later."
+            return "Naming things with Apple Intelligence needs iOS 27 or later."
         case "deviceNotEligible", "visionUnsupported":
-            return "This device can't run Apple Intelligence, which names items."
+            return "This device can't run Apple Intelligence, which names things."
         case "appleIntelligenceNotEnabled":
-            return "Turn on Apple Intelligence in Settings to name items."
+            return "Turn on Apple Intelligence in the Settings app to name things."
         default:
             return "Apple Intelligence is still getting ready. Try again in a few minutes."
         }
@@ -334,7 +334,7 @@ enum ItemScannerModel {
     static func message(for error: LanguageModelSession.GenerationError) -> String {
         switch error {
         case .exceededContextWindowSize:
-            return "That photo has too much going on. Try a closer shot of the item."
+            return "That photo has too much going on. Try a closer shot of the thing."
         case .guardrailViolation, .refusal:
             return "Apple Intelligence couldn't describe that photo. Type a name or retake it."
         case .assetsUnavailable:
@@ -342,7 +342,7 @@ enum ItemScannerModel {
         case .rateLimited, .concurrentRequests:
             return "Apple Intelligence is busy. Wait a moment and try again."
         default:
-            return "Couldn't identify that item. Type a name instead."
+            return "Couldn't tell what that is. Type a name instead."
         }
     }
     #endif

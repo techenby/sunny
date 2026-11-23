@@ -248,7 +248,7 @@ it('says when sign-up is turned off', function (): void {
 
     fillRegistration()
         ->tap('register-submit')
-        ->assertSee('Sign-up isn’t available right now')
+        ->assertSee('Creating an account isn’t available right now')
         ->assertNoNavigation();
 });
 

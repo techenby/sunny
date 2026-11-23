@@ -145,7 +145,7 @@ trait ManagesItemPhotos
     private function addPhoto(string $path): void
     {
         if ($this->remainingPhotos() <= 0) {
-            $this->error = 'An item can have up to '.ItemPhoto::MAX_PER_ITEM.' photos.';
+            $this->error = 'You can add up to '.ItemPhoto::MAX_PER_ITEM.' photos.';
 
             return;
         }

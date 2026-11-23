@@ -289,7 +289,7 @@ class ScanInventory extends Component
         $place = $this->placeDescription();
 
         Dialog::alert(
-            trans_choice('Add :count item?|Add :count items?', $count),
+            trans_choice('Add :count thing?|Add :count things?', $count),
             $place === null ? 'They’ll be added to the top level of your inventory.' : 'They’ll be added to '.$place.'.',
             [
                 ['label' => 'Cancel', 'style' => 'cancel'],
@@ -329,7 +329,7 @@ class ScanInventory extends Component
                     );
                 } catch (Throwable $exception) {
                     $this->candidates[$index]['error'] = $this->saveFailureMessage($exception);
-                    $this->error = 'Some items weren’t added. Fix the one marked below and try again.';
+                    $this->error = 'Some things weren’t added. Fix the one marked below and try again.';
 
                     break;
                 }
@@ -553,19 +553,19 @@ class ScanInventory extends Component
         $unnamed = $candidates->filter(fn (array $candidate): bool => $this->nameOf($candidate) === '');
 
         if ($candidates->isEmpty()) {
-            return 'Take a photo of at least one item.';
+            return 'Take a photo of at least one thing.';
         }
 
         if ($unnamed->contains(fn (array $candidate): bool => $candidate['scanId'] !== null)) {
-            return 'Some items are still being identified. Wait a moment or name them yourself.';
+            return 'Some things are still being identified. Wait a moment or name them yourself.';
         }
 
         if ($unnamed->isNotEmpty()) {
-            return 'Give every item a name.';
+            return 'Give each thing a name.';
         }
 
         if ($candidates->contains(fn (array $candidate): bool => mb_strlen($this->nameOf($candidate)) > 255)) {
-            return 'Item names are too long (255 characters max).';
+            return 'Names are too long (255 characters max).';
         }
 
         if ($this->parentId !== null && $this->selectedParent === null) {
@@ -573,11 +573,11 @@ class ScanInventory extends Component
         }
 
         if ($this->teamId === null) {
-            return 'Select a team on the dashboard. If none are listed, sync with Sunny first.';
+            return 'Select a team in Settings. If none are listed, sync with Sunny first.';
         }
 
         if ($this->teamId !== app(SunnyTeam::class)->current()?->id) {
-            return 'The active team changed. Reopen this screen from the dashboard before saving.';
+            return 'The active team changed. Reopen this screen from Summary before saving.';
         }
 
         return '';

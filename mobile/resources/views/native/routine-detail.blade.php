@@ -20,7 +20,7 @@
                     native:model="newStep"
                     @submit="addStep"
                 />
-                <x-ui.button ref="routine-add-step" variant="text" :ios="Ios::Plus" :android="Android::Add" a11y-label="Add step" tap="addStep" />
+                <x-ui.button ref="routine-add-step" variant="text" :ios="Ios::Plus" :android="Android::Add" a11y-label="Add a step" tap="addStep" />
             </row>
             <x-ui.button ref="routine-more" variant="glass" :ios="Ios::Ellipsis" :android="Android::MoreHoriz" a11y-label="More" :menu="$this->moreMenu()" />
         </row>
@@ -143,7 +143,7 @@
                                 variant="text"
                                 :ios="Ios::Trash"
                                 :android="Android::Delete"
-                                :a11y-label="'Remove '.$step['name']"
+                                :a11y-label="'Delete '.$step['name']"
                                 tap="removeStep({{ $step['id'] }})"
                             />
                         </row>

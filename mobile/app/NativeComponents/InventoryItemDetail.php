@@ -372,7 +372,9 @@ class InventoryItemDetail extends Component
     public function addMenu(): array
     {
         return [
-            NavAction::make('item-add-child')->label('Add one thing')->icon(ios: Ios::Plus->value, android: Android::Add->value)->press('addChild'),
+            NavAction::make('item-add-child')->label(ItemType::Item->addLabel())->icon(ios: ItemType::Item->iosIcon()->value, android: ItemType::Item->androidIcon()->value)->press("addChild('".ItemType::Item->value."')"),
+            NavAction::make('item-add-storage')->label(ItemType::Bin->addLabel())->icon(ios: ItemType::Bin->iosIcon()->value, android: ItemType::Bin->androidIcon()->value)->press("addChild('".ItemType::Bin->value."')"),
+            NavAction::make('item-add-place')->label(ItemType::Location->addLabel())->icon(ios: ItemType::Location->iosIcon()->value, android: ItemType::Location->androidIcon()->value)->press("addChild('".ItemType::Location->value."')"),
             NavAction::make('item-scan-children')->label('Bulk add')->icon(ios: Ios::CameraViewfinder->value, android: Android::DocumentScanner->value)->press('scanChildren'),
         ];
     }
@@ -420,9 +422,9 @@ class InventoryItemDetail extends Component
         $this->navigate('/inventory/'.$this->item['id'].'/edit');
     }
 
-    public function addChild(): void
+    public function addChild(string $type): void
     {
-        $this->navigate('/inventory/create', ['parent' => $this->item['id']]);
+        $this->navigate('/inventory/create', ['parent' => $this->item['id'], 'type' => $type]);
     }
 
     public function showQrCode(): void

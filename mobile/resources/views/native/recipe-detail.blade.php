@@ -17,7 +17,7 @@
                     </column>
                     <column class="flex-1 gap-0.5">
                         <text font="semibold" class="text-base text-theme-on-surface">Copied to {{ $copiedTo }}</text>
-                        <x-ui.text size="sm">Switch team in Preferences to see it there</x-ui.text>
+                        <x-ui.text size="sm">Switch team in Settings to see it there</x-ui.text>
                     </column>
                 </row>
             @endif

@@ -63,12 +63,12 @@
         <x-ui.button
             ref="register-button"
             variant="secondary"
-            a11y-label="Register"
-            a11y-hint="Opens the registration screen"
+            a11y-label="Create account"
+            a11y-hint="Opens the Create account screen"
             class="w-full"
             navigate="/register"
         >
-            Register
+            Create account
         </x-ui.button>
         <x-ui.button
             ref="login-button"

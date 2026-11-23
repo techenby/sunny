@@ -2,7 +2,7 @@
 @use('App\Icons\Ios')
 @use('App\Ui\Card')
 
-<native:top-bar title="Preferences" back />
+<native:top-bar title="Settings" back />
 
 <scroll-view ref="preferences" fill class="bg-theme-background">
     <column class="w-full gap-6 px-4 pt-2 pb-8">

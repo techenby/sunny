@@ -12,7 +12,7 @@ it('renders the login screen', function () {
         ->assertSee('Email address')
         ->assertSee('Password')
         ->assertSee('Log in')
-        ->assertSee('Sign up')
+        ->assertSee('Create account')
         ->assertElement('outlined_text_input', fn (array $node): bool => ($node['ref'] ?? null) === 'login-password'
             && ($node['props']['secure'] ?? null) === true)
         ->assertAccessible();

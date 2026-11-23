@@ -2,7 +2,7 @@
 
 @include('native.routine-form', [
     'formRef' => 'create-routine',
-    'submitLabel' => 'Save routine',
+    'submitLabel' => 'Create routine',
     'timeOfDayOptions' => $this->timeOfDayOptions,
     'frequencyOptions' => $this->frequencyOptions,
     'weekdayRows' => $this->weekdayRows,
