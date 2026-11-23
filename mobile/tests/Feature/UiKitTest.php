@@ -41,6 +41,8 @@ it('renders kit components in place among their siblings', function () {
                 'button-glass-disabled',
                 'button-row-icon-disabled',
                 'empty-state',
+                'field-label',
+                'field-help',
                 'after',
             ]);
 });
@@ -262,4 +264,43 @@ it('says the same thing wherever the app is offline', function () {
         ->assertElement('row', fn (array $node): bool => refNode('offline')($node)
             && $node['children'][0]['props']['name'] === 'wifi.slash'
             && array_column(array_column($node['children'][1]['children'], 'props'), 'text') === ['You’re offline', 'Try again when you’re connected. Nothing’s been sent yet.']);
+});
+
+it('draws a field label and its helper text like the text fields draw theirs', function () {
+    Native::test(UiKitScreen::class)
+        ->assertElement('text', fn (array $node): bool => refNode('field-label')($node)
+            && $node['props']['text'] === 'Where does it go?'
+            && $node['props']['font_size'] == 14
+            && $node['props']['font_name'] === 'medium'
+            && $node['props']['color'] === theme('on-surface-variant'))
+        ->assertElement('text', fn (array $node): bool => refNode('field-help')($node)
+            && $node['props']['font_size'] == 14
+            && ! isset($node['props']['font_name'])
+            && $node['props']['color'] === theme('on-surface-variant'));
+});
+
+it('draws a picker field as a field with its value on the left and one icon saying what it opens', function (string $platform, string $iconName) {
+    Native::test(UiKitScreen::class, platform: $platform)
+        ->assertElement('pressable', fn (array $node): bool => refNode('picker-field')($node)
+            && $node['props']['a11y_label'] === 'Starts on, Today, Nov 20'
+            && $node['props']['a11y_hint'] === 'Choose when this routine starts'
+            && $node['layout']['min_height'] == 48
+            && $node['style']['border_width'] == 1
+            && array_column($node['children'][0]['children'], 'type') === ['text', 'icon']
+            && $node['children'][0]['children'][0]['props']['text'] === 'Today, Nov 20'
+            && $node['children'][0]['children'][1]['props']['name'] === $iconName)
+        ->tap('picker-field')
+        ->assertSet('saves', 1);
+})->with([
+    'ios' => ['ios', 'calendar'],
+    'android' => ['android', 'calendar_month'],
+]);
+
+it('pins the submit bar to the bottom of the screen as one full-width primary button', function () {
+    Native::test(UiKitScreen::class)
+        ->assertElement('bottom_bar', fn (array $node): bool => array_column($node['children'][0]['children'], 'ref') === ['submit-bar']
+            && $node['children'][0]['children'][0]['layout']['flex_grow'] == 1
+            && $node['children'][0]['children'][0]['style']['bg_color'] === theme('primary'))
+        ->tap('submit-bar')
+        ->assertSet('saves', 1);
 });

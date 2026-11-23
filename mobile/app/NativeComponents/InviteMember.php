@@ -9,6 +9,7 @@ use App\Http\Integrations\Sunny\SunnyStore;
 use App\Http\Integrations\Sunny\SunnyTeam;
 use App\Http\Integrations\Sunny\SunnyTeams;
 use App\Http\Integrations\Sunny\SunnyTokenStore;
+use App\Layouts\HidesTabBar;
 use App\Models\Team;
 use App\Support\InvitationExpiry;
 use App\Support\Offline;
@@ -22,7 +23,7 @@ use Native\Mobile\Facades\Dialog;
 use RuntimeException;
 use Saloon\Http\Response;
 
-class InviteMember extends Component
+class InviteMember extends Component implements HidesTabBar
 {
     use CallsSunnyOnline;
     use NeedsConnection;

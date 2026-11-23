@@ -8,8 +8,15 @@
      ManagesRecipeForm properties. Computed values have to be passed in
      because an @include is not bound to $this. --}}
 
+<x-ui.submit-bar
+    ref="{{ $formRef }}-submit"
+    :disabled="$saving || $savedId !== null || ($importing ?? false)"
+>
+    {{ $submitLabel }}
+</x-ui.submit-bar>
+
 <scroll-view ref="{{ $formRef }}-screen" fill class="bg-theme-background ios:bg-theme-grouped-background">
-    <column class="w-full gap-6 px-6 py-6">
+    <column class="w-full gap-6 px-4 py-6">
         @if ($remixOf ?? null)
             <pressable
                 ref="recipe-remix-of"
@@ -38,8 +45,6 @@
                 label="Name"
                 placeholder="Buttermilk Pancakes"
                 autocapitalize="words"
-                :ios-leading-icon="Ios::Tag"
-                :android-leading-icon="Android::Label"
                 native:model.blur="name"
             />
             <outlined-text-input
@@ -65,7 +70,7 @@
             ])
 
             <column class="w-full gap-2">
-                <text class="text-sm font-semibold text-theme-on-surface-variant">Tags</text>
+                <x-ui.field-label>Tags</x-ui.field-label>
                 @foreach ($tagRows as $tagRow)
                     <row class="w-full items-center justify-start gap-2">
                         @foreach ($tagRow as $tag)
@@ -160,14 +165,5 @@
                 {{ $error }}
             </text>
         @endif
-
-        <x-ui.button
-            ref="{{ $formRef }}-submit"
-            class="w-full"
-            :disabled="$saving || $savedId !== null || ($importing ?? false)"
-            tap="save"
-        >
-            {{ $submitLabel }}
-        </x-ui.button>
     </column>
 </scroll-view>

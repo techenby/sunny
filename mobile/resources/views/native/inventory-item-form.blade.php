@@ -9,18 +9,22 @@
      including component's ManagesInventoryItemForm properties. Computed
      values have to be passed in because an @include is not bound to $this. --}}
 
+<x-ui.submit-bar
+    ref="{{ $formRef }}-submit"
+    :disabled="$saving || $savedId !== null"
+>
+    {{ $submitLabel }}
+</x-ui.submit-bar>
+
 <scroll-view ref="{{ $formRef }}-screen" fill class="bg-theme-background ios:bg-theme-grouped-background">
-    <column class="w-full gap-7 px-5 py-6">
-        <column class="w-full gap-2">
-            <text font="semibold" class="text-lg text-theme-on-surface">What is it called?</text>
-            <outlined-text-input
-                ref="{{ $formRef }}-name"
-                placeholder="Camping tent"
-                a11y-label="What is it called?"
-                autocapitalize="sentences"
-                native:model.blur="name"
-            />
-        </column>
+    <column class="w-full gap-6 px-4 py-6">
+        <outlined-text-input
+            ref="{{ $formRef }}-name"
+            label="Name"
+            placeholder="Camping tent"
+            autocapitalize="sentences"
+            native:model.blur="name"
+        />
 
         @include('native.parent-field', [
             'refPrefix' => $formRef,
@@ -28,11 +32,9 @@
             'noParentLabel' => $selectedType === ItemType::Location ? 'Home' : null,
         ])
 
-        <column class="w-full gap-2">
-            <column class="w-full gap-0.5">
-                <text font="semibold" class="text-lg text-theme-on-surface">What kind is it?</text>
-                <x-ui.text size="sm">Not sure? Leave it as a thing.</x-ui.text>
-            </column>
+        <column class="w-full gap-1">
+            <x-ui.field-label>What kind is it?</x-ui.field-label>
+            <column class="w-full gap-2">
             @foreach ($typeChoices as $type)
                 <pressable
                     ref="{{ $formRef }}-type-{{ $type->value }}"
@@ -57,12 +59,14 @@
                     </row>
                 </pressable>
             @endforeach
+            </column>
+            <x-ui.field-help>Not sure? Leave it as a thing.</x-ui.field-help>
         </column>
 
         @include('native.item-photos-field', ['photos' => $photos, 'refPrefix' => $formRef])
 
-        <column class="w-full gap-2">
-            <text font="semibold" class="text-lg text-theme-on-surface">Extra details (optional)</text>
+        <column class="w-full gap-1">
+            <x-ui.field-label>Extra details (optional)</x-ui.field-label>
 
             <column class="{{ Card::classes() }} w-full">
                 @foreach ($metadata as $index => $pair)
@@ -114,15 +118,6 @@
                 {{ $error }}
             </text>
         @endif
-
-        <x-ui.button
-            ref="{{ $formRef }}-submit"
-            class="w-full"
-            :disabled="$saving || $savedId !== null"
-            tap="save"
-        >
-            {{ $submitLabel }}
-        </x-ui.button>
     </column>
 </scroll-view>
 

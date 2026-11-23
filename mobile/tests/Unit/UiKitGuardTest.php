@@ -272,3 +272,46 @@ it('keeps delete out of the top bar', function () {
 
     expect($violations)->toBe([], implode("\n", $violations));
 });
+
+it('keeps every form on the one template', function () {
+    $pinned = ['list-form', 'recipe-form', 'routine-form', 'calendar-feed-form', 'inventory-item-form', 'account', 'change-password', 'create-team', 'invite-member'];
+    $labelExceptions = [
+        'scan-inventory' => ['scan-count' => 'A count above the list, not a field label.'],
+    ];
+    $sources = nativeViewSources();
+    $violations = [];
+
+    foreach ($pinned as $view) {
+        if (! str_contains($sources[$view] ?? '', '<x-ui.submit-bar')) {
+            $violations[] = "resources/views/native/{$view}.blade.php: a create or edit form pins its submit button. Use <x-ui.submit-bar> outside the scroll view, and mark the screen with App\\Layouts\\HidesTabBar.";
+        }
+    }
+
+    foreach ($sources as $view => $source) {
+        preg_match_all('/:(?:ios|android)-leading-icon="([^"]*)"/', $source, $icons, PREG_SET_ORDER | PREG_OFFSET_CAPTURE);
+
+        foreach ($icons as $icon) {
+            if (preg_match('/^(Ios::(Lock|Link|Magnifyingglass)|Android::(Lock|Link|Search))$/', $icon[1][0]) !== 1) {
+                $violations[] = sprintf('resources/views/native/%s.blade.php:%d: %s inside a field says nothing. Only a lock, a link or a magnifier goes inside a field.', $view, nativeViewLine($source, $icon[0][1]), $icon[1][0]);
+            }
+        }
+
+        preg_match_all('/<(?:native:)?button-group(?=[\s>\/])/', $source, $groups, PREG_SET_ORDER | PREG_OFFSET_CAPTURE);
+
+        foreach ($groups as $group) {
+            $violations[] = sprintf('resources/views/native/%s.blade.php:%d: no segmented controls. Use a <select> for short choices, or cards where the options need explaining.', $view, nativeViewLine($source, $group[0][1]));
+        }
+
+        preg_match_all('/<text\b'.NATIVE_TAG_ATTRIBUTES.'>/s', $source, $texts, PREG_SET_ORDER | PREG_OFFSET_CAPTURE);
+
+        foreach ($texts as $text) {
+            $ref = nativeTagRef($text[1][0]);
+
+            if (preg_match('/class="[^"]*\btext-sm font-semibold text-theme-on-surface-variant\b/', $text[1][0]) === 1 && ! isset($labelExceptions[$view][$ref ?? ''])) {
+                $violations[] = sprintf('resources/views/native/%s.blade.php:%d: this looks like a hand-written field label. Use <x-ui.field-label>, or the label attribute of the field itself.', $view, nativeViewLine($source, $text[0][1]));
+            }
+        }
+    }
+
+    expect($violations)->toBe([], implode("\n", $violations));
+});

@@ -4,9 +4,10 @@ namespace App\NativeComponents;
 
 use App\Concerns\ChecksSunnySync;
 use App\Concerns\ManagesCalendarFeedForm;
+use App\Layouts\HidesTabBar;
 use Illuminate\View\View;
 
-class CreateCalendarFeed extends Component
+class CreateCalendarFeed extends Component implements HidesTabBar
 {
     use ChecksSunnySync;
     use ManagesCalendarFeedForm;

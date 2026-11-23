@@ -75,10 +75,7 @@
 
             @if ($this->unplaced)
                 <column class="w-full gap-2">
-                    <column class="w-full gap-0.5 px-1">
-                        <x-ui.subheading>Not in a place yet</x-ui.subheading>
-                        <x-ui.text size="sm">Open one and tap Move to put it away.</x-ui.text>
-                    </column>
+                    <x-ui.subheading class="px-1">Not in a place yet</x-ui.subheading>
                     <column class="{{ Card::classes() }} w-full">
                         @foreach ($this->unplaced as $item)
                             @include('native.inventory-item-row', ['item' => $item, 'ref' => 'inventory-item-'.$item['id'], 'from' => null])
@@ -87,6 +84,7 @@
                             @endunless
                         @endforeach
                     </column>
+                    <x-ui.text size="sm" class="px-1">Open one and tap Move to put it away.</x-ui.text>
                 </column>
             @endif
 

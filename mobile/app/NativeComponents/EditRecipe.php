@@ -4,10 +4,11 @@ namespace App\NativeComponents;
 
 use App\Concerns\ChecksSunnySync;
 use App\Concerns\ManagesRecipeForm;
+use App\Layouts\HidesTabBar;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
 
-class EditRecipe extends Component
+class EditRecipe extends Component implements HidesTabBar
 {
     use ChecksSunnySync;
     use ManagesRecipeForm;

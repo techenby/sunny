@@ -6,6 +6,7 @@ use App\Concerns\ChecksSunnySync;
 use App\Concerns\ManagesCalendarFeedForm;
 use App\Http\Integrations\Sunny\SunnyCalendar;
 use App\Http\Integrations\Sunny\SunnyTeam;
+use App\Layouts\HidesTabBar;
 use App\Support\CalendarAgenda;
 use Carbon\CarbonImmutable;
 use Illuminate\View\View;
@@ -15,7 +16,7 @@ use Native\Mobile\Events\Alert\ButtonPressed;
 use Native\Mobile\Facades\Dialog;
 use Throwable;
 
-class EditCalendarFeed extends Component
+class EditCalendarFeed extends Component implements HidesTabBar
 {
     use ChecksSunnySync;
     use ManagesCalendarFeedForm;

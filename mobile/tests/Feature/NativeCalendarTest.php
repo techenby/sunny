@@ -538,9 +538,9 @@ describe('Calendars', function (): void {
         seedCalendar(sampleEvents(), feeds: [calendarFeed(1, 'Family', '#2563eb'), failingWorkFeed()]);
 
         Native::visit('/calendar/feeds/2/edit', platform: 'ios')
-            ->assertElement('row', fn (array $node): bool => array_column($node['children'] ?? [], 'ref') === ['edit-calendar-submit', 'edit-calendar-more'])
+            ->assertElement('bottom_bar', fn (array $node): bool => array_column($node['children'][0]['children'], 'ref') === ['edit-calendar-submit', 'edit-calendar-more'])
             ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'edit-calendar-more'
-                && $node['style']['bg_color'] === theme('surface-variant')
+                && isset($node['props']['glass'])
                 && $node['layout']['width'] == 48
                 && $node['props']['a11y_label'] === 'More'
                 && collect($node['children'])->where('type', 'top_bar_action')->map(fn (array $item): array => [$item['ref'], $item['props']['label'], $item['props']['a11y_label'], $item['props']['destructive'], $item['props']['icon']])->values()->all() === [['edit-calendar-remove', 'Remove calendar', 'Remove Work', true, 'trash']])

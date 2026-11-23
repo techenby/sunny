@@ -18,8 +18,6 @@
                 placeholder="email@example.com"
                 keyboard="email"
                 content-type="email"
-                :ios-leading-icon="Ios::Envelope"
-                :android-leading-icon="Android::Email"
                 :disabled="$sending"
                 :error="$emailError !== ''"
                 :supporting="$emailError !== '' ? $emailError : null"

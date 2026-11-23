@@ -2,6 +2,7 @@
 
 namespace App\NativeComponents;
 
+use App\Layouts\HidesTabBar;
 use App\Support\Amount;
 use App\Support\CookTimerAlerts;
 use App\Support\Toast;
@@ -14,7 +15,7 @@ use Native\Mobile\Facades\Haptics;
 use NativePHP\LocalNotifications\Events\PermissionGranted;
 use SRWieZ\NativePHP\Mobile\Screen\Facades\Screen;
 
-class CookRecipe extends Component
+class CookRecipe extends Component implements HidesTabBar
 {
     public const TAB_PREP = 0;
 

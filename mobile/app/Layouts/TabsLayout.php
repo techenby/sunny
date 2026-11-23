@@ -4,7 +4,6 @@ namespace App\Layouts;
 
 use App\Icons\Android;
 use App\Icons\Ios;
-use App\NativeComponents\CookRecipe;
 use Native\Mobile\Edge\Layouts\Builders\Tab;
 use Native\Mobile\Edge\Layouts\Builders\TabBar;
 use Native\Mobile\Edge\Layouts\NativeLayout;
@@ -14,7 +13,7 @@ class TabsLayout extends NativeLayout
 {
     public function tabBar(NativeComponent $screen): ?TabBar
     {
-        if ($screen instanceof CookRecipe) {
+        if ($screen instanceof HidesTabBar) {
             return null;
         }
 

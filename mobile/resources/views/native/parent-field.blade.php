@@ -7,8 +7,8 @@
      tapping calls the including component's openParentPicker() from
      ChoosesInventoryParent. --}}
 
-<column class="w-full gap-2">
-    <text font="semibold" class="text-lg text-theme-on-surface">{{ $label ?? 'Where does it go?' }}</text>
+<column class="w-full gap-1">
+    <x-ui.field-label>{{ $label ?? 'Where does it go?' }}</x-ui.field-label>
     <pressable
         ref="{{ $refPrefix }}-parent"
         :a11y-label="($label ?? 'Where does it go?').' '.($selectedParent['name'] ?? ($noParentLabel ?? 'Not in a place yet'))"

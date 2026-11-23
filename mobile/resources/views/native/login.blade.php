@@ -16,8 +16,6 @@
                     label="Email address"
                     placeholder="email@example.com"
                     keyboard="email"
-                    :ios-leading-icon="Ios::Envelope"
-                    :android-leading-icon="Android::Email"
                     native:model="email"
                 />
                 <outlined-text-input

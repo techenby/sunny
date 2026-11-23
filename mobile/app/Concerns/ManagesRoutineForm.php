@@ -116,6 +116,24 @@ trait ManagesRoutineForm
         }
     }
 
+    public function pickTimeOfDay(string $label): void
+    {
+        $index = array_search($label, $this->timeOfDayOptions(), true);
+
+        if ($index !== false) {
+            $this->chooseTimeOfDay($index);
+        }
+    }
+
+    public function pickFrequency(string $label): void
+    {
+        $index = array_search($label, $this->frequencyOptions(), true);
+
+        if ($index !== false) {
+            $this->chooseFrequency($index);
+        }
+    }
+
     /**
      * @return list<array<int, string>>
      */

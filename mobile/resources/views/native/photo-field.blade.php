@@ -1,12 +1,12 @@
 @use('App\Icons\Android')
 @use('App\Icons\Ios')
 
-{{-- Expects $photoPath, $refPrefix, and $alt, and optionally $label and
-     $labelClass; the including screen supplies takePhoto/choosePhoto/
-     removePhoto via the CapturesPhoto trait. --}}
+{{-- Expects $photoPath, $refPrefix, and $alt, and optionally $label; the
+     including screen supplies takePhoto/choosePhoto/removePhoto via the
+     CapturesPhoto trait. --}}
 
 <column class="w-full gap-2">
-    <text class="{{ $labelClass ?? 'text-sm font-semibold text-theme-on-surface-variant' }}">{{ $label ?? 'Photo' }}</text>
+    <x-ui.field-label>{{ $label ?? 'Photo' }}</x-ui.field-label>
 
     @if ($photoPath)
         <image

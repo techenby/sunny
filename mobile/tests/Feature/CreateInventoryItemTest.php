@@ -33,9 +33,10 @@ it('starts as a thing when no kind was chosen, and retitles when the kind change
         ->assertNavTitle('Add a place');
 });
 
-it('renders the form as plain questions', function () {
+it('labels the form with small nouns, keeping a question only where a noun would not explain the field', function () {
     Native::visit('/inventory/create')
-        ->assertSee('What is it called?')
+        ->assertDontSee('What is it called?')
+        ->assertElement('outlined_text_input', fn (array $node): bool => ($node['ref'] ?? null) === 'create-item-name' && $node['props']['label'] === 'Name')
         ->assertSee('Where does it go?')
         ->assertSee('Not in a place yet')
         ->assertSee('What kind is it?')

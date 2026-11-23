@@ -4,15 +4,23 @@
 
 <native:top-bar title="New team" back />
 
+<x-ui.submit-bar
+    ref="create-team-submit"
+    :ios="$offline && ! $this->disconnected ? Ios::ArrowClockwise : null"
+    :android="$offline && ! $this->disconnected ? Android::Refresh : null"
+    :disabled="$creating || $this->disconnected"
+    tap="create"
+>
+    {{ $offline && ! $this->disconnected ? 'Try again' : 'Create team' }}
+</x-ui.submit-bar>
+
 <scroll-view ref="create-team-screen" fill class="bg-theme-background ios:bg-theme-grouped-background">
-    <column class="w-full gap-6 px-6 py-6">
+    <column class="w-full gap-6 px-4 py-6">
         <outlined-text-input
             ref="create-team-name"
             label="Name"
             placeholder="Lake House"
             autocapitalize="words"
-            :ios-leading-icon="Ios::House"
-            :android-leading-icon="Android::Home"
             :error="$nameError !== ''"
             :supporting="$nameError !== '' ? $nameError : 'A home, a cabin, or anyone you share things with.'"
             native:model="name"
@@ -47,16 +55,5 @@
         @if ($error !== '')
             <text ref="create-team-error" class="text-sm text-theme-destructive">{{ $error }}</text>
         @endif
-
-        <x-ui.button
-            ref="create-team-submit"
-            class="w-full"
-            :ios="$offline && ! $this->disconnected ? Ios::ArrowClockwise : null"
-            :android="$offline && ! $this->disconnected ? Android::Refresh : null"
-            :disabled="$creating || $this->disconnected"
-            tap="create"
-        >
-            {{ $offline && ! $this->disconnected ? 'Try again' : 'Create team' }}
-        </x-ui.button>
     </column>
 </scroll-view>

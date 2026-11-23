@@ -5,10 +5,11 @@ namespace App\NativeComponents;
 use App\Concerns\ChecksSunnySync;
 use App\Concerns\ManagesInventoryItemForm;
 use App\Enums\ItemType;
+use App\Layouts\HidesTabBar;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
 
-class EditInventoryItem extends Component
+class EditInventoryItem extends Component implements HidesTabBar
 {
     use ChecksSunnySync;
     use ManagesInventoryItemForm;

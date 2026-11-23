@@ -69,17 +69,16 @@
                         'disabled' => $role?->canUpdateTeam() && ! $this->canEdit(),
                         'tap' => 'openTimezone',
                     ])
-                    @include('native.settings-row', [
-                        'ref' => 'team-week-start',
-                        'headline' => 'Week starts on',
-                        'supporting' => $this->weekStart(),
-                        'ios' => Ios::Calendar,
-                        'android' => Android::CalendarMonth,
-                        'trailing' => $role?->canUpdateTeam() ? 'chevron' : null,
-                        'disabled' => $role?->canUpdateTeam() && ! $this->canEdit(),
-                        'tap' => 'openWeekStart',
-                        'last' => true,
-                    ])
+                    <column class="w-full px-4 py-3">
+                        <select
+                            ref="team-week-start"
+                            label="Week starts on"
+                            :options="TeamSettings::WEEKDAYS"
+                            :value="$this->weekStart()"
+                            :disabled="! $this->canEdit()"
+                            @change="pickWeekStart"
+                        />
+                    </column>
                 </column>
                 <x-ui.text size="sm" class="px-1">Routines reset at midnight in this timezone, so everyone’s day starts together.</x-ui.text>
             </column>
@@ -193,30 +192,12 @@
                         ref="team-rename-input"
                         label="Name"
                         autocapitalize="words"
-                        :ios-leading-icon="Ios::House"
-                        :android-leading-icon="Android::Home"
                         :error="$renameError !== ''"
                         :supporting="$renameError !== '' ? $renameError : null"
                         native:model="newName"
                     />
                     <x-ui.button ref="team-rename-save" class="w-full" tap="rename">Save</x-ui.button>
                     <x-ui.button ref="team-rename-cancel" variant="text" class="w-full" tap="closeRename">Cancel</x-ui.button>
-                </column>
-            </scroll-view>
-        @endif
-    </native:bottom-sheet>
-
-    <native:bottom-sheet ref="team-week-start-sheet" :visible="$showWeekStart" @dismiss="closeWeekStart" detents="medium">
-        @if ($showWeekStart)
-            <scroll-view fill class="bg-theme-background">
-                <column class="w-full gap-4 px-6 pt-6 pb-8">
-                    @include('native.option-list', [
-                        'ref' => 'team-week-start-option',
-                        'label' => 'Week starts on',
-                        'options' => TeamSettings::WEEKDAYS,
-                        'selected' => $team->week_start ?? 0,
-                        'action' => 'chooseWeekStart',
-                    ])
                 </column>
             </scroll-view>
         @endif
