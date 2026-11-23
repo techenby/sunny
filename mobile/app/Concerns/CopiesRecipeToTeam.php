@@ -119,10 +119,10 @@ trait CopiesRecipeToTeam
         } catch (RequestException $exception) {
             $this->copyFailed(match ($exception->getResponse()->status()) {
                 403 => 'You no longer have permission to copy this recipe.',
-                404 => $recipe['name'].' is no longer on Sunny.',
+                404 => $recipe['name'].' is no longer on the server.',
                 422 => $teams[$to->id].' isn’t one of your teams anymore.',
                 429 => 'Too many attempts. Please wait before trying again.',
-                default => 'Sunny couldn’t copy it right now.',
+                default => 'The server couldn’t copy it right now.',
             });
             app(SunnySyncCoordinator::class)->dispatch();
 
@@ -136,7 +136,7 @@ trait CopiesRecipeToTeam
         }
 
         if ($copy === null) {
-            $this->copyFailed('Sunny didn’t confirm the copy.');
+            $this->copyFailed('The server didn’t confirm the copy.');
             app(SunnySyncCoordinator::class)->dispatch();
 
             return;
@@ -157,7 +157,7 @@ trait CopiesRecipeToTeam
         }
 
         [$title, $message] = match ($this->copyProblem) {
-            'unsent' => ['Still sending your changes', 'Sunny copies what it has, so your latest changes need to reach it first.'],
+            'unsent' => ['Still sending your changes', 'The server copies what it has, so your latest changes need to reach it first.'],
             default => ['Couldn’t copy', $this->copyError],
         };
 

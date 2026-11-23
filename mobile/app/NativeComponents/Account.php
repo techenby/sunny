@@ -81,7 +81,7 @@ class Account extends Component
 
             return;
         } catch (RequestException $exception) {
-            $this->failed($exception, 'Sunny couldn’t save your changes right now.');
+            $this->failed($exception, 'The server couldn’t save your changes right now.');
 
             return;
         } catch (AuthenticationException) {
@@ -123,7 +123,7 @@ class Account extends Component
 
             return;
         } catch (RequestException $exception) {
-            $this->failed($exception, 'Sunny couldn’t send the email right now.');
+            $this->failed($exception, 'The server couldn’t send the email right now.');
 
             return;
         } catch (AuthenticationException) {

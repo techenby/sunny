@@ -29,7 +29,7 @@
                 <row class="w-full items-start gap-3">
                     <icon :ios="Ios::WifiSlash" :android="Android::WifiOff" :size="20" class="text-theme-destructive" />
                     <column class="flex-1 gap-0.5">
-                        <x-ui.heading class="text-theme-destructive">{{ $status === 'offline' ? Offline::TITLE : 'Sunny is unavailable' }}</x-ui.heading>
+                        <x-ui.heading class="text-theme-destructive">{{ $status === 'offline' ? Offline::TITLE : 'The server is unavailable' }}</x-ui.heading>
                         <text class="text-base text-theme-on-surface">{{ $feeds !== null ? 'These may be out of date. ' : '' }}{{ $status === 'offline' ? Offline::ADVICE : 'Try again in a moment.' }}</text>
                     </column>
                 </row>
@@ -67,7 +67,7 @@
                     @include('native.calendar-feed-row', ['feed' => $feed])
                     <column ref="calendar-feed-{{ $feed['id'] }}-fix" class="mx-3 gap-1.5 rounded-xl bg-theme-primary/15 px-4 py-3">
                         <row class="w-full items-center gap-2">
-                            <text font="accent" class="flex-1 text-sm text-theme-destructive">Sunny couldn’t fetch it</text>
+                            <text font="accent" class="flex-1 text-sm text-theme-destructive">The server couldn’t fetch it</text>
                             @if ($feed['problem'] && str_starts_with($feed['problem'], 'HTTP '))
                                 <text font="mono" class="rounded-md bg-theme-surface/70 px-1.5 py-0.5 text-xs text-theme-on-surface">{{ $feed['problem'] }}</text>
                             @endif

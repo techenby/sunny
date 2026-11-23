@@ -412,7 +412,7 @@
                             <icon :ios="Ios::Globe" :android="Android::Public" :size="18" class="text-theme-primary" />
                             <column class="flex-1 gap-0.5">
                                 <text class="text-base text-theme-on-surface">Opens in any browser</text>
-                                <x-ui.text size="sm">No Sunny account needed to view it</x-ui.text>
+                                <x-ui.text size="sm">No account needed to view it</x-ui.text>
                             </column>
                         </row>
                         <row class="w-full items-start gap-3">

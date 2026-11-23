@@ -95,7 +95,7 @@
                 @if ($comingUp && $calendarStatus !== '' && $this->calendarUpdatedAt)
                     <row ref="coming-up-status" class="w-full items-start gap-2">
                         <icon :ios="Ios::WifiSlash" :android="Android::WifiOff" :size="14" class="mt-0.5 text-theme-on-surface-variant" />
-                        <x-ui.text size="sm" class="flex-1">{{ $calendarStatus === 'offline' ? 'You’re offline.' : 'Sunny couldn’t refresh events.' }} Last updated {{ $this->calendarUpdatedAt }}.</x-ui.text>
+                        <x-ui.text size="sm" class="flex-1">{{ $calendarStatus === 'offline' ? 'You’re offline.' : 'The server couldn’t refresh events.' }} Last updated {{ $this->calendarUpdatedAt }}.</x-ui.text>
                     </row>
                 @endif
 
@@ -142,10 +142,10 @@
                                 <x-ui.text size="sm">Loading events…</x-ui.text>
                             @elseif ($calendarStatus === 'offline')
                                 <icon :ios="Ios::WifiSlash" :android="Android::WifiOff" :size="16" class="text-theme-on-surface-variant" />
-                                <x-ui.text size="sm" class="flex-1">You’re offline. Events show up here once Sunny can be reached.</x-ui.text>
+                                <x-ui.text size="sm" class="flex-1">You’re offline. Events show up here once the server can be reached.</x-ui.text>
                             @else
                                 <icon :ios="Ios::ExclamationmarkTriangle" :android="Android::Warning" :size="16" class="text-theme-on-surface-variant" />
-                                <x-ui.text size="sm" class="flex-1">Sunny couldn’t load events. Pull down to try again.</x-ui.text>
+                                <x-ui.text size="sm" class="flex-1">The server couldn’t load events. Pull down to try again.</x-ui.text>
                             @endif
                         </row>
                     @endif

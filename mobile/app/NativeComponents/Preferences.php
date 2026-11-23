@@ -163,7 +163,7 @@ class Preferences extends Component
         try {
             app(SunnyAuth::class)->logout();
         } catch (RequestException|FatalRequestException) {
-            Toast::info('Signed out on this device. Sunny could not revoke the remote session.', long: true);
+            Toast::info('Signed out on this device. The server could not revoke the remote session.', long: true);
         } catch (RuntimeException) {
             Toast::error('Unable to clear your saved login. Unlock your device and try again.');
 
@@ -197,7 +197,7 @@ class Preferences extends Component
     private function openSite(string $path): void
     {
         if (! Browser::inApp(app(SunnyConnector::class)->siteUrl().$path)) {
-            Toast::error('Unable to open the Sunny website. Please try again.');
+            Toast::error('Unable to open the website. Please try again.');
         }
     }
 

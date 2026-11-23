@@ -143,7 +143,7 @@ class SunnyWrites
         if (! is_array($record) || ! is_int($record['id'] ?? null) || $record['id'] <= 0
             || ($record[$ownerKey] ?? null) !== $ownerId || (! $write->isCreate() && $record['id'] !== $write->record_id)) {
             report(new UnexpectedValueException('Sunny returned an invalid saved record.'));
-            $write->update(['error' => 'Sunny didn’t confirm this change. Edit it to try again.']);
+            $write->update(['error' => 'The server didn’t confirm this change. Edit it to try again.']);
 
             return;
         }
@@ -265,9 +265,9 @@ class SunnyWrites
 
         return match ($response->status()) {
             403 => 'You no longer have permission to save to this team.',
-            404 => 'This record or team is no longer on Sunny.',
+            404 => 'This record or team is no longer on the server.',
             413 => 'The photo is too large to upload.',
-            422 => collect($response->json('errors') ?? [])->flatten()->first() ?? 'Sunny couldn’t accept this change.',
+            422 => collect($response->json('errors') ?? [])->flatten()->first() ?? 'The server couldn’t accept this change.',
             default => null,
         };
     }

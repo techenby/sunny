@@ -192,7 +192,7 @@ class Inventory extends Component
 
     public function scanCode(): void
     {
-        Scanner::scan()->prompt('Scan a Sunny label')->id(self::SCAN_ID);
+        Scanner::scan()->prompt('Scan a label')->id(self::SCAN_ID);
     }
 
     public function scanItems(): void
@@ -210,7 +210,7 @@ class Inventory extends Component
         $path = OpenItemLink::pathFor($data);
 
         if ($path === null) {
-            Toast::error('That code isn’t a Sunny label.');
+            Toast::error('That code isn’t an inventory label.');
 
             return;
         }

@@ -10,7 +10,7 @@ beforeEach(fn () => seedSunnyData());
 it('opens the scanner from the inventory scan menu', function () {
     Native::visit('/inventory')
         ->tap('Scan label')
-        ->assertScanRequested('Scan a Sunny label');
+        ->assertScanRequested('Scan a label');
 });
 
 it('opens the item on a scanned label once the scanner has closed', function (string $url) {
@@ -30,7 +30,7 @@ it('rejects codes that are not Sunny labels', function (string $code) {
     Native::visit('/inventory')
         ->emitNative(CodeScanned::class, ['data' => $code, 'format' => 'qr', 'id' => 'item-code'])
         ->assertNoNavigation()
-        ->assertToastShown(fn (array $params): bool => $params['message'] === 'That code isn’t a Sunny label.' && $params['variant'] === 'error');
+        ->assertToastShown(fn (array $params): bool => $params['message'] === 'That code isn’t an inventory label.' && $params['variant'] === 'error');
 })->with([
     'another site' => 'https://example.com/i/7',
     'a lookalike host' => 'https://sunny.example.evil.com/i/7',

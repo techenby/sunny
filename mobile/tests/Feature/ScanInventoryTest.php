@@ -205,8 +205,8 @@ it('explains when the camera could not open', function () {
     fakeScanner();
 
     Native::visit('/inventory/scan')
-        ->emitNative(CaptureFailed::class, ['id' => 'scan', 'message' => 'Allow camera access for Sunny in the Settings app to scan things.'])
-        ->assertSee('Allow camera access for Sunny in the Settings app to scan things.');
+        ->emitNative(CaptureFailed::class, ['id' => 'scan', 'message' => 'Allow camera access for SunnyHome in the Settings app to scan things.'])
+        ->assertSee('Allow camera access for SunnyHome in the Settings app to scan things.');
 });
 
 it('lists each image chosen from the gallery and scans it', function () {
@@ -463,7 +463,7 @@ it('adds every item and flags the one Sunny refuses', function () {
     Saloon::assertSentCount(3);
     expect(Item::whereIn('id', [100, 101])->pluck('name')->all())->toBe(['Hammer', 'Saw'])
         ->and(PendingWrite::sole()->error)->toBe('You no longer have permission to save to this team.');
-    Native::visit('/inventory/'.PendingWrite::sole()->record_id)->assertSee('Level')->assertSee('Not saved to Sunny');
+    Native::visit('/inventory/'.PendingWrite::sole()->record_id)->assertSee('Level')->assertSee('Not saved');
 });
 
 it('refuses to add nothing, an unnamed item, or one still being identified', function (?string $name, array $changes, string $message) {

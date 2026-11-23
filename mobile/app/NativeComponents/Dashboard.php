@@ -171,7 +171,7 @@ class Dashboard extends Component
 
         $crashReports->markAsked();
 
-        Dialog::alert('Help improve Sunny?', 'Share crash reports so we can find and fix problems. They include technical details about the error and your device. You can change this anytime in Settings.', [
+        Dialog::alert('Help improve the app?', 'Share crash reports so we can find and fix problems. They include technical details about the error and your device. You can change this anytime in Settings.', [
             ['label' => 'Not now', 'style' => 'cancel'],
             ['label' => 'Share'],
         ])->id('crash-reports')->show();

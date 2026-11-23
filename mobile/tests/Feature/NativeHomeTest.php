@@ -14,10 +14,10 @@ it('introduces Sunny with native components', function () {
     expect($iconPath)->toBeFile();
 
     Native::visit('/')
-        ->assertSee('Sunny')
+        ->assertSee('SunnyHome')
         ->assertSee('Welcome home')
         ->assertSee('Your household, organized.')
-        ->assertSee('Sunny helps your family collaborate on recipes and keep track of what’s in storage, all in one place.')
+        ->assertSee('SunnyHome helps your family collaborate on recipes and keep track of what’s in storage, all in one place.')
         ->assertSee('Recipes')
         ->assertSee('Inventory')
         ->assertSee('Teams')
@@ -30,7 +30,7 @@ it('introduces Sunny with native components', function () {
             && ($node['layout']['safe_area'] ?? null) === 1)
         ->assertElement('image', fn (array $node): bool => ($node['ref'] ?? null) === 'sunny-brand-icon'
             && ($node['props']['src'] ?? null) === $iconPath
-            && ($node['props']['alt'] ?? null) === 'Sunny'
+            && ($node['props']['alt'] ?? null) === 'SunnyHome'
             && ($node['layout']['width'] ?? null) === 44.0
             && ($node['layout']['height'] ?? null) === 44.0
             && ($node['props']['fit'] ?? null) === 1)

@@ -33,7 +33,7 @@
                     'ios' => Ios::CheckmarkShield,
                     'android' => Android::Security,
                     'trailing' => 'external',
-                    'hint' => 'Opens the Sunny website',
+                    'hint' => 'Opens the website',
                     'tap' => 'openSecuritySettings',
                     'last' => true,
                 ])
@@ -143,7 +143,7 @@
                     'ios' => Ios::HandRaised,
                     'android' => Android::Policy,
                     'trailing' => 'external',
-                    'hint' => 'Opens the Sunny website',
+                    'hint' => 'Opens the website',
                     'tap' => 'openPrivacyPolicy',
                 ])
                 @include('native.settings-row', [
@@ -152,7 +152,7 @@
                     'ios' => Ios::DocText,
                     'android' => Android::Description,
                     'trailing' => 'external',
-                    'hint' => 'Opens the Sunny website',
+                    'hint' => 'Opens the website',
                     'tap' => 'openTerms',
                     'last' => true,
                 ])

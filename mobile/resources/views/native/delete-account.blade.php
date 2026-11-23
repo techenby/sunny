@@ -7,7 +7,7 @@
     <column class="w-full gap-6 px-6 py-6">
         <column class="w-full gap-3">
             <text ref="delete-account-warning" class="text-base text-theme-on-background">
-                This permanently deletes your Sunny account. It can’t be undone.
+                This permanently deletes your account. It can’t be undone.
             </text>
             <text class="text-base text-theme-on-surface-variant">
                 Teams only you use are deleted with everything in them: recipes, inventory, lists, routines and photos.
@@ -16,7 +16,7 @@
                 In teams you share, your own lists and routines are deleted. Everything else stays with the team.
             </text>
             <text class="text-base text-theme-on-surface-variant">
-                If other people use a team you own, make one of them its owner or remove them first. Sunny will show a button that opens that team’s settings.
+                If other people use a team you own, make one of them its owner or remove them first. You’ll see a button that opens that team’s settings.
             </text>
         </column>
 

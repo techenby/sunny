@@ -28,18 +28,18 @@ class OpenSharedRecipe
         } catch (RequestException $exception) {
             return match ($exception->getResponse()->status()) {
                 404 => ['status' => 'gone'],
-                401 => ['status' => 'error', 'message' => 'Sunny didn’t accept this phone’s sign-in. Sign out and back in, then try again.'],
+                401 => ['status' => 'error', 'message' => 'The server didn’t accept this phone’s sign-in. Sign out and back in, then try again.'],
                 429 => ['status' => 'error', 'message' => 'Too many attempts. Please wait before trying again.'],
-                default => ['status' => 'error', 'message' => 'Sunny is unavailable right now. Try again in a moment.'],
+                default => ['status' => 'error', 'message' => 'The server is unavailable right now. Try again in a moment.'],
             };
         } catch (AuthenticationException) {
-            return ['status' => 'error', 'message' => 'Sign in to Sunny to open shared recipes.'];
+            return ['status' => 'error', 'message' => 'Sign in to open shared recipes.'];
         } catch (JsonException|RuntimeException) {
-            return ['status' => 'error', 'message' => 'Sunny sent back something unexpected. Try again in a moment.'];
+            return ['status' => 'error', 'message' => 'The server sent back something unexpected. Try again in a moment.'];
         }
 
         if (! is_array($recipe) || ! is_int($recipe['id'] ?? null) || ! is_string($recipe['name'] ?? null)) {
-            return ['status' => 'error', 'message' => 'Sunny sent back something unexpected. Try again in a moment.'];
+            return ['status' => 'error', 'message' => 'The server sent back something unexpected. Try again in a moment.'];
         }
 
         return ['status' => 'found', 'recipe' => $recipe];

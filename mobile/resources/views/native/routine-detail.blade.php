@@ -132,7 +132,7 @@
                                         <column class="flex-1 gap-0.5">
                                             <text class="text-base text-theme-on-surface">{{ $step['name'] }}</text>
                                             @if ($step['error'])
-                                                <text ref="routine-step-{{ $step['id'] }}-error" class="text-sm text-theme-destructive">Not saved to Sunny. {{ $step['error'] }}</text>
+                                                <text ref="routine-step-{{ $step['id'] }}-error" class="text-sm text-theme-destructive">Not saved. {{ $step['error'] }}</text>
                                             @endif
                                         </column>
                                     </row>

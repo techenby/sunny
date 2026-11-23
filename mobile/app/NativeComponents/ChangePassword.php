@@ -107,7 +107,7 @@ class ChangePassword extends Component
         }
 
         if ($this->fieldErrors === []) {
-            $this->error = $response->status() === 429 ? 'Too many attempts. Please wait a minute and try again.' : 'Sunny couldn’t change your password right now.';
+            $this->error = $response->status() === 429 ? 'Too many attempts. Please wait a minute and try again.' : 'The server couldn’t change your password right now.';
         }
     }
 }

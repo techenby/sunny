@@ -107,7 +107,7 @@ class CreateRecipe extends Component
         }
 
         if ($token === null) {
-            $this->importFinished(['status' => 'error', 'message' => 'Sign in to Sunny to import recipes.']);
+            $this->importFinished(['status' => 'error', 'message' => 'Sign in to import recipes.']);
 
             return;
         }

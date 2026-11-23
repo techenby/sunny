@@ -11,7 +11,7 @@ $notice = match ($card['state']) {
     'offline' => ['title' => Offline::TITLE, 'ios' => Ios::WifiSlash, 'android' => Android::WifiOff, 'tint' => 'text-theme-primary-text', 'message' => Offline::ADVICE],
     'error' => ['title' => 'Couldn’t import', 'ios' => Ios::ExclamationmarkCircle, 'android' => Android::ErrorOutline, 'tint' => 'text-theme-destructive'],
     'imported' => ['title' => 'Imported and saved', 'ios' => Ios::Checkmark, 'android' => Android::Check, 'tint' => 'text-theme-primary-text',
-        'message' => 'Sunny filled this in from the page. Have a look over it and fix anything that didn’t come across right.'],
+        'message' => 'This was filled in from the page. Have a look over it and fix anything that didn’t come across right.'],
     default => null,
 };
 @endphp
@@ -40,7 +40,7 @@ $notice = match ($card['state']) {
     </row>
 
     @if ($card['state'] === 'ready')
-        <text class="text-sm text-theme-on-surface-variant">Sunny can read this page and fill in the name, photo, ingredients, steps and times for you.</text>
+        <text class="text-sm text-theme-on-surface-variant">This page can be read to fill in the name, photo, ingredients, steps and times for you.</text>
         <x-ui.button
             ref="recipe-import"
             variant="secondary"

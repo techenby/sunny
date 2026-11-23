@@ -55,7 +55,7 @@
                 @if ($calendarStatus !== '' && $this->calendarUpdatedAt)
                     <row ref="day-events-status" class="w-full items-start gap-2">
                         <icon :ios="Ios::WifiSlash" :android="Android::WifiOff" :size="14" class="mt-0.5 text-theme-on-surface-variant" />
-                        <x-ui.text size="sm" class="flex-1">{{ $calendarStatus === 'offline' ? 'You’re offline.' : 'Sunny couldn’t refresh events.' }} Last updated {{ $this->calendarUpdatedAt }}.</x-ui.text>
+                        <x-ui.text size="sm" class="flex-1">{{ $calendarStatus === 'offline' ? 'You’re offline.' : 'The server couldn’t refresh events.' }} Last updated {{ $this->calendarUpdatedAt }}.</x-ui.text>
                     </row>
                 @endif
 
@@ -96,8 +96,8 @@
                             <x-ui.heading class="text-theme-destructive">You’re offline</x-ui.heading>
                             <x-ui.text>Your phone only keeps today and tomorrow. Connect to see {{ $this->labels['possessive'] }} routines and tick things off.</x-ui.text>
                         @else
-                            <x-ui.heading class="text-theme-destructive">Sunny is unavailable</x-ui.heading>
-                            <x-ui.text>Sunny couldn’t send {{ $this->labels['possessive'] }} routines. Try again in a moment.</x-ui.text>
+                            <x-ui.heading class="text-theme-destructive">The server is unavailable</x-ui.heading>
+                            <x-ui.text>Couldn’t load {{ $this->labels['possessive'] }} routines. Try again in a moment.</x-ui.text>
                         @endif
                     </column>
                 </row>

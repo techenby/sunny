@@ -151,9 +151,9 @@ it('explains when Sunny refuses to copy', function (int $status, string $message
 
     expect(Recipe::where('team_id', 3)->count())->toBe(0);
 })->with([
-    'server error' => [500, 'Sunny couldn’t copy it right now.'],
+    'server error' => [500, 'The server couldn’t copy it right now.'],
     'no permission' => [403, 'You no longer have permission to copy this recipe.'],
-    'gone' => [404, 'Buttermilk Pancakes is no longer on Sunny.'],
+    'gone' => [404, 'Buttermilk Pancakes is no longer on the server.'],
     'not their team' => [422, 'Grandma’s House isn’t one of your teams anymore.'],
 ]);
 

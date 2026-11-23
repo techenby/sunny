@@ -308,7 +308,7 @@ class TeamSettings extends Component
 
         $this->callSunny(
             fn () => app(SunnyTeams::class)->changeRole($this->team(), $member['id'], $role),
-            fn (string $problem, ?Response $response) => $this->failed($problem, $response, 'Sunny couldn’t change '.self::firstName($member['name']).'’s role right now.'),
+            fn (string $problem, ?Response $response) => $this->failed($problem, $response, 'The server couldn’t change '.self::firstName($member['name']).'’s role right now.'),
         );
     }
 
@@ -350,7 +350,7 @@ class TeamSettings extends Component
 
         $removed = $this->callSunny(
             fn () => app(SunnyTeams::class)->removeMember($this->team(), $member['id']),
-            fn (string $problem, ?Response $response) => $this->failed($problem, $response, 'Sunny couldn’t remove '.self::firstName($member['name']).' right now.'),
+            fn (string $problem, ?Response $response) => $this->failed($problem, $response, 'The server couldn’t remove '.self::firstName($member['name']).' right now.'),
         );
 
         if ($removed) {
@@ -369,7 +369,7 @@ class TeamSettings extends Component
 
         $left = $this->callSunny(
             fn () => app(SunnyTeams::class)->leave($team),
-            fn (string $problem, ?Response $response) => $this->failed($problem, $response, 'Sunny couldn’t take you out of '.$team->name.' right now.'),
+            fn (string $problem, ?Response $response) => $this->failed($problem, $response, 'The server couldn’t take you out of '.$team->name.' right now.'),
         );
 
         if ($left) {
@@ -383,7 +383,7 @@ class TeamSettings extends Component
         $team = $this->team();
 
         if ($team?->slug && ! Browser::inApp(app(SunnyConnector::class)->siteUrl().'/settings/teams/'.rawurlencode($team->slug))) {
-            Toast::error('Unable to open the Sunny website. Please try again.');
+            Toast::error('Unable to open the website. Please try again.');
         }
     }
 
@@ -431,7 +431,7 @@ class TeamSettings extends Component
                 }
 
                 $this->showRename = false;
-                $this->failed($problem, $response, 'Sunny couldn’t save the change right now.');
+                $this->failed($problem, $response, 'The server couldn’t save the change right now.');
             },
         );
     }

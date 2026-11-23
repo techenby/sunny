@@ -182,7 +182,7 @@ describe('Summary', function (): void {
         Saloon::fake([GetCalendarFeedsRequest::class => calendarOffline(), GetCalendarEventsRequest::class => calendarOffline()]);
 
         Native::visit('/dashboard')
-            ->assertSee('You’re offline. Events show up here once Sunny can be reached.')
+            ->assertSee('You’re offline. Events show up here once the server can be reached.')
             ->assertDontSee('Nothing scheduled');
     });
 
@@ -302,8 +302,8 @@ describe('Calendar', function (): void {
         Saloon::fake([GetCalendarFeedsRequest::class => MockResponse::make([], 500), GetCalendarEventsRequest::class => MockResponse::make([], 500)]);
 
         Native::visit('/calendar')
-            ->assertSee('Sunny is unavailable')
-            ->assertSee('Sunny couldn’t load your events. Try again in a moment.');
+            ->assertSee('The server is unavailable')
+            ->assertSee('Couldn’t load your events. Try again in a moment.');
     });
 
     it('invites a team without calendars to add one', function (): void {
@@ -334,7 +334,7 @@ describe('Calendars', function (): void {
             ->assertDontSee('Updated 12 minutes ago')
             ->assertSee('Updated 3 hours ago')
             ->assertSee('Last failed 2 hours ago')
-            ->assertSee('Sunny couldn’t fetch it')
+            ->assertSee('The server couldn’t fetch it')
             ->assertSee('HTTP 401')
             ->assertElement('column', fn (array $node): bool => ($node['ref'] ?? null) === 'calendar-feed-2-card')
             ->assertAccessible()
