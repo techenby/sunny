@@ -21,8 +21,6 @@
                 secure
                 revealable
                 content-type="password"
-                :ios-leading-icon="Ios::Lock"
-                :android-leading-icon="Android::Lock"
                 :error="isset($fieldErrors['current_password'])"
                 :supporting="$fieldErrors['current_password'] ?? null"
                 native:model="currentPassword"
@@ -33,8 +31,6 @@
                 secure
                 revealable
                 content-type="new-password"
-                :ios-leading-icon="Ios::Lock"
-                :android-leading-icon="Android::Lock"
                 :error="isset($fieldErrors['password'])"
                 :supporting="$fieldErrors['password'] ?? null"
                 native:model="password"
@@ -45,8 +41,6 @@
                 secure
                 revealable
                 content-type="new-password"
-                :ios-leading-icon="Ios::Lock"
-                :android-leading-icon="Android::Lock"
                 :error="isset($fieldErrors['password_confirmation'])"
                 :supporting="$fieldErrors['password_confirmation'] ?? null"
                 native:model="passwordConfirmation"

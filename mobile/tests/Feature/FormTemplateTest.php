@@ -48,7 +48,7 @@ it('pins the submit button where the tab bar was and sets the form at a 16pt mar
         ->and(formNode($page, fn (array $node): bool => ($node['ref'] ?? null) === $submit))->toBeNull()
         ->and($page['children'][0]['layout']['padding'][1])->toEqual(16)
         ->and($page['children'][0]['layout']['padding'][3])->toEqual(16)
-        ->and(array_diff($icons, ['lock', 'link']))->toBe([])
+        ->and(array_diff($icons, ['link']))->toBe([])
         ->and(formNodes($tree, 'button_group'))->toBe([]);
 })->with([
     'new list' => ['/lists/create', 'create-list-submit'],

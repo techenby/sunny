@@ -53,8 +53,6 @@
                     secure
                     revealable
                     content-type="new-password"
-                    :ios-leading-icon="Ios::Lock"
-                    :android-leading-icon="Android::Lock"
                     :disabled="$saving"
                     :error="isset($fieldErrors['password'])"
                     :supporting="$fieldErrors['password'] ?? null"
@@ -71,8 +69,6 @@
                 secure
                 revealable
                 content-type="new-password"
-                :ios-leading-icon="Ios::Lock"
-                :android-leading-icon="Android::Lock"
                 :disabled="$saving"
                 :error="isset($fieldErrors['password_confirmation'])"
                 :supporting="$fieldErrors['password_confirmation'] ?? null"

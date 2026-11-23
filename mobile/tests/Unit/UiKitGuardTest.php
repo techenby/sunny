@@ -291,8 +291,8 @@ it('keeps every form on the one template', function () {
         preg_match_all('/:(?:ios|android)-leading-icon="([^"]*)"/', $source, $icons, PREG_SET_ORDER | PREG_OFFSET_CAPTURE);
 
         foreach ($icons as $icon) {
-            if (preg_match('/^(Ios::(Lock|Link|Magnifyingglass)|Android::(Lock|Link|Search))$/', $icon[1][0]) !== 1) {
-                $violations[] = sprintf('resources/views/native/%s.blade.php:%d: %s inside a field says nothing. Only a lock, a link or a magnifier goes inside a field.', $view, nativeViewLine($source, $icon[0][1]), $icon[1][0]);
+            if (preg_match('/^(Ios::(Link|Magnifyingglass)|Android::(Link|Search))$/', $icon[1][0]) !== 1) {
+                $violations[] = sprintf('resources/views/native/%s.blade.php:%d: %s inside a field says nothing. Only a link or a magnifier goes inside a field; a password field has its own eye.', $view, nativeViewLine($source, $icon[0][1]), $icon[1][0]);
             }
         }
 
