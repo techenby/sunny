@@ -1,12 +1,9 @@
 @use('App\Icons\Android')
 @use('App\Icons\Ios')
-@use('App\Ui\Menu')
 
 <x-ui.submit-bar
     ref="{{ $formRef }}-submit"
     :disabled="$saving || $disconnected"
-    more-ref="{{ $formRef }}-more"
-    :more-menu="($removeLabel ?? null) ? [Menu::delete($formRef.'-remove', 'Remove calendar', 'confirmRemove', $removeLabel)] : null"
 >
     {{ $submitLabel }}
 </x-ui.submit-bar>
