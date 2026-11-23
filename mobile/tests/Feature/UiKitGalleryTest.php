@@ -87,6 +87,10 @@ it('answers a tap on a gallery example', function () {
         ->assertSee('Last tapped: primary')
         ->toggle('ui-kit-settings-row-toggle-toggle', false)
         ->assertSet('toggled', false)
+        ->select('ui-kit-select-time-of-day', 'Evening')
+        ->assertSet('timeOfDay', 'Evening')
+        ->tap('ui-kit-submit-bar')
+        ->assertSee('Last tapped: submit-bar')
         ->tap('ui-kit-button-navigate')
         ->assertNavigatedTo('/inventory/0');
 });

@@ -2,7 +2,7 @@
 @use('App\Icons\Ios')
 
 <column ref="{{ $ref }}" class="w-full gap-2">
-    <text class="text-sm font-semibold text-theme-on-surface-variant">Role</text>
+    <x-ui.field-label>Role</x-ui.field-label>
     @foreach ($roles as $option)
         <pressable
             ref="{{ $ref }}-{{ $option->value }}"

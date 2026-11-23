@@ -5,10 +5,11 @@ namespace App\NativeComponents;
 use App\Concerns\ChecksSunnySync;
 use App\Concerns\ManagesListForm;
 use App\Enums\ChecklistType;
+use App\Layouts\HidesTabBar;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
 
-class EditList extends Component
+class EditList extends Component implements HidesTabBar
 {
     use ChecksSunnySync;
     use ManagesListForm;

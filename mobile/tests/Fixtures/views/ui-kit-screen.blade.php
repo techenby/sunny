@@ -28,5 +28,9 @@
     <x-ui.button ref="button-row-icon-disabled" variant="text" :ios="Ios::ChevronUp" :android="Android::KeyboardArrowUp" a11y-label="Move up" disabled tap="save" />
     <x-ui.empty-state ref="empty-state" :ios="Ios::ListBullet" :android="Android::FormatListBulleted" :heading="'No lists match “'.$name.'”'" text="Try a different search." />
     <x-ui.offline ref="offline" extra="Nothing’s been sent yet." />
+    <x-ui.field-label ref="field-label">Where does it go?</x-ui.field-label>
+    <x-ui.field-help ref="field-help">Not sure? Leave it as a thing.</x-ui.field-help>
+    <x-ui.picker-field ref="picker-field" label="Starts on" value="Today, Nov 20" opens="date" a11y-hint="Choose when this routine starts" tap="save" />
+    <x-ui.submit-bar ref="submit-bar" :disabled="$saves > 5">Save</x-ui.submit-bar>
     <text ref="after">After</text>
 </column>

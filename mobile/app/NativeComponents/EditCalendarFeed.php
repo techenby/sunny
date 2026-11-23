@@ -6,16 +6,13 @@ use App\Concerns\ChecksSunnySync;
 use App\Concerns\ManagesCalendarFeedForm;
 use App\Http\Integrations\Sunny\SunnyCalendar;
 use App\Http\Integrations\Sunny\SunnyTeam;
+use App\Layouts\HidesTabBar;
 use App\Support\CalendarAgenda;
 use Carbon\CarbonImmutable;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
-use Native\Mobile\Attributes\On;
-use Native\Mobile\Events\Alert\ButtonPressed;
-use Native\Mobile\Facades\Dialog;
-use Throwable;
 
-class EditCalendarFeed extends Component
+class EditCalendarFeed extends Component implements HidesTabBar
 {
     use ChecksSunnySync;
     use ManagesCalendarFeedForm;
@@ -63,50 +60,6 @@ class EditCalendarFeed extends Component
         }
 
         $this->submitFeed($this->feed['id']);
-    }
-
-    public function confirmRemove(): void
-    {
-        if ($this->feed === null) {
-            return;
-        }
-
-        Dialog::alert('Remove “'.$this->feed['name'].'”?', 'Its events will stop showing for everyone on your team.', [
-            ['label' => 'Cancel', 'style' => 'cancel'],
-            ['label' => 'Remove', 'style' => 'destructive'],
-        ])->id('remove-calendar')->show();
-    }
-
-    #[On(ButtonPressed::class)]
-    public function onAlertButtonPressed(string $label, ?string $id = null): void
-    {
-        if ($id === 'remove-calendar' && $label === 'Remove') {
-            $this->remove();
-        }
-    }
-
-    public function remove(): void
-    {
-        $team = app(SunnyTeam::class)->current();
-
-        if ($this->feed === null || $team === null || $this->saving) {
-            return;
-        }
-
-        $this->error = '';
-        $this->saving = true;
-
-        try {
-            app(SunnyCalendar::class)->deleteFeed($team, $this->feed['id']);
-        } catch (Throwable $exception) {
-            $this->error = $this->feedFailureMessage($exception, 'remove it');
-
-            return;
-        } finally {
-            $this->saving = false;
-        }
-
-        $this->back();
     }
 
     public function render(): View

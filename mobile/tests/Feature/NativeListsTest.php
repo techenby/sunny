@@ -714,9 +714,11 @@ it('opens the create screen from the overview', function () {
 it('creates a list on the phone and opens it', function () {
     Native::visit('/lists/create')
         ->input('create-list-name', ' Hardware store ')
-        ->tap('create-list-type-1')
-        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'create-list-type-1'
-            && ($node['props']['a11y_label'] ?? null) === 'Shopping, selected')
+        ->select('create-list-type', 'Shopping')
+        ->assertElement('select', fn (array $node): bool => ($node['ref'] ?? null) === 'create-list-type'
+            && $node['props']['label'] === 'Type'
+            && $node['props']['value'] === 'Shopping'
+            && $node['props']['options'] === ['To-do', 'Shopping', 'Wish list'])
         ->tap('create-list-submit')
         ->assertSet('error', '')
         ->assertReplacedWith('/lists/-1');

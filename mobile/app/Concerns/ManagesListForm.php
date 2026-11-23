@@ -43,6 +43,15 @@ trait ManagesListForm
         }
     }
 
+    public function pickType(string $label): void
+    {
+        $index = array_search($label, $this->typeOptions(), true);
+
+        if ($index !== false) {
+            $this->chooseType($index);
+        }
+    }
+
     protected function listPayload(): array
     {
         return [

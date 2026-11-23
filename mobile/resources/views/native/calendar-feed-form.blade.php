@@ -1,9 +1,15 @@
 @use('App\Icons\Android')
 @use('App\Icons\Ios')
-@use('App\Ui\Menu')
+
+<x-ui.submit-bar
+    ref="{{ $formRef }}-submit"
+    :disabled="$saving || $disconnected"
+>
+    {{ $submitLabel }}
+</x-ui.submit-bar>
 
 <scroll-view ref="{{ $formRef }}-screen" fill class="bg-theme-background ios:bg-theme-grouped-background">
-    <column class="w-full gap-6 px-6 py-6">
+    <column class="w-full gap-6 px-4 py-6">
         @if ($failure ?? null)
             <row ref="{{ $formRef }}-failing" class="w-full items-start gap-3 rounded-xl border border-theme-destructive/20 bg-theme-destructive/10 px-4 py-3">
                 <icon :ios="Ios::ExclamationmarkTriangleFill" :android="Android::Warning" :size="18" class="text-theme-destructive" />
@@ -20,8 +26,6 @@
                 label="Name"
                 placeholder="Family"
                 autocapitalize="words"
-                :ios-leading-icon="Ios::Tag"
-                :android-leading-icon="Android::Label"
                 native:model.blur="name"
             />
 
@@ -40,7 +44,7 @@
             </column>
 
             <column ref="{{ $formRef }}-color" class="w-full gap-2">
-                <text class="text-sm font-semibold text-theme-on-surface-variant">Color</text>
+                <x-ui.field-label>Color</x-ui.field-label>
                 <row class="w-full items-center justify-between">
                     @foreach ($colorOptions as $index => $option)
                         <pressable
@@ -64,36 +68,6 @@
             <x-ui.offline ref="{{ $formRef }}-offline" />
         @elseif ($error !== '')
             <text ref="{{ $formRef }}-error" class="text-sm text-theme-destructive">{{ $error }}</text>
-        @endif
-
-        @if ($removeLabel ?? null)
-            <row class="w-full items-center gap-3">
-                <x-ui.button
-                    ref="{{ $formRef }}-submit"
-                    class="flex-1"
-                    :disabled="$saving || $disconnected"
-                    tap="save"
-                >
-                    {{ $submitLabel }}
-                </x-ui.button>
-                <x-ui.button
-                    ref="{{ $formRef }}-more"
-                    variant="secondary"
-                    :ios="Ios::Ellipsis"
-                    :android="Android::MoreHoriz"
-                    a11y-label="More"
-                    :menu="[Menu::delete($formRef.'-remove', 'Remove calendar', 'confirmRemove', $removeLabel)]"
-                />
-            </row>
-        @else
-            <x-ui.button
-                ref="{{ $formRef }}-submit"
-                class="w-full"
-                :disabled="$saving || $disconnected"
-                tap="save"
-            >
-                {{ $submitLabel }}
-            </x-ui.button>
         @endif
     </column>
 </scroll-view>

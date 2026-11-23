@@ -4,9 +4,10 @@ namespace App\NativeComponents;
 
 use App\Concerns\ChecksSunnySync;
 use App\Concerns\ManagesRoutineForm;
+use App\Layouts\HidesTabBar;
 use Illuminate\View\View;
 
-class CreateRoutine extends Component
+class CreateRoutine extends Component implements HidesTabBar
 {
     use ChecksSunnySync;
     use ManagesRoutineForm;

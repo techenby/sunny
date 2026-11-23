@@ -25,8 +25,6 @@
             label="Password"
             placeholder="Password"
             secure
-            :ios-leading-icon="Ios::Lock"
-            :android-leading-icon="Android::Lock"
             native:model="password"
         />
 

@@ -8,6 +8,7 @@ use App\Concerns\ManagesRecipeForm;
 use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Http\Integrations\Sunny\SunnyTeam;
 use App\Http\Integrations\Sunny\SunnyTokenStore;
+use App\Layouts\HidesTabBar;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Native\Mobile\AsyncTask;
@@ -15,7 +16,7 @@ use Native\Mobile\Attributes\Computed;
 use Native\Mobile\Facades\Network;
 use RuntimeException;
 
-class CreateRecipe extends Component
+class CreateRecipe extends Component implements HidesTabBar
 {
     use ChecksSunnySync;
     use ManagesRecipeForm;

@@ -15,8 +15,6 @@
                 label="Full name"
                 placeholder="Full name"
                 autocapitalize="words"
-                :ios-leading-icon="Ios::Person"
-                :android-leading-icon="Android::Person"
                 :disabled="$saving"
                 :error="isset($fieldErrors['name'])"
                 :supporting="$fieldErrors['name'] ?? null"
@@ -29,8 +27,6 @@
                     placeholder="email@example.com"
                     keyboard="email"
                     content-type="username"
-                    :ios-leading-icon="Ios::Envelope"
-                    :android-leading-icon="Android::Email"
                     :disabled="$saving"
                     :error="isset($fieldErrors['email'])"
                     :supporting="$fieldErrors['email'] ?? null"
@@ -57,8 +53,6 @@
                     secure
                     revealable
                     content-type="new-password"
-                    :ios-leading-icon="Ios::Lock"
-                    :android-leading-icon="Android::Lock"
                     :disabled="$saving"
                     :error="isset($fieldErrors['password'])"
                     :supporting="$fieldErrors['password'] ?? null"
@@ -75,8 +69,6 @@
                 secure
                 revealable
                 content-type="new-password"
-                :ios-leading-icon="Ios::Lock"
-                :android-leading-icon="Android::Lock"
                 :disabled="$saving"
                 :error="isset($fieldErrors['password_confirmation'])"
                 :supporting="$fieldErrors['password_confirmation'] ?? null"

@@ -159,6 +159,10 @@
                 {
                     "description": "iOS: build the app icon from the Icon Composer file set in nativephp.ios_icon so iOS 26 gets the Liquid Glass light, dark and tinted variants",
                     "url": "patches/nativephp-mobile-ios-icon-composer.patch"
+                },
+                {
+                    "description": "iOS: when a screen hides the tab bar, keep the bottom bar's inset on the page so the last field can scroll clear of a pinned button",
+                    "url": "patches/nativephp-mobile-hidden-tab-bar-keeps-bottom-inset.patch"
                 }
             ],
             "nativephp/mobile-secure-storage": [

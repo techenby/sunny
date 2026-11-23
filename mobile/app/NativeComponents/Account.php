@@ -7,6 +7,7 @@ use App\Concerns\NeedsConnection;
 use App\Http\Integrations\Sunny\SunnyAccount;
 use App\Http\Integrations\Sunny\SunnyStore;
 use App\Http\Integrations\Sunny\SunnyTokenStore;
+use App\Layouts\HidesTabBar;
 use App\Support\Toast;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\View\View;
@@ -16,7 +17,7 @@ use RuntimeException;
 use Saloon\Exceptions\Request\FatalRequestException;
 use Saloon\Exceptions\Request\RequestException;
 
-class Account extends Component
+class Account extends Component implements HidesTabBar
 {
     use NeedsConnection;
 
