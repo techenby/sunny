@@ -157,7 +157,7 @@ it('discards a refused edit and leaves the record for the next download', functi
 
     Native::visit('/recipes/1')->tap('recipe-sync-discard')
         ->assertNativeCalled('Dialog.Alert', fn (array $params): bool => $params['id'] === 'discard-queued-change'
-            && $params['message'] === 'Your edit will be replaced by the recipe on Sunny.')
+            && $params['message'] === 'Your edit will be replaced by the recipe on the server.')
         ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Discard', 'id' => 'discard-queued-change'])
         ->assertNoNavigation()->assertDontSee('Not saved to Sunny');
     expect(PendingWrite::count())->toBe(0);
@@ -181,7 +181,7 @@ it('discards a refused new item, moving what was put inside it to the top level'
     app(SunnyWrites::class)->push();
 
     Native::visit('/inventory/'.$shelf)->tap('item-sync-discard')
-        ->assertNativeCalled('Dialog.Alert', fn (array $params): bool => $params['message'] === 'This thing never reached Sunny, so it will be deleted from this phone.')
+        ->assertNativeCalled('Dialog.Alert', fn (array $params): bool => $params['message'] === 'This thing never reached the server, so it will be deleted from this phone.')
         ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Discard', 'id' => 'discard-queued-change'])
         ->assertWentBack();
 

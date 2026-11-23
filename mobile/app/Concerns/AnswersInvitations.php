@@ -87,6 +87,6 @@ trait AnswersInvitations
             return;
         }
 
-        Toast::error($problem === 'offline' ? Offline::message() : self::failureMessage($problem, $response, 'Sunny couldn’t answer the invitation right now. Please try again.'));
+        Toast::error($problem === 'offline' ? Offline::message() : self::failureMessage($problem, $response, 'The server couldn’t answer the invitation right now. Please try again.'));
     }
 }
