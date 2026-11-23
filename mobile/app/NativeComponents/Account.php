@@ -3,6 +3,7 @@
 namespace App\NativeComponents;
 
 use App\Actions\DestroySession;
+use App\Concerns\NeedsConnection;
 use App\Http\Integrations\Sunny\SunnyAccount;
 use App\Http\Integrations\Sunny\SunnyStore;
 use App\Http\Integrations\Sunny\SunnyTokenStore;
@@ -17,6 +18,8 @@ use Saloon\Exceptions\Request\RequestException;
 
 class Account extends Component
 {
+    use NeedsConnection;
+
     public string $name = '';
 
     public string $email = '';
@@ -144,11 +147,9 @@ class Account extends Component
         Toast::info('Your email is already verified.');
     }
 
-    public function offlineMessage(): string
+    public function offlineReassurance(): ?string
     {
-        return $this->offline === 'verification'
-            ? 'Sending a verification email needs a connection. Nothing’s been sent yet.'
-            : 'Changes to your account need a connection. Nothing’s been saved yet.';
+        return $this->offline === 'verification' && ! $this->disconnected ? 'Nothing’s been sent yet.' : null;
     }
 
     public function render(): View

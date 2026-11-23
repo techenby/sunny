@@ -11,6 +11,7 @@ use App\Models\Item;
 use App\Models\PendingWrite;
 use App\Models\Team;
 use App\NativeComponents\Inventory;
+use App\Support\Offline;
 use App\Support\Toast;
 use App\Support\ToastAction;
 use Illuminate\Auth\AuthenticationException;
@@ -112,7 +113,7 @@ trait MovesItemToTeam
         $to = Team::query()->where('server', SunnyStore::server())->find($this->teamMoveTeamId);
 
         if (! $from?->slug || $to === null) {
-            $this->teamMoveFailed('Sync with Sunny before moving it.');
+            $this->teamMoveFailed(SunnySyncCoordinator::REFRESH_ADVICE);
 
             return;
         }
@@ -232,8 +233,11 @@ trait MovesItemToTeam
      */
     public function teamMoveNote(): array
     {
+        if ($this->teamMoveProblem === 'offline') {
+            return ['title' => Offline::TITLE, 'message' => Offline::ADVICE];
+        }
+
         [$title, $message] = match ($this->teamMoveProblem) {
-            'offline' => ['You’re offline', 'Moving to another team needs a connection.'],
             'unsent' => ['Still sending your changes', 'Sunny moves what it has, so your latest changes need to reach it first.'],
             default => ['Couldn’t move it', $this->teamMoveError],
         };

@@ -17,6 +17,7 @@ use App\Icons\Ios;
 use App\Models\ItemPhoto;
 use App\Models\PendingWrite;
 use App\Models\Team;
+use App\Support\Offline;
 use App\Support\Toast;
 use App\Support\ToastAction;
 use App\Ui\Menu;
@@ -267,7 +268,7 @@ class InventoryItemDetail extends Component
         $team = Team::query()->where('server', SunnyStore::server())->find($this->item['team_id']);
 
         if (! $team?->slug) {
-            $this->copiesFailed('Sync with Sunny before making copies.');
+            $this->copiesFailed(SunnySyncCoordinator::REFRESH_ADVICE);
 
             return;
         }
@@ -343,8 +344,11 @@ class InventoryItemDetail extends Component
      */
     public function copiesNote(): array
     {
+        if ($this->copiesProblem === 'offline') {
+            return ['title' => Offline::TITLE, 'message' => Offline::ADVICE];
+        }
+
         [$title, $message] = match ($this->copiesProblem) {
-            'offline' => ['You’re offline', 'Making copies needs a connection, since Sunny copies the photos for you.'],
             'unsent' => ['Still sending your changes', 'Sunny copies what it has, so your latest changes need to reach it first.'],
             default => ['Couldn’t make copies', $this->copiesError],
         };

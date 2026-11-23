@@ -1,5 +1,6 @@
 @use('App\Icons\Android')
 @use('App\Icons\Ios')
+@use('App\Support\Offline')
 @use('App\Ui\Card')
 @use('App\NativeComponents\Recipes')
 
@@ -203,7 +204,7 @@
     @php
         [$icon, $title, $body] = match ($state) {
             'gone' => [[Ios::EyeSlash, Android::LinkOff], 'This recipe isn’t shared anymore', 'Whoever sent it may have turned sharing off, or the link isn’t quite right. Ask them to send it again.'],
-            'offline' => [[Ios::WifiSlash, Android::WifiOff], 'You’re offline', 'Opening a shared recipe needs a connection.'],
+            'offline' => [[Ios::WifiSlash, Android::WifiOff], Offline::TITLE, Offline::ADVICE],
             default => [[Ios::ExclamationmarkCircle, Android::ErrorOutline], 'Couldn’t open this recipe', $message],
         };
     @endphp

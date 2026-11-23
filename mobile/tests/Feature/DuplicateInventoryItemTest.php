@@ -145,7 +145,8 @@ it('copies nothing while offline and lets them try again', function (): void {
         ->assertSet('showCopies', true)
         ->assertSet('copies', 3)
         ->assertSee('You’re offline')
-        ->assertSee('Making copies needs a connection, since Sunny copies the photos for you. Nothing’s been copied yet.')
+        ->assertSee('Try again when you’re connected.')
+        ->assertDontSee('Nothing’s been copied yet.')
         ->assertSee('Try again');
 
     expect(Item::count())->toBe(15);

@@ -573,7 +573,7 @@ class ScanInventory extends Component
         }
 
         if ($this->teamId === null) {
-            return 'Select a team in Settings. If none are listed, sync with Sunny first.';
+            return SunnySyncCoordinator::NO_TEAM_ADVICE;
         }
 
         if ($this->teamId !== app(SunnyTeam::class)->current()?->id) {

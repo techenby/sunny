@@ -155,6 +155,13 @@
             <x-ui.alert :ios="Ios::WifiSlash" :android="Android::WifiOff" title="title" message="message, with ios and android for the icon." />
         </column>
 
+        <column ref="ui-kit-offline" class="w-full gap-2">
+            <x-ui.subheading class="px-1">x-ui.offline</x-ui.subheading>
+            <x-ui.offline ref="ui-kit-offline-alert" />
+            <x-ui.text size="sm" class="px-1">extra="Nothing’s been sent yet.", for after a send that failed</x-ui.text>
+            <x-ui.offline ref="ui-kit-offline-extra" extra="Nothing’s been sent yet." />
+        </column>
+
         <column ref="ui-kit-cards" class="w-full gap-2">
             <x-ui.subheading class="px-1">App\Ui\Card::classes()</x-ui.subheading>
             <column class="{{ Card::classes() }} w-full p-4">

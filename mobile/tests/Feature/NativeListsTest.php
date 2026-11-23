@@ -723,7 +723,7 @@ it('creates a list on the phone and opens it', function () {
 
     expect(Checklist::find(-1)->only('team_id', 'name', 'type'))->toBe(['team_id' => 1, 'name' => 'Hardware store', 'type' => ChecklistType::Shopping])
         ->and(PendingWrite::sole()->payload)->toBe(['name' => 'Hardware store', 'type' => 'shopping']);
-    Native::visit('/lists/-1')->assertSee('This list is empty.')->assertSee('Saved on this phone · syncing with Sunny');
+    Native::visit('/lists/-1')->assertSee('This list is empty.')->assertDontSee('syncing with Sunny');
 });
 
 it('refuses to save a list without a valid name', function (string $name, string $message) {

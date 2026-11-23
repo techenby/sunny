@@ -60,44 +60,40 @@
             </column>
         </column>
 
-        @if ($error !== '')
+        @if ($disconnected)
+            <x-ui.offline ref="{{ $formRef }}-offline" />
+        @elseif ($error !== '')
             <text ref="{{ $formRef }}-error" class="text-sm text-theme-destructive">{{ $error }}</text>
         @endif
 
-        <column class="w-full gap-2.5">
-            @if ($removeLabel ?? null)
-                <row class="w-full items-center gap-3">
-                    <x-ui.button
-                        ref="{{ $formRef }}-submit"
-                        class="flex-1"
-                        :disabled="$saving"
-                        tap="save"
-                    >
-                        {{ $submitLabel }}
-                    </x-ui.button>
-                    <x-ui.button
-                        ref="{{ $formRef }}-more"
-                        variant="secondary"
-                        :ios="Ios::Ellipsis"
-                        :android="Android::MoreHoriz"
-                        a11y-label="More"
-                        :menu="[Menu::delete($formRef.'-remove', 'Remove calendar', 'confirmRemove', $removeLabel)]"
-                    />
-                </row>
-            @else
+        @if ($removeLabel ?? null)
+            <row class="w-full items-center gap-3">
                 <x-ui.button
                     ref="{{ $formRef }}-submit"
-                    class="w-full"
-                    :disabled="$saving"
+                    class="flex-1"
+                    :disabled="$saving || $disconnected"
                     tap="save"
                 >
                     {{ $submitLabel }}
                 </x-ui.button>
-            @endif
-            <row class="w-full items-center justify-center gap-1.5">
-                <icon :ios="Ios::Wifi" :android="Android::Wifi" :size="14" class="text-theme-on-surface-variant" />
-                <x-ui.text size="sm">Needs a connection</x-ui.text>
+                <x-ui.button
+                    ref="{{ $formRef }}-more"
+                    variant="secondary"
+                    :ios="Ios::Ellipsis"
+                    :android="Android::MoreHoriz"
+                    a11y-label="More"
+                    :menu="[Menu::delete($formRef.'-remove', 'Remove calendar', 'confirmRemove', $removeLabel)]"
+                />
             </row>
-        </column>
+        @else
+            <x-ui.button
+                ref="{{ $formRef }}-submit"
+                class="w-full"
+                :disabled="$saving || $disconnected"
+                tap="save"
+            >
+                {{ $submitLabel }}
+            </x-ui.button>
+        @endif
     </column>
 </scroll-view>

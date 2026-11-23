@@ -34,15 +34,15 @@ trait ShowsQueuedChange
         }
 
         $noun = match ($this->queuedResource()) {
-            'items' => 'item',
+            'items' => 'thing',
             'checklists' => 'list',
             'routines' => 'routine',
             default => 'recipe',
         };
 
         Dialog::alert('Discard change?', $id < 0
-            ? "This {$noun} never reached Sunny, so it will be deleted from this phone."
-            : "Your edit will be replaced by the {$noun} on Sunny the next time this phone syncs.", [
+            ? "This {$noun} never reached the server, so it will be deleted from this phone."
+            : "Your edit will be replaced by the {$noun} on the server.", [
                 ['label' => 'Cancel', 'style' => 'cancel'],
                 ['label' => 'Discard', 'style' => 'destructive'],
             ])->id('discard-queued-change')->show();

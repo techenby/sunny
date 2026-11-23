@@ -26,8 +26,8 @@
                 native:model="email"
             />
 
-            @if ($failure === 'offline')
-                <x-ui.alert ref="forgot-password-offline" :ios="Ios::WifiSlash" :android="Android::WifiOff" title="You’re offline" message="Sending a reset link needs a connection. Nothing’s been sent yet." />
+            @if ($this->disconnected || $failure === 'offline')
+                <x-ui.offline ref="forgot-password-offline" :extra="$this->disconnected ? null : 'Nothing’s been sent yet.'" />
             @elseif ($failure === 'server')
                 <x-ui.alert ref="forgot-password-server-error" :ios="Ios::ExclamationmarkTriangle" :android="Android::Warning" title="Something went wrong on our end" message="No link sent. Try again in a moment." />
             @elseif ($failure === 'throttled' && $this->throttled())
@@ -38,13 +38,13 @@
                 <x-ui.alert ref="forgot-password-unavailable" :ios="Ios::ExclamationmarkTriangle" :android="Android::Warning" title="Password reset isn’t available right now" message="No link sent. Try again later." />
             @endif
 
-            @php($offline = $failure === 'offline')
+            @php($offline = $failure === 'offline' && ! $this->disconnected)
             <x-ui.button
                 ref="forgot-password-submit"
                 class="w-full"
                 :ios="$offline && ! $sending ? Ios::ArrowClockwise : null"
                 :android="$offline && ! $sending ? Android::Refresh : null"
-                :disabled="$sending || $this->throttled()"
+                :disabled="$sending || $this->throttled() || $this->disconnected"
                 tap="send"
             >
                 {{ $sending ? 'Sending link…' : ($offline ? 'Try again' : 'Send link') }}

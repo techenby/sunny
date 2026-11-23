@@ -120,7 +120,7 @@ it('says it is offline and opens the recipe on Try again', function (): void {
     Native::visit('/recipes/shared/'.SHARE_TOKEN)
         ->assertSet('state', 'offline')
         ->assertSee('You’re offline')
-        ->assertSee('Opening a shared recipe needs a connection.')
+        ->assertSee('Try again when you’re connected.')
         ->assertSee('Try again')
         ->assertAccessible()
         ->tap('shared-recipe-retry')
@@ -193,7 +193,8 @@ it('saves nothing while offline and retries with the same uuid', function (): vo
     $screen = Native::visit('/recipes/shared/'.SHARE_TOKEN)
         ->tap('shared-recipe-save')
         ->assertSee('You’re offline')
-        ->assertSee('Saving needs a connection. Nothing’s been saved yet.')
+        ->assertSee('Try again when you’re connected.')
+        ->assertDontSee('Nothing’s been saved yet.')
         ->assertSee('Try again');
 
     expect(Recipe::find(77))->toBeNull();

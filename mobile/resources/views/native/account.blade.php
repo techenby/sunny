@@ -49,6 +49,7 @@
                     ref="account-send-verification"
                     variant="secondary"
                     class="w-full"
+                    :disabled="$this->disconnected"
                     tap="sendVerification"
                 >
                     {{ $verificationSent ? 'Send it again' : 'Send verification email' }}
@@ -57,14 +58,8 @@
             </column>
         @endunless
 
-        @if ($offline)
-            <row ref="account-offline" class="w-full items-start gap-2.5 rounded-xl bg-theme-primary/15 p-3.5">
-                <native:icon :ios="Ios::WifiSlash" :android="Android::WifiOff" :size="20" class="text-theme-primary-text" />
-                <column class="flex-1 gap-0.5">
-                    <text font="semibold" class="text-base text-theme-primary-text">You’re offline</text>
-                    <text class="text-base text-theme-on-surface">{{ $this->offlineMessage() }}</text>
-                </column>
-            </row>
+        @if ($offline || $this->disconnected)
+            <x-ui.offline ref="account-offline" :extra="$this->offlineReassurance()" />
         @endif
 
         @if ($error !== '')
@@ -74,12 +69,12 @@
         <x-ui.button
             ref="account-save"
             class="w-full"
-            :ios="$offline === 'save' ? Ios::ArrowClockwise : null"
-            :android="$offline === 'save' ? Android::Refresh : null"
-            :disabled="$saving"
+            :ios="$offline === 'save' && ! $this->disconnected ? Ios::ArrowClockwise : null"
+            :android="$offline === 'save' && ! $this->disconnected ? Android::Refresh : null"
+            :disabled="$saving || $this->disconnected"
             tap="save"
         >
-            {{ $offline === 'save' ? 'Try again' : 'Save' }}
+            {{ $offline === 'save' && ! $this->disconnected ? 'Try again' : 'Save' }}
         </x-ui.button>
     </column>
 </scroll-view>

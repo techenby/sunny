@@ -17,6 +17,8 @@ class CalendarFeeds extends Component
 {
     use ChecksSunnySync;
 
+    public const int STALE_AFTER_MINUTES = 60;
+
     public bool $loading = false;
 
     public string $status = '';
@@ -76,8 +78,9 @@ class CalendarFeeds extends Component
             'problem' => CalendarAgenda::problem($feed['last_error']),
             'detail' => match (true) {
                 $feed['status'] === 'failing' => 'Last failed '.($feed['last_failed_at'] ? CalendarAgenda::ago(CarbonImmutable::parse($feed['last_failed_at'])) : 'recently'),
-                $feed['last_fetched_at'] !== null => 'Updated '.CalendarAgenda::ago(CarbonImmutable::parse($feed['last_fetched_at'])),
-                default => 'Not fetched yet',
+                $feed['last_fetched_at'] === null => 'Not fetched yet',
+                CarbonImmutable::parse($feed['last_fetched_at'])->lessThan(now()->subMinutes(self::STALE_AFTER_MINUTES)) => 'Updated '.CalendarAgenda::ago(CarbonImmutable::parse($feed['last_fetched_at'])),
+                default => null,
             },
         ]);
 

@@ -2,6 +2,7 @@
 
 namespace App\NativeComponents;
 
+use App\Concerns\NeedsConnection;
 use App\Http\Integrations\Sunny\SunnyAuth;
 use App\Http\Integrations\Sunny\SunnyConnector;
 use App\Support\Toast;
@@ -13,6 +14,8 @@ use RuntimeException;
 
 class Register extends Component
 {
+    use NeedsConnection;
+
     public string $name = '';
 
     public string $email = '';

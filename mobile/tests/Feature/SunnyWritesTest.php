@@ -147,7 +147,7 @@ it('keeps sending a change after Sunny fails for a reason that may pass', functi
     Native::visit('/recipes/1/edit')->set('name', 'Unsaved')->tap('edit-recipe-submit')->assertWentBack();
 
     expect(PendingWrite::sole()->error)->toBeNull();
-    Native::visit('/recipes/1')->assertSee('Saved on this phone · syncing with Sunny');
+    Native::visit('/recipes/1')->assertDontSee('syncing with Sunny');
     expect(app(SunnySyncCoordinator::class)->isDue())->toBeTrue();
 });
 
@@ -157,7 +157,7 @@ it('discards a refused edit and leaves the record for the next download', functi
 
     Native::visit('/recipes/1')->tap('recipe-sync-discard')
         ->assertNativeCalled('Dialog.Alert', fn (array $params): bool => $params['id'] === 'discard-queued-change'
-            && $params['message'] === 'Your edit will be replaced by the recipe on Sunny the next time this phone syncs.')
+            && $params['message'] === 'Your edit will be replaced by the recipe on the server.')
         ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Discard', 'id' => 'discard-queued-change'])
         ->assertNoNavigation()->assertDontSee('Not saved to Sunny');
     expect(PendingWrite::count())->toBe(0);
@@ -181,7 +181,7 @@ it('discards a refused new item, moving what was put inside it to the top level'
     app(SunnyWrites::class)->push();
 
     Native::visit('/inventory/'.$shelf)->tap('item-sync-discard')
-        ->assertNativeCalled('Dialog.Alert', fn (array $params): bool => $params['message'] === 'This item never reached Sunny, so it will be deleted from this phone.')
+        ->assertNativeCalled('Dialog.Alert', fn (array $params): bool => $params['message'] === 'This thing never reached the server, so it will be deleted from this phone.')
         ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Discard', 'id' => 'discard-queued-change'])
         ->assertWentBack();
 
@@ -277,7 +277,7 @@ it('saves a new recipe on the phone while Sunny is unreachable', function (): vo
     Saloon::fake([SaveRecordRequest::class => MockResponse::make([], 503)]);
     Native::visit('/recipes/create')->set('name', 'Offline draft')->tap('create-recipe-submit')
         ->assertReplacedWith('/recipes/-1');
-    Native::visit('/recipes/-1')->assertSee('Offline draft')->assertSee('Saved on this phone · syncing with Sunny');
+    Native::visit('/recipes/-1')->assertSee('Offline draft')->assertDontSee('syncing with Sunny');
     Native::visit('/recipes')->assertSee('Offline draft');
 });
 

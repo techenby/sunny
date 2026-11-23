@@ -186,7 +186,7 @@ it('keeps what was typed when offline and tries again', function (): void {
     $screen = fillRegistration()
         ->tap('register-submit')
         ->assertSee('You’re offline')
-        ->assertSee('Creating an account needs a connection. Nothing’s been sent yet.')
+        ->assertSee('Try again when you’re connected. Nothing’s been sent yet.')
         ->assertSee('Try again')
         ->assertSet('email', 'alex@example.com')
         ->assertSet('password', 'Correct-Horse-9!')
@@ -203,12 +203,21 @@ it('does not contact Sunny when the phone knows it is offline', function (): voi
     Native::fakeBridge()->respondTo('Network.Status', ['connected' => false]);
     Saloon::fake([RegisterRequest::class => MockResponse::make(registeredUser(), 201)]);
 
-    fillRegistration()
-        ->tap('register-submit')
+    $screen = fillRegistration()
+        ->assertSee('You’re offline')
+        ->assertSee('Try again when you’re connected.')
+        ->assertDontSee('Nothing’s been sent yet.')
+        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'register-submit')
+        ->call('submit')
         ->assertSet('failure', 'offline')
         ->assertSee('Try again');
 
     Saloon::assertNothingSent();
+
+    $screen->bridge()->respondTo('Network.Status', ['connected' => true]);
+
+    $screen->firePolls()
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'register-submit');
 });
 
 it('offers to try again after a server error', function (int $status): void {

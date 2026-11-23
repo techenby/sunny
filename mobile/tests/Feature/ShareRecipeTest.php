@@ -131,7 +131,7 @@ it('keeps the recipe private while offline and lets them try again', function ()
         ->tap('Share')
         ->tap('recipe-share-submit')
         ->assertSee('You’re offline')
-        ->assertSee('Turning on a link needs a connection. The recipe is still private, and no link has been made.')
+        ->assertSee('Try again when you’re connected. The recipe is still private, and no link has been made.')
         ->assertSee('Try again')
         ->assertSee('Cancel');
 
@@ -157,7 +157,7 @@ it('keeps the link working when turning it off offline', function (): void {
         ->tap('Share')
         ->tap('recipe-share-turn-off')
         ->assertSee('You’re offline')
-        ->assertSee('Turning off the link needs a connection. The link still works for now.');
+        ->assertSee('Try again when you’re connected. The link still works for now.');
 
     expect(Recipe::find(1)->share_url)->toBe(SHARE_URL);
 

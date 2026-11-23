@@ -316,7 +316,7 @@ it('creates a weekly routine on the phone and opens it', function () {
     Native::visit('/routines/-1')
         ->assertSee('Afternoon · Mon, Wed')
         ->assertSee('This routine has no steps.')
-        ->assertSee('Saved on this phone · syncing with Sunny');
+        ->assertDontSee('syncing with Sunny');
 });
 
 it('creates a paused monthly routine', function () {

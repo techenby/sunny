@@ -40,14 +40,8 @@
             </row>
         </column>
 
-        @if ($offline)
-            <row ref="create-team-offline" class="w-full items-start gap-2.5 rounded-xl bg-theme-primary/15 p-3.5">
-                <native:icon :ios="Ios::WifiSlash" :android="Android::WifiOff" :size="20" class="text-theme-primary-text" />
-                <column class="flex-1 gap-0.5">
-                    <text font="semibold" class="text-base text-theme-primary-text">You’re offline</text>
-                    <text class="text-base text-theme-on-surface">Creating a team needs a connection. Nothing’s been created yet.</text>
-                </column>
-            </row>
+        @if ($offline || $this->disconnected)
+            <x-ui.offline ref="create-team-offline" />
         @endif
 
         @if ($error !== '')
@@ -57,12 +51,12 @@
         <x-ui.button
             ref="create-team-submit"
             class="w-full"
-            :ios="$offline ? Ios::ArrowClockwise : null"
-            :android="$offline ? Android::Refresh : null"
-            :disabled="$creating"
+            :ios="$offline && ! $this->disconnected ? Ios::ArrowClockwise : null"
+            :android="$offline && ! $this->disconnected ? Android::Refresh : null"
+            :disabled="$creating || $this->disconnected"
             tap="create"
         >
-            {{ $offline ? 'Try again' : 'Create team' }}
+            {{ $offline && ! $this->disconnected ? 'Try again' : 'Create team' }}
         </x-ui.button>
     </column>
 </scroll-view>

@@ -105,7 +105,7 @@ class SunnySync
     public function fetchRoutineDay(int $teamId, string $date, #[\SensitiveParameter] ?string $token = null): void
     {
         $team = Team::query()->where('server', SunnyStore::server())->findOrFail($teamId);
-        throw_unless($team->slug, UnexpectedValueException::class, 'Sync with Sunny before loading other days.');
+        throw_unless($team->slug, UnexpectedValueException::class, 'The team has not been downloaded yet.');
         $response = $this->auth->authenticatedConnector($token)->send(new GetRoutineOccurrencesRequest($team->slug, $date))->json();
         throw_unless(is_array($response), UnexpectedValueException::class, 'Invalid routines response.');
 

@@ -3,6 +3,7 @@
 namespace App\NativeComponents;
 
 use App\Concerns\CallsSunnyOnline;
+use App\Concerns\NeedsConnection;
 use App\Http\Integrations\Sunny\SunnyTeams;
 use App\Support\Toast;
 use Illuminate\View\View;
@@ -11,6 +12,7 @@ use Saloon\Http\Response;
 class CreateTeam extends Component
 {
     use CallsSunnyOnline;
+    use NeedsConnection;
 
     public string $name = '';
 

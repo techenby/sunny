@@ -234,7 +234,8 @@ it('keeps account changes on the phone when offline so they can be tried again',
         ->input('account-name', 'Andy S.')
         ->tap('account-save')
         ->assertSee('You’re offline')
-        ->assertSee('Changes to your account need a connection. Nothing’s been saved yet.')
+        ->assertSee('Try again when you’re connected.')
+        ->assertDontSee('Nothing’s been saved yet.')
         ->assertSee('Try again')
         ->assertSet('name', 'Andy S.');
 
@@ -252,11 +253,39 @@ it('does not try to save account changes when the phone knows it is offline', fu
     Native::fakeBridge()->respondTo('Network.Status', ['connected' => false]);
     Saloon::fake([UpdateProfileRequest::class => MockResponse::make(['data' => sunnyUser()])]);
 
-    Native::visit('/preferences/account')
-        ->tap('account-save')
+    $screen = Native::visit('/preferences/account')
+        ->assertSee('You’re offline')
+        ->assertSee('Try again when you’re connected.')
+        ->assertDontSee('Nothing’s been')
+        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'account-save')
+        ->assertElement('column', fn (array $node): bool => ($node['ref'] ?? null) === 'account-save')
+        ->call('save')
         ->assertSet('offline', 'save');
 
     Saloon::assertNothingSent();
+
+    $screen->bridge()->respondTo('Network.Status', ['connected' => true]);
+
+    $screen->firePolls()
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'account-save')
+        ->tap('account-save')
+        ->assertDontSee('You’re offline');
+});
+
+it('opens the password form disabled while offline and frees it when the connection returns', function (): void {
+    Native::fakeBridge()->respondTo('Network.Status', ['connected' => false]);
+
+    $screen = Native::visit('/preferences/password')
+        ->assertSee('You’re offline')
+        ->assertSee('Try again when you’re connected.')
+        ->assertDontSee('Nothing’s been changed yet.')
+        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'change-password-save');
+
+    $screen->bridge()->respondTo('Network.Status', ['connected' => true]);
+
+    $screen->firePolls()
+        ->assertDontSee('You’re offline')
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'change-password-save');
 });
 
 it('changes the password', function (): void {
@@ -319,7 +348,7 @@ it('keeps the password unchanged when offline', function (): void {
         ->input('confirm-password', 'new-secret-123')
         ->tap('change-password-save')
         ->assertSee('You’re offline')
-        ->assertSee('Changing your password needs a connection. Nothing’s been changed yet.')
+        ->assertSee('Try again when you’re connected. Nothing’s been changed yet.')
         ->assertSee('Try again')
         ->assertNoNavigation();
 });

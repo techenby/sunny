@@ -99,7 +99,8 @@ it('copies nothing while offline and retries with the same uuid', function (): v
         ->assertSet('showCopy', true)
         ->assertSet('copyTeamId', 3)
         ->assertSee('You’re offline')
-        ->assertSee('Copying to another team needs a connection. Nothing’s been copied yet.')
+        ->assertSee('Try again when you’re connected.')
+        ->assertDontSee('Nothing’s been copied yet.')
         ->assertSee('Try again');
 
     expect(Recipe::find(90))->toBeNull();

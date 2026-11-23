@@ -120,7 +120,7 @@ it('keeps the email when offline and tries again', function (): void {
         ->input('forgot-password-email', 'alex@example.com')
         ->tap('forgot-password-submit')
         ->assertSee('You’re offline')
-        ->assertSee('Sending a reset link needs a connection. Nothing’s been sent yet.')
+        ->assertSee('Try again when you’re connected. Nothing’s been sent yet.')
         ->assertSee('Try again')
         ->assertSet('email', 'alex@example.com');
 
@@ -133,12 +133,21 @@ it('does not contact Sunny when the phone knows it is offline', function (): voi
     Native::fakeBridge()->respondTo('Network.Status', ['connected' => false]);
     Saloon::fake([SendPasswordResetLinkRequest::class => MockResponse::make(['message' => RESET_LINK_SENT], 202)]);
 
-    Native::visit('/forgot-password')
+    $screen = Native::visit('/forgot-password')
+        ->assertSee('You’re offline')
+        ->assertSee('Try again when you’re connected.')
+        ->assertDontSee('Nothing’s been sent yet.')
         ->input('forgot-password-email', 'alex@example.com')
-        ->tap('forgot-password-submit')
+        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'forgot-password-submit')
+        ->call('send')
         ->assertSee('You’re offline');
 
     Saloon::assertNothingSent();
+
+    $screen->bridge()->respondTo('Network.Status', ['connected' => true]);
+
+    $screen->firePolls()
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'forgot-password-submit');
 });
 
 it('asks people to wait after too many tries', function (): void {

@@ -137,7 +137,7 @@ class SunnyCalendar
      */
     public function saveFeed(Team $team, array $payload, ?int $id = null): array
     {
-        throw_unless($team->slug, UnexpectedValueException::class, 'Sync with Sunny first.');
+        throw_unless($team->slug, UnexpectedValueException::class, 'The team has not been downloaded yet.');
 
         $feed = $this->auth->authenticatedConnector()->send(new SaveCalendarFeedRequest($team->slug, $payload, $id))->json('data');
         throw_unless(is_array($feed), UnexpectedValueException::class, 'Invalid calendar response.');
@@ -153,7 +153,7 @@ class SunnyCalendar
 
     public function deleteFeed(Team $team, int $id): void
     {
-        throw_unless($team->slug, UnexpectedValueException::class, 'Sync with Sunny first.');
+        throw_unless($team->slug, UnexpectedValueException::class, 'The team has not been downloaded yet.');
 
         try {
             $this->auth->authenticatedConnector()->send(new DeleteCalendarFeedRequest($team->slug, $id));

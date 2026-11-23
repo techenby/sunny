@@ -3,6 +3,7 @@
 namespace App\NativeComponents;
 
 use App\Actions\DestroySession;
+use App\Concerns\NeedsConnection;
 use App\Http\Integrations\Sunny\SunnyAccount;
 use App\Support\Toast;
 use Illuminate\Auth\AuthenticationException;
@@ -14,6 +15,8 @@ use Saloon\Exceptions\Request\RequestException;
 
 class ChangePassword extends Component
 {
+    use NeedsConnection;
+
     public string $currentPassword = '';
 
     public string $password = '';

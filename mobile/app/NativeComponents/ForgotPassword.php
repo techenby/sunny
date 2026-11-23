@@ -2,6 +2,7 @@
 
 namespace App\NativeComponents;
 
+use App\Concerns\NeedsConnection;
 use App\Http\Integrations\Sunny\SunnyAuth;
 use App\Support\Toast;
 use Illuminate\View\View;
@@ -10,6 +11,8 @@ use Native\Mobile\Facades\Network;
 
 class ForgotPassword extends Component
 {
+    use NeedsConnection;
+
     public string $email = '';
 
     public string $emailError = '';

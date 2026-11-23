@@ -44,14 +44,8 @@
             />
         </column>
 
-        @if ($offline)
-            <row ref="change-password-offline" class="w-full items-start gap-2.5 rounded-xl bg-theme-primary/15 p-3.5">
-                <native:icon :ios="Ios::WifiSlash" :android="Android::WifiOff" :size="20" class="text-theme-primary-text" />
-                <column class="flex-1 gap-0.5">
-                    <text font="semibold" class="text-base text-theme-primary-text">You’re offline</text>
-                    <text class="text-base text-theme-on-surface">Changing your password needs a connection. Nothing’s been changed yet.</text>
-                </column>
-            </row>
+        @if ($offline || $this->disconnected)
+            <x-ui.offline ref="change-password-offline" :extra="$this->disconnected ? null : 'Nothing’s been changed yet.'" />
         @endif
 
         @if ($error !== '')
@@ -61,12 +55,12 @@
         <x-ui.button
             ref="change-password-save"
             class="w-full"
-            :ios="$offline ? Ios::ArrowClockwise : null"
-            :android="$offline ? Android::Refresh : null"
-            :disabled="$saving"
+            :ios="$offline && ! $this->disconnected ? Ios::ArrowClockwise : null"
+            :android="$offline && ! $this->disconnected ? Android::Refresh : null"
+            :disabled="$saving || $this->disconnected"
             tap="save"
         >
-            {{ $offline ? 'Try again' : 'Save' }}
+            {{ $offline && ! $this->disconnected ? 'Try again' : 'Save' }}
         </x-ui.button>
     </column>
 </scroll-view>

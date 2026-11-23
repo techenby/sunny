@@ -341,7 +341,7 @@ it('shows the team look-only while offline', function (): void {
         ->call('openMember', 9)
         ->assertSet('memberId', null)
         ->tap('team-offline')
-        ->assertToastShown(fn (array $params): bool => $params['message'] === 'Still offline. Try again once you’re connected.');
+        ->assertToastShown(fn (array $params): bool => $params['message'] === 'You’re offline. Try again when you’re connected.');
 
     Saloon::assertNotSent(GetTeamInvitationsRequest::class);
     Saloon::assertNotSent(UpdateTeamRequest::class);
@@ -392,6 +392,21 @@ it('creates a team and switches to it', function (): void {
         ->and(Team::find(5)->currentRole()->value)->toBe('owner');
 });
 
+it('opens the new team form disabled while offline and frees it when the connection returns', function (): void {
+    Native::fakeBridge()->respondTo('Network.Status', ['connected' => false]);
+
+    $screen = Native::visit('/preferences/teams/create')
+        ->assertSee('You’re offline')
+        ->assertSee('Try again when you’re connected.')
+        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'create-team-submit');
+
+    $screen->bridge()->respondTo('Network.Status', ['connected' => true]);
+
+    $screen->firePolls()
+        ->assertDontSee('You’re offline')
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'create-team-submit');
+});
+
 it('shows why a new team was refused, and keeps the name when offline', function (): void {
     $attempts = 0;
     Saloon::fake([CreateTeamRequest::class => function () use (&$attempts): MockResponse {
@@ -408,7 +423,7 @@ it('shows why a new team was refused, and keeps the name when offline', function
         ->assertSet('nameError', 'That name is reserved.')
         ->tap('create-team-submit')
         ->assertSet('offline', true)
-        ->assertSee('Creating a team needs a connection. Nothing’s been created yet.')
+        ->assertSee('Try again when you’re connected.')
         ->assertSee('Try again')
         ->assertSet('name', 'Settings')
         ->assertNoNavigation();

@@ -3,7 +3,9 @@
 namespace App\Concerns;
 
 use App\Http\Integrations\Sunny\SunnyCalendar;
+use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Http\Integrations\Sunny\SunnyTeam;
+use App\Support\Offline;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -17,6 +19,8 @@ use UnexpectedValueException;
 
 trait ManagesCalendarFeedForm
 {
+    use NeedsConnection;
+
     public string $name = '';
 
     public string $url = '';
@@ -69,7 +73,7 @@ trait ManagesCalendarFeedForm
         $team = app(SunnyTeam::class)->current();
 
         if ($team === null) {
-            $this->error = 'Select a team in Settings. If none are listed, sync with Sunny first.';
+            $this->error = SunnySyncCoordinator::NO_TEAM_ADVICE;
 
             return;
         }
@@ -102,7 +106,7 @@ trait ManagesCalendarFeedForm
     protected function feedFailureMessage(Throwable $exception, string $action): string
     {
         return match (true) {
-            $exception instanceof FatalRequestException => 'You’re offline. Calendars can only be changed with a connection.',
+            $exception instanceof FatalRequestException => Offline::message(),
             $exception instanceof RequestException => match ($exception->getResponse()->status()) {
                 422 => collect($exception->getResponse()->json('errors'))->flatten()->first() ?? 'Check the form and try again.',
                 403 => 'You can’t change this team’s calendars.',

@@ -7,6 +7,7 @@ use App\Http\Integrations\Sunny\SunnyStore;
 use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Http\Integrations\Sunny\SunnyTeam;
 use App\Models\Team;
+use App\Support\Offline;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Support\Str;
 use JsonException;
@@ -96,7 +97,7 @@ trait CopiesRecipeToTeam
         $to = Team::query()->where('server', SunnyStore::server())->find($this->copyTeamId);
 
         if (! $from?->slug || $to === null) {
-            $this->copyFailed('Sync with Sunny before copying.');
+            $this->copyFailed(SunnySyncCoordinator::REFRESH_ADVICE);
 
             return;
         }
@@ -151,8 +152,11 @@ trait CopiesRecipeToTeam
      */
     public function copyNote(): array
     {
+        if ($this->copyProblem === 'offline') {
+            return ['title' => Offline::TITLE, 'message' => Offline::ADVICE];
+        }
+
         [$title, $message] = match ($this->copyProblem) {
-            'offline' => ['You’re offline', 'Copying to another team needs a connection.'],
             'unsent' => ['Still sending your changes', 'Sunny copies what it has, so your latest changes need to reach it first.'],
             default => ['Couldn’t copy', $this->copyError],
         };

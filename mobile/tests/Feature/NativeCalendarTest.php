@@ -214,7 +214,7 @@ describe('Calendar', function (): void {
 
         Native::visit('/calendar')
             ->assertNavTitle('Calendar')
-            ->assertSee('Updated just now · next 6 weeks')
+            ->assertDontSee('next 6 weeks')
             ->assertSee('Tuesday, Nov 17')
             ->assertSee('Trip')
             ->assertSee('Friday')
@@ -295,7 +295,7 @@ describe('Calendar', function (): void {
 
         $screen->tap('calendar-retry')
             ->assertDontSee('You’re offline')
-            ->assertSee('Updated just now · next 6 weeks');
+            ->assertDontSee('next 6 weeks');
     });
 
     it('says Sunny is unavailable when it has nothing to show', function (): void {
@@ -325,13 +325,14 @@ describe('Calendar', function (): void {
 
 describe('Calendars', function (): void {
     it('lists the team’s calendars with the failing one first', function (): void {
-        Saloon::fake([GetCalendarFeedsRequest::class => calendarFeedsResponse([calendarFeed(1, 'Family', '#2563eb'), calendarFeed(3, 'School', '#ea580c'), failingWorkFeed()])]);
+        Saloon::fake([GetCalendarFeedsRequest::class => calendarFeedsResponse([calendarFeed(1, 'Family', '#2563eb'), calendarFeed(3, 'School', '#ea580c', ['last_fetched_at' => '2026-11-17T04:42:00.000000Z']), failingWorkFeed()])]);
 
         Native::visit('/calendar/feeds')
             ->assertNavTitle('Calendars')
             ->assertSee('Their events show on the team’s calendar. Anyone on the team can add, edit or remove them.')
             ->assertSee('https://calendar.example.com/family.ics')
-            ->assertSee('Updated 12 minutes ago')
+            ->assertDontSee('Updated 12 minutes ago')
+            ->assertSee('Updated 3 hours ago')
             ->assertSee('Last failed 2 hours ago')
             ->assertSee('Sunny couldn’t fetch it')
             ->assertSee('HTTP 401')
@@ -360,7 +361,7 @@ describe('Calendars', function (): void {
 
         Native::visit('/calendar/feeds')
             ->assertSee('You’re offline')
-            ->assertSee('These may be out of date. Adding, editing or removing calendars needs a connection.')
+            ->assertSee('These may be out of date. Try again when you’re connected.')
             ->assertSee('Family')
             ->assertSee('School');
     });
@@ -375,7 +376,7 @@ describe('Calendars', function (): void {
             ->follow()
             ->assertNavTitle('New calendar')
             ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'create-calendar-submit' && str_contains(json_encode($node), '"text":"Create calendar"'))
-            ->assertSee('Needs a connection')
+            ->assertDontSee('Needs a connection')
             ->set('name', ' Soccer ')
             ->set('url', 'webcal://calendar.example.com/soccer.ics')
             ->tap('create-calendar-color-2')
@@ -418,6 +419,39 @@ describe('Calendars', function (): void {
             ->assertSee('Family');
     });
 
+    it('opens the calendar forms disabled while offline and frees them when the connection returns', function (string $uri, string $submit): void {
+        seedCalendar(sampleEvents(), feeds: [calendarFeed(1, 'Family', '#2563eb'), failingWorkFeed()]);
+        Native::fakeBridge()->respondTo('Network.Status', ['connected' => false]);
+
+        $screen = Native::visit($uri)
+            ->assertSee('You’re offline')
+            ->assertSee('Try again when you’re connected.')
+            ->assertDontSee('Needs a connection')
+            ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === $submit)
+            ->assertElement('column', fn (array $node): bool => ($node['ref'] ?? null) === $submit);
+
+        $screen->bridge()->respondTo('Network.Status', ['connected' => true]);
+
+        $screen->firePolls()
+            ->assertDontSee('You’re offline')
+            ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === $submit);
+    })->with([
+        'new calendar' => ['/calendar/feeds/create', 'create-calendar-submit'],
+        'edit calendar' => ['/calendar/feeds/2/edit', 'edit-calendar-submit'],
+    ]);
+
+    it('says when the calendar was last updated only once that is more than five minutes ago', function (): void {
+        Saloon::fake([GetCalendarFeedsRequest::class => calendarFeedsResponse(), GetCalendarEventsRequest::class => calendarEventsResponse(sampleEvents())]);
+
+        $screen = Native::visit('/calendar')->assertDontSee('next 6 weeks');
+
+        expect($screen->instance()->updatedLabel())->toBeNull();
+
+        $this->travel(12)->minutes();
+
+        expect($screen->instance()->updatedLabel())->toBe('Updated 12 minutes ago · next 6 weeks');
+    });
+
     it('keeps the form when adding a calendar offline, then retries with the same request id', function (): void {
         Saloon::fake([SaveCalendarFeedRequest::class => calendarOffline()]);
 
@@ -425,7 +459,7 @@ describe('Calendars', function (): void {
             ->set('name', 'Soccer')
             ->set('url', 'https://calendar.example.com/soccer.ics')
             ->tap('create-calendar-submit')
-            ->assertSee('You’re offline. Calendars can only be changed with a connection.')
+            ->assertSee('You’re offline. Try again when you’re connected.')
             ->assertNoNavigation()
             ->assertSet('name', 'Soccer');
         $uuid = $screen->get('clientUuid');
@@ -494,7 +528,7 @@ describe('Calendars', function (): void {
         Native::visit('/calendar/feeds/1/edit')
             ->set('name', 'Home')
             ->tap('edit-calendar-submit')
-            ->assertSee('You’re offline. Calendars can only be changed with a connection.')
+            ->assertSee('You’re offline. Try again when you’re connected.')
             ->assertNoNavigation();
 
         expect(app(SunnyCalendar::class)->feeds(1)['feeds'][0]['name'])->toBe('Family');
@@ -543,7 +577,7 @@ describe('Calendars', function (): void {
             ->assertNoNavigation()
             ->tap('edit-calendar-remove')
             ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Remove', 'id' => 'remove-calendar'])
-            ->assertSee('You’re offline. Calendars can only be changed with a connection.')
+            ->assertSee('You’re offline. Try again when you’re connected.')
             ->assertNoNavigation();
 
         Saloon::assertNotSent(DeleteCalendarFeedRequest::class);
