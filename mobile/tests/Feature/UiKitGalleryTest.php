@@ -51,6 +51,7 @@ it('shows every kit piece under the name a developer types', function (string $p
 
     $gallery = Native::visit('/ui-kit', platform: $platform)
         ->assertNavTitle('UI kit')
+        ->assertSee('x-ui.sheet-header and x-ui.sheet-confirm')
         ->assertSee('x-ui.empty-state')
         ->assertSee('x-ui.avatar')
         ->assertSee('x-ui.badge')
@@ -91,6 +92,34 @@ it('answers a tap on a gallery example', function () {
         ->assertSet('timeOfDay', 'Evening')
         ->tap('ui-kit-submit-bar')
         ->assertSee('Last tapped: submit-bar')
+        ->tap('ui-kit-sheet-header')
+        ->assertSee('Last tapped: sheet-header close')
+        ->tap('ui-kit-sheet-confirm')
+        ->assertSee('Last tapped: sheet-confirm')
         ->tap('ui-kit-button-navigate')
         ->assertNavigatedTo('/inventory/0');
+});
+
+it('opens a real sheet from the gallery, to check the header and the button above the keyboard', function () {
+    loadMobileRoutesFor('local');
+
+    $sheet = fn (bool $visible): Closure => fn (array $node): bool => ($node['ref'] ?? null) === 'ui-kit-sheet'
+        && $node['props']['visible'] === $visible
+        && $node['props']['detents'] === 'fit';
+
+    Native::visit('/ui-kit')
+        ->assertElement('bottom_sheet', $sheet(false))
+        ->tap('ui-kit-sheet-open')
+        ->assertElement('bottom_sheet', $sheet(true))
+        ->assertElement('outlined_text_input', fn (array $node): bool => ($node['ref'] ?? null) === 'ui-kit-sheet-input')
+        ->assertAccessible()
+        ->tap('ui-kit-sheet-close')
+        ->assertElement('bottom_sheet', $sheet(false))
+        ->tap('ui-kit-sheet-open')
+        ->dismissSheet('ui-kit-sheet')
+        ->assertSet('showSheet', false)
+        ->tap('ui-kit-sheet-open')
+        ->tap('ui-kit-sheet-save')
+        ->assertSet('showSheet', false)
+        ->assertSee('Last tapped: sheet-confirm in a sheet');
 });

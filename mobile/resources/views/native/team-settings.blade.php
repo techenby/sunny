@@ -183,11 +183,11 @@
         </column>
     </scroll-view>
 
-    <native:bottom-sheet ref="team-rename-sheet" :visible="$showRename" @dismiss="closeRename" detents="medium">
+    <native:bottom-sheet ref="team-rename-sheet" :visible="$showRename" @dismiss="closeRename" detents="fit">
         @if ($showRename)
-            <scroll-view fill class="bg-theme-background">
-                <column class="w-full gap-4 px-6 pt-6 pb-8">
-                    <x-ui.heading size="lg">Rename {{ $team->name }}</x-ui.heading>
+            <column class="w-full bg-theme-background">
+                <x-ui.sheet-header ref="team-rename-close" :title="'Rename '.$team->name" close="closeRename" />
+                <column class="w-full px-4 pt-4">
                     <outlined-text-input
                         ref="team-rename-input"
                         label="Name"
@@ -196,27 +196,17 @@
                         :supporting="$renameError !== '' ? $renameError : null"
                         native:model="newName"
                     />
-                    <x-ui.button ref="team-rename-save" class="w-full" tap="rename">Save</x-ui.button>
-                    <x-ui.button ref="team-rename-cancel" variant="text" class="w-full" tap="closeRename">Cancel</x-ui.button>
                 </column>
-            </scroll-view>
+                <x-ui.sheet-confirm ref="team-rename-save" tap="rename">Save</x-ui.sheet-confirm>
+            </column>
         @endif
     </native:bottom-sheet>
 
     <native:bottom-sheet ref="team-timezone-sheet" :visible="$showTimezone" @dismiss="closeTimezone" detents="large">
         @if ($showTimezone)
             <column fill class="bg-theme-background">
-                <column class="w-full gap-3 px-4 pt-4 pb-2">
-                    <row class="w-full items-center">
-                        <x-ui.button
-                            ref="team-timezone-cancel"
-                            variant="text"
-                            class="w-20"
-                            tap="closeTimezone"
-                        >Cancel</x-ui.button>
-                        <text font="semibold" class="flex-1 text-center text-lg text-theme-on-surface">Timezone</text>
-                        <column class="w-20" />
-                    </row>
+                <x-ui.sheet-header ref="team-timezone-close" title="Timezone" close="closeTimezone" />
+                <column class="w-full px-4 pt-1 pb-2">
                     <outlined-text-input
                         ref="team-timezone-search"
                         placeholder="Find a city or region"
@@ -256,43 +246,34 @@
         @endif
     </native:bottom-sheet>
 
-    <native:bottom-sheet ref="team-member-sheet" :visible="$memberId !== null" @dismiss="closeMember" detents="medium">
+    <native:bottom-sheet ref="team-member-sheet" :visible="$memberId !== null" @dismiss="closeMember" detents="fit">
         @if ($member = $this->member())
-            <scroll-view fill class="bg-theme-background">
-                <column class="w-full gap-4 px-6 pt-6 pb-8">
+            <column class="w-full bg-theme-background">
+                <x-ui.sheet-header ref="member-close" :title="$member['name']" close="closeMember" />
+                <column class="w-full gap-4 px-4 pt-4 pb-8">
                     <row class="w-full items-center gap-4">
                         <x-ui.avatar size="lg" circle :initials="$member['initials']" color="red" />
-                        <column class="flex-1 gap-0.5">
-                            <x-ui.heading size="xl">{{ $member['name'] }}</x-ui.heading>
-                            <x-ui.text>{{ $member['role']->label() }} of {{ $team->name }}</x-ui.text>
-                        </column>
+                        <x-ui.text class="flex-1">{{ $member['role']->label() }} of {{ $team->name }}</x-ui.text>
                     </row>
 
-                    @if ($confirmingRemove)
-                        <column ref="member-remove-confirm" class="w-full gap-1">
-                            <text font="semibold" class="text-base text-theme-on-surface">Remove {{ $this->firstName($member['name']) }} from {{ $team->name }}?</text>
-                            <x-ui.text>{{ $this->firstName($member['name']) }} will lose access to the team’s recipes, inventory, routines and lists.</x-ui.text>
-                        </column>
-                        <x-ui.button ref="member-remove-confirm-button" variant="destructive" class="w-full" tap="removeMember">Remove {{ $this->firstName($member['name']) }}</x-ui.button>
-                        <x-ui.button ref="member-remove-keep" variant="text" class="w-full" tap="keepMember">Keep {{ $this->firstName($member['name']) }}</x-ui.button>
-                    @else
-                        <column class="w-full gap-2">
-                            @include('native.role-options', ['ref' => 'member-role', 'roles' => [TeamRole::Admin, TeamRole::Member], 'selected' => $member['role'], 'action' => 'changeRole'])
-                            <x-ui.text size="sm">Changes as soon as you pick one.</x-ui.text>
-                        </column>
+                    <column class="w-full gap-2">
+                        @include('native.role-options', ['ref' => 'member-role', 'roles' => [TeamRole::Admin, TeamRole::Member], 'selected' => $member['role'], 'action' => 'changeRole'])
+                        <x-ui.text size="sm">Changes as soon as you pick one.</x-ui.text>
+                    </column>
 
-                        <pressable
-                            ref="member-remove"
-                            :a11y-label="'Remove from '.$team->name"
-                            class="min-h-12 w-full items-center justify-center rounded-3xl border border-theme-outline bg-theme-surface px-4"
-                            @tap="confirmRemove"
-                        >
-                            <text font="semibold" class="text-center text-base text-theme-destructive">Remove from {{ $team->name }}</text>
-                        </pressable>
-                        <x-ui.button ref="member-done" variant="text" class="w-full" tap="closeMember">Done</x-ui.button>
-                    @endif
+                    <column class="{{ Card::classes() }} w-full">
+                        @include('native.settings-row', [
+                            'ref' => 'member-remove',
+                            'headline' => 'Remove from '.$team->name,
+                            'ios' => Ios::PersonBadgeMinus,
+                            'android' => Android::PersonRemove,
+                            'tone' => 'destructive',
+                            'tap' => 'confirmRemove',
+                            'last' => true,
+                        ])
+                    </column>
                 </column>
-            </scroll-view>
+            </column>
         @endif
     </native:bottom-sheet>
 @endif

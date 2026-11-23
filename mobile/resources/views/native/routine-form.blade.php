@@ -112,14 +112,17 @@
 
 <native:bottom-sheet ref="{{ $formRef }}-starts-on-picker" :visible="$showStartsOnPicker" @dismiss="closeStartsOnPicker" detents="fit">
     @if ($showStartsOnPicker)
-        <column class="w-full bg-theme-background px-4 py-4">
-            <date-picker
-                ref="{{ $formRef }}-starts-on-calendar"
-                label="Starts on"
-                picker-style="inline"
-                :value="$startsOn"
-                @change="chooseStartsOn"
-            />
+        <column class="w-full bg-theme-background">
+            <x-ui.sheet-header ref="{{ $formRef }}-starts-on-close" title="Starts on" close="closeStartsOnPicker" />
+            <column class="w-full px-4 pb-4">
+                <date-picker
+                    ref="{{ $formRef }}-starts-on-calendar"
+                    label="Starts on"
+                    picker-style="inline"
+                    :value="$startsOn"
+                    @change="chooseStartsOn"
+                />
+            </column>
         </column>
     @endif
 </native:bottom-sheet>

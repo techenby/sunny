@@ -225,12 +225,6 @@ class ListDetail extends Component
         $this->linkError = $this->problemWithLink($url, typing: true);
     }
 
-    public function clearEditingUrl(): void
-    {
-        $this->editingUrl = '';
-        $this->linkError = '';
-    }
-
     public function removeLink(): void
     {
         $this->editingUrl = '';

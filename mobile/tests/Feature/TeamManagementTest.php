@@ -255,24 +255,64 @@ it('removes a member once the owner confirms', function (): void {
     signInAs(7);
     Saloon::fake([RemoveTeamMemberRequest::class => MockResponse::make([], 204)]);
 
-    Native::visit('/preferences/team')
+    $screen = Native::visit('/preferences/team')
+        ->tap('member-10')
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'member-close' && $node['props']['a11y_label'] === 'Close')
+        ->assertDontSee('Done')
+        ->assertAccessible()
+        ->tap('member-remove')
+        ->assertSet('memberId', null)
+        ->assertNativeCalled('Dialog.Alert', fn (array $params): bool => $params['id'] === 'remove-member-10'
+            && $params['title'] === 'Remove Grandma from Family?'
+            && $params['message'] === 'Grandma will lose access to the team’s recipes, inventory, routines and lists.'
+            && $params['buttons'] === [['label' => 'Cancel', 'style' => 'cancel'], ['label' => 'Remove', 'style' => 'destructive']])
+        ->assertDontSee('Remove Grandma from Family?')
+        ->assertDontSee('Keep Grandma')
+        ->emitNative(ButtonPressed::class, ['index' => 0, 'label' => 'Cancel', 'id' => 'remove-member-10'])
+        ->assertSee('Grandma Jo');
+
+    Saloon::assertNotSent(RemoveTeamMemberRequest::class);
+
+    $screen
         ->tap('member-10')
         ->tap('member-remove')
-        ->assertNativeNotCalled('Dialog.Alert')
-        ->assertSee('Remove Grandma from Family?')
-        ->assertSee('Grandma will lose access to the team’s recipes, inventory, routines and lists.')
-        ->assertAccessible()
-        ->tap('member-remove-keep')
-        ->assertDontSee('Remove Grandma from Family?')
-        ->tap('member-remove')
-        ->tap('member-remove-confirm-button')
+        ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Remove', 'id' => 'remove-member-10'])
         ->assertSet('memberId', null)
-        ->assertSet('confirmingRemove', false)
+        ->assertSet('removalToConfirm', null)
         ->assertToastShown(fn (array $params): bool => $params['message'] === 'Removed Grandma Jo')
         ->assertDontSee('Grandma Jo');
 
     Saloon::assertSent(fn (Request $request): bool => $request instanceof RemoveTeamMemberRequest && $request->resolveEndpoint() === '/teams/family/members/10');
     expect(Team::find(1)->roleOf(10))->toBeNull();
+});
+
+it('waits for the member sheet to close before asking on an iPhone, where an alert cannot open over a sheet', function (): void {
+    signInAs(7);
+
+    Native::visit('/preferences/team', platform: 'ios')
+        ->tap('member-10')
+        ->tap('member-remove')
+        ->assertSet('memberId', null)
+        ->assertNativeNotCalled('Dialog.Alert')
+        ->dismissSheet('team-member-sheet')
+        ->assertNativeCalledTimes('Dialog.Alert', 1)
+        ->assertNativeCalled('Dialog.Alert', fn (array $params): bool => $params['id'] === 'remove-member-10')
+        ->tap('member-9')
+        ->tap('member-close')
+        ->dismissSheet('team-member-sheet')
+        ->assertNativeCalledTimes('Dialog.Alert', 1);
+});
+
+it('does not remove a member the alert was not about', function (): void {
+    signInAs(7);
+    Saloon::fake([RemoveTeamMemberRequest::class => MockResponse::make([], 204)]);
+
+    Native::visit('/preferences/team')
+        ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Remove', 'id' => 'remove-member-7'])
+        ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Remove', 'id' => 'remove-member-999']);
+
+    Saloon::assertNotSent(RemoveTeamMemberRequest::class);
+    expect(Team::find(1)->roleOf(7))->not->toBeNull();
 });
 
 it('leaves the current team and switches to another one', function (): void {

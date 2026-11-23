@@ -166,7 +166,7 @@ it('renames an item from the keyboard without changing whether it is checked', f
     $screen = Native::visit('/lists/1')
         ->press('editItem(2)')
         ->assertSet('editingName', 'Eggs')
-        ->assertElement('bare_text_input', fn (array $node): bool => ($node['ref'] ?? null) === 'list-edit-name')
+        ->assertElement('outlined_text_input', fn (array $node): bool => ($node['ref'] ?? null) === 'list-edit-name')
         ->assertAccessible()
         ->submit('list-edit-name', '  Free-range eggs ')
         ->assertSet('editingItemId', null)
@@ -179,6 +179,26 @@ it('renames an item from the keyboard without changing whether it is checked', f
             'resource' => 'checklist_items', 'record_id' => 2, 'payload' => ['name' => 'Free-range eggs', 'checklist_id' => 1],
         ]);
 });
+
+it('edits an item in a sheet and leaves the add bar where it was', function (string $platform) {
+    $sheet = fn (array $node): bool => ($node['ref'] ?? null) === 'list-edit-sheet';
+    $refs = function (array $node) use (&$refs): array {
+        return array_merge(isset($node['ref']) ? [$node['ref']] : [], ...array_map($refs, $node['children'] ?? []));
+    };
+
+    Native::visit('/lists/1', platform: $platform)
+        ->assertElement('bottom_sheet', fn (array $node): bool => $sheet($node) && $node['props']['visible'] === false && ($node['children'] ?? []) === [])
+        ->press('editItem(1)')
+        ->assertElement('bottom_sheet', fn (array $node): bool => $sheet($node)
+            && $node['props']['visible'] === true
+            && $node['props']['detents'] === 'fit'
+            && array_values(array_intersect($refs($node), ['list-edit-close', 'list-edit-name', 'list-edit-url', 'list-edit-remove-link', 'list-edit-save'])) === ['list-edit-close', 'list-edit-name', 'list-edit-url', 'list-edit-remove-link', 'list-edit-save'])
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'list-edit-close' && $node['props']['a11y_label'] === 'Close')
+        ->assertElement('bottom_bar', fn (array $node): bool => in_array('list-new-item', $refs($node), true) && ! in_array('list-edit-name', $refs($node), true))
+        ->assertSee('Edit item')
+        ->assertDontSee('Cancel')
+        ->assertAccessible();
+})->with(['ios', 'android']);
 
 it('saves the typed name with the save button', function () {
     Native::visit('/lists/1')
@@ -204,7 +224,12 @@ it('cancels an edit or an unchanged name without queueing anything', function ()
     Native::visit('/lists/1')
         ->press('editItem(1)')
         ->set('editingName', 'Oat milk')
-        ->tap('list-edit-cancel')
+        ->tap('list-edit-close')
+        ->assertSet('editingItemId', null)
+        ->assertSee('Milk')
+        ->press('editItem(1)')
+        ->set('editingName', 'Oat milk')
+        ->dismissSheet('list-edit-sheet')
         ->assertSet('editingItemId', null)
         ->assertSee('Milk')
         ->press('editItem(1)')
@@ -442,7 +467,8 @@ it('adds a link to an item on a wish list but not on other lists', function () {
 
     Native::visit('/lists/1')
         ->press('editItem(3)')
-        ->assertMissingElement('bare_text_input', fn (array $node): bool => ($node['ref'] ?? null) === 'list-edit-url');
+        ->assertElement('outlined_text_input', fn (array $node): bool => ($node['ref'] ?? null) === 'list-edit-name')
+        ->assertMissingElement('outlined_text_input', fn (array $node): bool => ($node['ref'] ?? null) === 'list-edit-url');
 });
 
 it('keeps editing when the new link isn’t a web address', function () {
