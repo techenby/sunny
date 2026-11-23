@@ -1,0 +1,10 @@
+--- a/resources/xcode/NativePHP/NativeRender/NativeRootTabsRenderer.swift
++++ b/resources/xcode/NativePHP/NativeRender/NativeRootTabsRenderer.swift
+@@ -999,7 +999,6 @@
+         } else {
+             content
+                 .toolbar(.hidden, for: .tabBar)
+-                .ignoresSafeArea(.container, edges: .bottom)
+         }
+     }
+ }
