@@ -134,7 +134,7 @@ it('flags a saved item Sunny says belongs to another list', function (): void {
 
     Native::visit('/lists/1')->tap('list-item-1');
 
-    expect(PendingWrite::sole()->error)->toBe('Sunny didn’t confirm this change. Edit it to try again.')
+    expect(PendingWrite::sole()->error)->toBe('The server didn’t confirm this change. Edit it to try again.')
         ->and(ChecklistItem::find(1)->checklist_id)->toBe(1);
 });
 

@@ -73,7 +73,7 @@ class SharedRecipe extends Component
         }
 
         if ($token === null) {
-            $this->loaded(['status' => 'error', 'message' => 'Sign in to Sunny to open shared recipes.']);
+            $this->loaded(['status' => 'error', 'message' => 'Sign in to open shared recipes.']);
 
             return;
         }
@@ -176,7 +176,7 @@ class SharedRecipe extends Component
                 403 => 'You can’t add recipes to '.$this->teamName().'.',
                 422 => $this->teamName().' isn’t one of your teams anymore.',
                 429 => 'Too many attempts. Please wait before trying again.',
-                default => 'Sunny couldn’t save it right now.',
+                default => 'The server couldn’t save it right now.',
             });
 
             return;
@@ -189,7 +189,7 @@ class SharedRecipe extends Component
         }
 
         if ($saved === null) {
-            $this->saveFailed('Sunny didn’t confirm the save.');
+            $this->saveFailed('The server didn’t confirm the save.');
 
             return;
         }

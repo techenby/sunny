@@ -135,7 +135,7 @@ it('explains other problems opening a link', function (): void {
     Native::visit('/recipes/shared/'.SHARE_TOKEN)
         ->assertSet('state', 'error')
         ->assertSee('Couldn’t open this recipe')
-        ->assertSee('Sunny is unavailable right now. Try again in a moment.')
+        ->assertSee('The server is unavailable right now. Try again in a moment.')
         ->assertSee('Try again');
 });
 
@@ -229,6 +229,6 @@ it('explains when Sunny refuses to save', function (): void {
     Native::visit('/recipes/shared/'.SHARE_TOKEN)
         ->tap('shared-recipe-save')
         ->assertSee('Couldn’t save')
-        ->assertSee('Sunny couldn’t save it right now. Nothing’s been saved yet.')
+        ->assertSee('The server couldn’t save it right now. Nothing’s been saved yet.')
         ->assertSee('Try again');
 });

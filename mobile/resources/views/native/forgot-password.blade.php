@@ -77,7 +77,7 @@
             <column class="{{ Card::classes() }} w-full gap-3 p-4">
                 <row class="w-full items-start gap-3">
                     <icon :ios="Ios::Globe" :android="Android::Language" :size="20" class="text-theme-primary-text" />
-                    <text class="flex-1 text-sm text-theme-on-surface-variant">The link opens the Sunny website, where you can set your new password.</text>
+                    <text class="flex-1 text-sm text-theme-on-surface-variant">The link opens the website, where you can set your new password.</text>
                 </row>
                 <row class="w-full items-start gap-3">
                     <icon :ios="Ios::Tray" :android="Android::Inbox" :size="20" class="text-theme-primary-text" />

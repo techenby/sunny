@@ -47,7 +47,7 @@ class CreateTeam extends Component
                 } elseif (($message = self::firstError($response, 'name')) !== null) {
                     $this->nameError = $message;
                 } else {
-                    $this->error = self::failureMessage($problem, $response, 'Sunny couldn’t create the team right now.');
+                    $this->error = self::failureMessage($problem, $response, 'The server couldn’t create the team right now.');
                 }
             },
         );

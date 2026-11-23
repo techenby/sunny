@@ -31,7 +31,7 @@
     <column class="w-full gap-6 px-6 pt-2 pb-32">
         <text ref="scan-subtitle" class="text-base text-theme-on-surface-variant">
             @if ($this->canIdentify)
-                Take a photo of each thing. Sunny suggests a name while you keep going.
+                Take a photo of each thing. A name is suggested while you keep going.
             @else
                 Take a photo of each thing, then give each one a name.
             @endif

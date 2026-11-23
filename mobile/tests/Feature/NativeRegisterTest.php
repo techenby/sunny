@@ -267,7 +267,7 @@ it('asks people to log in when the new token cannot be saved', function (): void
 
     fillRegistration()
         ->tap('register-submit')
-        ->assertSee('Your account was created, but Sunny couldn’t sign you in. Log in to continue.')
+        ->assertSee('Your account was created, but you couldn’t be signed in. Log in to continue.')
         ->assertNoNavigation();
 });
 

@@ -209,7 +209,7 @@ enum ItemScannerModel {
 
     static let unreadablePhotoMessage = "Couldn't read that photo. Try taking it again."
 
-    static let cameraDeniedMessage = "Allow camera access for Sunny in the Settings app to scan things."
+    static let cameraDeniedMessage = "Allow camera access for SunnyHome in the Settings app to scan things."
 
     static func unavailableReason() -> String? {
         #if compiler(>=6.4)

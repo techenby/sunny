@@ -49,13 +49,13 @@
                     <row class="w-full items-start gap-3">
                         <icon :ios="Ios::WifiSlash" :android="Android::WifiOff" :size="20" class="text-theme-destructive" />
                         <column class="flex-1 gap-0.5">
-                            <x-ui.heading class="text-theme-destructive">{{ $calendarStatus === 'offline' ? 'You’re offline' : 'Sunny is unavailable' }}</x-ui.heading>
+                            <x-ui.heading class="text-theme-destructive">{{ $calendarStatus === 'offline' ? 'You’re offline' : 'The server is unavailable' }}</x-ui.heading>
                             @if ($this->calendarUpdatedAt)
                                 <text class="text-base text-theme-on-surface">These are the events from {{ $this->calendarUpdatedAt }}, so they may be out of date.</text>
                             @elseif ($calendarStatus === 'offline')
                                 <text class="text-base text-theme-on-surface">Events come live from your calendars. Connect to see them.</text>
                             @else
-                                <text class="text-base text-theme-on-surface">Sunny couldn’t load your events. Try again in a moment.</text>
+                                <text class="text-base text-theme-on-surface">Couldn’t load your events. Try again in a moment.</text>
                             @endif
                         </column>
                     </row>

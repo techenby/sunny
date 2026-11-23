@@ -50,7 +50,7 @@ it('shows login errors without navigating or saving credentials', function (int 
 })->with([
     [422, 'Check your email and password and try again.'],
     [429, 'Too many attempts. Please wait before trying again.'],
-    [500, 'Sunny is unavailable right now. Please try again.'],
+    [500, 'The server is unavailable right now. Please try again.'],
 ]);
 
 it('stays on login when saving the token fails', function (): void {
@@ -63,7 +63,7 @@ it('stays on login when saving the token fails', function (): void {
 it('explains a malformed login response instead of blaming device storage', function (array $body): void {
     Saloon::fake([CreateTokenRequest::class => MockResponse::make($body)]);
     Native::visit('/login')->input('login-email', 'person@example.com')->input('login-password', 'secret')
-        ->tap('login-submit')->assertSee('Sunny returned an invalid response. Check the API URL and try again.')
+        ->tap('login-submit')->assertSee('The server returned an invalid response. Check the API URL and try again.')
         ->assertSet('twoFactor', false)->assertNoNavigation();
     Native::fakeBridge()->assertNotCalled('SecureStorage.Set');
 })->with([
@@ -158,6 +158,6 @@ it('handles redirects and malformed JSON without crashing the login screen', fun
     Native::fakeBridge()->assertNotCalled('SecureStorage.Set');
     Saloon::assertSentCount(1);
 })->with([
-    'HTTPS redirect' => [301, 'Sunny redirected the login request. Check the configured API URL uses HTTPS.'],
-    'HTML success' => [200, 'Sunny returned an invalid response. Check the API URL and try again.'],
+    'HTTPS redirect' => [301, 'The server redirected the login request. Check the configured API URL uses HTTPS.'],
+    'HTML success' => [200, 'The server returned an invalid response. Check the API URL and try again.'],
 ]);

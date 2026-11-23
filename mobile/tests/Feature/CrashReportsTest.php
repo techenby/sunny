@@ -66,7 +66,7 @@ it('asks on the dashboard whether to share crash reports', function () {
     withCrashReports();
 
     Native::visit('/dashboard')
-        ->assertNativeCalled('Dialog.Alert', fn (array $params): bool => $params['id'] === 'crash-reports' && $params['title'] === 'Help improve Sunny?');
+        ->assertNativeCalled('Dialog.Alert', fn (array $params): bool => $params['id'] === 'crash-reports' && $params['title'] === 'Help improve the app?');
 
     expect(Storage::exists('crash-reports-asked'))->toBeTrue();
 });

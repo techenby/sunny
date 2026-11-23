@@ -112,10 +112,10 @@ trait ManagesCalendarFeedForm
                 403 => 'You can’t change this team’s calendars.',
                 404 => 'This calendar has already been removed.',
                 429 => 'Too many attempts. Please wait before trying again.',
-                default => 'Sunny couldn’t '.$action.' right now. Try again in a moment.',
+                default => 'The server couldn’t '.$action.' right now. Try again in a moment.',
             },
-            $exception instanceof JsonException, $exception instanceof ValidationException, $exception instanceof UnexpectedValueException => 'Sunny sent back something unexpected. Try again in a moment.',
-            $exception instanceof AuthenticationException => 'Sign in to Sunny again to change calendars.',
+            $exception instanceof JsonException, $exception instanceof ValidationException, $exception instanceof UnexpectedValueException => 'The server sent back something unexpected. Try again in a moment.',
+            $exception instanceof AuthenticationException => 'Sign in again to change calendars.',
             $exception instanceof RuntimeException => 'Unable to read your saved login. Unlock your device and try again.',
             default => throw $exception,
         };

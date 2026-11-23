@@ -146,10 +146,10 @@ trait MovesItemToTeam
         if (isset($status) && $moved === null) {
             $this->teamMoveFailed(match ($status) {
                 403 => 'You no longer have permission to move things in '.($this->teamName() ?? 'this team').'.',
-                404 => $item['name'].' isn’t in '.($this->teamName() ?? 'this team').' on Sunny anymore.',
+                404 => $item['name'].' isn’t in '.($this->teamName() ?? 'this team').' on the server anymore.',
                 422 => $teams[$to->id].' isn’t one of your teams anymore.',
                 429 => 'Too many attempts. Please wait before trying again.',
-                default => 'Sunny couldn’t move it right now.',
+                default => 'The server couldn’t move it right now.',
             });
 
             if ($status !== 404) {
@@ -160,7 +160,7 @@ trait MovesItemToTeam
         }
 
         if ($moved === null) {
-            $this->teamMoveFailed('Sunny didn’t confirm the move.');
+            $this->teamMoveFailed('The server didn’t confirm the move.');
             app(SunnySyncCoordinator::class)->dispatch();
 
             return;
@@ -238,7 +238,7 @@ trait MovesItemToTeam
         }
 
         [$title, $message] = match ($this->teamMoveProblem) {
-            'unsent' => ['Still sending your changes', 'Sunny moves what it has, so your latest changes need to reach it first.'],
+            'unsent' => ['Still sending your changes', 'The server moves what it has, so your latest changes need to reach it first.'],
             default => ['Couldn’t move it', $this->teamMoveError],
         };
 

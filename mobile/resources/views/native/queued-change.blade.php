@@ -8,7 +8,7 @@
     <column ref="{{ $refPrefix }}-sync-error" class="w-full gap-2 rounded-xl bg-theme-surface px-4 py-3">
         <row class="w-full items-center gap-2">
             <icon :ios="Ios::ExclamationmarkTriangle" :android="Android::ErrorOutline" :size="16" class="text-theme-destructive" />
-            <text font="semibold" class="flex-1 text-base text-theme-on-surface">Not saved to Sunny</text>
+            <text font="semibold" class="flex-1 text-base text-theme-on-surface">Not saved</text>
         </row>
         <text class="text-sm text-theme-on-surface-variant">{{ $change['error'] }} Edit to try again, or discard the change.</text>
         <x-ui.button

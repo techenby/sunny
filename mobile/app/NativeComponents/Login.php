@@ -79,16 +79,16 @@ class Login extends Component
         } catch (RequestException $exception) {
             $status = $exception->getResponse()->status();
             $this->error = match ($status) {
-                301, 302, 303, 307, 308 => 'Sunny redirected the login request. Check the configured API URL uses HTTPS.',
+                301, 302, 303, 307, 308 => 'The server redirected the login request. Check the configured API URL uses HTTPS.',
                 401 => 'Your credentials were not accepted. Please try again.',
                 422 => $this->twoFactor ? 'The code is invalid or expired. Try again or restart login.' : 'Check your email and password and try again.',
                 429 => 'Too many attempts. Please wait before trying again.',
-                default => 'Sunny is unavailable right now. Please try again.',
+                default => 'The server is unavailable right now. Please try again.',
             };
         } catch (JsonException|UnexpectedValueException) {
-            $this->error = 'Sunny returned an invalid response. Check the API URL and try again.';
+            $this->error = 'The server returned an invalid response. Check the API URL and try again.';
         } catch (FatalRequestException) {
-            $this->error = 'Unable to connect to Sunny. Check your connection and try again.';
+            $this->error = 'Unable to connect to the server. Check your connection and try again.';
         } catch (RuntimeException) {
             $this->error = 'Unable to securely complete login. Unlock your device and try again.';
         } finally {

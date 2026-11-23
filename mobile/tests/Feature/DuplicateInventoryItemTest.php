@@ -173,9 +173,9 @@ it('explains when Sunny refuses to make copies', function (int $status, array $b
 
     expect(Item::count())->toBe(15);
 })->with([
-    'server error' => [500, [], 'Sunny couldn’t make copies right now.'],
+    'server error' => [500, [], 'The server couldn’t make copies right now.'],
     'no permission' => [403, [], 'You no longer have permission to add things to this team.'],
-    'gone' => [404, [], 'Holiday decorations is no longer on Sunny.'],
+    'gone' => [404, [], 'Holiday decorations is no longer on the server.'],
     'invalid' => [422, ['errors' => ['count' => ['The count field must not be greater than 25.']]], 'The count field must not be greater than 25.'],
 ]);
 

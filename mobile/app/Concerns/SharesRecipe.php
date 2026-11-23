@@ -95,7 +95,7 @@ trait SharesRecipe
 
         return match ($this->shareProblem) {
             'offline' => ['title' => Offline::TITLE, 'message' => Offline::ADVICE.' '.$afterwards],
-            'unsent' => ['title' => 'Still sending this recipe', 'message' => 'It needs to reach Sunny before it can have a link. '.$afterwards],
+            'unsent' => ['title' => 'Still sending this recipe', 'message' => 'It needs to reach the server before it can have a link. '.$afterwards],
             default => ['title' => $this->shareTurningOff ? 'Couldn’t turn off the link' : 'Couldn’t turn on the link', 'message' => $this->shareError.' '.$afterwards],
         };
     }
@@ -142,9 +142,9 @@ trait SharesRecipe
         } catch (RequestException $exception) {
             $this->shareFailed(match ($exception->getResponse()->status()) {
                 403 => 'You no longer have permission to share this recipe.',
-                404 => $recipe['name'].' is no longer on Sunny.',
+                404 => $recipe['name'].' is no longer on the server.',
                 429 => 'Too many attempts. Please wait before trying again.',
-                default => 'Sunny couldn’t change the link right now.',
+                default => 'The server couldn’t change the link right now.',
             });
 
             return;
@@ -157,7 +157,7 @@ trait SharesRecipe
         }
 
         if ($record === null) {
-            $this->shareFailed('Sunny didn’t confirm the change.');
+            $this->shareFailed('The server didn’t confirm the change.');
 
             return;
         }

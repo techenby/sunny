@@ -132,7 +132,7 @@ class SetUpHome extends Component
             $team = app(SunnyTeam::class)->current();
 
             if ($team === null) {
-                $this->error = 'Sunny couldn’t download your home yet. Check your connection and try again.';
+                $this->error = 'Your home couldn’t be downloaded yet. Check your connection and try again.';
 
                 return;
             }

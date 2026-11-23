@@ -177,9 +177,9 @@ it('explains when Sunny refuses to change the link', function (int $status, stri
         ->assertSee($message.' The recipe is still private, and no link has been made.')
         ->assertSee('Try again');
 })->with([
-    'server error' => [500, 'Sunny couldn’t change the link right now.'],
+    'server error' => [500, 'The server couldn’t change the link right now.'],
     'no permission' => [403, 'You no longer have permission to share this recipe.'],
-    'gone' => [404, 'Buttermilk Pancakes is no longer on Sunny.'],
+    'gone' => [404, 'Buttermilk Pancakes is no longer on the server.'],
 ]);
 
 it('waits for a new recipe to reach Sunny before making a link', function (): void {

@@ -207,9 +207,9 @@ it('explains when Sunny refuses the move', function (int $status, string $messag
 
     expect(Item::where('team_id', 1)->count())->toBe(15);
 })->with([
-    'server error' => [500, 'Sunny couldn’t move it right now.'],
+    'server error' => [500, 'The server couldn’t move it right now.'],
     'no permission' => [403, 'You no longer have permission to move things in Family.'],
-    'gone' => [404, 'Holiday decorations isn’t in Family on Sunny anymore.'],
+    'gone' => [404, 'Holiday decorations isn’t in Family on the server anymore.'],
     'not their team' => [422, 'Grandma’s House isn’t one of your teams anymore.'],
 ]);
 

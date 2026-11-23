@@ -153,7 +153,7 @@
                             'ios' => Ios::Globe,
                             'android' => Android::Public,
                             'trailing' => 'external',
-                            'hint' => 'Opens the Sunny website',
+                            'hint' => 'Opens the website',
                             'tap' => 'openTeamPage',
                             'last' => true,
                         ])

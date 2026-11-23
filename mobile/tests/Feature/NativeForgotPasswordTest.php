@@ -42,7 +42,7 @@ it('confirms with the server’s message whatever the email', function (): void 
         ->assertSee('Check your email')
         ->assertSee('alex@example.com')
         ->assertSee(RESET_LINK_SENT)
-        ->assertSee('The link opens the Sunny website, where you can set your new password.')
+        ->assertSee('The link opens the website, where you can set your new password.')
         ->assertSee('Back to log in')
         ->assertSee('Open Mail')
         ->assertNoNavigation();

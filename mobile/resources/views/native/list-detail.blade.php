@@ -198,7 +198,7 @@
                                         <column class="flex-1 gap-0.5">
                                             <text :class="$item['completed'] ? 'text-base text-theme-on-surface-variant line-through' : 'text-base text-theme-on-surface'">{{ $item['name'] }}</text>
                                             @if ($item['error'])
-                                                <text ref="list-item-{{ $item['id'] }}-error" class="text-sm text-theme-destructive">Not saved to Sunny. {{ $item['error'] }}</text>
+                                                <text ref="list-item-{{ $item['id'] }}-error" class="text-sm text-theme-destructive">Not saved. {{ $item['error'] }}</text>
                                             @endif
                                         </column>
                                     </row>

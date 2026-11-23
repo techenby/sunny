@@ -19,7 +19,7 @@
         <x-ui.button
             ref="setup-submit"
             class="w-full"
-            a11y-hint="Creates what you picked, then opens Sunny"
+            a11y-hint="Creates what you picked, then opens your home"
             :disabled="$saving"
             tap="setUp"
         >

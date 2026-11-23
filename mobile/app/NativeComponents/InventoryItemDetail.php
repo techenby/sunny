@@ -283,10 +283,10 @@ class InventoryItemDetail extends Component
             $response = $exception->getResponse();
             $this->copiesFailed(match ($response->status()) {
                 403 => 'You no longer have permission to add things to this team.',
-                404 => $this->item['name'].' is no longer on Sunny.',
-                422 => collect($response->json('errors') ?? [])->flatten()->first() ?? 'Sunny couldn’t make copies.',
+                404 => $this->item['name'].' is no longer on the server.',
+                422 => collect($response->json('errors') ?? [])->flatten()->first() ?? 'The server couldn’t make copies.',
                 429 => 'Too many attempts. Please wait before trying again.',
-                default => 'Sunny couldn’t make copies right now.',
+                default => 'The server couldn’t make copies right now.',
             });
             app(SunnySyncCoordinator::class)->dispatch();
 
@@ -300,7 +300,7 @@ class InventoryItemDetail extends Component
         }
 
         if ($made === 0) {
-            $this->copiesFailed('Sunny didn’t confirm the copies.');
+            $this->copiesFailed('The server didn’t confirm the copies.');
             app(SunnySyncCoordinator::class)->dispatch();
 
             return;
@@ -349,7 +349,7 @@ class InventoryItemDetail extends Component
         }
 
         [$title, $message] = match ($this->copiesProblem) {
-            'unsent' => ['Still sending your changes', 'Sunny copies what it has, so your latest changes need to reach it first.'],
+            'unsent' => ['Still sending your changes', 'The server copies what it has, so your latest changes need to reach it first.'],
             default => ['Couldn’t make copies', $this->copiesError],
         };
 

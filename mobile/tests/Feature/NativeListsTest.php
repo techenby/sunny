@@ -243,9 +243,9 @@ it('removes an item that never reached Sunny without queueing anything', functio
 
 it('flags an item change Sunny refused', function () {
     Native::visit('/lists/1')->tap('list-item-1');
-    PendingWrite::sole()->update(['error' => 'This record or team is no longer on Sunny.']);
+    PendingWrite::sole()->update(['error' => 'This record or team is no longer on the server.']);
 
-    Native::visit('/lists/1')->assertSee('Not saved to Sunny. This record or team is no longer on Sunny.');
+    Native::visit('/lists/1')->assertSee('Not saved. This record or team is no longer on the server.');
 });
 
 it('shows a link’s domain under the item’s name and opens it from there', function () {

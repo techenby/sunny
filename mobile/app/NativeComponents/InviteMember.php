@@ -141,7 +141,7 @@ class InviteMember extends Component
                     return;
                 }
 
-                $this->error = self::failureMessage($problem, $response, 'Sunny couldn’t send the invitation right now.');
+                $this->error = self::failureMessage($problem, $response, 'The server couldn’t send the invitation right now.');
             },
         );
 
@@ -202,7 +202,7 @@ class InviteMember extends Component
                     return;
                 }
 
-                Toast::error(self::failureMessage($problem, $response, 'Sunny couldn’t cancel the invitation right now.'));
+                Toast::error(self::failureMessage($problem, $response, 'The server couldn’t cancel the invitation right now.'));
             },
         );
 

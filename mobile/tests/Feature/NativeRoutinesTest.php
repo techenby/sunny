@@ -551,7 +551,7 @@ it('keeps showing a downloaded day when it cannot be refreshed', function (MockR
         ->assertSet('loadError', '')
         ->assertSee('Get ready')
         ->assertDontSee('You’re offline')
-        ->assertDontSee('Sunny is unavailable');
+        ->assertDontSee('The server is unavailable');
 })->with([
     'offline' => fn (): MockResponse => routineDayOfflineResponse(),
     'unavailable' => fn (): MockResponse => MockResponse::make([], 500),
@@ -689,7 +689,7 @@ it('says when Sunny cannot send another day', function (): void {
 
     Native::visit('/today')
         ->tap('previous-day')
-        ->assertSee('Sunny is unavailable')
+        ->assertSee('The server is unavailable')
         ->assertDontSee('You’re offline');
 });
 
