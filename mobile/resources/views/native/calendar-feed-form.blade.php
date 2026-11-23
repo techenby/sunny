@@ -73,7 +73,7 @@
                         :disabled="$saving"
                         tap="save"
                     >
-                        Save calendar
+                        {{ $submitLabel }}
                     </x-ui.button>
                     <x-ui.button
                         ref="{{ $formRef }}-more"
@@ -91,7 +91,7 @@
                     :disabled="$saving"
                     tap="save"
                 >
-                    Save calendar
+                    {{ $submitLabel }}
                 </x-ui.button>
             @endif
             <row class="w-full items-center justify-center gap-1.5">

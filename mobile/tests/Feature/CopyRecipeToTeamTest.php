@@ -70,7 +70,7 @@ it('copies the recipe to the team they pick', function (): void {
         ->tap('recipe-copy-submit')
         ->assertSet('showCopy', false)
         ->assertSee('Copied to Lake Cabin')
-        ->assertSee('Switch team in Preferences to see it there')
+        ->assertSee('Switch team in Settings to see it there')
         ->assertSee('Buttermilk Pancakes');
 
     Saloon::assertSent(fn (Request $request): bool => $request instanceof CopyRecipeRequest

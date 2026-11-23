@@ -373,7 +373,8 @@ describe('Calendars', function (): void {
             ->tap('add-calendar')
             ->assertNavigatedTo('/calendar/feeds/create')
             ->follow()
-            ->assertNavTitle('Add calendar')
+            ->assertNavTitle('New calendar')
+            ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'create-calendar-submit' && str_contains(json_encode($node), '"text":"Create calendar"'))
             ->assertSee('Needs a connection')
             ->set('name', ' Soccer ')
             ->set('url', 'webcal://calendar.example.com/soccer.ics')
@@ -469,6 +470,7 @@ describe('Calendars', function (): void {
 
         Native::visit('/calendar/feeds/2/edit')
             ->assertNavTitle('Edit calendar')
+            ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'edit-calendar-submit' && str_contains(json_encode($node), '"text":"Save"'))
             ->assertSee('This calendar isn’t updating')
             ->assertSee('HTTP 401 · last failed 2 hours ago. The link may have been reset. Paste the new one and save.')
             ->assertSet('name', 'Work')

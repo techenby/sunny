@@ -94,6 +94,6 @@
             >Choose photo</x-ui.button>
         </row>
     @else
-        <x-ui.text size="sm" ref="{{ $refPrefix }}-photos-full">That’s the most photos one item can have. Remove one to add another.</x-ui.text>
+        <x-ui.text size="sm" ref="{{ $refPrefix }}-photos-full">That’s the most photos it can have. Remove one to add another.</x-ui.text>
     @endif
 </column>

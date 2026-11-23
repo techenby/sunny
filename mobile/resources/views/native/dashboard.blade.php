@@ -8,7 +8,7 @@
     <native:top-bar-action
         ref="preferences"
         id="preferences"
-        label="Preferences"
+        label="Settings"
         :ios-icon="Ios::Gearshape"
         :android-icon="Android::Settings"
         @navigate('/preferences')
@@ -18,7 +18,7 @@
 @php
     $addMenu = [
         NavAction::make('add-recipe')->label('New recipe')->icon(ios: Ios::ForkKnife->value, android: Android::Restaurant->value)->url('/recipes/create'),
-        NavAction::make('add-item')->label('New item')->icon(ios: Ios::Shippingbox->value, android: Android::Inventory2->value)->url('/inventory/create'),
+        NavAction::make('add-item')->label('Add to inventory')->icon(ios: Ios::Shippingbox->value, android: Android::Inventory2->value)->url('/inventory/create'),
         NavAction::make('scan-items')->label('Bulk add')->icon(ios: Ios::CameraViewfinder->value, android: Android::DocumentScanner->value)->url('/inventory/scan'),
     ];
 @endphp
@@ -184,18 +184,18 @@
                 <pressable
                     ref="recipes-empty"
                     @navigate('/recipes/create')
-                    a11y-label="Add your first recipe"
+                    a11y-label="Create your first recipe"
                     class="{{ Card::classes() }} w-full items-center gap-2 px-4 py-6"
                 >
                     <icon :ios="Ios::ForkKnife" :android="Android::Restaurant" :size="28" class="text-theme-primary" />
-                    <x-ui.heading>Add your first recipe</x-ui.heading>
-                    <x-ui.text size="sm">Recipes you add or update will show up here.</x-ui.text>
+                    <x-ui.heading>Create your first recipe</x-ui.heading>
+                    <x-ui.text size="sm">Recipes you create or update will show up here.</x-ui.text>
                 </pressable>
             @endif
         </column>
 
         <column class="w-full gap-3">
-            <x-ui.heading size="lg">Recent items</x-ui.heading>
+            <x-ui.heading size="lg">Recent inventory</x-ui.heading>
             @if ($this->recentItems)
                 <column class="{{ Card::classes() }} w-full">
                     @foreach ($this->recentItems as $item)
@@ -230,12 +230,12 @@
                 <pressable
                     ref="items-empty"
                     @navigate('/inventory/create')
-                    a11y-label="Add your first item"
+                    a11y-label="Add to inventory"
                     class="{{ Card::classes() }} w-full items-center gap-2 px-4 py-6"
                 >
                     <icon :ios="Ios::Archivebox" :android="Android::Inventory2" :size="28" class="text-theme-accent" />
-                    <x-ui.heading>Add your first item</x-ui.heading>
-                    <x-ui.text size="sm">Items you add or update will show up here.</x-ui.text>
+                    <x-ui.heading>Add to inventory</x-ui.heading>
+                    <x-ui.text size="sm">Things you add or update will show up here.</x-ui.text>
                 </pressable>
             @endif
         </column>

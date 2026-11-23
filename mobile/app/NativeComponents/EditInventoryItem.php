@@ -29,6 +29,12 @@ class EditInventoryItem extends Component
         return Inventory::find((int) $this->param('id'));
     }
 
+    #[Computed]
+    public function title(): string
+    {
+        return ($this->item === null ? ItemType::Item : $this->type)->editLabel();
+    }
+
     public function save(): void
     {
         if ($this->item === null) {

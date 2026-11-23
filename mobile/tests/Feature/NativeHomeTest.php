@@ -22,7 +22,7 @@ it('introduces Sunny with native components', function () {
         ->assertSee('Inventory')
         ->assertSee('Teams')
         ->assertSee('Log in')
-        ->assertSee('Register')
+        ->assertSee('Create account')
         ->assertMissingElement('top_bar')
         ->assertElement('column', fn (array $node): bool => ($node['ref'] ?? null) === 'welcome-screen'
             && ($node['layout']['width'] ?? null) === 'fill'
@@ -98,7 +98,7 @@ it('provides accessible authentication actions', function () {
 
     foreach ([
         'login-button' => ['Log in', 'Opens the login screen'],
-        'register-button' => ['Register', 'Opens the registration screen'],
+        'register-button' => ['Create account', 'Opens the Create account screen'],
     ] as $ref => [$label, $hint]) {
         $screen->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === $ref
             && ($node['children'][0]['props']['text'] ?? null) === $label

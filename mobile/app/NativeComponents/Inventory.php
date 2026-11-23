@@ -178,14 +178,16 @@ class Inventory extends Component
     public function addMenu(): array
     {
         return [
-            NavAction::make('add-one')->label('Add one thing')->icon(ios: Ios::Plus->value, android: Android::Add->value)->press('addOne'),
+            NavAction::make('add-one')->label(ItemType::Item->addLabel())->icon(ios: ItemType::Item->iosIcon()->value, android: ItemType::Item->androidIcon()->value)->press("addOne('".ItemType::Item->value."')"),
+            NavAction::make('add-storage')->label(ItemType::Bin->addLabel())->icon(ios: ItemType::Bin->iosIcon()->value, android: ItemType::Bin->androidIcon()->value)->press("addOne('".ItemType::Bin->value."')"),
+            NavAction::make('add-place')->label(ItemType::Location->addLabel())->icon(ios: ItemType::Location->iosIcon()->value, android: ItemType::Location->androidIcon()->value)->press("addOne('".ItemType::Location->value."')"),
             NavAction::make('add-several')->label('Bulk add')->icon(ios: Ios::CameraViewfinder->value, android: Android::DocumentScanner->value)->press('scanItems'),
         ];
     }
 
-    public function addOne(): void
+    public function addOne(string $type): void
     {
-        $this->navigate('/inventory/create');
+        $this->navigate('/inventory/create', ['type' => $type]);
     }
 
     public function scanCode(): void

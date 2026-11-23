@@ -96,7 +96,7 @@
                     :ios="Ios::Archivebox"
                     :android="Android::Inventory2"
                     heading="Nothing here yet"
-                    text="Tap + to start with a room, like Garage. If you've added things on the website, pull down on the Summary tab to bring them in."
+                    text="Tap + to start with a room, like Garage. If you've added things on the website, pull down on Summary to bring them in."
                 />
             @endif
 

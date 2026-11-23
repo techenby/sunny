@@ -34,7 +34,7 @@ it('renders every field the web recipe form has', function () {
         ->assertSee('Instructions')
         ->assertSee('Notes')
         ->assertSee('Nutrition')
-        ->assertSee('Save recipe')
+        ->assertSee('Create recipe')
         ->assertAccessible();
 });
 

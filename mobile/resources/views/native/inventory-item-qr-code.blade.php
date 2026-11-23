@@ -38,5 +38,5 @@
         </column>
     </scroll-view>
 @else
-    <x-ui.not-found ref="item-qr-code-missing" thing="item" />
+    <x-ui.not-found ref="item-qr-code-missing" thing="thing" />
 @endif

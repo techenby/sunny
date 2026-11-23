@@ -7,7 +7,7 @@
 
 @php($item = $this->item)
 
-<native:top-bar :title="$item['name'] ?? 'Item'" display-mode="large" back />
+<native:top-bar :title="$item['name'] ?? 'Inventory'" display-mode="large" back />
 
 @if ($item)
     @if ($selecting)
@@ -128,7 +128,7 @@
                     <column class="{{ Card::classes() }} w-full">
                         <pressable
                             ref="item-add"
-                            a11y-label="Put something inside"
+                            :a11y-label="'Add to '.$item['name']"
                             class="min-h-12 w-full justify-center px-4 py-2"
                             :menu="$this->addMenu()"
                         >
@@ -136,7 +136,7 @@
                                 <column class="h-10 w-10 items-center justify-center rounded-lg bg-theme-primary/15">
                                     <icon :ios="Ios::Plus" :android="Android::Add" :size="20" class="text-theme-primary-text" />
                                 </column>
-                                <text font="semibold" class="flex-1 text-lg text-theme-primary-text">Put something inside</text>
+                                <text font="semibold" class="flex-1 text-lg text-theme-primary-text">Add to {{ $item['name'] }}</text>
                             </row>
                         </pressable>
                     </column>
@@ -245,7 +245,7 @@
                     @endforeach
                     <pressable
                         ref="item-add"
-                        a11y-label="{{ $this->children ? 'Add something here' : 'Put something inside' }}"
+                        :a11y-label="'Add to '.$item['name']"
                         class="min-h-12 w-full justify-center px-4 py-2"
                         :menu="$this->addMenu()"
                     >
@@ -253,7 +253,7 @@
                             <column class="h-10 w-10 items-center justify-center rounded-lg bg-theme-primary/15">
                                 <icon :ios="Ios::Plus" :android="Android::Add" :size="20" class="text-theme-primary-text" />
                             </column>
-                            <text font="semibold" class="flex-1 text-lg text-theme-primary-text">{{ $this->children ? 'Add something here' : 'Put something inside' }}</text>
+                            <text font="semibold" class="flex-1 text-lg text-theme-primary-text">Add to {{ $item['name'] }}</text>
                         </row>
                     </pressable>
                     @endif
@@ -480,5 +480,5 @@
         @endif
     </native:bottom-sheet>
 @else
-    <x-ui.not-found ref="item-missing" thing="item" />
+    <x-ui.not-found ref="item-missing" thing="thing" />
 @endif

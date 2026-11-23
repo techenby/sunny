@@ -277,8 +277,8 @@ it('puts edit, open link and remove in each item’s menu', function () {
 
     $tree = Native::visit('/lists/1')->assertAccessible()->tree();
 
-    expect($menu($tree, 'list-item-1-actions'))->toBe([['Edit', false], ['Open link', false], ['Remove', true]])
-        ->and($menu($tree, 'list-item-3-actions'))->toBe([['Edit', false], ['Remove', true]]);
+    expect($menu($tree, 'list-item-1-actions'))->toBe([['Edit', false], ['Open link', false], ['Delete', true]])
+        ->and($menu($tree, 'list-item-3-actions'))->toBe([['Edit', false], ['Delete', true]]);
 });
 
 it('opens an item’s link from its menu', function () {
@@ -482,7 +482,7 @@ it('closes the edit when its item is removed as done, and keeps it open otherwis
     Native::visit('/lists/1')
         ->press('editItem(2)')
         ->call('confirmRemoveDone')
-        ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Remove', 'id' => 'remove-done'])
+        ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Delete', 'id' => 'remove-done'])
         ->assertSet('editingItemId', null)
         ->assertDontSee('Edit item')
         ->assertDontSee('Eggs');
@@ -492,7 +492,7 @@ it('closes the edit when its item is removed as done, and keeps it open otherwis
     Native::visit('/lists/1')
         ->press('editItem(3)')
         ->call('confirmRemoveDone')
-        ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Remove', 'id' => 'remove-done'])
+        ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Delete', 'id' => 'remove-done'])
         ->assertSet('editingItemId', 3)
         ->assertSee('Edit item')
         ->assertDontSee('Milk');
@@ -526,10 +526,12 @@ function listDetailRef(string $ref): Closure
     return fn (array $node): bool => ($node['ref'] ?? null) === $ref;
 }
 
-it('keeps the list’s actions in one menu, offering Remove done and Uncheck all only while something is ticked', function () {
+it('keeps the list’s actions in one menu, offering Delete done and Uncheck all only while something is ticked', function () {
     Native::visit('/lists/1')
         ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'list-more'
             && collect($node['children'])->where('type', 'top_bar_action')->pluck('ref')->all() === ['edit-list', 'remove-done', 'uncheck-all', 'delete-list'])
+        ->assertElement('top_bar_action', fn (array $node): bool => ($node['ref'] ?? null) === 'edit-list' && $node['props']['label'] === 'Edit' && $node['props']['a11y_label'] === 'Edit Groceries')
+        ->assertElement('top_bar_action', fn (array $node): bool => ($node['ref'] ?? null) === 'remove-done' && $node['props']['label'] === 'Delete done')
         ->assertElement('top_bar_action', fn (array $node): bool => ($node['ref'] ?? null) === 'delete-list' && $node['props']['destructive'] === true)
         ->tap('list-item-2')
         ->assertMissingElement('top_bar_action', listDetailRef('remove-done'))
@@ -546,9 +548,9 @@ it('asks before removing done items, naming them', function () {
         ->tap('list-item-1')
         ->tap('remove-done')
         ->assertNativeCalled('Dialog.Alert', fn (array $params): bool => $params['id'] === 'remove-done'
-            && $params['title'] === 'Remove 2 done items?'
-            && $params['message'] === 'Milk and Eggs will be removed from Groceries for everyone on your team.'
-            && array_column($params['buttons'], 'label') === ['Cancel', 'Remove']);
+            && $params['title'] === 'Delete 2 done items?'
+            && $params['message'] === 'Milk and Eggs will be deleted from Groceries for everyone on your team.'
+            && array_column($params['buttons'], 'label') === ['Cancel', 'Delete']);
 
     ChecklistItem::query()->where('checklist_id', 1)->update(['completed_at' => now()]);
     ChecklistItem::query()->create(['id' => 9, 'server' => ChecklistItem::find(1)->server, 'checklist_id' => 1, 'name' => 'Butter', 'position' => 4, 'completed_at' => now()]);
@@ -556,14 +558,14 @@ it('asks before removing done items, naming them', function () {
 
     Native::visit('/lists/1')
         ->tap('remove-done')
-        ->assertNativeCalled('Dialog.Alert', fn (array $params): bool => $params['message'] === 'Milk, Eggs, Bread and 2 more will be removed from Groceries for everyone on your team.');
+        ->assertNativeCalled('Dialog.Alert', fn (array $params): bool => $params['message'] === 'Milk, Eggs, Bread and 2 more will be deleted from Groceries for everyone on your team.');
 
     ChecklistItem::query()->where('checklist_id', 1)->where('id', '!=', 2)->delete();
 
     Native::visit('/lists/1')
         ->tap('remove-done')
-        ->assertNativeCalled('Dialog.Alert', fn (array $params): bool => $params['title'] === 'Remove 1 done item?'
-            && $params['message'] === 'Eggs will be removed from Groceries for everyone on your team.');
+        ->assertNativeCalled('Dialog.Alert', fn (array $params): bool => $params['title'] === 'Delete 1 done item?'
+            && $params['message'] === 'Eggs will be deleted from Groceries for everyone on your team.');
 });
 
 it('keeps done items when the removal is cancelled', function () {
@@ -579,7 +581,7 @@ it('removes done items on the phone straight away and queues one clear for Sunny
     $screen = Native::visit('/lists/1')
         ->tap('list-item-1')
         ->tap('remove-done')
-        ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Remove', 'id' => 'remove-done'])
+        ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Delete', 'id' => 'remove-done'])
         ->assertDontSee('Milk')
         ->assertDontSee('Eggs')
         ->assertSee('Shopping · 0 of 1 done')

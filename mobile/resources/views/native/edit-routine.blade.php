@@ -5,7 +5,7 @@
 @if ($routine)
     @include('native.routine-form', [
         'formRef' => 'edit-routine',
-        'submitLabel' => 'Update routine',
+        'submitLabel' => 'Save',
         'timeOfDayOptions' => $this->timeOfDayOptions,
         'frequencyOptions' => $this->frequencyOptions,
         'weekdayRows' => $this->weekdayRows,

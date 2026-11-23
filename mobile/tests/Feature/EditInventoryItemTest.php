@@ -17,10 +17,14 @@ it('opens the edit screen from the item', function () {
         ->assertScreen(EditInventoryItem::class);
 });
 
-it('titles the edit screen without repeating the item name', function () {
-    Native::visit('/inventory/8/edit')
-        ->assertNavTitle('Edit item');
-});
+it('titles the edit screen with the kind, without repeating the item name', function (int $id, string $title) {
+    Native::visit('/inventory/'.$id.'/edit')
+        ->assertNavTitle($title);
+})->with([
+    'thing' => [8, 'Edit thing'],
+    'storage' => [7, 'Edit storage'],
+    'place' => [6, 'Edit place'],
+]);
 
 it('prefills the form from the item', function () {
     Native::visit('/inventory/8/edit')
@@ -31,7 +35,7 @@ it('prefills the form from the item', function () {
             ['key' => 'brand', 'value' => 'DeWalt'],
             ['key' => 'model', 'value' => 'DCD771'],
         ])
-        ->assertSee('Save changes');
+        ->assertSee('Save');
 });
 
 it('prefills a top-level item with no metadata', function () {
@@ -81,8 +85,8 @@ it('keeps the item edit queued on the phone when Sunny rejects the session', fun
 
 it('explains when the item does not exist', function () {
     Native::visit('/inventory/999/edit')
-        ->assertNavTitle('Edit item')
-        ->assertSee('Item not found')
+        ->assertNavTitle('Edit thing')
+        ->assertSee('Thing not found')
         ->assertMissingElement('outlined_text_input');
 });
 

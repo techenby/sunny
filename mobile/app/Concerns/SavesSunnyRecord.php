@@ -35,12 +35,12 @@ trait SavesSunnyRecord
             return;
         }
         if ($this->teamId === null) {
-            $this->error = 'Select a team on the dashboard. If none are listed, sync with Sunny first.';
+            $this->error = 'Select a team in Settings. If none are listed, sync with Sunny first.';
 
             return;
         }
         if ($this->teamId !== app(SunnyTeam::class)->current()?->id) {
-            $this->error = 'The active team changed. Reopen this form from the dashboard before saving.';
+            $this->error = 'The active team changed. Reopen this form from Summary before saving.';
 
             return;
         }

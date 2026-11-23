@@ -145,8 +145,8 @@ it('lists each new photo right away, newest first, and sends it to the model wit
     $screen->assertNativeCalled('ItemScanner.Identify', fn (array $params): bool => $params === [
         'path' => $keptPhoto, 'id' => $firstScan, 'place' => 'Garage › Tool chest', 'batch' => null, 'batchNames' => [],
     ])
-        ->assertSee('1 item · 1 identifying…')
-        ->assertSee('Add 1 item');
+        ->assertSee('1 thing · 1 identifying…')
+        ->assertSee('Add 1 thing');
 
     $screen->call('updateBatch', ' Christmas ornaments ')
         ->emitNative(ItemIdentified::class, ['id' => $firstScan, 'item' => ['name' => 'Glass snowman']])
@@ -156,7 +156,7 @@ it('lists each new photo right away, newest first, and sends it to the model wit
             && $params['batchNames'] === ['Glass snowman']);
 
     expect(collect($screen->get('candidates'))->pluck('id')->all())->toBe([2, 1]);
-    $screen->assertSee('2 items · 1 identifying…');
+    $screen->assertSee('2 things · 1 identifying…');
 });
 
 it('counts another copy of the last photographed item with +1', function () {
@@ -205,8 +205,8 @@ it('explains when the camera could not open', function () {
     fakeScanner();
 
     Native::visit('/inventory/scan')
-        ->emitNative(CaptureFailed::class, ['id' => 'scan', 'message' => 'Allow camera access for Sunny in Settings to scan items.'])
-        ->assertSee('Allow camera access for Sunny in Settings to scan items.');
+        ->emitNative(CaptureFailed::class, ['id' => 'scan', 'message' => 'Allow camera access for Sunny in the Settings app to scan things.'])
+        ->assertSee('Allow camera access for Sunny in the Settings app to scan things.');
 });
 
 it('lists each image chosen from the gallery and scans it', function () {
@@ -233,7 +233,7 @@ it('fills in the name and details the model found', function () {
         'name' => '', 'suggestedName' => 'Hammer', 'category' => 'Tools', 'quantity' => 2, 'scanId' => null, 'scanError' => null,
     ]);
     $screen->assertSee('Tools · ×2')
-        ->assertSee('1 item')
+        ->assertSee('1 thing')
         ->assertDontSee('identifying…');
 });
 
@@ -273,7 +273,7 @@ it('keeps the photo in the list when the model could not name it', function (str
 
     expect($screen->get('candidates')[0])->toMatchArray(['name' => '', 'suggestedName' => '', 'scanId' => null, 'scanError' => $message]);
 })->with([
-    'failure' => [IdentificationFailed::class, ['message' => 'Turn on Apple Intelligence in Settings to scan items.'], 'Turn on Apple Intelligence in Settings to scan items.'],
+    'failure' => [IdentificationFailed::class, ['message' => 'Turn on Apple Intelligence in the Settings app to name things.'], 'Turn on Apple Intelligence in the Settings app to name things.'],
     'no name' => [ItemIdentified::class, ['item' => ['name' => '  ']], 'Couldn’t tell what that is. Type a name instead.'],
 ]);
 
@@ -312,7 +312,7 @@ it('removes an item and its photo from the list', function () {
     $hammerPhoto = $screen->get('candidates')[1]['photoPath'];
 
     $screen->press('removeCandidate(1)')
-        ->assertSee('Add 1 item');
+        ->assertSee('Add 1 thing');
 
     expect(collect($screen->get('candidates'))->pluck('suggestedName')->all())->toBe(['Level'])
         ->and($hammerPhoto)->not->toBeFile();
@@ -418,7 +418,7 @@ it('asks before adding the items', function () {
     $screen->emitNative(ItemIdentified::class, ['id' => $scan, 'item' => ['name' => 'Glass snowman']])
         ->tap('scan-submit')
         ->assertNativeCalled('Dialog.Alert', fn (array $params): bool => $params['id'] === 'add-items'
-            && $params['title'] === 'Add 1 item?'
+            && $params['title'] === 'Add 1 thing?'
             && $params['message'] === 'They’ll be added to Garage › Tool chest.')
         ->emitNative(ButtonPressed::class, ['index' => 0, 'label' => 'Cancel', 'id' => 'add-items'])
         ->assertNoNavigation();
@@ -487,7 +487,7 @@ it('refuses to add nothing, an unnamed item, or one still being identified', fun
 
     Saloon::assertNothingSent();
 })->with([
-    'nothing left' => ['Hammer', ['removeCandidate', 1], 'Take a photo of at least one item.'],
-    'blank name' => ['  ', ['renameCandidate', 1, '   '], 'Give every item a name.'],
-    'still identifying' => [null, ['renameCandidate', 1, ''], 'Some items are still being identified. Wait a moment or name them yourself.'],
+    'nothing left' => ['Hammer', ['removeCandidate', 1], 'Take a photo of at least one thing.'],
+    'blank name' => ['  ', ['renameCandidate', 1, '   '], 'Give each thing a name.'],
+    'still identifying' => [null, ['renameCandidate', 1, ''], 'Some things are still being identified. Wait a moment or name them yourself.'],
 ]);

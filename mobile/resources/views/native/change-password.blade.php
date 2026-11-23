@@ -66,7 +66,7 @@
             :disabled="$saving"
             tap="save"
         >
-            {{ $offline ? 'Try again' : 'Save password' }}
+            {{ $offline ? 'Try again' : 'Save' }}
         </x-ui.button>
     </column>
 </scroll-view>

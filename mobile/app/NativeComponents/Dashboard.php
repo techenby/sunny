@@ -151,7 +151,7 @@ class Dashboard extends Component
     public function onAlertButtonPressed(string $label, ?string $id = null): void
     {
         if ($id === 'crash-reports' && $label === 'Share' && ! app(CrashReports::class)->share(true)) {
-            Toast::error('Unable to save your choice. You can turn on crash reports in Preferences.');
+            Toast::error('Unable to save your choice. You can turn on crash reports in Settings.');
         }
     }
 
@@ -170,7 +170,7 @@ class Dashboard extends Component
 
         $crashReports->markAsked();
 
-        Dialog::alert('Help improve Sunny?', 'Share crash reports so we can find and fix problems. They include technical details about the error and your device. You can change this anytime in Preferences.', [
+        Dialog::alert('Help improve Sunny?', 'Share crash reports so we can find and fix problems. They include technical details about the error and your device. You can change this anytime in Settings.', [
             ['label' => 'Not now', 'style' => 'cancel'],
             ['label' => 'Share'],
         ])->id('crash-reports')->show();

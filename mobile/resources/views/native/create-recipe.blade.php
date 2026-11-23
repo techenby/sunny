@@ -2,7 +2,7 @@
 
 @include('native.recipe-form', [
     'formRef' => 'create-recipe',
-    'submitLabel' => 'Save recipe',
+    'submitLabel' => 'Create recipe',
     'tagRows' => $this->tagRows,
     'importCard' => $this->importCard,
 ])

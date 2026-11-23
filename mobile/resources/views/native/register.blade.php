@@ -95,7 +95,7 @@
                 <x-ui.alert ref="register-throttled" :ios="Ios::Clock" :android="Android::Schedule" title="Too many tries" message="Wait a minute and try again." />
             </column>
         @elseif ($failure === 'unavailable')
-            <x-ui.alert ref="register-unavailable" :ios="Ios::ExclamationmarkTriangle" :android="Android::Warning" title="Sign-up isn’t available right now" message="No account was created. Try again later." />
+            <x-ui.alert ref="register-unavailable" :ios="Ios::ExclamationmarkTriangle" :android="Android::Warning" title="Creating an account isn’t available right now" message="No account was created. Try again later." />
         @endif
 
         @if ($error !== '')

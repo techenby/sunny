@@ -23,6 +23,24 @@ enum ItemType: string
         };
     }
 
+    public function addLabel(): string
+    {
+        return match ($this) {
+            self::Location => 'Add a place',
+            self::Bin => 'Add storage',
+            self::Item => 'Add a thing',
+        };
+    }
+
+    public function editLabel(): string
+    {
+        return match ($this) {
+            self::Location => 'Edit place',
+            self::Bin => 'Edit storage',
+            self::Item => 'Edit thing',
+        };
+    }
+
     public function description(): string
     {
         return match ($this) {

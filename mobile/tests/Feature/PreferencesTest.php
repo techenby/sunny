@@ -18,7 +18,7 @@ it('lists the teams with a check on the active one', function () {
     Team::create(['id' => 2, 'server' => SunnyStore::server(), 'name' => 'Work', 'slug' => 'work']);
 
     Native::visit('/preferences', platform: 'ios')
-        ->assertNavTitle('Preferences')
+        ->assertNavTitle('Settings')
         ->assertSee('Family')
         ->assertSee('Work')
         ->assertSet('activeTeamId', 1)

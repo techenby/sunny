@@ -74,6 +74,6 @@ it('does not share before asked', function () {
 
 it('explains when the item is missing', function () {
     Native::visit('/inventory/999/qr-code')
-        ->assertSee('Item not found')
+        ->assertSee('Thing not found')
         ->assertDontSee('Share for printing');
 });

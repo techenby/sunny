@@ -16,9 +16,9 @@
                 class="flex-1"
                 :ios="Ios::Plus"
                 :android="Android::Add"
-                a11y-label="Add a calendar"
+                a11y-label="New calendar"
                 navigate="/calendar/feeds/create"
-            >Add a calendar</x-ui.button>
+            >New calendar</x-ui.button>
         @endif
         <x-ui.button
             ref="calendar-more"

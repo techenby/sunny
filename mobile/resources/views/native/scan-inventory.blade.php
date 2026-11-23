@@ -22,7 +22,7 @@
             :loading="$saving"
             tap="confirmSave"
         >
-            {{ $candidates === [] ? 'Add items' : trans_choice('Add :count item|Add :count items', count($candidates)) }}
+            {{ $candidates === [] ? 'Add things' : trans_choice('Add :count thing|Add :count things', count($candidates)) }}
         </x-ui.button>
     </column>
 </native:bottom-bar>
@@ -73,7 +73,7 @@
         @if ($candidates !== [])
             <column class="w-full gap-2">
                 <text ref="scan-count" class="text-sm font-semibold text-theme-on-surface-variant">
-                    {{ trans_choice(':count item|:count items', count($candidates)) }}@if ($this->identifyingCount > 0) · {{ $this->identifyingCount }} identifying…@endif
+                    {{ trans_choice(':count thing|:count things', count($candidates)) }}@if ($this->identifyingCount > 0) · {{ $this->identifyingCount }} identifying…@endif
                 </text>
 
                 <column class="w-full {{ Card::classes() }}">
@@ -88,7 +88,7 @@
                             <image
                                 ref="scan-candidate-{{ $candidate['id'] }}-photo"
                                 :src="$candidate['photoPath']"
-                                alt="Item photo"
+                                alt="Photo"
                                 class="h-14 w-14 rounded-lg object-cover"
                             />
                             <column class="flex-1 gap-1">

@@ -109,7 +109,7 @@
                             next-focus="list-new-item-url"
                             native:model="newItem"
                         />
-                        <x-ui.button ref="list-add-item" variant="text" :ios="Ios::Plus" :android="Android::Add" a11y-label="Add item" tap="addItem" />
+                        <x-ui.button ref="list-add-item" variant="text" :ios="Ios::Plus" :android="Android::Add" a11y-label="Add an item" tap="addItem" />
                     </row>
                     <row class="w-full items-center gap-2">
                         <row class="min-h-12 flex-1 items-center gap-2 rounded-full border bg-theme-surface pr-1 pl-3 {{ $linkError !== '' ? 'border-theme-primary' : 'border-theme-outline' }}">
@@ -118,7 +118,7 @@
                                 ref="list-new-item-url"
                                 class="flex-1"
                                 placeholder="Link"
-                                a11y-label="Link, optional"
+                                a11y-label="Link"
                                 keyboard="url"
                                 next-focus="list-new-item"
                                 native:model="newItemUrl"
@@ -157,7 +157,7 @@
                         native:model="newItem"
                         @submit="addItem"
                     />
-                    <x-ui.button ref="list-add-item" variant="text" :ios="Ios::Plus" :android="Android::Add" a11y-label="Add item" tap="addItem" />
+                    <x-ui.button ref="list-add-item" variant="text" :ios="Ios::Plus" :android="Android::Add" a11y-label="Add an item" tap="addItem" />
                 </row>
                 <x-ui.button ref="list-more" variant="glass" :ios="Ios::Ellipsis" :android="Android::MoreHoriz" a11y-label="More" :menu="$this->moreMenu()" />
             </row>
@@ -225,7 +225,7 @@
                                 variant="text"
                                 :ios="Ios::Ellipsis"
                                 :android="Android::MoreHoriz"
-                                :a11y-label="'Edit or remove '.$item['name']"
+                                :a11y-label="'Edit or delete '.$item['name']"
                                 :menu="$this->itemMenu($item)"
                             />
                         </row>

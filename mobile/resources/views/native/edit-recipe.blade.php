@@ -5,7 +5,7 @@
 @if ($recipe)
     @include('native.recipe-form', [
         'formRef' => 'edit-recipe',
-        'submitLabel' => 'Update recipe',
+        'submitLabel' => 'Save',
         'tagRows' => $this->tagRows,
         'importCard' => $this->importCard,
         'remixOf' => $this->remixOf,

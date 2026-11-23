@@ -13,9 +13,9 @@
             class="flex-1"
             :ios="Ios::Plus"
             :android="Android::Add"
-            a11y-label="Add calendar"
+            a11y-label="New calendar"
             navigate="/calendar/feeds/create"
-        >Add calendar</x-ui.button>
+        >New calendar</x-ui.button>
     </row>
 </native:bottom-bar>
 
@@ -58,7 +58,7 @@
                 :ios="Ios::Calendar"
                 :android="Android::CalendarMonth"
                 heading="No calendars yet"
-                text="Add Google Calendar, Proton or any calendar with an iCal link."
+                text="Connect Google Calendar, Proton or any calendar with an iCal link."
             />
         @else
             @foreach ($feeds['failing'] as $feed)

@@ -262,7 +262,7 @@ it('shows the original on Edit right after remixing', function () {
         ->assertSee('Remix of')
         ->assertSee('Buttermilk Pancakes')
         ->assertSee('The original stays as it is.')
-        ->assertSee('Update recipe')
+        ->assertSee('Save')
         ->assertAccessible()
         ->tap('recipe-remix-of')
         ->assertNavigatedTo('/recipes/1');
