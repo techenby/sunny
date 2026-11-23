@@ -46,8 +46,6 @@ class TeamSettings extends Component
 
     public string $timezoneSearch = '';
 
-    public bool $showWeekStart = false;
-
     public ?int $memberId = null;
 
     public bool $confirmingRemove = false;
@@ -262,22 +260,17 @@ class TeamSettings extends Component
         }
     }
 
-    public function openWeekStart(): void
+    public function pickWeekStart(string $day): void
     {
-        if ($this->canEdit()) {
-            $this->showWeekStart = true;
-        }
-    }
+        $index = array_search($day, self::WEEKDAYS, true);
 
-    public function closeWeekStart(): void
-    {
-        $this->showWeekStart = false;
+        if ($index !== false) {
+            $this->chooseWeekStart($index);
+        }
     }
 
     public function chooseWeekStart(int $day): void
     {
-        $this->showWeekStart = false;
-
         if ($this->canEdit() && array_key_exists($day, self::WEEKDAYS) && $day !== ($this->team()?->week_start ?? 0)) {
             $this->updateTeam(['week_start' => $day]);
         }

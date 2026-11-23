@@ -217,11 +217,13 @@ it('changes the household timezone and week start', function (): void {
         ->assertDontSee('America/Chicago ')
         ->tap('team-timezone-Europe/London')
         ->assertSet('showTimezone', false)
-        ->tap('team-week-start')
-        ->assertSet('showWeekStart', true)
-        ->tap('team-week-start-option-1')
-        ->assertSet('showWeekStart', false)
-        ->assertSee('Monday');
+        ->assertElement('select', fn (array $node): bool => ($node['ref'] ?? null) === 'team-week-start'
+            && $node['props']['label'] === 'Week starts on'
+            && $node['props']['value'] === 'Sunday'
+            && $node['props']['options'] === ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'])
+        ->assertMissingElement('bottom_sheet', fn (array $node): bool => ($node['ref'] ?? null) === 'team-week-start-sheet')
+        ->select('team-week-start', 'Monday')
+        ->assertElement('select', fn (array $node): bool => ($node['ref'] ?? null) === 'team-week-start' && $node['props']['value'] === 'Monday');
 
     Saloon::assertSent(fn (Request $request): bool => $request instanceof UpdateTeamRequest && $request->body()->all() === ['timezone' => 'Europe/London']);
     Saloon::assertSent(fn (Request $request): bool => $request instanceof UpdateTeamRequest && $request->body()->all() === ['week_start' => 1]);

@@ -64,7 +64,7 @@
         @else
             @foreach ($feeds['failing'] as $feed)
                 <column ref="calendar-feed-{{ $feed['id'] }}-card" class="{{ Card::classes() }} w-full pb-3">
-                    @include('native.calendar-feed-row', ['feed' => $feed])
+                    @include('native.calendar-feed-row', ['feed' => $feed, 'menu' => $this->feedMenu($feed)])
                     <column ref="calendar-feed-{{ $feed['id'] }}-fix" class="mx-3 gap-1.5 rounded-xl bg-theme-primary/15 px-4 py-3">
                         <row class="w-full items-center gap-2">
                             <text font="accent" class="flex-1 text-sm text-theme-destructive">The server couldn’t fetch it</text>
@@ -83,7 +83,7 @@
             @if ($feeds['working'])
                 <column class="{{ Card::classes() }} w-full">
                     @foreach ($feeds['working'] as $feed)
-                        @include('native.calendar-feed-row', ['feed' => $feed])
+                        @include('native.calendar-feed-row', ['feed' => $feed, 'menu' => $this->feedMenu($feed)])
                         @unless ($loop->last)
                             <divider class="ml-[66]" />
                         @endunless

@@ -4,6 +4,8 @@
 
 <native:top-bar title="UI kit" back />
 
+<x-ui.submit-bar ref="ui-kit-submit-bar" tap="tapped('submit-bar')">x-ui.submit-bar</x-ui.submit-bar>
+
 <scroll-view ref="ui-kit" fill class="bg-theme-background">
     <column class="w-full gap-6 px-4 pt-2 pb-8">
         <x-ui.text ref="ui-kit-last-tapped" size="sm" class="px-1">{{ $lastTapped === '' ? 'Tap an example to check it responds.' : 'Last tapped: '.$lastTapped }}</x-ui.text>
@@ -14,6 +16,23 @@
                 <select ref="ui-kit-select-time-of-day" label="Time of day" :options="['Morning', 'Afternoon', 'Evening', 'Anytime']" native:model="timeOfDay" />
                 <select ref="ui-kit-select-repeats" label="Repeats" :options="['Daily', 'Weekly', 'Monthly']" supporting="Helper text sits below the field." native:model="repeats" />
             </column>
+        </column>
+
+        <column ref="ui-kit-form" class="w-full gap-2">
+            <x-ui.subheading class="px-1">Form pieces</x-ui.subheading>
+            <column class="w-full gap-4">
+                <outlined-text-input ref="ui-kit-input" label="label, on a text field" placeholder="placeholder" supporting="supporting, below the field" />
+                <column class="w-full gap-1">
+                    <x-ui.field-label>x-ui.field-label, for a control with no label of its own</x-ui.field-label>
+                    <column class="{{ Card::classes() }} w-full p-4">
+                        <x-ui.text>The control</x-ui.text>
+                    </column>
+                    <x-ui.field-help>x-ui.field-help, below what it explains</x-ui.field-help>
+                </column>
+                <x-ui.picker-field ref="ui-kit-picker-date" label="x-ui.picker-field, opens a date" value="Today, Nov 20" opens="date" tap="tapped('picker-field date')" />
+                <x-ui.picker-field ref="ui-kit-picker-menu" label="x-ui.picker-field, opens a menu" value="Value" tap="tapped('picker-field menu')" />
+            </column>
+            <x-ui.text size="sm" class="px-1">x-ui.submit-bar is the button pinned at the bottom of this screen. On a form it takes the tab bar’s place.</x-ui.text>
         </column>
 
         <column ref="ui-kit-buttons" class="w-full gap-2">

@@ -16,8 +16,6 @@
                     label="Email address"
                     placeholder="email@example.com"
                     keyboard="email"
-                    :ios-leading-icon="Ios::Envelope"
-                    :android-leading-icon="Android::Email"
                     native:model="email"
                 />
                 <outlined-text-input
@@ -25,8 +23,6 @@
                     label="Password"
                     placeholder="Password"
                     secure
-                    :ios-leading-icon="Ios::Lock"
-                    :android-leading-icon="Android::Lock"
                     native:model="password"
                 />
                 <row class="w-full justify-end">

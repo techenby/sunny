@@ -3,13 +3,8 @@
 @use('App\Models\ItemPhoto')
 @use('App\Ui\Card')
 
-<column class="w-full gap-2">
-    <column class="w-full gap-0.5">
-        <text font="semibold" class="text-lg text-theme-on-surface">Photos (optional)</text>
-        @if (count($photos) > 1)
-            <x-ui.text size="sm">The first photo shows in lists. Use the arrows to change the order.</x-ui.text>
-        @endif
-    </column>
+<column class="w-full gap-1">
+    <x-ui.field-label>Photos (optional)</x-ui.field-label>
 
     @if ($photos !== [])
         <column ref="{{ $refPrefix }}-photos" class="{{ Card::classes() }} w-full">
@@ -69,6 +64,10 @@
                 @endunless
             @endforeach
         </column>
+    @endif
+
+    @if (count($photos) > 1)
+        <x-ui.field-help>The first photo shows in lists. Use the arrows to change the order.</x-ui.field-help>
     @endif
 
     @if (count($photos) < ItemPhoto::MAX_PER_ITEM)

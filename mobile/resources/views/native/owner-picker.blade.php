@@ -4,7 +4,7 @@
 @php($choices = [['id' => 0, 'name' => 'Household', 'initials' => null, 'supporting' => 'Everyone in the team'], ...$members])
 
 <column ref="{{ $ref }}" class="w-full gap-2">
-    <text class="text-sm font-semibold text-theme-on-surface-variant">{{ $label }}</text>
+    <x-ui.field-label>{{ $label }}</x-ui.field-label>
     @foreach ($choices as $choice)
         @php($chosen = $choice['id'] === ($selected ?? 0))
         <pressable

@@ -4,16 +4,23 @@
 
 <native:top-bar title="Account" back />
 
+<x-ui.submit-bar
+    ref="account-save"
+    :ios="$offline === 'save' && ! $this->disconnected ? Ios::ArrowClockwise : null"
+    :android="$offline === 'save' && ! $this->disconnected ? Android::Refresh : null"
+    :disabled="$saving || $this->disconnected"
+>
+    {{ $offline === 'save' && ! $this->disconnected ? 'Try again' : 'Save' }}
+</x-ui.submit-bar>
+
 <scroll-view ref="account-screen" fill class="bg-theme-background ios:bg-theme-grouped-background">
-    <column class="w-full gap-6 px-6 py-6">
+    <column class="w-full gap-6 px-4 py-6">
         <column class="w-full gap-4">
             <outlined-text-input
                 ref="account-name"
                 label="Name"
                 autocapitalize="words"
                 content-type="name"
-                :ios-leading-icon="Ios::Person"
-                :android-leading-icon="Android::Person"
                 :error="isset($fieldErrors['name'])"
                 :supporting="$fieldErrors['name'] ?? null"
                 native:model.blur="name"
@@ -23,8 +30,6 @@
                 label="Email"
                 keyboard="email"
                 content-type="email"
-                :ios-leading-icon="Ios::Envelope"
-                :android-leading-icon="Android::Email"
                 :error="isset($fieldErrors['email'])"
                 :supporting="$fieldErrors['email'] ?? null"
                 native:model.blur="email"
@@ -65,16 +70,5 @@
         @if ($error !== '')
             <text ref="account-error" class="text-sm text-theme-destructive">{{ $error }}</text>
         @endif
-
-        <x-ui.button
-            ref="account-save"
-            class="w-full"
-            :ios="$offline === 'save' && ! $this->disconnected ? Ios::ArrowClockwise : null"
-            :android="$offline === 'save' && ! $this->disconnected ? Android::Refresh : null"
-            :disabled="$saving || $this->disconnected"
-            tap="save"
-        >
-            {{ $offline === 'save' && ! $this->disconnected ? 'Try again' : 'Save' }}
-        </x-ui.button>
     </column>
 </scroll-view>
