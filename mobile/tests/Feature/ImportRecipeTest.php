@@ -157,7 +157,7 @@ it('says it can’t import offline without contacting Sunny', function (): void 
         ->tap('recipe-import')
         ->assertNoNavigation()
         ->assertSee('You’re offline')
-        ->assertSee('Importing needs Sunny to read the page, so it can’t wait and sync later like your other changes. Your link stays here, so connect and try again.')
+        ->assertSee('Try again when you’re connected.')
         ->assertSet('source', PANCAKES_URL)
         ->assertSee('Try again')
         ->assertSee('Fill it in myself');

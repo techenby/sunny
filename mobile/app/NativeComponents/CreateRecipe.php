@@ -5,6 +5,7 @@ namespace App\NativeComponents;
 use App\Actions\ImportRecipe;
 use App\Concerns\ChecksSunnySync;
 use App\Concerns\ManagesRecipeForm;
+use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Http\Integrations\Sunny\SunnyTeam;
 use App\Http\Integrations\Sunny\SunnyTokenStore;
 use Illuminate\Support\Str;
@@ -86,7 +87,7 @@ class CreateRecipe extends Component
         $team = app(SunnyTeam::class)->current();
 
         if ($team === null || $team->id !== $this->teamId || blank($team->slug)) {
-            $this->importFinished(['status' => 'error', 'message' => 'Select a team in Settings. If none are listed, sync with Sunny first.']);
+            $this->importFinished(['status' => 'error', 'message' => SunnySyncCoordinator::NO_TEAM_ADVICE]);
 
             return;
         }

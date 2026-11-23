@@ -11,6 +11,7 @@ use App\Http\Integrations\Sunny\SunnyTeams;
 use App\Http\Integrations\Sunny\SunnyTokenStore;
 use App\Models\Team;
 use App\Support\InvitationExpiry;
+use App\Support\Offline;
 use App\Support\Toast;
 use Carbon\CarbonImmutable;
 use DateTimeZone;
@@ -189,7 +190,7 @@ class TeamSettings extends Component
         $this->offline = Network::status()?->connected === false;
 
         if ($this->offline) {
-            Toast::error('Still offline. Try again once you’re connected.');
+            Toast::error(Offline::message());
 
             return;
         }

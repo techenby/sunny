@@ -4,6 +4,7 @@ namespace App\NativeComponents;
 
 use App\Concerns\ChecksSunnySync;
 use App\Concerns\ShowsCalendarEvents;
+use App\Http\Integrations\Sunny\SunnyCalendar;
 use App\Http\Integrations\Sunny\SunnyTeam;
 use App\Icons\Android;
 use App\Icons\Ios;
@@ -86,7 +87,7 @@ class Calendar extends Component
     {
         $fetchedAt = $this->calendarSnapshot['fetched_at'] ?? null;
 
-        if ($fetchedAt === null) {
+        if ($fetchedAt === null || ! SunnyCalendar::isStale($this->calendarSnapshot)) {
             return null;
         }
 

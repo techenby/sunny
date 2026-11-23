@@ -201,7 +201,10 @@ it('opens downloaded data offline and allows retrying failed sync', function ():
     Native::visit('/')->assertReplacedWith('/dashboard');
     $screen = Native::visit('/dashboard')->assertSee('Buttermilk Pancakes')
         ->emitNative('sunny-sync-complete', ['status' => 'failed', 'exceptionClass' => RequestException::class])
-        ->assertToastShown(fn (array $params): bool => $params['message'] === 'Unable to sync. Your previously downloaded data is still available.' && $params['variant'] === 'info')
+        ->assertNativeNotCalled('ToastKit.Show')
+        ->assertSet('syncError', '')
+        ->call('sync')
+        ->assertToastShown(fn (array $params): bool => $params['message'] === 'Unable to refresh. Your previously downloaded data is still available.' && $params['variant'] === 'info')
         ->assertSet('syncError', '');
     Saloon::fake([SyncRequest::class => MockResponse::make($this->snapshot)]);
     $screen->call('sync')->assertSee('Soup');

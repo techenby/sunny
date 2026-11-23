@@ -27,5 +27,6 @@
     <x-ui.button ref="button-glass-disabled" variant="glass" disabled tap="save">Today</x-ui.button>
     <x-ui.button ref="button-row-icon-disabled" variant="text" :ios="Ios::ChevronUp" :android="Android::KeyboardArrowUp" a11y-label="Move up" disabled tap="save" />
     <x-ui.empty-state ref="empty-state" :ios="Ios::ListBullet" :android="Android::FormatListBulleted" :heading="'No lists match “'.$name.'”'" text="Try a different search." />
+    <x-ui.offline ref="offline" extra="Nothing’s been sent yet." />
     <text ref="after">After</text>
 </column>

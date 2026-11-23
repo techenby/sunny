@@ -179,7 +179,8 @@ it('moves nothing while offline and lets them try again', function (): void {
         ->assertSet('showTeamMove', true)
         ->assertSet('teamMoveTeamId', 2)
         ->assertSee('You’re offline')
-        ->assertSee('Moving to another team needs a connection. Nothing’s been moved yet.')
+        ->assertSee('Try again when you’re connected.')
+        ->assertDontSee('Nothing’s been moved yet.')
         ->assertSee('Try again')
         ->assertNoNavigation();
 

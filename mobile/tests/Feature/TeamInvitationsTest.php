@@ -191,7 +191,7 @@ it('keeps an invitation to answer later when offline', function (): void {
 
     Native::visit('/dashboard')
         ->tap('dashboard-accept-miller-code')
-        ->assertToastShown(fn (array $params): bool => $params['message'] === 'You’re offline. Joining a team needs a connection.')
+        ->assertToastShown(fn (array $params): bool => $params['message'] === 'You’re offline. Try again when you’re connected.')
         ->assertSee('Join Miller Cabin');
 
     expect(Invitation::count())->toBe(1);
@@ -269,6 +269,23 @@ it('checks the email before sending', function (): void {
     Saloon::assertNotSent(CreateTeamInvitationRequest::class);
 });
 
+it('opens the invite form disabled while offline and frees it when the connection returns', function (): void {
+    signInToFamilyAs(7);
+    Native::fakeBridge()->respondTo('Network.Status', ['connected' => false]);
+
+    $screen = Native::visit('/preferences/team/invite')
+        ->assertSee('You’re offline')
+        ->assertSee('Try again when you’re connected.')
+        ->assertDontSee('Nothing’s been sent')
+        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'invite-send');
+
+    $screen->bridge()->respondTo('Network.Status', ['connected' => true]);
+
+    $screen->firePolls()
+        ->assertDontSee('You’re offline')
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'invite-send');
+});
+
 it('sends nothing while offline and lets the person try again', function (): void {
     signInToFamilyAs(7);
     Saloon::fake([
@@ -280,7 +297,7 @@ it('sends nothing while offline and lets the person try again', function (): voi
         ->input('invite-email', 'sam.swick@gmail.com')
         ->tap('invite-send')
         ->assertSet('offline', true)
-        ->assertSee('Sending an invitation needs a connection, since Sunny emails it right away. Nothing’s been sent to sam.swick@gmail.com yet.')
+        ->assertSee('Try again when you’re connected. Nothing’s been sent to sam.swick@gmail.com yet.')
         ->assertSee('Try again')
         ->assertSee('Last updated at')
         ->assertSet('email', 'sam.swick@gmail.com');

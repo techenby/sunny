@@ -58,14 +58,8 @@
 
                         @include('native.role-options', ['ref' => 'invite-role', 'roles' => TeamRole::assignable(), 'selected' => TeamRole::tryFrom($role) ?? TeamRole::Member, 'action' => 'chooseRole'])
 
-                        @if ($offline)
-                            <row ref="invite-offline" class="w-full items-start gap-2.5 rounded-xl bg-theme-primary/15 p-3.5">
-                                <native:icon :ios="Ios::WifiSlash" :android="Android::WifiOff" :size="20" class="text-theme-primary-text" />
-                                <column class="flex-1 gap-0.5">
-                                    <text font="semibold" class="text-base text-theme-primary-text">You’re offline</text>
-                                    <text class="text-base text-theme-on-surface">Sending an invitation needs a connection, since Sunny emails it right away. Nothing’s been sent{{ trim($email) !== '' ? ' to '.trim($email) : '' }} yet.</text>
-                                </column>
-                            </row>
+                        @if ($offline || $this->disconnected)
+                            <x-ui.offline ref="invite-offline" :extra="$this->disconnected ? null : 'Nothing’s been sent'.(trim($email) !== '' ? ' to '.trim($email) : '').' yet.'" />
                         @endif
 
                         @if ($error !== '')
@@ -75,9 +69,10 @@
                         <x-ui.button
                             ref="invite-send"
                             class="w-full"
+                            :disabled="$this->disconnected"
                             tap="send"
                         >
-                            {{ $offline ? 'Try again' : 'Send invitation' }}
+                            {{ $offline && ! $this->disconnected ? 'Try again' : 'Send invitation' }}
                         </x-ui.button>
                     </column>
                     <x-ui.text size="sm" class="px-2">We’ll email them a link that lasts 3 days.</x-ui.text>

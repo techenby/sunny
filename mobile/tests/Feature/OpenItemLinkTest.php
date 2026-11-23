@@ -34,7 +34,7 @@ it('offers the browser when the linked item is not on this phone', function () {
 
     Native::visit('/i/999')
         ->assertScreen(OpenItemLink::class)
-        ->assertSee('This item isn’t on this phone. It may be in a team you’re not part of, or it hasn’t synced yet.')
+        ->assertSee('This thing isn’t on this phone. It may be in a team you’re not part of, or it’s new. Pull down on Summary to refresh.')
         ->tap('item-link-open-browser')
         ->assertNoNavigation()
         ->assertSet('error', '');

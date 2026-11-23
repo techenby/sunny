@@ -256,3 +256,10 @@ it('draws the empty state as a card with a coral icon, a heading and one centred
             && $node['children'][2]['props']['font_size'] == 14
             && $node['children'][2]['props']['text_align'] == 1);
 });
+
+it('says the same thing wherever the app is offline', function () {
+    Native::test(UiKitScreen::class, platform: 'ios')
+        ->assertElement('row', fn (array $node): bool => refNode('offline')($node)
+            && $node['children'][0]['props']['name'] === 'wifi.slash'
+            && array_column(array_column($node['children'][1]['children'], 'props'), 'text') === ['You’re offline', 'Try again when you’re connected. Nothing’s been sent yet.']);
+});

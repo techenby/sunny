@@ -6,8 +6,10 @@ use App\Actions\OpenSharedRecipe;
 use App\Actions\SaveSharedRecipe;
 use App\Casts\RecipeLines;
 use App\Http\Integrations\Sunny\SunnyStore;
+use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Http\Integrations\Sunny\SunnyTeam;
 use App\Http\Integrations\Sunny\SunnyTokenStore;
+use App\Support\Offline;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -141,7 +143,7 @@ class SharedRecipe extends Component
         $team = app(SunnyTeam::class)->current();
 
         if ($team === null) {
-            $this->saveFailed('Sync with Sunny first.');
+            $this->saveFailed(SunnySyncCoordinator::REFRESH_ADVICE);
 
             return;
         }
@@ -213,11 +215,9 @@ class SharedRecipe extends Component
      */
     public function saveNote(): array
     {
-        [$title, $message] = $this->saveProblem === 'offline'
-            ? ['You’re offline', 'Saving needs a connection.']
-            : ['Couldn’t save', $this->saveError];
-
-        return ['title' => $title, 'message' => $message.' Nothing’s been saved yet.'];
+        return $this->saveProblem === 'offline'
+            ? ['title' => Offline::TITLE, 'message' => Offline::ADVICE]
+            : ['title' => 'Couldn’t save', 'message' => $this->saveError.' Nothing’s been saved yet.'];
     }
 
     /**

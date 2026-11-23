@@ -1,5 +1,6 @@
 @use('App\Icons\Android')
 @use('App\Icons\Ios')
+@use('App\Support\Offline')
 @use('App\Ui\Card')
 @use('Native\Mobile\Facades\System')
 
@@ -7,8 +8,7 @@
 $notice = match ($card['state']) {
     'no-recipe' => ['title' => 'No recipe on that page', 'ios' => Ios::ExclamationmarkCircle, 'android' => Android::ErrorOutline, 'tint' => 'text-theme-destructive'],
     'unreachable' => ['title' => 'Couldn’t open that page', 'ios' => Ios::ExclamationmarkCircle, 'android' => Android::ErrorOutline, 'tint' => 'text-theme-destructive'],
-    'offline' => ['title' => 'You’re offline', 'ios' => Ios::WifiSlash, 'android' => Android::WifiOff, 'tint' => 'text-theme-primary-text',
-        'message' => 'Importing needs Sunny to read the page, so it can’t wait and sync later like your other changes. Your link stays here, so connect and try again.'],
+    'offline' => ['title' => Offline::TITLE, 'ios' => Ios::WifiSlash, 'android' => Android::WifiOff, 'tint' => 'text-theme-primary-text', 'message' => Offline::ADVICE],
     'error' => ['title' => 'Couldn’t import', 'ios' => Ios::ExclamationmarkCircle, 'android' => Android::ErrorOutline, 'tint' => 'text-theme-destructive'],
     'imported' => ['title' => 'Imported and saved', 'ios' => Ios::Checkmark, 'android' => Android::Check, 'tint' => 'text-theme-primary-text',
         'message' => 'Sunny filled this in from the page. Have a look over it and fix anything that didn’t come across right.'],

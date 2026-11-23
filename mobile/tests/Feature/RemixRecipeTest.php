@@ -218,7 +218,7 @@ it('lists the new remix under the original', function () {
         ->assertSee('Buttermilk Pancakes (Remix)');
     Native::visit('/recipes/-1')
         ->assertSee('Remixed from')
-        ->assertSee('Saved on this phone · syncing with Sunny');
+        ->assertDontSee('syncing with Sunny');
 });
 
 it('sends the remix to Sunny as a new recipe with its parent', function () {

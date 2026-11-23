@@ -35,7 +35,7 @@ trait SavesSunnyRecord
             return;
         }
         if ($this->teamId === null) {
-            $this->error = 'Select a team in Settings. If none are listed, sync with Sunny first.';
+            $this->error = SunnySyncCoordinator::NO_TEAM_ADVICE;
 
             return;
         }

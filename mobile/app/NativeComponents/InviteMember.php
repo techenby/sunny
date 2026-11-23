@@ -3,6 +3,7 @@
 namespace App\NativeComponents;
 
 use App\Concerns\CallsSunnyOnline;
+use App\Concerns\NeedsConnection;
 use App\Enums\TeamRole;
 use App\Http\Integrations\Sunny\SunnyStore;
 use App\Http\Integrations\Sunny\SunnyTeam;
@@ -10,6 +11,7 @@ use App\Http\Integrations\Sunny\SunnyTeams;
 use App\Http\Integrations\Sunny\SunnyTokenStore;
 use App\Models\Team;
 use App\Support\InvitationExpiry;
+use App\Support\Offline;
 use App\Support\Toast;
 use Illuminate\View\View;
 use Native\Mobile\AsyncTask;
@@ -17,13 +19,13 @@ use Native\Mobile\Attributes\On;
 use Native\Mobile\Events\Alert\ButtonPressed;
 use Native\Mobile\Facades\Device;
 use Native\Mobile\Facades\Dialog;
-use Native\Mobile\Facades\Network;
 use RuntimeException;
 use Saloon\Http\Response;
 
 class InviteMember extends Component
 {
     use CallsSunnyOnline;
+    use NeedsConnection;
 
     public ?int $teamId = null;
 
@@ -189,8 +191,7 @@ class InviteMember extends Component
             fn () => app(SunnyTeams::class)->cancelInvitation($team, $code),
             function (string $problem, ?Response $response) use ($team, $code): void {
                 if ($problem === 'offline') {
-                    $this->offline = true;
-                    Toast::error('You’re offline. Cancelling an invitation needs a connection.');
+                    Toast::error(Offline::message());
 
                     return;
                 }
@@ -222,9 +223,7 @@ class InviteMember extends Component
     private function refresh(): void
     {
         $team = $this->team();
-        $this->offline = Network::status()?->connected === false;
-
-        if ($this->offline || $team?->slug === null || $team->currentRole() === null) {
+        if ($this->disconnected || $team?->slug === null || $team->currentRole() === null) {
             return;
         }
 

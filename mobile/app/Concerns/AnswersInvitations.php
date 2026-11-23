@@ -6,6 +6,7 @@ use App\Http\Integrations\Sunny\SunnyTeams;
 use App\Models\Invitation;
 use App\NativeComponents\Preferences;
 use App\Support\InvitationExpiry;
+use App\Support\Offline;
 use App\Support\Toast;
 use Native\Mobile\Attributes\Computed;
 use Saloon\Http\Response;
@@ -42,7 +43,7 @@ trait AnswersInvitations
 
         $joined = $this->callSunny(
             fn () => app(SunnyTeams::class)->accept($invitation),
-            fn (string $problem, ?Response $response) => $this->invitationFailed($invitation, $problem, $response, 'Joining a team needs a connection.'),
+            fn (string $problem, ?Response $response) => $this->invitationFailed($invitation, $problem, $response),
         );
 
         if ($joined) {
@@ -62,7 +63,7 @@ trait AnswersInvitations
 
         $declined = $this->callSunny(
             fn () => app(SunnyTeams::class)->decline($invitation),
-            fn (string $problem, ?Response $response) => $this->invitationFailed($invitation, $problem, $response, 'Declining needs a connection.'),
+            fn (string $problem, ?Response $response) => $this->invitationFailed($invitation, $problem, $response),
         );
 
         if ($declined) {
@@ -77,7 +78,7 @@ trait AnswersInvitations
         unset($this->invitations);
     }
 
-    private function invitationFailed(Invitation $invitation, string $problem, ?Response $response, string $offline): void
+    private function invitationFailed(Invitation $invitation, string $problem, ?Response $response): void
     {
         if (in_array($response?->status(), [404, 422], true)) {
             $invitation->delete();
@@ -86,6 +87,6 @@ trait AnswersInvitations
             return;
         }
 
-        Toast::error($problem === 'offline' ? 'You’re offline. '.$offline : self::failureMessage($problem, $response, 'Sunny couldn’t answer the invitation right now. Please try again.'));
+        Toast::error($problem === 'offline' ? Offline::message() : self::failureMessage($problem, $response, 'Sunny couldn’t answer the invitation right now. Please try again.'));
     }
 }

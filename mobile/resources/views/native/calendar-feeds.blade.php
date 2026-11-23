@@ -1,5 +1,6 @@
 @use('App\Icons\Android')
 @use('App\Icons\Ios')
+@use('App\Support\Offline')
 @use('App\Ui\Card')
 
 @php($feeds = $this->feeds)
@@ -28,8 +29,8 @@
                 <row class="w-full items-start gap-3">
                     <icon :ios="Ios::WifiSlash" :android="Android::WifiOff" :size="20" class="text-theme-destructive" />
                     <column class="flex-1 gap-0.5">
-                        <x-ui.heading class="text-theme-destructive">{{ $status === 'offline' ? 'You’re offline' : 'Sunny is unavailable' }}</x-ui.heading>
-                        <text class="text-base text-theme-on-surface">{{ $feeds !== null ? 'These may be out of date. ' : '' }}Adding, editing or removing calendars needs a connection.</text>
+                        <x-ui.heading class="text-theme-destructive">{{ $status === 'offline' ? Offline::TITLE : 'Sunny is unavailable' }}</x-ui.heading>
+                        <text class="text-base text-theme-on-surface">{{ $feeds !== null ? 'These may be out of date. ' : '' }}{{ $status === 'offline' ? Offline::ADVICE : 'Try again in a moment.' }}</text>
                     </column>
                 </row>
                 <row class="w-full pl-8">

@@ -86,8 +86,8 @@
 
         <text ref="register-consent" class="text-sm text-theme-on-surface-variant">By creating an account, you agree to our <text ref="register-terms" font="semibold" class="text-theme-primary-text" a11y-hint="Opens the Terms of Service" @tap="openTerms">Terms of Service</text> and <text ref="register-privacy" font="semibold" class="text-theme-primary-text" a11y-hint="Opens the Privacy Policy" @tap="openPrivacyPolicy">Privacy Policy</text>.</text>
 
-        @if ($failure === 'offline')
-            <x-ui.alert ref="register-offline" :ios="Ios::WifiSlash" :android="Android::WifiOff" title="You’re offline" message="Creating an account needs a connection. Nothing’s been sent yet." />
+        @if ($this->disconnected || $failure === 'offline')
+            <x-ui.offline ref="register-offline" :extra="$this->disconnected ? null : 'Nothing’s been sent yet.'" />
         @elseif ($failure === 'server')
             <x-ui.alert ref="register-server-error" :ios="Ios::ExclamationmarkTriangle" :android="Android::Warning" title="Something went wrong on our end" message="No account was created. Try again in a moment." />
         @elseif ($failure === 'throttled' && $this->throttled())
@@ -102,13 +102,13 @@
             <text ref="register-error" class="text-sm text-theme-destructive">{{ $error }}</text>
         @endif
 
-        @php($retry = in_array($failure, ['offline', 'server'], true))
+        @php($retry = in_array($failure, ['offline', 'server'], true) && ! $this->disconnected)
         <x-ui.button
             ref="register-submit"
             class="w-full"
             :ios="$retry && ! $saving ? Ios::ArrowClockwise : null"
             :android="$retry && ! $saving ? Android::Refresh : null"
-            :disabled="$saving || $this->throttled()"
+            :disabled="$saving || $this->throttled() || $this->disconnected"
             tap="submit"
         >
             {{ $saving ? 'Creating account…' : ($retry ? 'Try again' : 'Create account') }}

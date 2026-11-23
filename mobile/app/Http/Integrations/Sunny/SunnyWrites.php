@@ -89,7 +89,7 @@ class SunnyWrites
     {
         $team = Team::query()->where('server', SunnyStore::server())->find($write->team_id);
         if (! $team?->slug) {
-            $write->update(['error' => 'Sync with Sunny before saving to this team.']);
+            $write->update(['error' => SunnySyncCoordinator::REFRESH_ADVICE]);
 
             return;
         }

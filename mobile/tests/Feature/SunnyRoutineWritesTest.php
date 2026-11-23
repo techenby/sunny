@@ -127,7 +127,7 @@ it('drops a new routine’s queued steps when the routine is discarded', functio
 
 it('refuses a step for a routine that is no longer on the phone', function (): void {
     app(SunnyOutbox::class)->queue('routine_steps', 1, ['routine_id' => 99, 'name' => 'Stretch']);
-})->throws(ValidationException::class, 'This routine is no longer available. Sync with Sunny.');
+})->throws(ValidationException::class, 'This routine is no longer available.');
 
 it('downloads routines and their steps, leaving out deleted ones', function (): void {
     Saloon::fake([SyncRequest::class => MockResponse::make(routineSnapshot(
