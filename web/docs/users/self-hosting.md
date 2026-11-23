@@ -204,9 +204,5 @@ When SunnyHome changes, sync your fork with the original repository on
 GitHub. If push to deploy is on, Cloud deploys the update and runs any new
 database migrations.
 
-A few things are specific to sunnyhome.app and stay that way in your copy:
-
-- The **Admin** page only appears for the maintainer's account. To use it,
-  change the email address in the `admin` gate in
-  `app/Providers/AppServiceProvider.php`.
-- The **What it costs** page shows sunnyhome.app's costs, not yours.
+The **What it costs** page is specific to sunnyhome.app and stays that way in
+your copy: it shows sunnyhome.app's costs, not yours.
