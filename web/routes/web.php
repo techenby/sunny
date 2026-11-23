@@ -40,7 +40,6 @@ Route::prefix('{current_team}')
         Route::livewire('welcome', 'pages::onboarding')->name('onboarding')->withHead(title: 'Set up your home');
     });
 
-require __DIR__ . '/admin.php';
 require __DIR__ . '/inventory.php';
 require __DIR__ . '/kiosk.php';
 require __DIR__ . '/lists.php';

@@ -48,12 +48,6 @@
                 {{ __('Make a suggestion') }}
             </flux:sidebar.item>
 
-            @can('admin')
-                <flux:sidebar.item icon="wrench-screwdriver" :href="route('admin.dashboard')" :current="request()->routeIs('admin.*')" wire:navigate>
-                    {{ __('Admin') }}
-                </flux:sidebar.item>
-            @endcan
-
             <flux:sidebar.item icon="user-group" :href="route('teams.index')" :current="request()->routeIs('teams.*')" wire:navigate>
                 {{ __('Teams') }}
             </flux:sidebar.item>
