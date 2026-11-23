@@ -13,10 +13,6 @@ class TabsLayout extends NativeLayout
 {
     public function tabBar(NativeComponent $screen): ?TabBar
     {
-        if ($screen instanceof HidesTabBar) {
-            return null;
-        }
-
         return TabBar::make()
             ->activeColor(theme('primary-text'))
             ->add(Tab::link('Summary', '/dashboard', ios: Ios::House, android: Android::Home))
