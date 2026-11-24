@@ -442,9 +442,14 @@ def run_agents(config, batches, diff_file):
             f'Your frames are in {folder / "frames.json"}; the code changes since the board was last updated are in {diff_file}. '
             f'The app code is in {config["worktree"] / "mobile"}. Work in {folder} and write {folder / "REPORT.md"} when done.'
         )
-        args = list(config['agent']['command']) + ['-C', str(folder), '-o', str(folder / 'last-message.txt'), prompt]
+        command = list(config['agent']['command'])
+        if Path(command[0]).name == 'claude':
+            dirs = [str(RUN_DIR), str(HOME / 'shots'), str(config['worktree'] / 'mobile'), str(HERE)]
+            args = command + ['--add-dir', *dirs, '-p', prompt]
+        else:
+            args = command + ['-C', str(folder), '-o', str(folder / 'last-message.txt'), prompt]
         log(f'Agent {batch_number}: {len(batch)} frames')
-        result = subprocess.run(args, capture_output=True, text=True, timeout=config['agent'].get('timeout', 3600))
+        result = subprocess.run(args, cwd=folder, capture_output=True, text=True, timeout=config['agent'].get('timeout', 3600))
         (folder / 'agent.log').write_text((result.stdout or '') + (result.stderr or ''))
         report = folder / 'REPORT.md'
         return report.read_text() if report.exists() else f'Agent {batch_number} wrote no report (exit {result.returncode}); see {folder / "agent.log"}'

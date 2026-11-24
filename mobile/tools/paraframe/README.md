@@ -14,7 +14,7 @@ When `origin/main` has moved since the last run, `refresh.py run`:
    - It resets a local server's database with the Strawhats seed (`migrate:fresh --seed`) and serves it.
    - It builds the app onto a dedicated simulator, pointed at that server, and signs in as Nami.
    - It captures each affected frame. The steps to reach each one are in `manifest.json`: menu taps, searches, the empty team, alerts (always cancelled).
-3. **Updates the frames.** It hands those frames, their new screenshots and the code diff to agents (`codex exec`) with `brief.md`. The agents update the frames in place.
+3. **Updates the frames.** It hands those frames, their new screenshots and the code diff to agents (Claude Code or Codex) with `brief.md`. The agents update the frames in place.
 4. **Reports.** It posts a Trello card listing:
    - what changed
    - what couldn't be captured
@@ -31,7 +31,7 @@ When `origin/main` has moved since the last run, `refresh.py run`:
   - `lookups`: the seeded records the manifest's placeholders stand for (`{thing}` is the item named "Log Pose"…)
   - `labels`: the seeded names it taps (`{home_team}`, `{feed_name}`…)
   - the Trello board, list and labels
-  - the agent command
+  - the agent command: `claude` (with `--model` and `--allowedTools`) or `codex exec`
 - **Trello credentials in the keychain:**
   - `security add-generic-password -s sunny-paraframe-trello -a key -w <api key>`
   - `security add-generic-password -s sunny-paraframe-trello -a token -w <token>`
