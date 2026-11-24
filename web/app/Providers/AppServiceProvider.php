@@ -6,6 +6,7 @@ namespace App\Providers;
 
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterval;
+use Illuminate\Auth\Middleware\EnsureEmailIsVerified;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
@@ -16,6 +17,7 @@ use Laravel\Head\Enums\TwitterCard;
 use Laravel\Head\Facades\Head;
 use Laravel\Head\HeadBuilder;
 use Laravel\Passport\Passport;
+use Livewire\Livewire;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -27,6 +29,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+        Livewire::addPersistentMiddleware([EnsureEmailIsVerified::class]);
         $this->configureHead();
         $this->configurePassport();
     }

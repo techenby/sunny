@@ -231,6 +231,18 @@ class SunnyStore
         ]);
     }
 
+    public function needsEmailVerification(): bool
+    {
+        $profile = $this->profile();
+
+        return $profile !== null && ! $profile['verified'];
+    }
+
+    public function requireEmailVerification(): void
+    {
+        DB::table('sunny_accounts')->where('server', self::server())->update(['email_verified_at' => null]);
+    }
+
     /**
      * The fields the forms edit, which a queued save writes straight onto the local record.
      *

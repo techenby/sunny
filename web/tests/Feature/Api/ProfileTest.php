@@ -11,7 +11,8 @@ test('guests cannot change their profile or password', function () {
     $this->postJson(route('api.user.verification.send'))->assertUnauthorized();
 });
 
-test('a user can change their name and email', function () {
+test('a user can change their name and email, and is sent a link to verify the new one', function () {
+    Notification::fake();
     $user = User::factory()->create();
 
     $this->actingAs($user)
@@ -25,6 +26,8 @@ test('a user can change their name and email', function () {
         ->name->toBe('Nami')
         ->email->toBe('nami@example.com')
         ->email_verified_at->toBeNull();
+
+    Notification::assertSentTo($user, VerifyEmail::class);
 });
 
 test('changing only the name keeps the email verified', function () {
@@ -141,4 +144,72 @@ test('a verified user is not sent another verification email', function () {
         ->assertNoContent();
 
     Notification::assertNothingSent();
+});
+
+test('email changes and verification resends share one limit per user', function (array $requests) {
+    Notification::fake();
+    $user = User::factory()->unverified()->create();
+    $token = $user->createToken('iPhone')->plainTextToken;
+
+    foreach ($requests as $attempt => $route) {
+        $response = $route === 'update'
+            ? $this->withToken($token)->patchJson(route('api.user.update'), ['email' => "nami{$attempt}@example.com"])
+            : $this->withToken($token)->postJson(route('api.user.verification.send'));
+
+        $response->assertSuccessful();
+    }
+
+    $this->withToken($token)
+        ->patchJson(route('api.user.update'), ['email' => 'nami-last@example.com'])
+        ->assertTooManyRequests();
+
+    $this->withToken($token)
+        ->postJson(route('api.user.verification.send'))
+        ->assertTooManyRequests();
+
+    expect($user->fresh()->email)->not->toBe('nami-last@example.com');
+})->with([
+    'alternating' => [['update', 'resend', 'update', 'resend', 'update', 'resend']],
+    'email changes only' => [['update', 'update', 'update', 'update', 'update', 'update']],
+    'resends only' => [['resend', 'resend', 'resend', 'resend', 'resend', 'resend']],
+]);
+
+test('the email limit is kept per user', function () {
+    Notification::fake();
+    $nami = User::factory()->unverified()->create();
+    $zoro = User::factory()->unverified()->create();
+    $namiToken = $nami->createToken('iPhone')->plainTextToken;
+
+    foreach (range(1, 6) as $attempt) {
+        $this->withToken($namiToken)->postJson(route('api.user.verification.send'))->assertAccepted();
+    }
+
+    $this->withToken($namiToken)->postJson(route('api.user.verification.send'))->assertTooManyRequests();
+
+    $this->app['auth']->forgetGuards();
+
+    $this->withToken($zoro->createToken('iPhone')->plainTextToken)
+        ->postJson(route('api.user.verification.send'))
+        ->assertAccepted();
+});
+
+test('name changes do not use up the email limit', function () {
+    Notification::fake();
+    $user = User::factory()->unverified()->create();
+    $token = $user->createToken('iPhone')->plainTextToken;
+
+    foreach (range(1, 10) as $attempt) {
+        $this->withToken($token)
+            ->patchJson(route('api.user.update'), ['name' => "Nami {$attempt}", 'email' => $user->email])
+            ->assertOk();
+    }
+
+    foreach (range(1, 6) as $attempt) {
+        $this->withToken($token)->postJson(route('api.user.verification.send'))->assertAccepted();
+    }
+
+    $this->withToken($token)->patchJson(route('api.user.update'), ['name' => 'Nami'])->assertOk();
+    $this->withToken($token)->postJson(route('api.user.verification.send'))->assertTooManyRequests();
+
+    expect($user->fresh()->name)->toBe('Nami');
 });

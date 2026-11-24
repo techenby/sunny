@@ -125,7 +125,7 @@ it('changes the name', function (): void {
     expect(app(SunnyStore::class)->profile()['name'])->toBe('Andy S.');
 });
 
-it('marks a new email as not verified and sends the verification email when asked', function (): void {
+it('marks a new email as not verified, says Sunny sent a link, and sends another when asked', function (): void {
     rememberAndy();
     Saloon::fake([
         GetUserRequest::class => MockResponse::make(['data' => sunnyUser()]),
@@ -136,15 +136,14 @@ it('marks a new email as not verified and sends the verification email when aske
     Native::visit('/preferences/account', platform: 'ios')
         ->input('account-email', 'andy@swickhome.com')
         ->tap('account-save')
-        ->assertToastShown(fn (array $params): bool => $params['message'] === 'Saved. Your new email isn’t verified yet.')
+        ->assertToastShown(fn (array $params): bool => $params['message'] === 'Saved. We sent a link to verify andy@swickhome.com.')
         ->assertSee('Not verified')
         ->assertSee('Verify your new email')
-        ->assertSee('We haven’t sent anything yet. Send a link to andy@swickhome.com and tap it to confirm it’s yours.')
+        ->assertSee('We sent a link to andy@swickhome.com. Tap it to confirm it’s yours.')
+        ->assertSee('Send it again')
         ->assertAccessible()
         ->tap('account-send-verification')
-        ->assertToastShown(fn (array $params): bool => $params['message'] === 'Verification email sent to andy@swickhome.com')
-        ->assertSee('We sent a link to andy@swickhome.com. Tap it to confirm it’s yours.')
-        ->assertSee('Send it again');
+        ->assertToastShown(fn (array $params): bool => $params['message'] === 'Verification email sent to andy@swickhome.com');
 
     Saloon::assertSent(SendVerificationEmailRequest::class);
     expect(app(SunnyStore::class)->profile())->toBe(['name' => 'Andy Swick', 'email' => 'andy@swickhome.com', 'verified' => false]);
@@ -159,7 +158,7 @@ it('keeps the verification card on the saved email while a different one is bein
 
     Native::visit('/preferences/account', platform: 'ios')
         ->input('account-email', 'andy@swickhome.com')
-        ->assertSee('Send a link to andy@swick.family and tap it to confirm it’s yours.')
+        ->assertSee('Check andy@swick.family for a link from us and tap it to confirm it’s yours, or send a new one.')
         ->tap('account-send-verification')
         ->assertToastShown(fn (array $params): bool => $params['message'] === 'Verification email sent to andy@swick.family')
         ->assertSee('We sent a link to andy@swick.family. Tap it to confirm it’s yours.')

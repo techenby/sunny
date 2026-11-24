@@ -6,6 +6,7 @@ use App\Http\Integrations\Sunny\SunnyStore;
 use App\Models\Onboarding;
 use App\NativeComponents\Login;
 use App\NativeComponents\Register;
+use Illuminate\Support\Facades\DB;
 use Native\Mobile\Testing\Native;
 use Native\Mobile\Testing\TestableComponent;
 use Saloon\Http\Faking\MockResponse;
@@ -51,7 +52,7 @@ it('renders the native sign-up form', function (): void {
         ->assertAccessible();
 });
 
-it('creates the account, signs in and sends a new account to set-up', function (): void {
+it('creates the account, signs in and asks the new account to verify its email before set-up', function (): void {
     Saloon::fake([
         RegisterRequest::class => MockResponse::make(registeredUser(), 201),
         GetUserRequest::class => MockResponse::make(['data' => ['id' => 42]]),
@@ -63,7 +64,7 @@ it('creates the account, signs in and sends a new account to set-up', function (
         ->assertSet('passwordConfirmation', '')
         ->assertReplacedWith('/')
         ->follow()
-        ->assertReplacedWith('/setup');
+        ->assertReplacedWith('/verify-email');
 
     Saloon::assertSent(fn (Request $request): bool => $request instanceof RegisterRequest && $request->body()->all() === [
         'name' => 'Alex Rivera',
@@ -78,7 +79,7 @@ it('creates the account, signs in and sends a new account to set-up', function (
         ->and(app(SunnyStore::class)->profile())->toMatchArray(['name' => 'Alex Rivera', 'email' => 'alex@example.com']);
 });
 
-it('sends an invited account that is already onboarded to the dashboard', function (): void {
+it('sends an invited account that is already onboarded to verify its email, then the dashboard', function (): void {
     Saloon::fake([
         RegisterRequest::class => MockResponse::make(registeredUser(['onboarded_at' => '2026-11-17T00:00:00.000000Z']), 201),
         GetUserRequest::class => MockResponse::make(['data' => ['id' => 42]]),
@@ -88,8 +89,11 @@ it('sends an invited account that is already onboarded to the dashboard', functi
         ->tap('register-submit')
         ->assertReplacedWith('/')
         ->follow()
-        ->assertReplacedWith('/dashboard');
+        ->assertReplacedWith('/verify-email');
 
+    DB::table('sunny_accounts')->update(['email_verified_at' => now()]);
+
+    Native::visit('/')->assertReplacedWith('/dashboard');
     expect(Onboarding::current())->toBeNull();
 });
 

@@ -25,6 +25,7 @@ use App\Http\Controllers\Api\TeamInvitationController;
 use App\Http\Controllers\Api\TeamMemberController;
 use App\Http\Controllers\Api\TokenController;
 use App\Http\Middleware\EnsureTeamMembership;
+use App\Http\Middleware\RequireVerifiedEmail;
 use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -42,14 +43,19 @@ Route::middleware('auth:sanctum')
     ->name('api.')
     ->group(function (): void {
         Route::get('user', fn (Request $request): UserResource => UserResource::make($request->user()))->name('user');
-        Route::patch('user', [AccountController::class, 'update'])->name('user.update');
+        Route::patch('user', [AccountController::class, 'update'])->middleware('throttle:verification-email')->name('user.update');
         Route::put('user/password', [AccountController::class, 'updatePassword'])->middleware('throttle:6,1')->name('user.password.update');
-        Route::post('user/email/verification-notification', [AccountController::class, 'sendVerificationNotification'])->middleware('throttle:6,1')->name('user.verification.send');
+        Route::post('user/email/verification-notification', [AccountController::class, 'sendVerificationNotification'])->middleware('throttle:verification-email')->name('user.verification.send');
         Route::delete('user', [AccountController::class, 'destroy'])->middleware('throttle:6,1')->name('user.destroy');
-        Route::post('user/onboarding', OnboardingController::class)->name('user.onboarding');
-        Route::get('sync', SyncController::class)->name('sync');
         Route::post('sanctum/token/refresh', [TokenController::class, 'refresh'])->name('token.refresh');
         Route::post('logout', [TokenController::class, 'destroy'])->name('logout');
+    });
+
+Route::middleware(['auth:sanctum', RequireVerifiedEmail::class])
+    ->name('api.')
+    ->group(function (): void {
+        Route::post('user/onboarding', OnboardingController::class)->name('user.onboarding');
+        Route::get('sync', SyncController::class)->name('sync');
 
         Route::get('shared-recipes/{recipe:share_token}', [SharedRecipeController::class, 'show'])->name('shared-recipes.show');
         Route::post('shared-recipes/{recipe:share_token}/save', [SharedRecipeController::class, 'save'])->name('shared-recipes.save');

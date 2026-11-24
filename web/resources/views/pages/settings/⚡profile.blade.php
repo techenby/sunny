@@ -2,9 +2,11 @@
 
 use App\Actions\Fortify\UpdateUserProfileInformation;
 use App\Concerns\ProfileValidationRules;
+use App\Models\User;
 use Flux\Flux;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Session;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
@@ -24,8 +26,15 @@ new class extends Component {
     public function updateProfileInformation(UpdateUserProfileInformation $updateProfile): void
     {
         $user = Auth::user();
+        $validated = $this->validate($this->profileRules($user->id));
 
-        $updateProfile->handle($user, $this->validate($this->profileRules($user->id)));
+        if ($validated['email'] === $user->email) {
+            $updateProfile->handle($user, $validated);
+        } elseif (RateLimiter::attempt($this->emailLimitKey($user), 6, fn () => $updateProfile->handle($user, $validated)) === false) {
+            $this->addError('email', $this->tooManyEmailsMessage($user));
+
+            return;
+        }
 
         Flux::toast(variant: 'success', text: __('Profile updated.'));
     }
@@ -40,22 +49,29 @@ new class extends Component {
             return;
         }
 
-        $user->sendEmailVerificationNotification();
+        if (RateLimiter::attempt($this->emailLimitKey($user), 6, fn () => $user->sendEmailVerificationNotification()) === false) {
+            Flux::toast(variant: 'danger', text: $this->tooManyEmailsMessage($user));
+
+            return;
+        }
 
         Session::flash('status', 'verification-link-sent');
+    }
+
+    private function emailLimitKey(User $user): string
+    {
+        return "verification-email-web:{$user->id}";
+    }
+
+    private function tooManyEmailsMessage(User $user): string
+    {
+        return __('Too many verification emails. Try again in :seconds seconds.', ['seconds' => RateLimiter::availableIn($this->emailLimitKey($user))]);
     }
 
     #[Computed]
     public function hasUnverifiedEmail(): bool
     {
         return Auth::user() instanceof MustVerifyEmail && ! Auth::user()->hasVerifiedEmail();
-    }
-
-    #[Computed]
-    public function showDeleteUser(): bool
-    {
-        return ! Auth::user() instanceof MustVerifyEmail
-            || (Auth::user() instanceof MustVerifyEmail && Auth::user()->hasVerifiedEmail());
     }
 }; ?>
 
@@ -100,8 +116,6 @@ new class extends Component {
             </div>
         </form>
 
-        @if ($this->showDeleteUser)
-            <livewire:pages::settings.delete-user-form />
-        @endif
+        <livewire:pages::settings.delete-user-form />
     </x-pages::settings.layout>
 </section>

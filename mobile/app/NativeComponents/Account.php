@@ -101,10 +101,10 @@ class Account extends Component implements HidesTabBar
 
         if ($previousEmail !== null && $previousEmail !== $this->email) {
             $this->emailChanged = true;
-            $this->verificationSent = false;
+            $this->verificationSent = true;
         }
 
-        Toast::success($this->emailChanged && ! $this->verified ? 'Saved. Your new email isn’t verified yet.' : 'Saved');
+        Toast::success($this->emailChanged && ! $this->verified ? 'Saved. We sent a link to verify '.$this->email.'.' : 'Saved');
     }
 
     public function sendVerification(): void

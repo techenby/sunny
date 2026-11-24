@@ -3,6 +3,7 @@
 namespace App\Concerns;
 
 use App\Actions\DestroySession;
+use App\Http\Integrations\Sunny\EmailVerificationRequired;
 use Closure;
 use Illuminate\Auth\AuthenticationException;
 use Native\Mobile\Facades\Network;
@@ -32,6 +33,8 @@ trait CallsSunnyOnline
             return true;
         } catch (FatalRequestException) {
             $failed('offline', null);
+        } catch (EmailVerificationRequired) {
+            $this->openEmailVerification();
         } catch (RequestException $exception) {
             if ($exception->getResponse()->status() === 401) {
                 rescue(fn () => app(DestroySession::class)->handle(), report: false);

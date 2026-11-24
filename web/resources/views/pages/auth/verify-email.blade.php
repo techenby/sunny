@@ -1,12 +1,12 @@
 <x-layouts::auth>
     <div class="mt-4 flex flex-col gap-6">
         <flux:text class="text-center">
-            {{ __('Please verify your email address by clicking on the link we just emailed to you.') }}
+            {{ __('Verify :email to keep using SunnyHome. If you don’t have a link from us yet, send one below.', ['email' => auth()->user()->email]) }}
         </flux:text>
 
         @if (session('status') == 'verification-link-sent')
             <flux:text class="text-center font-medium !dark:text-green-400 !text-green-600">
-                {{ __('A new verification link has been sent to the email address you provided during registration.') }}
+                {{ __('A new verification link has been sent to your email address.') }}
             </flux:text>
         @endif
 
@@ -14,9 +14,13 @@
             <form method="POST" action="{{ route('verification.send') }}">
                 @csrf
                 <flux:button type="submit" variant="primary" class="w-full">
-                    {{ __('Resend verification email') }}
+                    {{ __('Send verification email') }}
                 </flux:button>
             </form>
+
+            <flux:link :href="route('profile.edit')" class="text-sm" data-test="change-email-link">
+                {{ __('Wrong email address? Change it') }}
+            </flux:link>
 
             <form method="POST" action="{{ route('logout') }}">
                 @csrf

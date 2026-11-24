@@ -42,14 +42,30 @@ class SunnySyncCoordinator
         }
 
         try {
+            $this->ensureEmailIsVerified($token);
             $this->writes->push($token);
             $this->sync->sync($token);
             rescue(fn () => app(SunnyTeams::class)->refreshInvitations($token), report: false);
 
             return true;
+        } catch (EmailVerificationRequired $exception) {
+            $this->store->requireEmailVerification();
+
+            throw $exception;
         } finally {
             $lock->release();
         }
+    }
+
+    private function ensureEmailIsVerified(#[\SensitiveParameter] ?string $token): void
+    {
+        if ($this->store->profile()['verified'] ?? true) {
+            return;
+        }
+
+        rescue(fn () => app(SunnyAccount::class)->refresh($token), report: false);
+
+        throw_if($this->store->needsEmailVerification(), new EmailVerificationRequired);
     }
 
     public function isDue(): bool

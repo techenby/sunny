@@ -7,6 +7,7 @@ use App\Concerns\AnswersInvitations;
 use App\Concerns\ChecksSunnySync;
 use App\Concerns\ShowsCalendarEvents;
 use App\Enums\ItemType;
+use App\Http\Integrations\Sunny\EmailVerificationRequired;
 use App\Http\Integrations\Sunny\SunnyStore;
 use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Http\Integrations\Sunny\SunnyTeam;
@@ -207,6 +208,12 @@ class Dashboard extends Component
         if (is_a($exception, AuthenticationException::class, true) || is_a($exception, UnauthorizedException::class, true)) {
             rescue(fn () => app(DestroySession::class)->handle(), report: false);
             $this->replace('/login');
+
+            return;
+        }
+
+        if (is_a($exception, EmailVerificationRequired::class, true)) {
+            $this->replace('/verify-email');
 
             return;
         }

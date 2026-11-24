@@ -3,7 +3,9 @@
 use App\Models\TeamInvitation;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
+use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Notification;
 use Laravel\Fortify\Features;
 use Laravel\Sanctum\PersonalAccessToken;
 
@@ -65,6 +67,20 @@ test('people who register with a pending invitation skip onboarding', function (
 
     expect($response->json('onboarded_at'))->not->toBeNull()
         ->and(User::where('email', 'zoro@example.com')->sole()->needsOnboarding())->toBeFalse();
+});
+
+test('registering sends a verification email', function () {
+    Notification::fake();
+
+    $this->postJson(route('api.register'), [
+        'name' => 'Nami',
+        'email' => 'nami@example.com',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+        'device_name' => 'iPhone',
+    ])->assertCreated();
+
+    Notification::assertSentTo(User::where('email', 'nami@example.com')->sole(), VerifyEmail::class);
 });
 
 test('registering fires the registered event', function () {

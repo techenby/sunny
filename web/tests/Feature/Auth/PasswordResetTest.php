@@ -2,7 +2,9 @@
 
 use App\Models\User;
 use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Password;
 
 test('reset password link screen can be rendered', function () {
     $response = $this->get(route('password.request'));
@@ -57,4 +59,20 @@ test('password can be reset with valid token', function () {
 
         return true;
     });
+});
+
+test('resetting the password signs the account out everywhere', function () {
+    $user = User::factory()->create();
+    $user->createToken('iPhone');
+    DB::table('sessions')->insert(['id' => 'someone-elses-session', 'user_id' => $user->id, 'payload' => '', 'last_activity' => now()->timestamp]);
+
+    $this->post(route('password.update'), [
+        'token' => Password::createToken($user),
+        'email' => $user->email,
+        'password' => 'new-password',
+        'password_confirmation' => 'new-password',
+    ])->assertSessionHasNoErrors();
+
+    expect($user->tokens()->count())->toBe(0)
+        ->and(DB::table('sessions')->where('user_id', $user->id)->exists())->toBeFalse();
 });
