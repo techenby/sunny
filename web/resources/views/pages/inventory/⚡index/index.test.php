@@ -910,7 +910,6 @@ describe('bulk update parent', function () {
             ->and($itemB->fresh()->parent_id)->toBeNull();
     });
 
-
     test('bulk update refuses a place in another team', function () {
         $user = User::factory()->create();
         $item = Item::factory()->for($user->currentTeam)->create(['name' => 'Guitar']);
