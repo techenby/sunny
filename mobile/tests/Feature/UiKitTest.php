@@ -304,3 +304,74 @@ it('pins the submit bar to the bottom of the screen as one full-width primary bu
         ->tap('submit-bar')
         ->assertSet('saves', 1);
 });
+
+it('heads a sheet with an x in a glass circle at the left of a centred title', function () {
+    Native::test(UiKitScreen::class, platform: 'ios')
+        ->assertElement('row', fn (array $node): bool => array_column($node['children'], 'type') === ['pressable', 'text', 'column']
+            && $node['layout']['padding'] == [16, 16, 8, 16]
+            && refNode('sheet-close')($node['children'][0])
+            && $node['children'][0]['props']['a11y_label'] === 'Close'
+            && $node['children'][0]['layout']['width'] == 48 && $node['children'][0]['layout']['height'] == 48
+            && isset($node['children'][0]['props']['glass'])
+            && $node['children'][0]['children'][0]['props']['name'] === 'xmark'
+            && $node['children'][1]['props']['text'] === 'Rename Camping gear'
+            && $node['children'][1]['props']['text_align'] == 1
+            && $node['children'][1]['props']['font_size'] == 17
+            && $node['children'][1]['props']['font_name'] === 'semibold'
+            && $node['children'][1]['props']['color'] === theme('on-surface')
+            && $node['children'][1]['layout']['flex_grow'] == 1
+            && $node['children'][2]['layout']['width'] == 48)
+        ->tap('sheet-close')
+        ->assertSet('saves', 1);
+
+    Native::test(UiKitScreen::class, platform: 'android')
+        ->assertElement('pressable', fn (array $node): bool => refNode('sheet-close')($node)
+            && $node['children'][0]['props']['name'] === 'close');
+});
+
+it('paints the sheet’s colour behind and below the content on iOS, so no lighter band shows above the keyboard', function () {
+    $backdrop = fn (array $node): bool => ($node['layout']['position_type'] ?? null) === 1
+        && $node['layout']['position'] == [0, 0, -1000, 0]
+        && $node['layout']['width'] === 'fill'
+        && $node['layout']['height'] === 'fill'
+        && $node['style']['bg_color'] === theme('background')
+        && ! isset($node['children']);
+
+    Native::test(UiKitScreen::class, platform: 'ios')
+        ->assertElement('column', fn (array $node): bool => refNode('screen')($node)
+            && collect($node['children'])->search($backdrop) === collect($node['children'])->search(fn (array $child): bool => refNode('sheet-close')($child['children'][0] ?? [])) - 1);
+
+    Native::test(UiKitScreen::class, platform: 'android')->assertMissingElement('column', $backdrop);
+    Native::test(UiKitScreen::class)->assertMissingElement('column', $backdrop);
+});
+
+it('confirms a sheet with one full-width primary button that is unavailable only while saving', function () {
+    $confirm = fn (string $ref): Closure => fn (array $node): bool => $node['layout']['padding'] == [24, 16, 24, 16]
+        && refNode($ref)($node['children'][0])
+        && $node['children'][0]['layout']['width'] === 'fill';
+
+    $screen = Native::test(UiKitScreen::class)
+        ->assertElement('column', fn (array $node): bool => isset($node['children'][0], $node['layout']['padding']) && $confirm('sheet-confirm')($node)
+            && $node['children'][0]['type'] === 'pressable'
+            && $node['children'][0]['style']['bg_color'] === theme('primary')
+            && $node['children'][0]['layout']['min_height'] == 48
+            && $node['children'][1]['props']['text'] === 'Or tap one above to look inside it'
+            && $node['children'][1]['props']['text_align'] == 1)
+        ->assertSee('Put it in Camping gear')
+        ->assertElement('column', fn (array $node): bool => isset($node['children'][0], $node['layout']['padding']) && $confirm('sheet-confirm-saving')($node)
+            && $node['children'][0]['type'] === 'pressable'
+            && count($node['children']) === 1)
+        ->tap('sheet-confirm')
+        ->tap('sheet-confirm')
+        ->tap('sheet-confirm-saving')
+        ->assertSet('saves', 3);
+
+    $screen->assertElement('column', fn (array $node): bool => refNode('sheet-confirm-saving')($node)
+        && $node['props']['a11y_label'] === 'Save, unavailable'
+        && array_column($node['children'][0]['children'], 'type') === ['activity_indicator', 'text'])
+        ->assertMissingElement('pressable', refNode('sheet-confirm-saving'));
+
+    Native::test(UiKitScreen::class, platform: 'ios')
+        ->assertElement('column', fn (array $node): bool => refNode('sheet-confirm')($node['children'][0] ?? [])
+            && $node['layout']['padding'] == [24, 16, 0, 16]);
+});

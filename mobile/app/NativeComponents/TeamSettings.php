@@ -23,6 +23,7 @@ use Native\Mobile\Facades\Browser;
 use Native\Mobile\Facades\Device;
 use Native\Mobile\Facades\Dialog;
 use Native\Mobile\Facades\Network;
+use Native\Mobile\Facades\System;
 use RuntimeException;
 use Saloon\Http\Response;
 
@@ -48,7 +49,7 @@ class TeamSettings extends Component
 
     public ?int $memberId = null;
 
-    public bool $confirmingRemove = false;
+    public ?int $removalToConfirm = null;
 
     public ?string $invitationsRefreshedAt = null;
 
@@ -180,7 +181,7 @@ class TeamSettings extends Component
     /** @return array{id: int, name: string, initials: string, role: TeamRole}|null */
     public function member(): ?array
     {
-        return collect($this->members())->first(fn (array $member): bool => $member['id'] === $this->memberId && $member['tappable']);
+        return $this->manageableMember($this->memberId);
     }
 
     public function retry(): void
@@ -280,14 +281,14 @@ class TeamSettings extends Component
     {
         if (! $this->offline && collect($this->members())->contains(fn (array $member): bool => $member['id'] === $id && $member['tappable'])) {
             $this->memberId = $id;
-            $this->confirmingRemove = false;
+            $this->removalToConfirm = null;
         }
     }
 
     public function closeMember(): void
     {
         $this->memberId = null;
-        $this->confirmingRemove = false;
+        $this->askToRemove();
     }
 
     public function changeRole(string $role): void
@@ -307,12 +308,12 @@ class TeamSettings extends Component
 
     public function confirmRemove(): void
     {
-        $this->confirmingRemove = $this->member() !== null;
-    }
+        $this->removalToConfirm = $this->member()['id'] ?? null;
+        $this->memberId = null;
 
-    public function keepMember(): void
-    {
-        $this->confirmingRemove = false;
+        if (! System::isIos()) {
+            $this->askToRemove();
+        }
     }
 
     public function confirmLeave(): void
@@ -331,13 +332,17 @@ class TeamSettings extends Component
         if ($id === 'leave-team' && $label === 'Leave') {
             $this->leave();
         }
+
+        if ($id !== null && str_starts_with($id, 'remove-member-') && $label === 'Remove') {
+            $this->removeMember((int) substr($id, strlen('remove-member-')));
+        }
     }
 
-    public function removeMember(): void
+    public function removeMember(int $id): void
     {
-        $member = $this->member();
+        $member = $this->manageableMember($id);
 
-        if ($member === null || ! $this->confirmingRemove) {
+        if ($member === null) {
             return;
         }
 
@@ -347,7 +352,6 @@ class TeamSettings extends Component
         );
 
         if ($removed) {
-            $this->closeMember();
             Toast::success('Removed '.$member['name']);
         }
     }
@@ -403,6 +407,29 @@ class TeamSettings extends Component
             1 => $names[0],
             default => implode(', ', array_slice($names, 0, -1)).' '.$and.' '.end($names),
         };
+    }
+
+    /** @return array{id: int, name: string, initials: string, role: TeamRole}|null */
+    private function manageableMember(?int $id): ?array
+    {
+        return collect($this->members())->first(fn (array $member): bool => $member['id'] === $id && $member['tappable']);
+    }
+
+    private function askToRemove(): void
+    {
+        $member = $this->manageableMember($this->removalToConfirm);
+        $this->removalToConfirm = null;
+
+        if ($member === null) {
+            return;
+        }
+
+        $firstName = self::firstName($member['name']);
+
+        Dialog::alert('Remove '.$firstName.' from '.$this->team()->name.'?', $firstName.' will lose access to the team’s recipes, inventory, routines and lists.', [
+            ['label' => 'Cancel', 'style' => 'cancel'],
+            ['label' => 'Remove', 'style' => 'destructive'],
+        ])->id('remove-member-'.$member['id'])->show();
     }
 
     /** @param  array{name?: string, timezone?: string, week_start?: int}  $attributes */

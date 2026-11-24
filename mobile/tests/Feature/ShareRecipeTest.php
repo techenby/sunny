@@ -48,7 +48,8 @@ it('explains the public link while it is off', function (): void {
         ->assertSee('Opens in any browser')
         ->assertSee('Turn it off any time')
         ->assertSee('Turn on public link')
-        ->assertSee('Not now')
+        ->assertDontSee('Not now')
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'recipe-share-close' && $node['props']['a11y_label'] === 'Close')
         ->assertDontSee('Send link')
         ->assertAccessible();
 });
@@ -67,7 +68,8 @@ it('turns the link on and sends it with the share sheet', function (): void {
         ->assertSee('sunny.example/recipes/shared/0b7f1c2e-6a1d-4c55-9a51-2f3e4d5c6b7a')
         ->assertSee('Turn off link')
         ->assertSee('Send link')
-        ->assertSee('Done')
+        ->assertDontSee('Done')
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'recipe-share-close' && $node['props']['a11y_label'] === 'Close')
         ->assertAccessible()
         ->tap('recipe-share-copy')
         ->assertCopied(SHARE_URL)
@@ -133,7 +135,8 @@ it('keeps the recipe private while offline and lets them try again', function ()
         ->assertSee('You’re offline')
         ->assertSee('Try again when you’re connected. The recipe is still private, and no link has been made.')
         ->assertSee('Try again')
-        ->assertSee('Cancel');
+        ->assertDontSee('Cancel')
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'recipe-share-close' && $node['props']['a11y_label'] === 'Close');
 
     expect(Recipe::find(1)->share_url)->toBeNull();
 

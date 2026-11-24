@@ -35,6 +35,21 @@
             <x-ui.text size="sm" class="px-1">x-ui.submit-bar is the button pinned at the bottom of this screen. On a form it takes the tab bar’s place.</x-ui.text>
         </column>
 
+        <column ref="ui-kit-sheets" class="w-full gap-2">
+            <x-ui.subheading class="px-1">x-ui.sheet-header and x-ui.sheet-confirm</x-ui.subheading>
+            <column class="{{ Card::classes() }} w-full">
+                <x-ui.sheet-header ref="ui-kit-sheet-header" title="title" close="tapped('sheet-header close')" />
+                <x-ui.text size="sm" class="px-4">The sheet’s content goes between the two. The x closes it, and so does swiping down.</x-ui.text>
+                <x-ui.sheet-confirm ref="ui-kit-sheet-confirm" help="help, under the button" tap="tapped('sheet-confirm')">x-ui.sheet-confirm</x-ui.sheet-confirm>
+            </column>
+            <x-ui.text size="sm" class="px-1">loading, the only time the button is unavailable</x-ui.text>
+            <column class="{{ Card::classes() }} w-full">
+                <x-ui.sheet-confirm ref="ui-kit-sheet-confirm-loading" loading tap="tapped('sheet-confirm loading')">Saving…</x-ui.sheet-confirm>
+            </column>
+            <x-ui.button ref="ui-kit-sheet-open" variant="secondary" class="w-full" tap="openSheet">Open a sheet</x-ui.button>
+            <x-ui.text size="sm" class="px-1">detents="fit" makes a sheet as tall as its content. detents="large" is only for a long list with a search field.</x-ui.text>
+        </column>
+
         <column ref="ui-kit-buttons" class="w-full gap-2">
             <x-ui.subheading class="px-1">x-ui.button</x-ui.subheading>
             <column class="{{ Card::classes() }} w-full gap-3 p-4">
@@ -228,3 +243,15 @@
         </column>
     </column>
 </scroll-view>
+
+<native:bottom-sheet ref="ui-kit-sheet" :visible="$showSheet" @dismiss="closeSheet" detents="fit">
+    @if ($showSheet)
+        <column class="w-full bg-theme-background">
+            <x-ui.sheet-header ref="ui-kit-sheet-close" title="x-ui.sheet-header" close="closeSheet" />
+            <column class="w-full px-4 pt-4">
+                <outlined-text-input ref="ui-kit-sheet-input" label="A field, to check the keyboard" native:model="sheetText" />
+            </column>
+            <x-ui.sheet-confirm ref="ui-kit-sheet-save" tap="confirmSheet">x-ui.sheet-confirm</x-ui.sheet-confirm>
+        </column>
+    @endif
+</native:bottom-sheet>

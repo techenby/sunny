@@ -307,175 +307,147 @@
         'parentTrail' => $this->parentTrail,
     ])
 
-    <native:bottom-sheet ref="item-copies-sheet" :visible="$showCopies" @dismiss="closeCopies" detents="0.75,large">
+    <native:bottom-sheet ref="item-copies-sheet" :visible="$showCopies" @dismiss="closeCopies" detents="fit">
         @if ($showCopies)
             @php($thumb = $this->photos[0]['thumb'] ?? null)
-            <column fill class="bg-theme-background">
-                <scroll-view ref="item-copies-scroll" fill>
-                    <column class="w-full gap-5 px-4 pt-6">
-                        <column class="w-full gap-1.5 px-1">
-                            <text font="accent" class="text-2xl text-theme-on-background">Make copies</text>
-                            <x-ui.text>Each copy gets the same name, details and photos, but starts empty inside.</x-ui.text>
-                        </column>
+            <column class="w-full bg-theme-background">
+                <x-ui.sheet-header ref="item-copies-close" title="Make copies" close="closeCopies" />
+                <column class="w-full gap-5 px-4 pt-2">
+                    <x-ui.text class="px-1">Each copy gets the same name, details and photos, but starts empty inside.</x-ui.text>
 
-                        <row ref="item-copies-source" class="{{ Card::classes() }} w-full items-center gap-3 px-4 py-3">
-                            <x-ui.avatar
-                                size="lg"
-                                :src="$thumb"
-                                :alt="'Photo of '.$item['name']"
-                                :color="$item['type']->color()"
-                                :ios="$item['type']->iosIcon()"
-                                :android="$item['type']->androidIcon()"
+                    <row ref="item-copies-source" class="{{ Card::classes() }} w-full items-center gap-3 px-4 py-3">
+                        <x-ui.avatar
+                            size="lg"
+                            :src="$thumb"
+                            :alt="'Photo of '.$item['name']"
+                            :color="$item['type']->color()"
+                            :ios="$item['type']->iosIcon()"
+                            :android="$item['type']->androidIcon()"
+                        />
+                        <column class="flex-1 gap-0.5">
+                            <x-ui.heading size="lg">{{ $item['name'] }}</x-ui.heading>
+                            <x-ui.text>Going {{ $this->copiesPlace() }}</x-ui.text>
+                        </column>
+                    </row>
+
+                    <column class="w-full gap-3">
+                        <row ref="item-copies-stepper" class="{{ Card::classes() }} w-full items-center justify-between p-4">
+                            <x-ui.button
+                                ref="item-copies-fewer"
+                                variant="secondary"
+                                :ios="Ios::Minus"
+                                :android="Android::Remove"
+                                a11y-label="Fewer copies"
+                                tap="changeCopies(-1)"
+                                :disabled="$copies <= 1"
+                            />
+                            <column class="items-center gap-0.5">
+                                <text ref="item-copies-count" font="accent" class="text-5xl text-theme-on-surface">{{ $copies }}</text>
+                                <text font="medium" class="text-base text-theme-on-surface-variant">{{ $copies === 1 ? 'copy' : 'copies' }}</text>
+                            </column>
+                            <x-ui.button
+                                ref="item-copies-more"
+                                variant="secondary"
+                                :ios="Ios::Plus"
+                                :android="Android::Add"
+                                a11y-label="More copies"
+                                tap="changeCopies(1)"
+                                :disabled="$copies >= DuplicateItem::MAX_COPIES"
+                            />
+                        </row>
+                        <text font="medium" class="w-full text-center text-xs text-theme-on-surface-variant">Up to {{ DuplicateItem::MAX_COPIES }} at a time</text>
+                    </column>
+
+                    @if ($copiesProblem !== null)
+                        @php($note = $this->copiesNote())
+                        <row ref="item-copies-problem" class="w-full items-start gap-2.5 rounded-xl bg-theme-primary/15 p-3.5">
+                            <native:icon
+                                :ios="$copiesProblem === 'offline' ? Ios::WifiSlash : Ios::ExclamationmarkCircle"
+                                :android="$copiesProblem === 'offline' ? Android::WifiOff : Android::ErrorOutline"
+                                :size="20"
+                                class="text-theme-primary-text"
                             />
                             <column class="flex-1 gap-0.5">
-                                <x-ui.heading size="lg">{{ $item['name'] }}</x-ui.heading>
-                                <x-ui.text>Going {{ $this->copiesPlace() }}</x-ui.text>
+                                <text font="semibold" class="text-base text-theme-primary-text">{{ $note['title'] }}</text>
+                                <text class="text-base text-theme-on-surface">{{ $note['message'] }}</text>
                             </column>
                         </row>
-
-                        <column class="w-full gap-3">
-                            <row ref="item-copies-stepper" class="{{ Card::classes() }} w-full items-center justify-between p-4">
-                                <x-ui.button
-                                    ref="item-copies-fewer"
-                                    variant="secondary"
-                                    :ios="Ios::Minus"
-                                    :android="Android::Remove"
-                                    a11y-label="Fewer copies"
-                                    tap="changeCopies(-1)"
-                                    :disabled="$copies <= 1"
-                                />
-                                <column class="items-center gap-0.5">
-                                    <text ref="item-copies-count" font="accent" class="text-5xl text-theme-on-surface">{{ $copies }}</text>
-                                    <text font="medium" class="text-base text-theme-on-surface-variant">{{ $copies === 1 ? 'copy' : 'copies' }}</text>
-                                </column>
-                                <x-ui.button
-                                    ref="item-copies-more"
-                                    variant="secondary"
-                                    :ios="Ios::Plus"
-                                    :android="Android::Add"
-                                    a11y-label="More copies"
-                                    tap="changeCopies(1)"
-                                    :disabled="$copies >= DuplicateItem::MAX_COPIES"
-                                />
-                            </row>
-                            <text font="medium" class="w-full text-center text-xs text-theme-on-surface-variant">Up to {{ DuplicateItem::MAX_COPIES }} at a time</text>
-                        </column>
-
-                        @if ($copiesProblem !== null)
-                            @php($note = $this->copiesNote())
-                            <row ref="item-copies-problem" class="w-full items-start gap-2.5 rounded-xl bg-theme-primary/15 p-3.5">
-                                <native:icon
-                                    :ios="$copiesProblem === 'offline' ? Ios::WifiSlash : Ios::ExclamationmarkCircle"
-                                    :android="$copiesProblem === 'offline' ? Android::WifiOff : Android::ErrorOutline"
-                                    :size="20"
-                                    class="text-theme-primary-text"
-                                />
-                                <column class="flex-1 gap-0.5">
-                                    <text font="semibold" class="text-base text-theme-primary-text">{{ $note['title'] }}</text>
-                                    <text class="text-base text-theme-on-surface">{{ $note['message'] }}</text>
-                                </column>
-                            </row>
-                        @endif
-                    </column>
-                </scroll-view>
-
-                <column class="w-full gap-1 px-4 pt-3 pb-8">
-                    <x-ui.button
-                        ref="item-copies-submit"
-                        class="w-full"
-                        :ios="$copiesProblem === null ? Ios::SquareOnSquare : Ios::ArrowClockwise"
-                        :android="$copiesProblem === null ? Android::ContentCopy : Android::Refresh"
-                        tap="makeCopies"
-                    >
-                        {{ $copiesProblem === null ? trans_choice('Make :count copy|Make :count copies', $copies) : 'Try again' }}
-                    </x-ui.button>
-                    <x-ui.button
-                        ref="item-copies-cancel"
-                        variant="text"
-                        class="w-full items-center"
-                        a11y-label="Cancel"
-                        tap="closeCopies"
-                    >Cancel</x-ui.button>
+                    @endif
                 </column>
+
+                <x-ui.sheet-confirm
+                    ref="item-copies-submit"
+                    :ios="$copiesProblem === null ? Ios::SquareOnSquare : Ios::ArrowClockwise"
+                    :android="$copiesProblem === null ? Android::ContentCopy : Android::Refresh"
+                    tap="makeCopies"
+                >
+                    {{ $copiesProblem === null ? trans_choice('Make :count copy|Make :count copies', $copies) : 'Try again' }}
+                </x-ui.sheet-confirm>
             </column>
         @endif
     </native:bottom-sheet>
 
-    <native:bottom-sheet ref="item-team-move-sheet" :visible="$showTeamMove" @dismiss="closeTeamMove" detents="0.75,large">
+    <native:bottom-sheet ref="item-team-move-sheet" :visible="$showTeamMove" @dismiss="closeTeamMove" detents="fit">
         @if ($showTeamMove)
             @php($moveTeams = $this->teamMoveTeams())
             @php($destination = $this->teamMoveDestination())
-            <column fill class="bg-theme-background">
-                <scroll-view ref="item-team-move-scroll" fill>
-                    <column class="w-full gap-5 px-4 pt-6">
-                        <column class="w-full gap-1.5 px-1">
-                            <text font="accent" class="text-2xl text-theme-on-background">Move to another team</text>
-                            <x-ui.text>{{ $this->teamMoveSummary() }}</x-ui.text>
-                        </column>
+            <column class="w-full bg-theme-background">
+                <x-ui.sheet-header ref="item-team-move-close" title="Move to another team" close="closeTeamMove" />
+                <column class="w-full gap-5 px-4 pt-2">
+                    <x-ui.text class="px-1">{{ $this->teamMoveSummary() }}</x-ui.text>
 
-                        <column ref="item-team-move-teams" class="{{ Card::classes() }} w-full">
-                            @foreach ($moveTeams as $id => $name)
-                                <pressable
-                                    ref="item-team-move-team-{{ $id }}"
-                                    :a11y-label="$name.', '.$destination.($id === $teamMoveTeamId ? ', selected' : '')"
-                                    class="min-h-12 w-full justify-center px-4 py-2"
-                                    @tap="pickTeamMoveTeam({{ $id }})"
-                                >
-                                    <row class="w-full items-center gap-4">
-                                        <column class="h-9 w-9 items-center justify-center rounded-full bg-theme-primary">
-                                            <text font="medium" class="text-base text-theme-on-primary">{{ mb_strtoupper(mb_substr($name, 0, 1)) }}</text>
-                                        </column>
-                                        <column class="flex-1 gap-0.5">
-                                            <text class="text-lg text-theme-on-surface">{{ $name }}</text>
-                                            <x-ui.text>{{ $destination }}</x-ui.text>
-                                        </column>
-                                        @if ($id === $teamMoveTeamId)
-                                            <icon :ios="Ios::Checkmark" :android="Android::Check" :size="18" class="text-theme-primary-text" />
-                                        @endif
-                                    </row>
-                                </pressable>
-                                @unless ($loop->last)
-                                    <divider class="ml-[68]" />
-                                @endunless
-                            @endforeach
-                        </column>
-
-                        @if ($teamMoveProblem !== null)
-                            @php($note = $this->teamMoveNote())
-                            <row ref="item-team-move-problem" class="w-full items-start gap-2.5 rounded-xl bg-theme-primary/15 p-3.5">
-                                <native:icon
-                                    :ios="$teamMoveProblem === 'offline' ? Ios::WifiSlash : Ios::ExclamationmarkCircle"
-                                    :android="$teamMoveProblem === 'offline' ? Android::WifiOff : Android::ErrorOutline"
-                                    :size="20"
-                                    class="text-theme-primary-text"
-                                />
-                                <column class="flex-1 gap-0.5">
-                                    <text font="semibold" class="text-base text-theme-primary-text">{{ $note['title'] }}</text>
-                                    <text class="text-base text-theme-on-surface">{{ $note['message'] }}</text>
-                                </column>
-                            </row>
-                        @endif
+                    <column ref="item-team-move-teams" class="{{ Card::classes() }} w-full">
+                        @foreach ($moveTeams as $id => $name)
+                            <pressable
+                                ref="item-team-move-team-{{ $id }}"
+                                :a11y-label="$name.', '.$destination.($id === $teamMoveTeamId ? ', selected' : '')"
+                                class="min-h-12 w-full justify-center px-4 py-2"
+                                @tap="pickTeamMoveTeam({{ $id }})"
+                            >
+                                <row class="w-full items-center gap-4">
+                                    <column class="h-9 w-9 items-center justify-center rounded-full bg-theme-primary">
+                                        <text font="medium" class="text-base text-theme-on-primary">{{ mb_strtoupper(mb_substr($name, 0, 1)) }}</text>
+                                    </column>
+                                    <column class="flex-1 gap-0.5">
+                                        <text class="text-lg text-theme-on-surface">{{ $name }}</text>
+                                        <x-ui.text>{{ $destination }}</x-ui.text>
+                                    </column>
+                                    @if ($id === $teamMoveTeamId)
+                                        <icon :ios="Ios::Checkmark" :android="Android::Check" :size="18" class="text-theme-primary-text" />
+                                    @endif
+                                </row>
+                            </pressable>
+                            @unless ($loop->last)
+                                <divider class="ml-[68]" />
+                            @endunless
+                        @endforeach
                     </column>
-                </scroll-view>
 
-                <column class="w-full gap-1 px-4 pt-3 pb-8">
-                    <x-ui.button
-                        ref="item-team-move-submit"
-                        class="w-full"
-                        :ios="$teamMoveProblem === null ? Ios::ArrowLeftArrowRight : Ios::ArrowClockwise"
-                        :android="$teamMoveProblem === null ? Android::SwapHoriz : Android::Refresh"
-                        tap="moveToTeam"
-                    >
-                        {{ $teamMoveProblem === null ? 'Move to '.($moveTeams[$teamMoveTeamId] ?? 'another team') : 'Try again' }}
-                    </x-ui.button>
-                    <x-ui.button
-                        ref="item-team-move-cancel"
-                        variant="text"
-                        class="w-full items-center"
-                        a11y-label="Cancel"
-                        tap="closeTeamMove"
-                    >Cancel</x-ui.button>
+                    @if ($teamMoveProblem !== null)
+                        @php($note = $this->teamMoveNote())
+                        <row ref="item-team-move-problem" class="w-full items-start gap-2.5 rounded-xl bg-theme-primary/15 p-3.5">
+                            <native:icon
+                                :ios="$teamMoveProblem === 'offline' ? Ios::WifiSlash : Ios::ExclamationmarkCircle"
+                                :android="$teamMoveProblem === 'offline' ? Android::WifiOff : Android::ErrorOutline"
+                                :size="20"
+                                class="text-theme-primary-text"
+                            />
+                            <column class="flex-1 gap-0.5">
+                                <text font="semibold" class="text-base text-theme-primary-text">{{ $note['title'] }}</text>
+                                <text class="text-base text-theme-on-surface">{{ $note['message'] }}</text>
+                            </column>
+                        </row>
+                    @endif
                 </column>
+
+                <x-ui.sheet-confirm
+                    ref="item-team-move-submit"
+                    :ios="$teamMoveProblem === null ? Ios::ArrowLeftArrowRight : Ios::ArrowClockwise"
+                    :android="$teamMoveProblem === null ? Android::SwapHoriz : Android::Refresh"
+                    tap="moveToTeam"
+                >
+                    {{ $teamMoveProblem === null ? 'Move to '.($moveTeams[$teamMoveTeamId] ?? 'another team') : 'Try again' }}
+                </x-ui.sheet-confirm>
             </column>
         @endif
     </native:bottom-sheet>

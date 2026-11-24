@@ -121,7 +121,8 @@ it('leaves the single Move for the page itself', function () {
         ->tap('item-select')
         ->tap('item-child-8')
         ->tap('selection-move')
-        ->tap('move-parent-cancel')
+        ->assertDontSee('Cancel')
+        ->tap('move-parent-close')
         ->tap('item-move')
         ->assertSee('Where does it go?')
         ->assertDontSee('Moving Cordless drill');

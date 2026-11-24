@@ -1,0 +1,43 @@
+--- a/resources/ios/NativeUIBottomSheetRenderer.swift
++++ b/resources/ios/NativeUIBottomSheetRenderer.swift
+@@ -47,6 +47,7 @@
+                     .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { height in
+                         if fits, height > 0 { fitHeight = height }
+                     }
++                    .modifier(FitScrollModifier(fits: fits))
+                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                     .background(theme.surface)
+                 }
+@@ -118,6 +119,32 @@
+     }
+ }
+ 
++/// A fit sheet is capped at `large`, so content taller than that (the
++/// largest text sizes, a tall sheet with the keyboard up) has to scroll:
++/// pinned to its ideal height with nowhere to go, it overflowed the sheet
++/// at both ends and its top and bottom were cut off. The measuring above
++/// stays on the content itself, so the detent is still the content's ideal
++/// height, not the scroll view's.
++///
++/// Content that fits doesn't move: the bounce is off until there is
++/// something to scroll. Clipping is off so a background that a child draws
++/// past the end of the content still reaches under the home indicator.
++private struct FitScrollModifier: ViewModifier {
++    let fits: Bool
++
++    func body(content: Content) -> some View {
++        if fits {
++            ScrollView(.vertical) {
++                content.frame(maxWidth: .infinity, alignment: .topLeading)
++            }
++            .scrollBounceBehavior(.basedOnSize)
++            .scrollClipDisabled()
++        } else {
++            content
++        }
++    }
++}
++
+ private struct A11yLabelModifier: ViewModifier {
+     let label: String
+     func body(content: Content) -> some View {

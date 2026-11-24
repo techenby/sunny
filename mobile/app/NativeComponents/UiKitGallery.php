@@ -18,6 +18,10 @@ class UiKitGallery extends Component
 
     public string $repeats = 'Daily';
 
+    public bool $showSheet = false;
+
+    public string $sheetText = '';
+
     public function tapped(string $example): void
     {
         $this->lastTapped = $example;
@@ -27,6 +31,22 @@ class UiKitGallery extends Component
     {
         $this->toggled = $toggled;
         $this->lastTapped = 'settings-row toggle';
+    }
+
+    public function openSheet(): void
+    {
+        $this->showSheet = true;
+    }
+
+    public function closeSheet(): void
+    {
+        $this->showSheet = false;
+    }
+
+    public function confirmSheet(): void
+    {
+        $this->showSheet = false;
+        $this->lastTapped = 'sheet-confirm in a sheet';
     }
 
     public function tappedMenu(): void

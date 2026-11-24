@@ -199,6 +199,10 @@
                 {
                     "description": "Android: center a :menu pressable's content, so items-center and justify-center work like they do without a menu",
                     "url": "patches/nativephp-mobile-ui-android-menu-pressable-alignment.patch"
+                },
+                {
+                    "description": "iOS: let a fit bottom sheet scroll when its content is taller than the sheet can be, instead of cutting off its top and bottom",
+                    "url": "patches/nativephp-mobile-ui-ios-fit-sheet-scrolls.patch"
                 }
             ],
             "victorycodedev/toastkit": [

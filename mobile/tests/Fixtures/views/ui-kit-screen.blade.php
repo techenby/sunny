@@ -32,5 +32,8 @@
     <x-ui.field-help ref="field-help">Not sure? Leave it as a thing.</x-ui.field-help>
     <x-ui.picker-field ref="picker-field" label="Starts on" value="Today, Nov 20" opens="date" a11y-hint="Choose when this routine starts" tap="save" />
     <x-ui.submit-bar ref="submit-bar" :disabled="$saves > 5">Save</x-ui.submit-bar>
+    <x-ui.sheet-header ref="sheet-close" :title="'Rename '.$name" close="save" />
+    <x-ui.sheet-confirm ref="sheet-confirm" :ios="Ios::Plus" :android="Android::Add" help="Or tap one above to look inside it" tap="save">Put it in {{ $name }}</x-ui.sheet-confirm>
+    <x-ui.sheet-confirm ref="sheet-confirm-saving" :loading="$saves > 2" tap="save">Save</x-ui.sheet-confirm>
     <text ref="after">After</text>
 </column>

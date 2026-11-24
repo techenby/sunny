@@ -265,89 +265,80 @@
             @php($thumb = $recipe['thumb_url'] ?? $recipe['photo_url'] ?? null)
             @php($copyTeams = $this->copyTeams())
             @php($teamName = $this->teamName())
-            <column class="w-full gap-5 bg-theme-background px-4 pt-6 pb-8">
-                <column class="w-full gap-1.5 px-1">
-                    <text font="accent" class="text-2xl text-theme-on-background">Copy to another team</text>
-                    <x-ui.text>The copy gets everything, tags and photo too. This recipe stays here, just as it is.</x-ui.text>
-                </column>
+            <column class="w-full bg-theme-background">
+                <x-ui.sheet-header ref="recipe-copy-close" title="Copy to another team" close="closeCopy" />
+                <column class="w-full gap-5 px-4 pt-2">
+                    <x-ui.text class="px-1">The copy gets everything, tags and photo too. This recipe stays here, just as it is.</x-ui.text>
 
-                <row ref="recipe-copy-source" class="{{ Card::classes() }} w-full items-center gap-3 px-4 py-3">
-                    @if ($thumb)
-                        <image :src="$thumb" :alt="'Photo of '.$recipe['name']" class="h-12 w-12 rounded-[10] object-cover" />
-                    @else
-                        <column class="h-12 w-12 items-center justify-center rounded-[10] bg-theme-primary/15">
-                            <icon :ios="Ios::ForkKnife" :android="Android::Restaurant" :size="22" class="text-theme-primary" />
-                        </column>
-                    @endif
-                    <column class="flex-1 gap-0.5">
-                        <x-ui.heading size="lg">{{ $recipe['name'] }}</x-ui.heading>
-                        @if ($teamName)
-                            <x-ui.text>From {{ $teamName }}</x-ui.text>
+                    <row ref="recipe-copy-source" class="{{ Card::classes() }} w-full items-center gap-3 px-4 py-3">
+                        @if ($thumb)
+                            <image :src="$thumb" :alt="'Photo of '.$recipe['name']" class="h-12 w-12 rounded-[10] object-cover" />
+                        @else
+                            <column class="h-12 w-12 items-center justify-center rounded-[10] bg-theme-primary/15">
+                                <icon :ios="Ios::ForkKnife" :android="Android::Restaurant" :size="22" class="text-theme-primary" />
+                            </column>
                         @endif
-                    </column>
-                </row>
-
-                <column class="w-full gap-2">
-                    <x-ui.subheading class="px-1">Copy to</x-ui.subheading>
-                    <column ref="recipe-copy-teams" class="{{ Card::classes() }} w-full">
-                        @foreach ($copyTeams as $id => $name)
-                            <pressable
-                                ref="recipe-copy-team-{{ $id }}"
-                                :a11y-label="$name.($id === $copyTeamId ? ', selected' : '')"
-                                class="min-h-12 w-full justify-center px-4 py-2"
-                                @tap="pickCopyTeam({{ $id }})"
-                            >
-                                <row class="w-full items-center gap-4">
-                                    <column class="h-9 w-9 items-center justify-center rounded-full bg-theme-primary">
-                                        <text font="medium" class="text-base text-theme-on-primary">{{ mb_strtoupper(mb_substr($name, 0, 1)) }}</text>
-                                    </column>
-                                    <text class="flex-1 text-lg text-theme-on-surface">{{ $name }}</text>
-                                    @if ($id === $copyTeamId)
-                                        <icon :ios="Ios::Checkmark" :android="Android::Check" :size="18" class="text-theme-primary-text" />
-                                    @endif
-                                </row>
-                            </pressable>
-                            @unless ($loop->last)
-                                <divider class="ml-[68]" />
-                            @endunless
-                        @endforeach
-                    </column>
-                </column>
-
-                @if ($copyProblem !== null)
-                    @php($note = $this->copyNote())
-                    <row ref="recipe-copy-problem" class="w-full items-start gap-2.5 rounded-xl bg-theme-primary/15 p-3.5">
-                        <native:icon
-                            :ios="$copyProblem === 'offline' ? Ios::WifiSlash : Ios::ExclamationmarkCircle"
-                            :android="$copyProblem === 'offline' ? Android::WifiOff : Android::ErrorOutline"
-                            :size="20"
-                            class="text-theme-primary-text"
-                        />
                         <column class="flex-1 gap-0.5">
-                            <text font="semibold" class="text-base text-theme-primary-text">{{ $note['title'] }}</text>
-                            <text class="text-base text-theme-on-surface">{{ $note['message'] }}</text>
+                            <x-ui.heading size="lg">{{ $recipe['name'] }}</x-ui.heading>
+                            @if ($teamName)
+                                <x-ui.text>From {{ $teamName }}</x-ui.text>
+                            @endif
                         </column>
                     </row>
-                @endif
 
-                <column class="w-full gap-1">
-                    <x-ui.button
-                        ref="recipe-copy-submit"
-                        class="w-full"
-                        :ios="$copyProblem === null ? Ios::SquareOnSquare : Ios::ArrowClockwise"
-                        :android="$copyProblem === null ? Android::FileCopy : Android::Refresh"
-                        tap="copyToTeam"
-                    >
-                        {{ $copyProblem === null ? 'Copy to '.($copyTeams[$copyTeamId] ?? 'another team') : 'Try again' }}
-                    </x-ui.button>
-                    <x-ui.button
-                        ref="recipe-copy-cancel"
-                        variant="text"
-                        class="w-full items-center"
-                        a11y-label="Cancel"
-                        tap="closeCopy"
-                    >Cancel</x-ui.button>
+                    <column class="w-full gap-2">
+                        <x-ui.subheading class="px-1">Copy to</x-ui.subheading>
+                        <column ref="recipe-copy-teams" class="{{ Card::classes() }} w-full">
+                            @foreach ($copyTeams as $id => $name)
+                                <pressable
+                                    ref="recipe-copy-team-{{ $id }}"
+                                    :a11y-label="$name.($id === $copyTeamId ? ', selected' : '')"
+                                    class="min-h-12 w-full justify-center px-4 py-2"
+                                    @tap="pickCopyTeam({{ $id }})"
+                                >
+                                    <row class="w-full items-center gap-4">
+                                        <column class="h-9 w-9 items-center justify-center rounded-full bg-theme-primary">
+                                            <text font="medium" class="text-base text-theme-on-primary">{{ mb_strtoupper(mb_substr($name, 0, 1)) }}</text>
+                                        </column>
+                                        <text class="flex-1 text-lg text-theme-on-surface">{{ $name }}</text>
+                                        @if ($id === $copyTeamId)
+                                            <icon :ios="Ios::Checkmark" :android="Android::Check" :size="18" class="text-theme-primary-text" />
+                                        @endif
+                                    </row>
+                                </pressable>
+                                @unless ($loop->last)
+                                    <divider class="ml-[68]" />
+                                @endunless
+                            @endforeach
+                        </column>
+                    </column>
+
+                    @if ($copyProblem !== null)
+                        @php($note = $this->copyNote())
+                        <row ref="recipe-copy-problem" class="w-full items-start gap-2.5 rounded-xl bg-theme-primary/15 p-3.5">
+                            <native:icon
+                                :ios="$copyProblem === 'offline' ? Ios::WifiSlash : Ios::ExclamationmarkCircle"
+                                :android="$copyProblem === 'offline' ? Android::WifiOff : Android::ErrorOutline"
+                                :size="20"
+                                class="text-theme-primary-text"
+                            />
+                            <column class="flex-1 gap-0.5">
+                                <text font="semibold" class="text-base text-theme-primary-text">{{ $note['title'] }}</text>
+                                <text class="text-base text-theme-on-surface">{{ $note['message'] }}</text>
+                            </column>
+                        </row>
+                    @endif
+
                 </column>
+
+                <x-ui.sheet-confirm
+                    ref="recipe-copy-submit"
+                    :ios="$copyProblem === null ? Ios::SquareOnSquare : Ios::ArrowClockwise"
+                    :android="$copyProblem === null ? Android::FileCopy : Android::Refresh"
+                    tap="copyToTeam"
+                >
+                    {{ $copyProblem === null ? 'Copy to '.($copyTeams[$copyTeamId] ?? 'another team') : 'Try again' }}
+                </x-ui.sheet-confirm>
             </column>
         @endif
     </native:bottom-sheet>
@@ -356,114 +347,98 @@
         @if ($showShare)
             @php($thumb = $recipe['thumb_url'] ?? $recipe['photo_url'] ?? null)
             @php($shareUrl = $this->shareUrl())
-            <column class="w-full gap-5 bg-theme-background px-4 pt-6 pb-8">
-                <column class="w-full gap-1.5 px-1">
-                    <text font="accent" class="text-2xl text-theme-on-background">Share recipe</text>
-                    <x-ui.text>{{ $shareUrl ? 'Your link is on. Anyone who has it can open this recipe in a browser.' : 'Turn on a public link and anyone who has it can see this recipe.' }}</x-ui.text>
-                </column>
+            @php([$shareIos, $shareAndroid, $shareTap, $shareLabel] = match (true) {
+                $shareProblem !== null => [Ios::ArrowClockwise, Android::Refresh, 'retryShare', 'Try again'],
+                (bool) $shareUrl => [Ios::SquareAndArrowUp, Android::Share, 'sendLink', 'Send link'],
+                default => [Ios::Link, Android::Link, 'turnOnLink', 'Turn on public link'],
+            })
+            <column class="w-full bg-theme-background">
+                <x-ui.sheet-header ref="recipe-share-close" title="Share recipe" close="closeShare" />
+                <column class="w-full gap-5 px-4 pt-2">
+                    <x-ui.text class="px-1">{{ $shareUrl ? 'Your link is on. Anyone who has it can open this recipe in a browser.' : 'Turn on a public link and anyone who has it can see this recipe.' }}</x-ui.text>
 
-                <row ref="recipe-share-source" class="{{ Card::classes() }} w-full items-center gap-3 px-4 py-3">
-                    @if ($thumb)
-                        <image :src="$thumb" :alt="'Photo of '.$recipe['name']" class="h-12 w-12 rounded-[10] object-cover" />
-                    @else
-                        <column class="h-12 w-12 items-center justify-center rounded-[10] bg-theme-primary/15">
-                            <icon :ios="Ios::ForkKnife" :android="Android::Restaurant" :size="22" class="text-theme-primary" />
-                        </column>
-                    @endif
-                    <column class="flex-1 gap-0.5">
-                        <x-ui.heading size="lg">{{ $recipe['name'] }}</x-ui.heading>
-                        <row class="items-center gap-1.5">
-                            <icon :ios="$shareUrl ? Ios::Globe : Ios::LockFill" :android="$shareUrl ? Android::Public : Android::Lock" :size="14" class="text-theme-on-surface-variant" />
-                            <x-ui.text>{{ $shareUrl ? 'Anyone with the link can see it' : 'Only your home can see it' }}</x-ui.text>
-                        </row>
-                    </column>
-                </row>
-
-                @if ($shareUrl)
-                    <column ref="recipe-share-link" class="{{ Card::classes() }} w-full">
-                        <row class="w-full items-center gap-3 px-4 py-3">
-                            <column class="flex-1 gap-0.5">
-                                <x-ui.text size="sm">Public link</x-ui.text>
-                                <text ref="recipe-share-url" class="text-base text-theme-on-surface">{{ preg_replace('~^https?://~', '', $shareUrl) }}</text>
+                    <row ref="recipe-share-source" class="{{ Card::classes() }} w-full items-center gap-3 px-4 py-3">
+                        @if ($thumb)
+                            <image :src="$thumb" :alt="'Photo of '.$recipe['name']" class="h-12 w-12 rounded-[10] object-cover" />
+                        @else
+                            <column class="h-12 w-12 items-center justify-center rounded-[10] bg-theme-primary/15">
+                                <icon :ios="Ios::ForkKnife" :android="Android::Restaurant" :size="22" class="text-theme-primary" />
                             </column>
-                            <x-ui.button
-                                ref="recipe-share-copy"
-                                variant="secondary"
-                                :ios="$linkCopied ? Ios::Checkmark : Ios::DocOnDoc"
-                                :android="$linkCopied ? Android::Check : Android::ContentCopy"
-                                :a11y-label="$linkCopied ? 'Link copied' : 'Copy link'"
-                                tap="copyLink"
-                            >{{ $linkCopied ? 'Copied' : 'Copy' }}</x-ui.button>
-                        </row>
-                        <divider class="ml-4" />
-                        <pressable ref="recipe-share-turn-off" a11y-label="Turn off link" class="min-h-12 w-full justify-center px-4 py-2" @tap="turnOffLink">
-                            <row class="w-full items-center gap-3">
-                                <icon :ios="Ios::EyeSlash" :android="Android::LinkOff" :size="18" class="text-theme-destructive" />
+                        @endif
+                        <column class="flex-1 gap-0.5">
+                            <x-ui.heading size="lg">{{ $recipe['name'] }}</x-ui.heading>
+                            <row class="items-center gap-1.5">
+                                <icon :ios="$shareUrl ? Ios::Globe : Ios::LockFill" :android="$shareUrl ? Android::Public : Android::Lock" :size="14" class="text-theme-on-surface-variant" />
+                                <x-ui.text>{{ $shareUrl ? 'Anyone with the link can see it' : 'Only your home can see it' }}</x-ui.text>
+                            </row>
+                        </column>
+                    </row>
+
+                    @if ($shareUrl)
+                        <column ref="recipe-share-link" class="{{ Card::classes() }} w-full">
+                            <row class="w-full items-center gap-3 px-4 py-3">
                                 <column class="flex-1 gap-0.5">
-                                    <text font="semibold" class="text-base text-theme-destructive">Turn off link</text>
+                                    <x-ui.text size="sm">Public link</x-ui.text>
+                                    <text ref="recipe-share-url" class="text-base text-theme-on-surface">{{ preg_replace('~^https?://~', '', $shareUrl) }}</text>
+                                </column>
+                                <x-ui.button
+                                    ref="recipe-share-copy"
+                                    variant="secondary"
+                                    :ios="$linkCopied ? Ios::Checkmark : Ios::DocOnDoc"
+                                    :android="$linkCopied ? Android::Check : Android::ContentCopy"
+                                    :a11y-label="$linkCopied ? 'Link copied' : 'Copy link'"
+                                    tap="copyLink"
+                                >{{ $linkCopied ? 'Copied' : 'Copy' }}</x-ui.button>
+                            </row>
+                            <divider class="ml-4" />
+                            <pressable ref="recipe-share-turn-off" a11y-label="Turn off link" class="min-h-12 w-full justify-center px-4 py-2" @tap="turnOffLink">
+                                <row class="w-full items-center gap-3">
+                                    <icon :ios="Ios::EyeSlash" :android="Android::LinkOff" :size="18" class="text-theme-destructive" />
+                                    <column class="flex-1 gap-0.5">
+                                        <text font="semibold" class="text-base text-theme-destructive">Turn off link</text>
+                                        <x-ui.text size="sm">The old link stops working right away</x-ui.text>
+                                    </column>
+                                </row>
+                            </pressable>
+                        </column>
+                    @else
+                        <column ref="recipe-share-about" class="{{ Card::classes() }} w-full gap-4 p-4">
+                            <row class="w-full items-start gap-3">
+                                <icon :ios="Ios::Globe" :android="Android::Public" :size="18" class="text-theme-primary" />
+                                <column class="flex-1 gap-0.5">
+                                    <text class="text-base text-theme-on-surface">Opens in any browser</text>
+                                    <x-ui.text size="sm">No account needed to view it</x-ui.text>
+                                </column>
+                            </row>
+                            <row class="w-full items-start gap-3">
+                                <icon :ios="Ios::EyeSlash" :android="Android::LinkOff" :size="18" class="text-theme-primary" />
+                                <column class="flex-1 gap-0.5">
+                                    <text class="text-base text-theme-on-surface">Turn it off any time</text>
                                     <x-ui.text size="sm">The old link stops working right away</x-ui.text>
                                 </column>
                             </row>
-                        </pressable>
-                    </column>
-                @else
-                    <column ref="recipe-share-about" class="{{ Card::classes() }} w-full gap-4 p-4">
-                        <row class="w-full items-start gap-3">
-                            <icon :ios="Ios::Globe" :android="Android::Public" :size="18" class="text-theme-primary" />
-                            <column class="flex-1 gap-0.5">
-                                <text class="text-base text-theme-on-surface">Opens in any browser</text>
-                                <x-ui.text size="sm">No account needed to view it</x-ui.text>
-                            </column>
-                        </row>
-                        <row class="w-full items-start gap-3">
-                            <icon :ios="Ios::EyeSlash" :android="Android::LinkOff" :size="18" class="text-theme-primary" />
-                            <column class="flex-1 gap-0.5">
-                                <text class="text-base text-theme-on-surface">Turn it off any time</text>
-                                <x-ui.text size="sm">The old link stops working right away</x-ui.text>
-                            </column>
-                        </row>
-                    </column>
-                @endif
-
-                @if ($shareProblem !== null)
-                    @php($note = $this->shareNote())
-                    <row ref="recipe-share-problem" class="w-full items-start gap-2.5 rounded-xl bg-theme-primary/15 p-3.5">
-                        <native:icon
-                            :ios="$shareProblem === 'offline' ? Ios::WifiSlash : Ios::ExclamationmarkCircle"
-                            :android="$shareProblem === 'offline' ? Android::WifiOff : Android::ErrorOutline"
-                            :size="20"
-                            class="text-theme-primary-text"
-                        />
-                        <column class="flex-1 gap-0.5">
-                            <text font="semibold" class="text-base text-theme-primary-text">{{ $note['title'] }}</text>
-                            <text class="text-base text-theme-on-surface">{{ $note['message'] }}</text>
                         </column>
-                    </row>
-                @endif
-
-                <column class="w-full gap-1">
-                    @if ($shareProblem !== null)
-                        <x-ui.button ref="recipe-share-submit" class="w-full" :ios="Ios::ArrowClockwise" :android="Android::Refresh" tap="retryShare">
-                            Try again
-                        </x-ui.button>
-                    @elseif ($shareUrl)
-                        <x-ui.button ref="recipe-share-submit" class="w-full" :ios="Ios::SquareAndArrowUp" :android="Android::Share" tap="sendLink">
-                            Send link
-                        </x-ui.button>
-                    @else
-                        <x-ui.button ref="recipe-share-submit" class="w-full" :ios="Ios::Link" :android="Android::Link" tap="turnOnLink">
-                            Turn on public link
-                        </x-ui.button>
                     @endif
-                    @php($dismissLabel = $shareProblem !== null ? 'Cancel' : ($shareUrl ? 'Done' : 'Not now'))
-                    <x-ui.button
-                        ref="recipe-share-cancel"
-                        variant="text"
-                        class="w-full items-center"
-                        :a11y-label="$dismissLabel"
-                        tap="closeShare"
-                    >{{ $dismissLabel }}</x-ui.button>
+
+                    @if ($shareProblem !== null)
+                        @php($note = $this->shareNote())
+                        <row ref="recipe-share-problem" class="w-full items-start gap-2.5 rounded-xl bg-theme-primary/15 p-3.5">
+                            <native:icon
+                                :ios="$shareProblem === 'offline' ? Ios::WifiSlash : Ios::ExclamationmarkCircle"
+                                :android="$shareProblem === 'offline' ? Android::WifiOff : Android::ErrorOutline"
+                                :size="20"
+                                class="text-theme-primary-text"
+                            />
+                            <column class="flex-1 gap-0.5">
+                                <text font="semibold" class="text-base text-theme-primary-text">{{ $note['title'] }}</text>
+                                <text class="text-base text-theme-on-surface">{{ $note['message'] }}</text>
+                            </column>
+                        </row>
+                    @endif
+
                 </column>
+
+                <x-ui.sheet-confirm ref="recipe-share-submit" :ios="$shareIos" :android="$shareAndroid" :tap="$shareTap">{{ $shareLabel }}</x-ui.sheet-confirm>
             </column>
         @endif
     </native:bottom-sheet>
