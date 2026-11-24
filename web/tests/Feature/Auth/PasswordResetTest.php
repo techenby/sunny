@@ -78,6 +78,8 @@ test('resetting the password signs the account out everywhere', function () {
 });
 
 test('the forgot password form stops repeated tries from one network', function () {
+    $this->freezeSecond();
+
     Notification::fake();
     $user = User::factory()->create();
 
