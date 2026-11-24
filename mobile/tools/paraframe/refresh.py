@@ -574,7 +574,7 @@ def command_run(args):
     try:
         urllib.request.urlopen(f'{PARAFRAME}/boards', timeout=5).read()
     except OSError:
-        notify('Paraframe is not open; the refresh will try again later.')
+        notify('Paraframe is not open. Open it and run the refresh again.')
         log('Paraframe is not open; stopping without changing anything')
         return
 
@@ -700,31 +700,6 @@ def command_baseline(args):
     print(f'Baseline set to {sha[:8]}')
 
 
-def command_install(args):
-    config = load_config()
-    plist = Path.home() / 'Library' / 'LaunchAgents' / 'com.techenby.sunny-paraframe.plist'
-    script = config['worktree'] / 'mobile' / 'tools' / 'paraframe' / 'refresh.py'
-    path = ':'.join([str(Path.home() / '.local/share/lerd/bin'), '/opt/homebrew/bin', '/usr/local/bin', '/usr/bin', '/bin', '/usr/sbin', '/sbin'])
-    plist.write_text(f'''<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-    <key>Label</key><string>com.techenby.sunny-paraframe</string>
-    <key>ProgramArguments</key>
-    <array><string>/opt/homebrew/bin/python3</string><string>{script}</string><string>run</string></array>
-    <key>StartInterval</key><integer>{args.interval}</integer>
-    <key>EnvironmentVariables</key><dict><key>PATH</key><string>{path}</string></dict>
-    <key>StandardOutPath</key><string>{HOME / 'launchd.log'}</string>
-    <key>StandardErrorPath</key><string>{HOME / 'launchd.log'}</string>
-</dict>
-</plist>
-''')
-    uid = os.getuid()
-    subprocess.run(['launchctl', 'bootout', f'gui/{uid}', str(plist)], capture_output=True)
-    sh(['launchctl', 'bootstrap', f'gui/{uid}', str(plist)])
-    print(f'Installed {plist}; it runs every {args.interval // 60} minutes.')
-
-
 def main():
     parser = argparse.ArgumentParser(description='Keep the SunnyHome mobile Paraframe board in step with main.')
     commands = parser.add_subparsers(dest='command', required=True)
@@ -737,13 +712,11 @@ def main():
     run.add_argument('--no-report', action='store_true')
     baseline = commands.add_parser('baseline')
     baseline.add_argument('sha', nargs='?')
-    install = commands.add_parser('install')
-    install.add_argument('--interval', type=int, default=3600)
     args = parser.parse_args()
 
     HOME.mkdir(parents=True, exist_ok=True)
     if args.command != 'run':
-        {'baseline': command_baseline, 'install': command_install}[args.command](args)
+        command_baseline(args)
         return
     with open(HOME / 'lock', 'w') as lock:
         try:
