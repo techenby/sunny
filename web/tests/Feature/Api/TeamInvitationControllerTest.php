@@ -71,6 +71,18 @@ test('members cannot invite anyone', function () {
     Notification::assertNothingSent();
 });
 
+test('an unverified owner cannot send an invitation', function () {
+    $this->luffy->forceFill(['email_verified_at' => null])->save();
+
+    $this->actingAs($this->luffy)
+        ->postJson(route('api.teams.invitations.store', $this->crew), ['email' => 'usopp@strawhat.pirates', 'role' => 'member'])
+        ->assertStatus(423)
+        ->assertJsonPath('email_verification_required', true);
+
+    expect($this->crew->invitations()->exists())->toBeFalse();
+    Notification::assertNothingSent();
+});
+
 test('people outside the team cannot invite to it', function () {
     $this->actingAs(User::factory()->create())
         ->postJson(route('api.teams.invitations.store', $this->crew), ['email' => 'usopp@strawhat.pirates', 'role' => 'member'])
