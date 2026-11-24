@@ -3,11 +3,13 @@
 namespace App\NativeComponents;
 
 use App\Actions\DestroySession;
+use App\Concerns\NeedsConnection;
 use App\Http\Integrations\Sunny\SunnyAccount;
 use App\Http\Integrations\Sunny\SunnyAuth;
 use App\Http\Integrations\Sunny\SunnyStore;
 use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Http\Integrations\Sunny\SunnyTokenStore;
+use App\Support\Offline;
 use App\Support\Toast;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\View\View;
@@ -15,8 +17,8 @@ use Native\Mobile\AsyncTask;
 use Native\Mobile\Attributes\On;
 use Native\Mobile\Events\Alert\ButtonPressed;
 use Native\Mobile\Exceptions\AsyncTaskException;
+use Native\Mobile\Facades\Browser;
 use Native\Mobile\Facades\Dialog;
-use Native\Mobile\Facades\Network;
 use RuntimeException;
 use Saloon\Exceptions\Request\FatalRequestException;
 use Saloon\Exceptions\Request\RequestException;
@@ -24,13 +26,29 @@ use Saloon\Exceptions\Request\Statuses\UnauthorizedException;
 
 class VerifyEmail extends Component
 {
+    use NeedsConnection;
+
     public string $email = '';
 
     public bool $sent = false;
 
+    public bool $sending = false;
+
     public bool $checking = false;
 
-    public string $error = '';
+    /** @var 'offline'|'not-verified'|'throttled'|'send-failed'|'check-failed'|'locked'|null */
+    public ?string $problem = null;
+
+    public bool $changing = false;
+
+    public string $newEmail = '';
+
+    public string $newEmailError = '';
+
+    public bool $savingEmail = false;
+
+    /** @var 'offline'|'throttled'|'failed'|'locked'|null */
+    public ?string $changeProblem = null;
 
     public function mount(): void
     {
@@ -46,30 +64,36 @@ class VerifyEmail extends Component
 
     public function send(): void
     {
-        $this->error = '';
+        if ($this->sending) {
+            return;
+        }
 
-        if (Network::status()?->connected === false) {
-            $this->error = 'Sending a verification email needs a connection.';
+        $this->problem = null;
+
+        if (Offline::now()) {
+            $this->problem = 'offline';
 
             return;
         }
 
+        $this->sending = true;
+
         try {
             $sent = app(SunnyAccount::class)->sendVerificationEmail();
         } catch (FatalRequestException) {
-            $this->error = 'Sending a verification email needs a connection.';
+            $this->problem = 'offline';
 
             return;
         } catch (RequestException $exception) {
-            if ($exception->getResponse()->status() === 401) {
+            $status = $exception->getResponse()->status();
+
+            if ($status === 401) {
                 $this->signedOut();
 
                 return;
             }
 
-            $this->error = $exception->getResponse()->status() === 429
-                ? 'Too many attempts. Please wait a minute and try again.'
-                : 'The server couldn’t send the email right now.';
+            $this->problem = $status === 429 ? 'throttled' : 'send-failed';
 
             return;
         } catch (AuthenticationException) {
@@ -77,9 +101,11 @@ class VerifyEmail extends Component
 
             return;
         } catch (RuntimeException) {
-            $this->error = 'Unable to read your saved login. Unlock your device and try again.';
+            $this->problem = 'locked';
 
             return;
+        } finally {
+            $this->sending = false;
         }
 
         if (! $sent) {
@@ -89,18 +115,28 @@ class VerifyEmail extends Component
         }
 
         $this->sent = true;
-        Toast::success('Verification email sent to '.$this->email);
     }
 
     public function check(): void
     {
-        $this->error = '';
+        if ($this->checking) {
+            return;
+        }
+
+        $this->problem = null;
+
+        if (Offline::now()) {
+            $this->problem = 'offline';
+
+            return;
+        }
+
         $this->checking = true;
 
         try {
             $profile = app(SunnyAccount::class)->refresh();
         } catch (FatalRequestException) {
-            $this->error = 'Checking needs a connection.';
+            $this->problem = 'offline';
 
             return;
         } catch (RequestException $exception) {
@@ -110,7 +146,7 @@ class VerifyEmail extends Component
                 return;
             }
 
-            $this->error = 'The server couldn’t check right now. Try again in a moment.';
+            $this->problem = 'check-failed';
 
             return;
         } catch (AuthenticationException) {
@@ -118,7 +154,7 @@ class VerifyEmail extends Component
 
             return;
         } catch (RuntimeException) {
-            $this->error = 'Unable to read your saved login. Unlock your device and try again.';
+            $this->problem = 'locked';
 
             return;
         } finally {
@@ -132,7 +168,85 @@ class VerifyEmail extends Component
         }
 
         $this->email = $profile['email'] ?? $this->email;
-        $this->error = 'Your email isn’t verified yet. Open the link we sent to '.$this->email.', then try again.';
+        $this->problem = 'not-verified';
+    }
+
+    public function openMail(): void
+    {
+        if (! Browser::open('message://')) {
+            Toast::error('Unable to open Mail.');
+        }
+    }
+
+    public function openChange(): void
+    {
+        $this->newEmail = $this->email;
+        $this->newEmailError = '';
+        $this->changeProblem = null;
+        $this->changing = true;
+    }
+
+    public function closeChange(): void
+    {
+        $this->changing = false;
+    }
+
+    public function saveEmail(): void
+    {
+        if ($this->savingEmail) {
+            return;
+        }
+
+        $this->changeProblem = null;
+        $this->newEmailError = '';
+        $this->newEmail = trim($this->newEmail);
+
+        if (filter_var($this->newEmail, FILTER_VALIDATE_EMAIL) === false) {
+            $this->newEmailError = 'Enter a valid email address.';
+
+            return;
+        }
+
+        if ($this->newEmail === $this->email) {
+            $this->closeChange();
+
+            return;
+        }
+
+        if (Offline::now()) {
+            $this->changeProblem = 'offline';
+
+            return;
+        }
+
+        $this->savingEmail = true;
+
+        try {
+            $profile = app(SunnyAccount::class)->update(app(SunnyStore::class)->profile()['name'] ?? '', $this->newEmail);
+        } catch (FatalRequestException) {
+            $this->changeProblem = 'offline';
+
+            return;
+        } catch (RequestException $exception) {
+            $this->changeFailed($exception);
+
+            return;
+        } catch (AuthenticationException) {
+            $this->replace('/');
+
+            return;
+        } catch (RuntimeException) {
+            $this->changeProblem = 'locked';
+
+            return;
+        } finally {
+            $this->savingEmail = false;
+        }
+
+        $this->email = $profile['email'] ?? $this->newEmail;
+        $this->sent = true;
+        $this->problem = null;
+        $this->changing = false;
     }
 
     public function confirmLogOut(): void
@@ -167,9 +281,30 @@ class VerifyEmail extends Component
         return view('native.verify-email');
     }
 
+    private function changeFailed(RequestException $exception): void
+    {
+        $response = $exception->getResponse();
+
+        if ($response->status() === 401) {
+            $this->signedOut();
+
+            return;
+        }
+
+        $emailError = collect($response->json('errors.email') ?? [])->first();
+
+        if ($response->status() === 422 && is_string($emailError)) {
+            $this->newEmailError = $emailError;
+
+            return;
+        }
+
+        $this->changeProblem = $response->status() === 429 ? 'throttled' : 'failed';
+    }
+
     private function checkInBackground(): void
     {
-        if (Network::status()?->connected === false) {
+        if (Offline::now()) {
             return;
         }
 
