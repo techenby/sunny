@@ -1,12 +1,12 @@
 <?php
 
-use App\Actions\Photos\CreateThumbnail;
 use App\Actions\Inventory\AddItemPhoto;
 use App\Actions\Inventory\DuplicateItem;
 use App\Actions\Inventory\GenerateItemQrCode;
 use App\Actions\Inventory\MoveItemPhoto;
 use App\Actions\Inventory\MoveItemToTeam;
 use App\Actions\Inventory\RemoveItemPhoto;
+use App\Actions\Photos\CreateThumbnail;
 use App\Enums\ItemType;
 use App\Livewire\Forms\Inventory\ItemForm;
 use App\Models\Item;
