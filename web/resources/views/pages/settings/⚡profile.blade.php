@@ -3,10 +3,10 @@
 use App\Actions\Fortify\UpdateUserProfileInformation;
 use App\Concerns\ProfileValidationRules;
 use App\Models\User;
-use App\Support\VerificationEmailLimit;
 use Flux\Flux;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Session;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
@@ -30,7 +30,7 @@ new class extends Component {
 
         if ($validated['email'] === $user->email) {
             $updateProfile->handle($user, $validated);
-        } elseif (! VerificationEmailLimit::attempt($user, fn () => $updateProfile->handle($user, $validated))) {
+        } elseif (RateLimiter::attempt($this->emailLimitKey($user), 6, fn () => $updateProfile->handle($user, $validated)) === false) {
             $this->addError('email', $this->tooManyEmailsMessage($user));
 
             return;
@@ -49,7 +49,7 @@ new class extends Component {
             return;
         }
 
-        if (! VerificationEmailLimit::attempt($user, fn () => $user->sendEmailVerificationNotification())) {
+        if (RateLimiter::attempt($this->emailLimitKey($user), 6, fn () => $user->sendEmailVerificationNotification()) === false) {
             Flux::toast(variant: 'danger', text: $this->tooManyEmailsMessage($user));
 
             return;
@@ -58,9 +58,14 @@ new class extends Component {
         Session::flash('status', 'verification-link-sent');
     }
 
+    private function emailLimitKey(User $user): string
+    {
+        return "verification-email-web:{$user->id}";
+    }
+
     private function tooManyEmailsMessage(User $user): string
     {
-        return __('Too many verification emails. Try again in :seconds seconds.', ['seconds' => VerificationEmailLimit::availableIn($user)]);
+        return __('Too many verification emails. Try again in :seconds seconds.', ['seconds' => RateLimiter::availableIn($this->emailLimitKey($user))]);
     }
 
     #[Computed]

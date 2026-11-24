@@ -96,31 +96,31 @@ test('account deletion is blocked while the user owns a team other people use', 
     expect($user->fresh())->not->toBeNull();
 });
 
-test('email changes and resends on the profile page share one limit with the app', function () {
+test('the profile page is limited on its own, apart from the app', function () {
     Notification::fake();
     $user = User::factory()->unverified()->create();
     $token = $user->createToken('iPhone')->plainTextToken;
 
-    foreach (range(1, 3) as $attempt) {
+    foreach (range(1, 6) as $attempt) {
         $this->withToken($token)->postJson(route('api.user.verification.send'))->assertAccepted();
     }
 
-    $page = Livewire::actingAs($user)->test('pages::settings.profile');
-    $page->set('email', 'nami1@example.com')->call('updateProfileInformation')->assertHasNoErrors();
-    $page->call('resendVerificationNotification');
-    $page->set('email', 'nami2@example.com')->call('updateProfileInformation')->assertHasNoErrors();
+    $this->withToken($token)->postJson(route('api.user.verification.send'))->assertTooManyRequests();
 
-    $page->set('email', 'nami3@example.com')
+    $page = Livewire::actingAs($user)->test('pages::settings.profile');
+
+    foreach (range(1, 5) as $attempt) {
+        $page->call('resendVerificationNotification');
+    }
+
+    $page->set('email', 'nami1@example.com')->call('updateProfileInformation')->assertHasNoErrors();
+
+    $page->set('email', 'nami2@example.com')
         ->call('updateProfileInformation')
         ->assertHasErrors(['email']);
 
-    $page->call('resendVerificationNotification');
-
-    $this->app['auth']->forgetGuards();
-    $this->withToken($token)->postJson(route('api.user.verification.send'))->assertTooManyRequests();
-
-    expect($user->fresh()->email)->toBe('nami2@example.com');
-    Notification::assertSentToTimes($user, VerifyEmail::class, 6);
+    expect($user->fresh()->email)->toBe('nami1@example.com');
+    Notification::assertSentToTimes($user, VerifyEmail::class, 12);
 });
 
 test('a limited resend on the profile page says so', function () {
