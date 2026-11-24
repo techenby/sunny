@@ -257,3 +257,12 @@ test('a kiosk keeps showing its own team routines after the user switches teams 
         ->assertSee('Feed the cat')
         ->assertDontSee('Water the office plants');
 });
+
+test('a date that is not a date falls back to today', function () {
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::kiosk.routines')
+        ->set('focusedDate', 'not-a-date')
+        ->assertOk();
+});

@@ -168,6 +168,7 @@ test('the due date follows the team timezone', function () {
 });
 
 test('forDate generates and returns the day sorted by time of day', function () {
+    $this->travelTo(Date::parse('2026-08-10 09:00:00'));
     $team = Team::factory()->create();
 
     $routines = [
@@ -224,4 +225,33 @@ test('the command warms the requested number of days', function () {
     $this->artisan('routines:generate', ['--days' => 3])->assertSuccessful();
 
     expect(RoutineOccurrence::count())->toBe(3);
+});
+
+test('forDate only creates rows for dates within a month of today', function (string $date, int $created) {
+    $this->travelTo(Date::parse('2026-08-10 09:00:00'));
+    $team = Team::factory()->create();
+    $routine = Routine::factory()->for($team)->daily()->create(['starts_on' => '2020-01-01']);
+    RoutineStep::factory()->for($routine)->create();
+
+    $this->generate->forDate($team, Date::parse($date));
+
+    expect(RoutineOccurrence::count())->toBe($created)
+        ->and(RoutineOccurrenceStep::count())->toBe($created);
+})->with([
+    'today' => ['2026-08-10', 1],
+    'a month ahead' => ['2026-09-10', 1],
+    'a month back' => ['2026-07-10', 1],
+    'just past a month ahead' => ['2026-09-11', 0],
+    'just past a month back' => ['2026-07-09', 0],
+    'years ahead' => ['2031-01-01', 0],
+]);
+
+test('forDate still returns what was already made for a date outside the month', function () {
+    $this->travelTo(Date::parse('2026-08-10 09:00:00'));
+    $team = Team::factory()->create();
+    $routine = Routine::factory()->for($team)->daily()->create(['starts_on' => '2020-01-01', 'name' => 'Wake up']);
+    RoutineStep::factory()->for($routine)->create();
+    $this->generate->handle($team, Date::parse('2026-03-01'));
+
+    expect($this->generate->forDate($team, Date::parse('2026-03-01'))->pluck('routine.name')->all())->toBe(['Wake up']);
 });

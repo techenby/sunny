@@ -143,6 +143,10 @@ new #[Layout('layouts::kiosk')] class extends Component
 
     private function date(): CarbonImmutable
     {
-        return CarbonImmutable::parse($this->focusedDate, $this->team->timezone)->startOfDay();
+        return rescue(
+            fn () => CarbonImmutable::parse($this->focusedDate, $this->team->timezone),
+            fn () => $this->team->today(),
+            report: false,
+        )->startOfDay();
     }
 };

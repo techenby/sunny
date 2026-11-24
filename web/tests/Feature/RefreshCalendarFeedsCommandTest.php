@@ -105,3 +105,33 @@ test('the refresh is scheduled every fifteen minutes', function () {
         ->and($event->expression)->toBe('*/15 * * * *')
         ->and($event->withoutOverlapping)->toBeTrue();
 });
+
+test('a feed that keeps failing is tried again after as long as it has already been failing', function (string $lastWorked, string $lastFailed, int $requests) {
+    $this->travelTo(Date::parse('2026-05-05 12:00:00'));
+    CalendarFeed::factory()->create([
+        'url' => 'https://example.com/broken.ics',
+        'last_fetched_at' => $lastWorked,
+        'last_failed_at' => $lastFailed,
+        'last_error' => 'Could not connect to the calendar server.',
+    ]);
+    Http::fake(['https://example.com/*' => Http::response('', 500)]);
+
+    $this->artisan('calendars:refresh')->assertSuccessful();
+
+    Http::assertSentCount($requests);
+})->with([
+    'failed for 15 minutes, 15 minutes ago' => ['2026-05-05 11:30:00', '2026-05-05 11:45:00', 1],
+    'failed for 2 hours, 15 minutes ago' => ['2026-05-05 09:45:00', '2026-05-05 11:45:00', 0],
+    'failed for 2 hours, 2 hours ago' => ['2026-05-05 08:00:00', '2026-05-05 10:00:00', 1],
+    'failed for days, 5 hours ago' => ['2026-05-01 07:00:00', '2026-05-05 07:00:00', 0],
+    'failed for days, 6 hours ago' => ['2026-05-01 06:00:00', '2026-05-05 06:00:00', 1],
+]);
+
+test('a feed that has never worked is still tried on the next run', function () {
+    $this->travelTo(Date::parse('2026-05-05 12:00:00'));
+    CalendarFeed::factory()->failing()->create(['url' => 'https://example.com/new.ics']);
+    Http::fake(['https://example.com/*' => Http::response($this->ics)]);
+
+    $this->travel(15)->minutes();
+    $this->artisan('calendars:refresh')->expectsOutputToContain('1 calendar feed(s) refreshed.')->assertSuccessful();
+});

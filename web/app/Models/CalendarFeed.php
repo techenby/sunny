@@ -29,6 +29,8 @@ class CalendarFeed extends Model
 
     public const int MAX_PER_TEAM = 25;
 
+    public const int LONGEST_RETRY_WAIT_SECONDS = 6 * 60 * 60;
+
     protected static function booted(): void
     {
         static::deleted(function (CalendarFeed $feed): void {
@@ -67,6 +69,18 @@ class CalendarFeed extends Model
     public function isFailing(): bool
     {
         return $this->last_failed_at !== null;
+    }
+
+    public function isWaitingToRetry(): bool
+    {
+        if ($this->last_failed_at === null) {
+            return false;
+        }
+
+        $failingFor = ($this->last_fetched_at ?? $this->created_at)->diffInSeconds($this->last_failed_at);
+        $wait = (int) min(max($failingFor, 0), self::LONGEST_RETRY_WAIT_SECONDS);
+
+        return $this->last_failed_at->addSeconds($wait)->isFuture();
     }
 
     public function icsPath(): string
