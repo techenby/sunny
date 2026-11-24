@@ -73,7 +73,7 @@ new #[Layout('layouts.auth')] class extends Component
         $uuid = request()->cookie(KioskDevice::COOKIE_NAME);
 
         if ($uuid) {
-            $device = KioskDevice::query()->where('uuid', $uuid)->first();
+            $device = $this->deviceFromCookie();
 
             if ($device && ($device->isPaired() || ! $device->expires_at?->isPast())) {
                 return $device;
@@ -97,9 +97,17 @@ new #[Layout('layouts.auth')] class extends Component
             return null;
         }
 
-        return KioskDevice::query()
+        $device = KioskDevice::query()
             ->where('uuid', $uuid)
             ->first();
+
+        if ($device?->hasLostAccess()) {
+            $device->delete();
+
+            return null;
+        }
+
+        return $device;
     }
 
     protected function createDevice(): KioskDevice

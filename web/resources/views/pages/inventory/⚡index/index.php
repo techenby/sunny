@@ -176,7 +176,7 @@ new class extends Component
         })->all();
     }
 
-    public function matchedDetail(Item $item): ?string
+    protected function matchedDetail(Item $item): ?string
     {
         if (Str::contains($item->name, $this->search, ignoreCase: true)) {
             return null;

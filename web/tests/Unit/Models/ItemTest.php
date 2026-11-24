@@ -3,6 +3,7 @@
 use App\Models\Item;
 use App\Models\ItemPhoto;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 
 test('an item without photos has no photo or thumbnail url', function () {
     $item = Item::factory()->create();
@@ -28,4 +29,20 @@ test('the thumbnail url falls back to the photo when there is no thumbnail', fun
     $item = Item::factory()->withPhoto('teams/1/items/front.jpg')->create();
 
     expect($item->thumb_url)->toContain('items/front.jpg');
+});
+
+test('an item cannot be saved inside another team\'s item', function () {
+    $item = Item::factory()->create();
+    $elsewhere = Item::factory()->create();
+
+    expect(fn () => $item->update(['parent_id' => $elsewhere->id]))->toThrow(ValidationException::class)
+        ->and($item->fresh()->parent_id)->toBeNull();
+});
+
+test('descendants stop at a loop left in the data', function () {
+    $shelf = Item::factory()->create();
+    $bin = Item::factory()->for($shelf->team)->childOf($shelf)->create();
+    Item::query()->whereKey($shelf->id)->update(['parent_id' => $bin->id]);
+
+    expect($shelf->descendantIds()->sort()->values()->all())->toBe([$shelf->id, $bin->id]);
 });

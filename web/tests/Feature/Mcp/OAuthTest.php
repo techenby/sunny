@@ -140,3 +140,13 @@ test('an invalid bearer token is rejected', function () {
         ->assertUnauthorized()
         ->assertHeader('WWW-Authenticate');
 });
+
+test('the consent screen names where the app will send the user', function () {
+    $user = User::factory()->create();
+    [, $challenge] = pkcePair();
+
+    $this->actingAs($user)
+        ->get(route('passport.authorizations.authorize', authorizeQuery(registerClient(), $challenge)))
+        ->assertOk()
+        ->assertSee('you’ll be sent to claude.ai', escape: false);
+});

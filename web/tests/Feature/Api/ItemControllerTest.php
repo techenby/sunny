@@ -584,6 +584,20 @@ test('store rejects a parent from another team', function () {
         ->assertJsonValidationErrors('parent_id');
 });
 
+test('update rejects putting an item inside itself or inside something it holds', function (string $target) {
+    $user = User::factory()->create();
+    $shelf = Item::factory()->for($user->currentTeam)->create(['name' => 'Shelf']);
+    $bin = Item::factory()->for($user->currentTeam)->childOf($shelf)->create(['name' => 'Bin']);
+    $box = Item::factory()->for($user->currentTeam)->childOf($bin)->create(['name' => 'Box']);
+
+    $this->actingAs($user)
+        ->patchJson(route('api.items.update', [$user->currentTeam, $shelf]), ['parent_id' => ['itself' => $shelf, 'something it holds' => $box][$target]->id])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('parent_id');
+
+    expect($shelf->fresh()->parent_id)->toBeNull();
+})->with(['itself', 'something it holds']);
+
 test('item API accepts JSON metadata alongside a photo from older apps and removes it explicitly', function () {
     Storage::fake();
     $user = User::factory()->create();

@@ -6,6 +6,7 @@ use App\Models\Team;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Livewire\Exceptions\MethodNotFoundException;
 use Livewire\Livewire;
 
 test('guests are redirected to the login page', function () {
@@ -909,6 +910,36 @@ describe('bulk update parent', function () {
             ->and($itemB->fresh()->parent_id)->toBeNull();
     });
 
+
+    test('bulk update refuses a place in another team', function () {
+        $user = User::factory()->create();
+        $item = Item::factory()->for($user->currentTeam)->create(['name' => 'Guitar']);
+        $elsewhere = Item::factory()->create(['name' => 'Their safe']);
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->set('selected', [$item->id])
+            ->set('bulkParentId', $elsewhere->id)
+            ->call('updateParent')
+            ->assertHasErrors('parent_id');
+
+        expect($item->fresh()->parent_id)->toBeNull();
+    });
+
+    test('bulk update refuses to put an item inside itself', function () {
+        $user = User::factory()->create();
+        $item = Item::factory()->for($user->currentTeam)->create(['name' => 'Guitar']);
+
+        Livewire::actingAs($user)
+            ->test('pages::inventory.index')
+            ->set('selected', [$item->id])
+            ->set('bulkParentId', $item->id)
+            ->call('updateParent')
+            ->assertHasErrors('parent_id');
+
+        expect($item->fresh()->parent_id)->toBeNull();
+    });
+
     test('bulk update resets selected and bulkParentId after success', function () {
         $user = User::factory()->create();
         $item = Item::factory()->for($user->currentTeam)->create();
@@ -1300,3 +1331,13 @@ test('only the suggested storage can be added with one click', function () {
 
     expect($garage->children()->exists())->toBeFalse();
 });
+
+test('a search detail cannot be asked for by item id', function () {
+    $user = User::factory()->create();
+    $elsewhere = Item::factory()->create(['name' => 'Laptop', 'metadata' => ['serial' => 'SN-12345']]);
+
+    Livewire::actingAs($user)
+        ->test('pages::inventory.index')
+        ->set('search', 'SN')
+        ->call('matchedDetail', $elsewhere->id);
+})->throws(MethodNotFoundException::class);

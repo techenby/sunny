@@ -110,7 +110,8 @@ class Recipe extends Model
 
     public function isSourceUrl(): bool
     {
-        return filter_var($this->source, FILTER_VALIDATE_URL) !== false;
+        return filter_var($this->source, FILTER_VALIDATE_URL) !== false
+            && in_array(Str::lower((string) parse_url($this->source, PHP_URL_SCHEME)), ['http', 'https'], true);
     }
 
     public function servingCount(): ?int

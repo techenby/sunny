@@ -113,3 +113,12 @@ function createAfterLookup(string $table, string $column, Closure $create, int $
 
     return $raced;
 }
+
+function livewireSnapshotFrom(string $html, string $component): string
+{
+    preg_match_all('/wire:snapshot="([^"]+)"/', $html, $matches);
+
+    return collect($matches[1])
+        ->map(fn (string $snapshot): string => html_entity_decode($snapshot, ENT_QUOTES))
+        ->first(fn (string $snapshot): bool => str_contains(json_decode($snapshot, true)['memo']['name'] ?? '', $component));
+}
