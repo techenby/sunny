@@ -5,7 +5,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\UploadedFile;
 
 /*
 |--------------------------------------------------------------------------
@@ -51,23 +50,6 @@ expect()->extend('toBeTrashed', function () {
 | global functions to help you to reduce the number of lines of code in your test files.
 |
 */
-
-function amazonFixture(): UploadedFile
-{
-    return new UploadedFile(
-        path: base_path('tests/Fixtures/csv/amazon-import.csv'),
-        originalName: 'amazon-import.csv',
-        test: true,
-    );
-}
-
-function amazonFixtureUpload(): UploadedFile
-{
-    return UploadedFile::fake()->createWithContent(
-        'amazon-import.csv',
-        file_get_contents(base_path('tests/Fixtures/csv/amazon-import.csv')),
-    );
-}
 
 function fakeRecipeHtml(array $schema): string
 {

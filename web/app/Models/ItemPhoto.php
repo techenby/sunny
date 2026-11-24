@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 
 #[Touches(['item'])]
 class ItemPhoto extends Model
@@ -19,6 +20,20 @@ class ItemPhoto extends Model
     use HasFactory;
 
     public const MAX_PER_ITEM = 10;
+
+    public const int MAX_PER_TEAM = 5_000;
+
+    protected static function booted(): void
+    {
+        static::creating(function (ItemPhoto $photo): void {
+            $teamId = Item::withTrashed()->whereKey($photo->item_id)->value('team_id');
+            $count = static::query()->whereIn('item_id', Item::withTrashed()->where('team_id', $teamId)->select('id'))->count();
+
+            throw_if($count >= self::MAX_PER_TEAM, ValidationException::withMessages([
+                'photo' => [__('A team can have up to :count item photos.', ['count' => number_format(self::MAX_PER_TEAM)])],
+            ]));
+        });
+    }
 
     /** @return BelongsTo<Item, $this> */
     public function item(): BelongsTo

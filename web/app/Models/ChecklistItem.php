@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Concerns\LimitedPerOwner;
 use Database\Factories\ChecklistItemFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -17,6 +18,9 @@ class ChecklistItem extends Model
 {
     /** @use HasFactory<ChecklistItemFactory> */
     use HasFactory;
+    use LimitedPerOwner;
+
+    public const int MAX_PER_OWNER = 500;
 
     protected static function booted(): void
     {
@@ -85,5 +89,15 @@ class ChecklistItem extends Model
         return [
             'completed_at' => 'datetime',
         ];
+    }
+
+    protected function ownerColumn(): string
+    {
+        return 'checklist_id';
+    }
+
+    protected function ownerLimitMessage(): string
+    {
+        return __('A list can have up to :count items.', ['count' => self::MAX_PER_OWNER]);
     }
 }

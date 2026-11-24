@@ -6,6 +6,7 @@ namespace App\Mcp\Tools\Recipes;
 
 use App\Actions\Recipes\CreateRecipe as CreateRecipeAction;
 use App\Models\Recipe;
+use App\Rules\RecipeLines;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\Support\Facades\Gate;
 use Laravel\Mcp\Request;
@@ -22,16 +23,16 @@ class CreateRecipe extends Tool
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
-            'ingredients' => ['nullable', 'string'],
-            'instructions' => ['nullable', 'string'],
+            'description' => ['nullable', 'string', 'max:20000'],
+            'ingredients' => ['nullable', 'string', 'max:' . RecipeLines::MAX_CHARACTERS],
+            'instructions' => ['nullable', 'string', 'max:' . RecipeLines::MAX_CHARACTERS],
             'servings' => ['nullable', 'string', 'max:50'],
             'prep_time' => ['nullable', 'string', 'max:50'],
             'cook_time' => ['nullable', 'string', 'max:50'],
             'total_time' => ['nullable', 'string', 'max:50'],
-            'notes' => ['nullable', 'string'],
+            'notes' => ['nullable', 'string', 'max:20000'],
             'source' => ['nullable', 'string', 'max:500'],
-            'tags' => ['nullable', 'array'],
+            'tags' => ['nullable', 'array', 'max:50'],
             'tags.*' => ['string', 'max:255'],
         ]);
 

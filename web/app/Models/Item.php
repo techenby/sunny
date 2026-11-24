@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Concerns\LimitedPerOwner;
 use App\Enums\ItemType;
 use Database\Factories\ItemFactory;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -22,6 +23,9 @@ class Item extends Model
 {
     /** @use HasFactory<ItemFactory> */
     use HasFactory;
+    use LimitedPerOwner;
+
+    public const int MAX_PER_OWNER = 5_000;
     use SoftDeletes;
 
     protected static function booted(): void
@@ -156,5 +160,15 @@ class Item extends Model
     private function primary(): ?ItemPhoto
     {
         return $this->relationLoaded('photos') ? $this->photos->first() : $this->primaryPhoto;
+    }
+
+    protected function ownerColumn(): string
+    {
+        return 'team_id';
+    }
+
+    protected function ownerLimitMessage(): string
+    {
+        return __('A team can have up to :count items, counting recently deleted ones.', ['count' => number_format(self::MAX_PER_OWNER)]);
     }
 }

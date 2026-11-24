@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use RuntimeException;
+use Throwable;
 
 class AddItemPhoto
 {
@@ -26,7 +27,38 @@ class AddItemPhoto
 
         $thumbPath = (new CreateThumbnail)->handle($path);
 
-        $saved = DB::transaction(function () use ($item, $path, $thumbPath, $clientUuid): ?ItemPhoto {
+        try {
+            $saved = $this->savePhoto($item, $path, $thumbPath, $clientUuid);
+        } catch (Throwable $exception) {
+            Storage::delete(array_filter([$path, $thumbPath]));
+
+            throw $exception;
+        }
+
+        if ($saved === null) {
+            Storage::delete(array_filter([$path, $thumbPath]));
+
+            throw ValidationException::withMessages([
+                'photo' => __('An item can have up to :count photos.', ['count' => ItemPhoto::MAX_PER_ITEM]),
+            ]);
+        }
+
+        if (! $saved->wasRecentlyCreated) {
+            Storage::delete(array_filter([$path, $thumbPath]));
+
+            return $saved;
+        }
+
+        if ($position !== null) {
+            (new MoveItemPhoto)->handle($saved, $position);
+        }
+
+        return $saved->refresh();
+    }
+
+    private function savePhoto(Item $item, string $path, ?string $thumbPath, ?string $clientUuid): ?ItemPhoto
+    {
+        return DB::transaction(function () use ($item, $path, $thumbPath, $clientUuid): ?ItemPhoto {
             Item::withTrashed()->whereKey($item->id)->lockForUpdate()->first();
 
             $existing = filled($clientUuid) ? $item->photos()->firstWhere('client_uuid', $clientUuid) : null;
@@ -48,25 +80,5 @@ class AddItemPhoto
                 'client_uuid' => $clientUuid,
             ]);
         });
-
-        if ($saved === null) {
-            Storage::delete(array_filter([$path, $thumbPath]));
-
-            throw ValidationException::withMessages([
-                'photo' => __('An item can have up to :count photos.', ['count' => ItemPhoto::MAX_PER_ITEM]),
-            ]);
-        }
-
-        if (! $saved->wasRecentlyCreated) {
-            Storage::delete(array_filter([$path, $thumbPath]));
-
-            return $saved;
-        }
-
-        if ($position !== null) {
-            (new MoveItemPhoto)->handle($saved, $position);
-        }
-
-        return $saved->refresh();
     }
 }

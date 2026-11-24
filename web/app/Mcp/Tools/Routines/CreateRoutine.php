@@ -9,6 +9,7 @@ use App\Enums\TimeOfDay;
 use App\Mcp\Tools\Routines\Concerns\FormatsRoutines;
 use App\Mcp\Tools\Routines\Concerns\ValidatesRoutineSchedules;
 use App\Models\Routine;
+use App\Models\RoutineStep;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
@@ -42,7 +43,7 @@ class CreateRoutine extends Tool
             'day_of_month' => [Rule::requiredIf($request->get('frequency') === RoutineFrequency::Monthly->value), 'nullable', 'integer', 'between:1,31'],
             'starts_on' => ['nullable', 'date'],
             'is_active' => ['sometimes', 'boolean'],
-            'steps' => ['sometimes', 'array'],
+            'steps' => ['sometimes', 'array', 'max:' . RoutineStep::MAX_PER_OWNER],
             'steps.*' => ['required', 'string', 'max:255'],
         ], $this->scheduleMessages());
 

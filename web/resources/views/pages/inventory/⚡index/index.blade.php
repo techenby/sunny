@@ -36,19 +36,6 @@
         </div>
         <div class="flex items-center gap-1">
             <flux:button variant="primary" icon="plus" wire:click="create">{{ __('Add') }}</flux:button>
-            <flux:dropdown>
-                <flux:button icon="chevron-down" variant="ghost" :aria-label="__('More ways to add')" />
-
-                <flux:menu>
-                    <div>
-                        <flux:modal.trigger name="import-items">
-                            <flux:menu.item icon="document-arrow-up">{{ __('Import from Amazon') }}</flux:menu.item>
-                        </flux:modal.trigger>
-
-                        @include('pages.inventory.modals.import-items')
-                    </div>
-                </flux:menu>
-            </flux:dropdown>
         </div>
     </div>
 

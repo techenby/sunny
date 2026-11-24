@@ -33,7 +33,7 @@ class CreateChecklist extends Tool
             'name' => ['required', 'string', 'max:255'],
             'type' => ['required', Rule::enum(ChecklistType::class)],
             'user_id' => ['nullable', 'integer', Rule::in($team->members()->pluck('users.id'))],
-            'items' => ['nullable', 'array'],
+            'items' => ['nullable', 'array', 'max:100'],
             'items.*' => ['required', 'string', 'max:255'],
         ], [
             'type.enum' => 'The type must be one of: todo, shopping, wishlist.',

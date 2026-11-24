@@ -24,7 +24,7 @@ class AddRoutineSteps extends Tool
     {
         $validated = $request->validate([
             'routine_id' => ['required', 'integer'],
-            'steps' => ['required', 'array', 'min:1'],
+            'steps' => ['required', 'array', 'min:1', 'max:' . RoutineStep::MAX_PER_OWNER],
             'steps.*' => ['required', 'string', 'max:255'],
         ], [
             'steps.required' => 'Provide the names of the steps to add as an array of strings, e.g. ["Brush teeth"].',

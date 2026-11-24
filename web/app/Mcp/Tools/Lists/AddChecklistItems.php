@@ -24,7 +24,7 @@ class AddChecklistItems extends Tool
     {
         $validated = $request->validate([
             'checklist_id' => ['required', 'integer'],
-            'items' => ['required', 'array', 'min:1'],
+            'items' => ['required', 'array', 'min:1', 'max:100'],
             'items.*' => ['required', 'string', 'max:255'],
         ], [
             'items.required' => 'Provide at least one item name to add.',

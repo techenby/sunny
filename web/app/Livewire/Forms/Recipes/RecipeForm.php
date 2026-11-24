@@ -8,6 +8,7 @@ use App\Actions\Photos\CreateThumbnail;
 use App\Actions\Recipes\CreateRecipe;
 use App\Actions\Recipes\UpdateRecipe;
 use App\Models\Recipe;
+use App\Rules\RecipeLines as RecipeLinesRule;
 use App\Support\Recipes\RecipeLines;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -92,17 +93,18 @@ class RecipeForm extends Form
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'tags' => ['nullable', 'array'],
+            'tags' => ['nullable', 'array', 'max:50'],
+            'tags.*' => ['string', 'max:255'],
             'source' => ['nullable', 'string', 'max:500'],
             'servings' => ['nullable', 'string', 'max:50'],
             'prep_time' => ['nullable', 'string', 'max:50'],
             'cook_time' => ['nullable', 'string', 'max:50'],
             'total_time' => ['nullable', 'string', 'max:50'],
-            'description' => ['nullable', 'string'],
-            'ingredients' => ['nullable', 'string'],
-            'instructions' => ['nullable', 'string'],
-            'notes' => ['nullable', 'string'],
-            'nutrition' => ['nullable', 'string'],
+            'description' => ['nullable', 'string', 'max:20000'],
+            'ingredients' => ['nullable', 'string', 'max:' . RecipeLinesRule::MAX_CHARACTERS],
+            'instructions' => ['nullable', 'string', 'max:' . RecipeLinesRule::MAX_CHARACTERS],
+            'notes' => ['nullable', 'string', 'max:20000'],
+            'nutrition' => ['nullable', 'string', 'max:5000'],
             'photo' => ['nullable', 'image', 'max:5120', CreateThumbnail::DIMENSIONS_RULE],
             'parent_id' => ['nullable', 'integer', 'exists:recipes,id'],
         ];

@@ -85,60 +85,6 @@ parameters:
 			path: app/Actions/Inventory/GenerateItemQrCode.php
 
 		-
-			message: '#^Method App\\Actions\\Inventory\\ImportItemsFromAmazonAction\:\:rejectConsumables\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: app/Actions/Inventory/ImportItemsFromAmazonAction.php
-
-		-
-			message: '#^Method App\\Actions\\Inventory\\ImportItemsFromAmazonAction\:\:rejectConsumables\(\) has parameter \$collection with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: app/Actions/Inventory/ImportItemsFromAmazonAction.php
-
-		-
-			message: '#^Method App\\Actions\\Inventory\\ImportItemsFromAmazonAction\:\:rejectGifts\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: app/Actions/Inventory/ImportItemsFromAmazonAction.php
-
-		-
-			message: '#^Method App\\Actions\\Inventory\\ImportItemsFromAmazonAction\:\:rejectGifts\(\) has parameter \$collection with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: app/Actions/Inventory/ImportItemsFromAmazonAction.php
-
-		-
-			message: '#^Method App\\Actions\\Inventory\\ImportItemsFromAmazonAction\:\:rejectOutsideDates\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: app/Actions/Inventory/ImportItemsFromAmazonAction.php
-
-		-
-			message: '#^Method App\\Actions\\Inventory\\ImportItemsFromAmazonAction\:\:rejectOutsideDates\(\) has parameter \$collection with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: app/Actions/Inventory/ImportItemsFromAmazonAction.php
-
-		-
-			message: '#^Method App\\Actions\\Inventory\\ImportItemsFromAmazonAction\:\:rejectOutsideDates\(\) has parameter \$endDate with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: app/Actions/Inventory/ImportItemsFromAmazonAction.php
-
-		-
-			message: '#^Method App\\Actions\\Inventory\\ImportItemsFromAmazonAction\:\:rejectOutsideDates\(\) has parameter \$startDate with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: app/Actions/Inventory/ImportItemsFromAmazonAction.php
-
-		-
-			message: '#^Property App\\Actions\\Inventory\\ImportItemsFromAmazonAction\:\:\$stats has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: app/Actions/Inventory/ImportItemsFromAmazonAction.php
-
-		-
 			message: '#^Negated boolean expression is always true\.$#'
 			identifier: booleanNot.alwaysTrue
 			count: 2
@@ -467,24 +413,6 @@ parameters:
 			identifier: return.type
 			count: 1
 			path: app/Http/Resources/RoutineStepResource.php
-
-		-
-			message: '#^Method App\\Livewire\\Forms\\Inventory\\ImportItemsForm\:\:process\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: app/Livewire/Forms/Inventory/ImportItemsForm.php
-
-		-
-			message: '#^Method App\\Livewire\\Forms\\Inventory\\ImportItemsForm\:\:process\(\) has parameter \$parentId with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: app/Livewire/Forms/Inventory/ImportItemsForm.php
-
-		-
-			message: '#^Property App\\Livewire\\Forms\\Inventory\\ImportItemsForm\:\:\$file has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: app/Livewire/Forms/Inventory/ImportItemsForm.php
 
 		-
 			message: '#^Cannot access property \$value on string\.$#'

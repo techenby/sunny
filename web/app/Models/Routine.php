@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Concerns\LimitedPerOwner;
 use App\Enums\RoutineFrequency;
 use App\Enums\TimeOfDay;
 use Carbon\CarbonImmutable;
@@ -36,6 +37,9 @@ class Routine extends Model
 {
     /** @use HasFactory<RoutineFactory> */
     use HasFactory;
+    use LimitedPerOwner;
+
+    public const int MAX_PER_OWNER = 100;
     use SoftDeletes;
 
     /** @return HasMany<RoutineOccurrence, $this> */
@@ -164,5 +168,15 @@ class Routine extends Model
             ->only($weekdays)
             ->map(fn (string $day): string => Str::substr($day, 0, 3))
             ->join(', ');
+    }
+
+    protected function ownerColumn(): string
+    {
+        return 'team_id';
+    }
+
+    protected function ownerLimitMessage(): string
+    {
+        return __('A team can have up to :count routines.', ['count' => self::MAX_PER_OWNER]);
     }
 }

@@ -27,7 +27,6 @@
 - [petebishwhip/laradocs](https://github.com/PeteBishwhip/laradocs)
 - [sabre/vobject](https://github.com/sabre-io/vobject)
 - [saloonphp/saloon](https://docs.saloon.dev/)
-- [spatie/simple-excel](https://github.com/spatie/simple-excel)
 
 **Notable NPM Packages:**
 - [@laravel/passkeys](https://www.npmjs.com/package/@laravel/passkeys)

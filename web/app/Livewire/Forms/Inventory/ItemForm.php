@@ -88,7 +88,7 @@ class ItemForm extends Form
                 Rule::exists('items', 'id')->where('team_id', $this->editingItem->team_id ?? Auth::user()->current_team_id),
                 Rule::notIn($this->editingItem ? [$this->editingItem->id, ...$this->editingItem->descendantIds()] : []),
             ],
-            'metadata' => ['nullable', 'array'],
+            'metadata' => ['nullable', 'array', 'max:50'],
             'metadata.*.key' => ['nullable', 'string', 'max:255', 'distinct'],
             'metadata.*.value' => ['required_with:metadata.*.key', 'nullable', 'string', 'max:255'],
             'photo' => ['nullable', 'image', 'max:5120', CreateThumbnail::DIMENSIONS_RULE],

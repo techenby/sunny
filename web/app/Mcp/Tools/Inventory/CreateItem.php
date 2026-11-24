@@ -7,6 +7,7 @@ namespace App\Mcp\Tools\Inventory;
 use App\Actions\Inventory\CreateItem as CreateItemAction;
 use App\Enums\ItemType;
 use App\Models\Item;
+use App\Rules\MaxJsonSize;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rules\Enum;
@@ -26,7 +27,7 @@ class CreateItem extends Tool
             'name' => ['required', 'string', 'max:255'],
             'type' => ['required', new Enum(ItemType::class)],
             'parent_id' => ['nullable', 'integer'],
-            'metadata' => ['nullable', 'array'],
+            'metadata' => ['nullable', 'array', new MaxJsonSize(10_000)],
         ]);
 
         $team = $request->user()->currentTeam;
