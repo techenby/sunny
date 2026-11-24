@@ -2,6 +2,7 @@
 
 namespace App\NativeComponents;
 
+use App\Actions\DestroySession;
 use App\Http\Integrations\Sunny\SunnyAccount;
 use App\Http\Integrations\Sunny\SunnyAuth;
 use App\Http\Integrations\Sunny\SunnyStore;
@@ -13,11 +14,13 @@ use Illuminate\View\View;
 use Native\Mobile\AsyncTask;
 use Native\Mobile\Attributes\On;
 use Native\Mobile\Events\Alert\ButtonPressed;
+use Native\Mobile\Exceptions\AsyncTaskException;
 use Native\Mobile\Facades\Dialog;
 use Native\Mobile\Facades\Network;
 use RuntimeException;
 use Saloon\Exceptions\Request\FatalRequestException;
 use Saloon\Exceptions\Request\RequestException;
+use Saloon\Exceptions\Request\Statuses\UnauthorizedException;
 
 class VerifyEmail extends Component
 {
@@ -58,9 +61,15 @@ class VerifyEmail extends Component
 
             return;
         } catch (RequestException $exception) {
+            if ($exception->getResponse()->status() === 401) {
+                $this->signedOut();
+
+                return;
+            }
+
             $this->error = $exception->getResponse()->status() === 429
                 ? 'Too many attempts. Please wait a minute and try again.'
-                : 'Sunny couldn’t send the email right now.';
+                : 'The server couldn’t send the email right now.';
 
             return;
         } catch (AuthenticationException) {
@@ -94,8 +103,14 @@ class VerifyEmail extends Component
             $this->error = 'Checking needs a connection.';
 
             return;
-        } catch (RequestException) {
-            $this->error = 'Sunny couldn’t check right now. Try again in a moment.';
+        } catch (RequestException $exception) {
+            if ($exception->getResponse()->status() === 401) {
+                $this->signedOut();
+
+                return;
+            }
+
+            $this->error = 'The server couldn’t check right now. Try again in a moment.';
 
             return;
         } catch (AuthenticationException) {
@@ -174,7 +189,17 @@ class VerifyEmail extends Component
                     $this->continueToSunny();
                 }
             })
-            ->failed(fn () => null);
+            ->failed(function (AsyncTaskException $exception): void {
+                if (is_a($exception->originalClass(), UnauthorizedException::class, true)) {
+                    $this->signedOut();
+                }
+            });
+    }
+
+    private function signedOut(): void
+    {
+        rescue(fn () => app(DestroySession::class)->handle(), report: false);
+        $this->replace('/');
     }
 
     private function continueToSunny(): void

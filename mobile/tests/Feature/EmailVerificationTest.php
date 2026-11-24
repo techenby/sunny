@@ -1,10 +1,12 @@
 <?php
 
 use App\Http\Integrations\Sunny\EmailVerificationRequired;
+use App\Http\Integrations\Sunny\Requests\CreateTokenRequest;
 use App\Http\Integrations\Sunny\Requests\GetUserRequest;
 use App\Http\Integrations\Sunny\Requests\SaveRecordRequest;
 use App\Http\Integrations\Sunny\Requests\SendVerificationEmailRequest;
 use App\Http\Integrations\Sunny\Requests\SyncRequest;
+use App\Http\Integrations\Sunny\SunnyAuth;
 use App\Http\Integrations\Sunny\SunnyOutbox;
 use App\Http\Integrations\Sunny\SunnyStore;
 use App\Http\Integrations\Sunny\SunnySyncCoordinator;
@@ -126,3 +128,86 @@ it('lets an unverified user change their email from the verify screen', function
         ->tap('verify-email-change')
         ->assertNavigatedTo('/preferences/account');
 });
+
+it('signs out from the verify screen when the server no longer accepts the saved login', function (string $button, array $responses): void {
+    app(SunnyOutbox::class)->queue('recipes', 1, ['name' => 'Soup'], 1);
+    Saloon::fake($responses);
+
+    Native::visit('/verify-email')
+        ->assertNoNavigation()
+        ->tap($button)
+        ->assertReplacedWith('/')
+        ->assertDontSee('The server couldn’t');
+
+    Native::fakeBridge()->assertCalled('SecureStorage.Delete');
+    expect(PendingWrite::count())->toBe(1)
+        ->and(app(SunnyStore::class)->rememberedAccount())->toBe(7)
+        ->and(app(SunnyStore::class)->profile())->toBeNull();
+})->with([
+    'checking' => ['verify-email-check', fn (): array => [GetUserRequest::class => sequenceOf(MockResponse::make(['data' => unverifiedUser()]), MockResponse::make([], 401))]],
+    'sending' => ['verify-email-send', fn (): array => [
+        GetUserRequest::class => MockResponse::make(['data' => unverifiedUser()]),
+        SendVerificationEmailRequest::class => MockResponse::make([], 401),
+    ]],
+]);
+
+it('signs out when the background check finds the saved login was revoked', function (): void {
+    app(SunnyOutbox::class)->queue('recipes', 1, ['name' => 'Soup'], 1);
+    Saloon::fake([GetUserRequest::class => MockResponse::make([], 401)]);
+
+    Native::visit('/verify-email')->assertReplacedWith('/');
+
+    Native::fakeBridge()->assertCalled('SecureStorage.Delete');
+    expect(PendingWrite::count())->toBe(1)->and(app(SunnyStore::class)->rememberedAccount())->toBe(7);
+});
+
+it('sends changes queued before a revoked login once the same person signs back in', function (): void {
+    app(SunnyOutbox::class)->queue('recipes', 1, ['name' => 'Soup'], 1);
+    Saloon::fake([GetUserRequest::class => MockResponse::make([], 401)]);
+    Native::visit('/verify-email')->assertReplacedWith('/');
+
+    Native::fakeBridge()->respondTo('SecureStorage.Set', ['success' => true]);
+    Saloon::fake([CreateTokenRequest::class => MockResponse::make(['id' => 7, 'token' => 'new-token'])]);
+    app(SunnyAuth::class)->login('andy@swick.family', 'password', 'phone');
+
+    expect(PendingWrite::count())->toBe(1);
+
+    $saved = ['id' => 1, 'team_id' => 1, 'name' => 'Soup'];
+    Saloon::fake([
+        GetUserRequest::class => MockResponse::make(['data' => unverifiedUser(['email_verified_at' => now()->toIso8601String()])]),
+        SaveRecordRequest::class => MockResponse::make(['data' => $saved]),
+        SyncRequest::class => MockResponse::make([], 503),
+    ]);
+    rescue(fn () => app(SunnySyncCoordinator::class)->sync(), report: false);
+
+    Saloon::assertSent(fn ($request): bool => $request instanceof SaveRecordRequest && $request->resolveEndpoint() === '/teams/family/recipes/1');
+    expect(PendingWrite::count())->toBe(0);
+});
+
+it('drops changes queued before a revoked login when someone else signs in on the phone', function (): void {
+    app(SunnyOutbox::class)->queue('recipes', 1, ['name' => 'Soup'], 1);
+    Saloon::fake([GetUserRequest::class => MockResponse::make([], 401)]);
+    Native::visit('/verify-email')->assertReplacedWith('/');
+
+    Native::fakeBridge()->respondTo('SecureStorage.Set', ['success' => true]);
+    Saloon::fake([CreateTokenRequest::class => MockResponse::make(['id' => 8, 'token' => 'other-token'])]);
+    app(SunnyAuth::class)->login('zoro@example.com', 'password', 'phone');
+
+    expect(PendingWrite::count())->toBe(0)->and(app(SunnyStore::class)->rememberedAccount())->toBe(8);
+
+    Saloon::fake([
+        GetUserRequest::class => MockResponse::make(['data' => ['id' => 8, 'name' => 'Zoro', 'email' => 'zoro@example.com', 'email_verified_at' => now()->toIso8601String()]]),
+        SaveRecordRequest::class => MockResponse::make([], 500),
+        SyncRequest::class => MockResponse::make([], 503),
+    ]);
+    rescue(fn () => app(SunnySyncCoordinator::class)->sync(), report: false);
+
+    Saloon::assertNotSent(SaveRecordRequest::class);
+});
+
+function sequenceOf(MockResponse ...$responses): Closure
+{
+    return function () use (&$responses): MockResponse {
+        return count($responses) > 1 ? array_shift($responses) : $responses[0];
+    };
+}
