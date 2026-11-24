@@ -169,7 +169,6 @@
                         ref="list-edit-name"
                         label="Name"
                         autocapitalize="sentences"
-                        autofocus
                         :error="$error !== ''"
                         :supporting="$error !== '' ? $error : null"
                         native:model="editingName"
