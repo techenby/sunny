@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Middleware\EnsureEmailIsVerifiedUnlessPairedKiosk;
 use App\Models\User;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Auth\Middleware\EnsureEmailIsVerified;
@@ -109,5 +108,5 @@ test('verified users can use the app', function () {
 });
 
 test('open pages check for a verified email on every update, not just when they load', function () {
-    expect(Livewire::getPersistentMiddleware())->toContain(EnsureEmailIsVerified::class, EnsureEmailIsVerifiedUnlessPairedKiosk::class);
+    expect(Livewire::getPersistentMiddleware())->toContain(EnsureEmailIsVerified::class);
 });
