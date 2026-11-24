@@ -45,6 +45,20 @@ class Item extends Model
         });
     }
 
+    /** @param  array<string, mixed>  $options */
+    public function save(array $options = []): bool
+    {
+        if (! $this->exists || $this->parent_id === null || ! $this->isDirty('parent_id')) {
+            return parent::save($options);
+        }
+
+        return DB::transaction(function () use ($options): bool {
+            Team::query()->whereKey($this->team_id)->lockForUpdate()->first();
+
+            return parent::save($options);
+        });
+    }
+
     /** @return BelongsTo<Team, $this> */
     public function team(): BelongsTo
     {

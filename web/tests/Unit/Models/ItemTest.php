@@ -2,7 +2,9 @@
 
 use App\Models\Item;
 use App\Models\ItemPhoto;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
@@ -53,4 +55,20 @@ test('the database refuses a place in another team even when the model is skippe
     $elsewhere = Item::factory()->create();
 
     expect(fn () => Item::query()->whereKey($item->id)->update(['parent_id' => $elsewhere->id]))->toThrow(QueryException::class);
+});
+
+test('changing an item\'s place reads its team\'s row for the lock before looking for a loop', function () {
+    $shelf = Item::factory()->create();
+    $bin = Item::factory()->for($shelf->team)->create();
+    $queries = collect();
+    DB::listen(fn (QueryExecuted $query) => $queries->push($query->sql));
+
+    $bin->update(['parent_id' => $shelf->id]);
+
+    $lock = $queries->search(fn (string $sql): bool => str_contains($sql, 'from "teams"'));
+    $check = $queries->search(fn (string $sql): bool => str_contains($sql, 'with recursive'));
+
+    expect($lock)->not->toBeFalse()
+        ->and($check)->toBeGreaterThan($lock)
+        ->and($bin->fresh()->parent_id)->toBe($shelf->id);
 });
