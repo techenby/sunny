@@ -185,3 +185,26 @@ test('can remove a temporary uploaded photo', function () {
         ->assertDontSee('download.png')
         ->assertSet('form.photo', null);
 });
+
+test('importing is limited to thirty pages a minute', function () {
+    Http::fake(['*' => Http::response('<html><body>Hello</body></html>')]);
+    $page = Livewire::actingAs(User::factory()->create())->test('pages::recipes.create')->set('form.source', 'https://example.com/cake');
+
+    foreach (range(1, 31) as $attempt) {
+        $page->call('import');
+    }
+
+    Http::assertSentCount(30);
+});
+
+test('importing only accepts a web address', function () {
+    Http::fake();
+
+    Livewire::actingAs(User::factory()->create())
+        ->test('pages::recipes.create')
+        ->set('form.source', 'ftp://example.com/cake')
+        ->call('import')
+        ->assertHasErrors('form.source');
+
+    Http::assertNothingSent();
+});

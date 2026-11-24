@@ -6,7 +6,7 @@ use App\Models\User;
 use Flux\Flux;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\RateLimiter;
+use App\Support\VerificationEmailQuota;
 use Illuminate\Support\Facades\Session;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
@@ -30,7 +30,9 @@ new class extends Component {
 
         if ($validated['email'] === $user->email) {
             $updateProfile->handle($user, $validated);
-        } elseif (RateLimiter::attempt($this->emailLimitKey($user), 6, fn () => $updateProfile->handle($user, $validated)) === false) {
+        } elseif ($this->emailQuota($user)->claim()) {
+            $updateProfile->handle($user, $validated);
+        } else {
             $this->addError('email', $this->tooManyEmailsMessage($user));
 
             return;
@@ -49,23 +51,31 @@ new class extends Component {
             return;
         }
 
-        if (RateLimiter::attempt($this->emailLimitKey($user), 6, fn () => $user->sendEmailVerificationNotification()) === false) {
+        if (! $this->emailQuota($user)->claim()) {
             Flux::toast(variant: 'danger', text: $this->tooManyEmailsMessage($user));
 
             return;
         }
 
+        $user->sendEmailVerificationNotification();
+
         Session::flash('status', 'verification-link-sent');
     }
 
-    private function emailLimitKey(User $user): string
+    private function emailQuota(User $user): VerificationEmailQuota
     {
-        return "verification-email-web:{$user->id}";
+        return new VerificationEmailQuota($user, 'profile');
     }
 
     private function tooManyEmailsMessage(User $user): string
     {
-        return __('Too many verification emails. Try again in :seconds seconds.', ['seconds' => RateLimiter::availableIn($this->emailLimitKey($user))]);
+        $quota = $this->emailQuota($user);
+
+        if ($quota->isSpentForToday()) {
+            return __('Too many verification emails today. Try again tomorrow.');
+        }
+
+        return __('Too many verification emails. Try again in :seconds seconds.', ['seconds' => $quota->availableIn()]);
     }
 
     #[Computed]

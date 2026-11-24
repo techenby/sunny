@@ -36,6 +36,8 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     use PasskeyAuthenticatable;
     use TwoFactorAuthenticatable;
 
+    public const int VERIFICATION_EMAILS_PER_DAY = 20;
+
     public function initials(): string
     {
         $initials = Str::initials($this->name, true);

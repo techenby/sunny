@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Api;
 
+use App\Actions\Photos\CreateThumbnail;
 use App\Enums\ItemType;
 use App\Models\Item;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -29,7 +30,7 @@ class StoreItemRequest extends FormRequest
             'type' => ['required', new Enum(ItemType::class)],
             'parent_id' => ['nullable', 'integer', Rule::exists('items', 'id')->where('team_id', $this->route('team')->id)],
             'metadata' => ['nullable', 'array'],
-            'photo' => ['nullable', 'image', 'max:10240'],
+            'photo' => ['nullable', 'image', 'max:10240', CreateThumbnail::DIMENSIONS_RULE],
             'client_uuid' => ['nullable', 'uuid'],
         ];
     }

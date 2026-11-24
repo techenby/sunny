@@ -6,6 +6,7 @@ use App\Actions\Inventory\GenerateItemQrCode;
 use App\Actions\Inventory\MoveItemPhoto;
 use App\Actions\Inventory\MoveItemToTeam;
 use App\Actions\Inventory\RemoveItemPhoto;
+use App\Actions\Photos\CreateThumbnail;
 use App\Enums\ItemType;
 use App\Livewire\Forms\Inventory\ItemForm;
 use App\Models\Item;
@@ -158,7 +159,7 @@ new class extends Component
 
         $this->validate([
             'newPhotos' => ['array', 'max:' . max(0, $remaining)],
-            'newPhotos.*' => ['image', 'max:10240'],
+            'newPhotos.*' => ['image', 'max:10240', CreateThumbnail::DIMENSIONS_RULE],
         ], [
             'newPhotos.max' => __('An item can have up to :count photos.', ['count' => ItemPhoto::MAX_PER_ITEM]),
         ]);

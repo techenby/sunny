@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\TeamInvitation;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
@@ -19,9 +18,4 @@ Schedule::command('sanctum:prune-expired --hours=24')->daily();
 
 Schedule::command('passport:purge --hours=24')->daily();
 
-Schedule::call(function () {
-    TeamInvitation::query()
-        ->whereNotNull('expires_at')
-        ->where('expires_at', '<', now())
-        ->delete();
-})->daily()->description('Delete expired team invitations');
+Schedule::command('model:prune')->daily();

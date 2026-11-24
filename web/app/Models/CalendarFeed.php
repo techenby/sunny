@@ -27,6 +27,8 @@ class CalendarFeed extends Model
     /** @use HasFactory<CalendarFeedFactory> */
     use HasFactory;
 
+    public const int MAX_PER_TEAM = 25;
+
     protected static function booted(): void
     {
         static::deleted(function (CalendarFeed $feed): void {

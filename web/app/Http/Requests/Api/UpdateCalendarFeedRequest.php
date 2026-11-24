@@ -24,7 +24,7 @@ class UpdateCalendarFeedRequest extends FormRequest
     {
         return [
             'name' => ['sometimes', 'required', 'string', 'max:255'],
-            'url' => ['sometimes', 'required', 'string', 'url:http,https'],
+            'url' => ['sometimes', 'required', 'string', 'url:http,https', 'max:2048'],
             'color' => ['sometimes', 'required', Rule::enum(CalendarColor::class)],
         ];
     }

@@ -253,3 +253,32 @@ test('destroy returns 403 for a team the user does not belong to', function () {
 
     $this->assertModelExists($feed);
 });
+
+test('store stops at the most calendars a team can have', function () {
+    Http::fake();
+    $user = User::factory()->create();
+    CalendarFeed::factory()->count(CalendarFeed::MAX_PER_TEAM)->for($user->currentTeam)->create();
+
+    $this->actingAs($user)
+        ->postJson(route('api.calendar-feeds.store', $user->currentTeam), ['name' => 'One more', 'url' => 'https://example.com/more.ics', 'color' => CalendarColor::Blue->value])
+        ->assertUnprocessable()
+        ->assertJsonPath('errors.url.0', 'A team can have up to 25 calendars.');
+
+    Http::assertNothingSent();
+    expect($user->currentTeam->calendarFeeds()->count())->toBe(CalendarFeed::MAX_PER_TEAM);
+});
+
+test('a calendar address inside the network is never fetched', function () {
+    Http::fake();
+    Storage::fake();
+    $this->resolveHostsTo(['10.0.0.5']);
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->postJson(route('api.calendar-feeds.store', $user->currentTeam), ['name' => 'Inside', 'url' => 'https://calendar.internal.example/feed.ics', 'color' => CalendarColor::Blue->value])
+        ->assertCreated()
+        ->assertJsonPath('data.status', 'failing')
+        ->assertJsonPath('data.last_error', 'Could not connect to the calendar server.');
+
+    Http::assertNothingSent();
+});

@@ -3,7 +3,6 @@
 use App\Enums\TeamRole;
 use App\Models\TeamInvitation;
 use App\Models\User;
-use Illuminate\Support\Facades\Date;
 use Livewire\Livewire;
 
 use function Pest\Laravel\actingAs;
@@ -166,14 +165,12 @@ test('invitations can no longer be accepted with a GET request', function () {
 });
 
 test('the daily cleanup deletes expired invitations', function () {
-    Date::setTestNow(today());
-
     $luffy = User::factory()->create();
     $expired = TeamInvitation::factory()->for($luffy->currentTeam)->expired()->create();
     $unexpired = TeamInvitation::factory()->for($luffy->currentTeam)->create(['expires_at' => now()->addDay()]);
     $withoutExpiration = TeamInvitation::factory()->for($luffy->currentTeam)->create(['expires_at' => null]);
 
-    $this->artisan('schedule:run')->assertSuccessful();
+    $this->artisan('model:prune')->assertSuccessful();
 
     expect($expired->fresh())->toBeNull()
         ->and($unexpired->fresh())->not->toBeNull()

@@ -76,3 +76,17 @@ test('resetting the password signs the account out everywhere', function () {
     expect($user->tokens()->count())->toBe(0)
         ->and(DB::table('sessions')->where('user_id', $user->id)->exists())->toBeFalse();
 });
+
+test('the forgot password form stops repeated tries from one network', function () {
+    Notification::fake();
+    $user = User::factory()->create();
+
+    foreach (range(1, 6) as $attempt) {
+        $this->post(route('password.email'), ['email' => "nobody{$attempt}@example.com"]);
+    }
+
+    $this->post(route('password.email'), ['email' => $user->email])
+        ->assertSessionHasErrors(['email' => 'Too many attempts. Please try again in 60 seconds.']);
+
+    Notification::assertNothingSent();
+});

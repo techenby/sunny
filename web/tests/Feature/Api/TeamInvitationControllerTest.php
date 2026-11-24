@@ -147,3 +147,75 @@ test('another team\'s invitation cannot be cancelled through this team', functio
 
     expect($invitation->fresh())->not->toBeNull();
 });
+
+test('one person can only send so many invitations in an hour and in a day', function () {
+    $invite = fn (int $number) => $this->actingAs($this->luffy)
+        ->postJson(route('api.teams.invitations.store', $this->crew), ['email' => "recruit{$number}@strawhat.pirates", 'role' => 'member']);
+
+    foreach (range(1, 10) as $number) {
+        $invite($number)->assertCreated();
+    }
+
+    $invite(11)->assertUnprocessable()->assertJsonPath('errors.email.0', 'You’ve sent a lot of invitations. Try again in an hour.');
+
+    $this->travel(61)->minutes();
+
+    foreach (range(11, 20) as $number) {
+        $invite($number)->assertCreated();
+    }
+
+    $this->travel(61)->minutes();
+
+    foreach (range(21, 30) as $number) {
+        $invite($number)->assertCreated();
+    }
+
+    $this->travel(61)->minutes();
+
+    $invite(31)->assertUnprocessable()->assertJsonPath('errors.email.0', 'You’ve sent a lot of invitations today. Try again tomorrow.');
+
+    Notification::assertSentTimes(TeamInvitationNotification::class, 30);
+    expect($this->crew->invitations()->count())->toBe(30);
+});
+
+test('cancelling an invitation does not give the sender another one', function () {
+    foreach (range(1, 10) as $number) {
+        $code = $this->actingAs($this->luffy)
+            ->postJson(route('api.teams.invitations.store', $this->crew), ['email' => 'usopp@strawhat.pirates', 'role' => 'member'])
+            ->assertCreated()
+            ->json('data.code');
+
+        $this->deleteJson(route('api.teams.invitations.destroy', [$this->crew, $code]))->assertNoContent();
+    }
+
+    $this->postJson(route('api.teams.invitations.store', $this->crew), ['email' => 'usopp@strawhat.pirates', 'role' => 'member'])
+        ->assertUnprocessable();
+
+    Notification::assertSentTimes(TeamInvitationNotification::class, 10);
+});
+
+test('the last invitation someone may send this hour cannot be claimed twice at once', function () {
+    $invite = fn (string $name) => $this->actingAs($this->luffy)
+        ->postJson(route('api.teams.invitations.store', $this->crew), ['email' => "{$name}@strawhat.pirates", 'role' => 'member']);
+
+    foreach (range(1, 9) as $number) {
+        $invite("recruit{$number}")->assertCreated();
+    }
+
+    $racer = null;
+
+    TeamInvitation::creating(function (TeamInvitation $invitation) use ($invite, &$racer): void {
+        if ($invitation->email === 'last@strawhat.pirates') {
+            $racer = $invite('racer');
+        }
+    });
+
+    $invite('last')->assertCreated();
+
+    $racer->assertUnprocessable()->assertJsonPath('errors.email.0', 'You’ve sent a lot of invitations. Try again in an hour.');
+
+    expect($this->crew->invitations()->pluck('email')->all())->toContain('last@strawhat.pirates')->not->toContain('racer@strawhat.pirates')
+        ->and($this->crew->invitations()->count())->toBe(10);
+
+    Notification::assertSentTimes(TeamInvitationNotification::class, 10);
+});

@@ -18,7 +18,7 @@ class AddItemPhoto
 {
     public function handle(Item $item, UploadedFile $photo, ?int $position = null, ?string $clientUuid = null): ItemPhoto
     {
-        $filename = Str::slug($item->name) . '-' . $item->id . '-' . Str::lower(Str::random(8)) . '.' . $photo->getClientOriginalExtension();
+        $filename = Str::slug($item->name) . '-' . $item->id . '-' . Str::lower(Str::random(8)) . '.' . $photo->extension();
 
         $path = $photo->storeAs("teams/{$item->team_id}/items", $filename);
 

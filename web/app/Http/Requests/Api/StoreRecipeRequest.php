@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Api;
 
+use App\Actions\Photos\CreateThumbnail;
 use App\Models\Recipe;
 use App\Rules\RecipeLines;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -37,7 +38,7 @@ class StoreRecipeRequest extends FormRequest
             'nutrition' => ['nullable', 'string'],
             'tags' => ['nullable', 'array', 'list'],
             'tags.*' => ['string', 'max:255'],
-            'photo' => ['nullable', 'image', 'max:10240'],
+            'photo' => ['nullable', 'image', 'max:10240', CreateThumbnail::DIMENSIONS_RULE],
             'remove_photo' => ['sometimes', 'boolean'],
             'client_uuid' => ['nullable', 'uuid'],
             'parent_id' => ['nullable', 'integer', Rule::exists('recipes', 'id')->where('team_id', $this->route('team')->id)],

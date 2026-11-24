@@ -15,12 +15,15 @@ use App\Http\Responses\VerifyEmailResponse;
 use App\Models\TeamInvitation;
 use App\Models\User;
 use App\Support\TwoFactorChallenge;
+use App\Support\VerificationEmailQuota;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\Database\Query\Builder;
+use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Contracts\LoginResponse as LoginResponseContract;
 use Laravel\Fortify\Contracts\RegisterResponse as RegisterResponseContract;
 use Laravel\Fortify\Contracts\TwoFactorLoginResponse as TwoFactorLoginResponseContract;
@@ -28,6 +31,7 @@ use Laravel\Fortify\Contracts\VerifyEmailResponse as VerifyEmailResponseContract
 use Laravel\Fortify\Fortify;
 use Laravel\Head\Facades\Head;
 use Laravel\Passkeys\Contracts\PasskeyLoginResponse as PasskeyLoginResponseContract;
+use Symfony\Component\HttpFoundation\Response;
 
 class FortifyServiceProvider extends ServiceProvider
 {
@@ -122,8 +126,43 @@ class FortifyServiceProvider extends ServiceProvider
                 return Limit::none();
             }
 
-            return Limit::perMinute(6)->by("user:{$user->id}");
+            if ($request->isMethod('GET')) {
+                return Limit::perMinute(6)->by("verify:{$user->id}");
+            }
+
+            $quota = new VerificationEmailQuota($user, 'request');
+
+            throw_unless($quota->claim(), ThrottleRequestsException::class, 'Too Many Attempts.', null, ['Retry-After' => $quota->availableIn()]);
+
+            return Limit::none();
         });
+
+        RateLimiter::for('account-forms', function (Request $request) {
+            return Limit::perMinute(6)
+                ->by($request->route()->getName() . '|' . $request->ip())
+                ->response(fn (Request $request, array $headers) => throw ValidationException::withMessages([
+                    'email' => [__('Too many attempts. Please try again in :seconds seconds.', ['seconds' => $headers['Retry-After']])],
+                ])->status(Response::HTTP_TOO_MANY_REQUESTS));
+        });
+
+        RateLimiter::for('api', function (Request $request) {
+            $userId = $request->user()?->id;
+
+            return Limit::perMinute(240)->by($userId ? "user:{$userId}" : $request->ip());
+        });
+
+        RateLimiter::for('mcp-oauth', function (Request $request) {
+            if (! $request->routeIs('mcp.oauth.register')) {
+                return Limit::perMinute(30)->by($request->ip());
+            }
+
+            return [
+                Limit::perMinute(5)->by("register:{$request->ip()}"),
+                Limit::perDay(30)->by("register:{$request->ip()}:day"),
+            ];
+        });
+
+        RateLimiter::for('kiosk-pairing', fn (Request $request) => Limit::perMinute(20)->by($request->ip()));
 
         RateLimiter::for('passkeys', function (Request $request) {
             $credentialId = $request->input('credential.id');

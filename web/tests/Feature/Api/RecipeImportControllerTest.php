@@ -173,3 +173,16 @@ test('import is limited to members of the team', function () {
 
     expect(Recipe::count())->toBe(0);
 });
+
+test('import never fetches an address inside the network', function () {
+    $this->resolveHostsTo(['169.254.169.254']);
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->postJson(route('api.recipes.import', $user->currentTeam), ['url' => 'https://example.com/apple-cider-donuts'])
+        ->assertStatus(424)
+        ->assertJsonValidationErrors('url');
+
+    Http::assertNothingSent();
+    expect(Recipe::count())->toBe(0);
+});

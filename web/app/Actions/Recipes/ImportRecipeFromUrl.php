@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Actions\Recipes;
 
+use App\Support\PublicHttp;
 use Carbon\CarbonInterval;
 use Illuminate\Http\Client\ConnectionException;
-use Illuminate\Support\Facades\Http;
 use RuntimeException;
 use Throwable;
 
@@ -15,9 +15,9 @@ class ImportRecipeFromUrl
     public function handle(string $url): array
     {
         try {
-            $response = Http::withHeaders([
+            $response = resolve(PublicHttp::class)->get($url, [
                 'User-Agent' => 'Mozilla/5.0 (compatible; RecipeImporter/1.0)',
-            ])->get($url);
+            ]);
         } catch (ConnectionException $exception) {
             throw new RecipePageUnavailable('Failed to fetch the URL. Please check the URL and try again.', previous: $exception);
         }

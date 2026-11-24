@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Forms\Recipes;
 
+use App\Actions\Photos\CreateThumbnail;
 use App\Actions\Recipes\CreateRecipe;
 use App\Actions\Recipes\UpdateRecipe;
 use App\Models\Recipe;
@@ -102,7 +103,7 @@ class RecipeForm extends Form
             'instructions' => ['nullable', 'string'],
             'notes' => ['nullable', 'string'],
             'nutrition' => ['nullable', 'string'],
-            'photo' => ['nullable', 'image', 'max:5120'],
+            'photo' => ['nullable', 'image', 'max:5120', CreateThumbnail::DIMENSIONS_RULE],
             'parent_id' => ['nullable', 'integer', 'exists:recipes,id'],
         ];
     }
