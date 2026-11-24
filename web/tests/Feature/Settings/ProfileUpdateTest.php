@@ -95,3 +95,63 @@ test('account deletion is blocked while the user owns a team other people use', 
 
     expect($user->fresh())->not->toBeNull();
 });
+
+test('email changes and resends on the profile page share one limit with the app', function () {
+    Notification::fake();
+    $user = User::factory()->unverified()->create();
+    $token = $user->createToken('iPhone')->plainTextToken;
+
+    foreach (range(1, 3) as $attempt) {
+        $this->withToken($token)->postJson(route('api.user.verification.send'))->assertAccepted();
+    }
+
+    $page = Livewire::actingAs($user)->test('pages::settings.profile');
+    $page->set('email', 'nami1@example.com')->call('updateProfileInformation')->assertHasNoErrors();
+    $page->call('resendVerificationNotification');
+    $page->set('email', 'nami2@example.com')->call('updateProfileInformation')->assertHasNoErrors();
+
+    $page->set('email', 'nami3@example.com')
+        ->call('updateProfileInformation')
+        ->assertHasErrors(['email']);
+
+    $page->call('resendVerificationNotification');
+
+    $this->app['auth']->forgetGuards();
+    $this->withToken($token)->postJson(route('api.user.verification.send'))->assertTooManyRequests();
+
+    expect($user->fresh()->email)->toBe('nami2@example.com');
+    Notification::assertSentToTimes($user, VerifyEmail::class, 6);
+});
+
+test('a limited resend on the profile page says so', function () {
+    Notification::fake();
+    $user = User::factory()->unverified()->create();
+    $page = Livewire::actingAs($user)->test('pages::settings.profile');
+
+    foreach (range(1, 6) as $attempt) {
+        $page->call('resendVerificationNotification');
+    }
+
+    $page->call('resendVerificationNotification')
+        ->assertDispatched('toast-show', fn (string $event, array $params): bool => str_starts_with($params['slots']['text'] ?? '', 'Too many verification emails.'));
+
+    Notification::assertSentToTimes($user, VerifyEmail::class, 6);
+});
+
+test('name changes on the profile page do not use up the email limit', function () {
+    Notification::fake();
+    $user = User::factory()->unverified()->create();
+    $page = Livewire::actingAs($user)->test('pages::settings.profile');
+
+    foreach (range(1, 10) as $attempt) {
+        $page->set('name', "Nami {$attempt}")->call('updateProfileInformation')->assertHasNoErrors();
+    }
+
+    foreach (range(1, 6) as $attempt) {
+        $page->set('email', "nami{$attempt}@example.com")->call('updateProfileInformation')->assertHasNoErrors();
+    }
+
+    $page->set('email', 'nami-last@example.com')->call('updateProfileInformation')->assertHasErrors(['email']);
+
+    expect($user->fresh())->name->toBe('Nami 10')->email->toBe('nami6@example.com');
+});

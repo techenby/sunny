@@ -2,6 +2,8 @@
 
 use App\Actions\Fortify\UpdateUserProfileInformation;
 use App\Concerns\ProfileValidationRules;
+use App\Models\User;
+use App\Support\VerificationEmailLimit;
 use Flux\Flux;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Support\Facades\Auth;
@@ -24,8 +26,15 @@ new class extends Component {
     public function updateProfileInformation(UpdateUserProfileInformation $updateProfile): void
     {
         $user = Auth::user();
+        $validated = $this->validate($this->profileRules($user->id));
 
-        $updateProfile->handle($user, $this->validate($this->profileRules($user->id)));
+        if ($validated['email'] === $user->email) {
+            $updateProfile->handle($user, $validated);
+        } elseif (! VerificationEmailLimit::attempt($user, fn () => $updateProfile->handle($user, $validated))) {
+            $this->addError('email', $this->tooManyEmailsMessage($user));
+
+            return;
+        }
 
         Flux::toast(variant: 'success', text: __('Profile updated.'));
     }
@@ -40,9 +49,18 @@ new class extends Component {
             return;
         }
 
-        $user->sendEmailVerificationNotification();
+        if (! VerificationEmailLimit::attempt($user, fn () => $user->sendEmailVerificationNotification())) {
+            Flux::toast(variant: 'danger', text: $this->tooManyEmailsMessage($user));
+
+            return;
+        }
 
         Session::flash('status', 'verification-link-sent');
+    }
+
+    private function tooManyEmailsMessage(User $user): string
+    {
+        return __('Too many verification emails. Try again in :seconds seconds.', ['seconds' => VerificationEmailLimit::availableIn($user)]);
     }
 
     #[Computed]

@@ -15,6 +15,7 @@ use App\Http\Responses\VerifyEmailResponse;
 use App\Models\TeamInvitation;
 use App\Models\User;
 use App\Support\TwoFactorChallenge;
+use App\Support\VerificationEmailLimit;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Http\Request;
@@ -115,14 +116,14 @@ class FortifyServiceProvider extends ServiceProvider
             return Limit::perMinute(5)->by($userId ? "user:{$userId}" : $request->ip());
         });
 
-        RateLimiter::for('verification-email', function (Request $request) {
+        RateLimiter::for(VerificationEmailLimit::NAME, function (Request $request) {
             $user = $request->user();
 
             if ($request->isMethod('PATCH') && (! $request->has('email') || $request->input('email') === $user->email)) {
                 return Limit::none();
             }
 
-            return Limit::perMinute(6)->by("user:{$user->id}");
+            return VerificationEmailLimit::for($user);
         });
 
         RateLimiter::for('passkeys', function (Request $request) {
