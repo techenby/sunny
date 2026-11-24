@@ -10,6 +10,7 @@ import shutil
 import subprocess
 import sys
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
@@ -94,7 +95,19 @@ class Server:
                     'QUEUE_CONNECTION': 'sync'}
         self.process = None
 
+    def write_env(self):
+        env_file = self.path / '.env'
+        text = env_file.read_text()
+        for key in ('DB_DATABASE', 'APP_URL', 'MAIL_MAILER', 'QUEUE_CONNECTION'):
+            line = f'{key}={self.env[key]}'
+            text, count = re.subn(rf'^{key}=.*$', line, text, flags=re.M)
+            if not count:
+                text += f'\n{line}\n'
+        env_file.write_text(text)
+        sh(['php', 'artisan', 'config:clear'], cwd=self.path, env=self.env)
+
     def reset(self):
+        self.write_env()
         sh(['php', 'artisan', 'migrate:fresh', '--seed', '--force'], cwd=self.path, env=self.env, timeout=600)
 
     def start(self):
@@ -107,6 +120,15 @@ class Server:
             except OSError:
                 time.sleep(1)
         raise RuntimeError(f'The local server on port {self.port} did not start')
+
+    def check_login(self, email, password):
+        body = json.dumps({'email': email, 'password': password, 'device_name': 'paraframe-preflight'}).encode()
+        request = urllib.request.Request(f'{self.url}/api/sanctum/token', data=body, method='POST',
+                                         headers={'Content-Type': 'application/json', 'Accept': 'application/json'})
+        try:
+            urllib.request.urlopen(request, timeout=15)
+        except urllib.error.HTTPError as error:
+            raise RuntimeError(f'The seeded account cannot sign in to the local server (HTTP {error.code}): {error.read()[:300]!r}')
 
     def lookup(self, lookups):
         code = 'echo json_encode(collect(json_decode(base64_decode("' + __import__('base64').b64encode(json.dumps(lookups).encode()).decode() + '"), true))->map(fn ($l) => DB::table($l[0])->where("name", $l[1])->value("id")));'
@@ -148,22 +170,41 @@ class Simulator:
         except RuntimeError:
             return False
 
+    def field(self, label):
+        hits = [n for n in self.nodes() if n.get('type') in ('TextField', 'SecureTextField') and n.get('AXLabel') == label]
+        return hits[-1] if hits else None
+
+    def fill_field(self, label, text, secret=False):
+        expected = '\u2022' * len(text) if secret else text
+        for _ in range(3):
+            node = self.field(label)
+            if not node:
+                raise RuntimeError(f'Could not find the "{label}" field')
+            self.press(node)
+            time.sleep(1.5)
+            sh(['axe', 'key-sequence', '--keycodes', ','.join(['42'] * 40), '--udid', self.udid], check=False)
+            sh(['axe', 'type', text, '--udid', self.udid])
+            time.sleep(1)
+            if (self.field(label) or {}).get('AXValue') == expected:
+                return
+        raise RuntimeError(f'Typing into the "{label}" field did not stick')
+
     def sign_in(self, email, password):
         self.open('/login')
-        fields = [n for n in self.nodes() if n.get('type') in ('TextField', 'SecureTextField')]
-        if len(fields) < 2:
-            raise RuntimeError('Could not find the email and password fields on Log in')
-        for node, text in ((fields[0], email), (fields[1], password)):
-            self.press(node)
-            time.sleep(0.8)
-            sh(['axe', 'type', text, '--udid', self.udid])
-        sh(['axe', 'key', '43', '--udid', self.udid], check=False)
-        self.tap('Log in', wait=15)
+        self.dismiss_prompts()
+        self.fill_field('Email address', email)
+        self.fill_field('Password', password, secret=True)
+        sh(['axe', 'touch', '-x', '201', '-y', '130', '--down', '--up', '--delay', '0.1', '--udid', self.udid], check=False)
+        time.sleep(2)
+        buttons = [n for n in self.nodes() if n.get('type') == 'Button' and n.get('AXLabel') == 'Log in']
+        if not buttons:
+            raise RuntimeError('Could not find the Log in button')
+        self.press(max(buttons, key=lambda n: n['frame']['y']))
         for _ in range(20):
+            time.sleep(3)
             if self.signed_in():
                 time.sleep(15)
                 return
-            time.sleep(3)
         raise RuntimeError('Signing in on the simulator did not work')
 
     def dismiss_prompts(self):
@@ -559,6 +600,7 @@ def command_run(args):
             log('Seeding and starting the local server')
             server.reset()
             server.start()
+            server.check_login(config['account']['email'], config['account']['password'])
             env_file = worktree / 'mobile' / '.env'
             env_text = re.sub(r'^SUNNY_API_URL=.*$', f'SUNNY_API_URL={server.url}/api', env_file.read_text(), flags=re.M)
             env_file.write_text(env_text)
