@@ -144,3 +144,26 @@ test('adding recipe that already exists redirects to existing', function () {
 
     expect(Recipe::where('team_id', $user->currentTeam->id)->count())->toBe(1);
 });
+
+test('a shared page left open stops working when sharing is turned off or the link changes', function (string $change) {
+    $recipe = Recipe::factory()->shared()->create();
+    $page = Livewire::actingAs(User::factory()->create())->test('pages::recipes.shared', ['shareToken' => $recipe->share_token]);
+
+    $change === 'off' ? $recipe->disableSharing() : $recipe->enableSharing();
+
+    $page->call('addToMyTeam')->assertNotFound();
+
+    expect(Recipe::count())->toBe(1);
+})->with(['off', 'new link']);
+
+test('a shared page left open keeps working while the link stays the same', function () {
+    $recipe = Recipe::factory()->shared()->create();
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::recipes.shared', ['shareToken' => $recipe->share_token])
+        ->call('addToMyTeam')
+        ->assertRedirect();
+
+    expect($user->currentTeam->recipes()->count())->toBe(1);
+});

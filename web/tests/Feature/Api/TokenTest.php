@@ -342,3 +342,13 @@ test('refresh keeps a known lifetime when the timestamps are a second apart', fu
         ->assertOk()
         ->assertJsonPath('expires_at', now()->addDays(90)->toIso8601String());
 });
+
+test('a device name has to be a reasonable length', function () {
+    $user = User::factory()->create();
+
+    $this->postJson(route('api.token'), ['email' => $user->email, 'password' => 'password', 'device_name' => str_repeat('a', 256)])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('device_name');
+
+    expect($user->tokens()->count())->toBe(0);
+});

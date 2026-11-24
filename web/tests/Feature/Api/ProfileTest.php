@@ -2,6 +2,7 @@
 
 use App\Models\User;
 use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 
@@ -231,4 +232,24 @@ test('verification emails are capped for the day', function () {
     $this->withToken($token)->postJson(route('api.user.verification.send'))->assertAccepted();
 
     Notification::assertSentToTimes($user, VerifyEmail::class, User::VERIFICATION_EMAILS_PER_DAY + 1);
+});
+
+test('changing the password signs out every other device but keeps this one', function () {
+    $user = User::factory()->create();
+    $phone = $user->createToken('iPhone');
+    $tablet = $user->createToken('iPad');
+    DB::table('sessions')->insert(['id' => 'browser', 'user_id' => $user->id, 'payload' => '', 'last_activity' => now()->timestamp]);
+
+    $this->withToken($phone->plainTextToken)
+        ->putJson(route('api.user.password.update'), [
+            'current_password' => 'password',
+            'password' => 'new-password',
+            'password_confirmation' => 'new-password',
+        ])
+        ->assertNoContent();
+
+    expect($user->tokens()->pluck('id')->all())->toBe([$phone->accessToken->id])
+        ->and(DB::table('sessions')->where('user_id', $user->id)->exists())->toBeFalse();
+
+    $this->withToken($phone->plainTextToken)->getJson(route('api.user'))->assertOk();
 });

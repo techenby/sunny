@@ -23,7 +23,7 @@ class RegisteredUserController extends Controller
         abort_unless(Features::enabled(Features::registration()), 404);
 
         $request->validate([
-            'device_name' => ['required'],
+            'device_name' => ['required', 'string', 'max:255'],
         ]);
 
         if (config('fortify.lowercase_usernames') && is_string($request->input(Fortify::username()))) {
