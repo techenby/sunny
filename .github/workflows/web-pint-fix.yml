@@ -19,7 +19,7 @@ jobs:
           repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
         with:
           php-version: '8.4'
           tools: composer:v2
@@ -36,7 +36,7 @@ jobs:
         working-directory: web
         run: ./vendor/bin/pint --parallel
 
-      - uses: stefanzweifel/git-auto-commit-action@v5
+      - uses: stefanzweifel/git-auto-commit-action@b863ae1933cb653a53c021fe36dbb774e1fb9403 # v5
         id: auto_commit_action
         with:
           commit_message: Pint fixes
@@ -47,7 +47,7 @@ jobs:
         if: steps.auto_commit_action.outputs.changes_detected == 'true'
         run: echo ${{ steps.auto_commit_action.outputs.commit_hash }} >> .git-blame-ignore-revs
 
-      - uses: stefanzweifel/git-auto-commit-action@v5
+      - uses: stefanzweifel/git-auto-commit-action@b863ae1933cb653a53c021fe36dbb774e1fb9403 # v5
         with:
           commit_message: Ignore Pint commit in git blame
           commit_user_name: GitHub Action
