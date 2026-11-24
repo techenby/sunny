@@ -145,3 +145,71 @@ test('a verified user is not sent another verification email', function () {
 
     Notification::assertNothingSent();
 });
+
+test('email changes and verification resends share one limit per user', function (array $requests) {
+    Notification::fake();
+    $user = User::factory()->unverified()->create();
+    $token = $user->createToken('iPhone')->plainTextToken;
+
+    foreach ($requests as $attempt => $route) {
+        $response = $route === 'update'
+            ? $this->withToken($token)->patchJson(route('api.user.update'), ['email' => "nami{$attempt}@example.com"])
+            : $this->withToken($token)->postJson(route('api.user.verification.send'));
+
+        $response->assertSuccessful();
+    }
+
+    $this->withToken($token)
+        ->patchJson(route('api.user.update'), ['email' => 'nami-last@example.com'])
+        ->assertTooManyRequests();
+
+    $this->withToken($token)
+        ->postJson(route('api.user.verification.send'))
+        ->assertTooManyRequests();
+
+    expect($user->fresh()->email)->not->toBe('nami-last@example.com');
+})->with([
+    'alternating' => [['update', 'resend', 'update', 'resend', 'update', 'resend']],
+    'email changes only' => [['update', 'update', 'update', 'update', 'update', 'update']],
+    'resends only' => [['resend', 'resend', 'resend', 'resend', 'resend', 'resend']],
+]);
+
+test('the email limit is kept per user', function () {
+    Notification::fake();
+    $nami = User::factory()->unverified()->create();
+    $zoro = User::factory()->unverified()->create();
+    $namiToken = $nami->createToken('iPhone')->plainTextToken;
+
+    foreach (range(1, 6) as $attempt) {
+        $this->withToken($namiToken)->postJson(route('api.user.verification.send'))->assertAccepted();
+    }
+
+    $this->withToken($namiToken)->postJson(route('api.user.verification.send'))->assertTooManyRequests();
+
+    $this->app['auth']->forgetGuards();
+
+    $this->withToken($zoro->createToken('iPhone')->plainTextToken)
+        ->postJson(route('api.user.verification.send'))
+        ->assertAccepted();
+});
+
+test('name changes do not use up the email limit', function () {
+    Notification::fake();
+    $user = User::factory()->unverified()->create();
+    $token = $user->createToken('iPhone')->plainTextToken;
+
+    foreach (range(1, 10) as $attempt) {
+        $this->withToken($token)
+            ->patchJson(route('api.user.update'), ['name' => "Nami {$attempt}", 'email' => $user->email])
+            ->assertOk();
+    }
+
+    foreach (range(1, 6) as $attempt) {
+        $this->withToken($token)->postJson(route('api.user.verification.send'))->assertAccepted();
+    }
+
+    $this->withToken($token)->patchJson(route('api.user.update'), ['name' => 'Nami'])->assertOk();
+    $this->withToken($token)->postJson(route('api.user.verification.send'))->assertTooManyRequests();
+
+    expect($user->fresh()->name)->toBe('Nami');
+});
