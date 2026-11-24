@@ -29,6 +29,8 @@ new class extends Component {
             'password' => $validated['password'],
         ]);
 
+        Auth::user()->signOutEverywhere(exceptSessionId: session()->getId());
+
         $this->reset('current_password', 'password', 'password_confirmation');
 
         $this->dispatch('password-updated');

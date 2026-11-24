@@ -21,7 +21,9 @@ use Illuminate\Support\Str;
 use Laravel\Fortify\Contracts\PasskeyUser;
 use Laravel\Fortify\PasskeyAuthenticatable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
+use Laravel\Sanctum\Contracts\HasAbilities;
 use Laravel\Sanctum\HasApiTokens;
+use Laravel\Sanctum\PersonalAccessToken;
 use LogicException;
 
 #[Fillable(['name', 'email', 'password', 'current_team_id', 'timezone', 'onboarded_at'])]
@@ -97,16 +99,20 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
         }
     }
 
-    public function signOutEverywhere(): void
+    public function signOutEverywhere(?HasAbilities $exceptToken = null, ?string $exceptSessionId = null): void
     {
-        $this->tokens()->delete();
+        $exceptTokenId = $exceptToken instanceof PersonalAccessToken ? $exceptToken->getKey() : null;
+
+        $this->tokens()->when($exceptTokenId, fn ($tokens) => $tokens->whereKeyNot($exceptTokenId))->delete();
 
         $oauthTokens = DB::table('oauth_access_tokens')->where('user_id', $this->id);
         DB::table('oauth_refresh_tokens')->whereIn('access_token_id', $oauthTokens->clone()->select('id'))->delete();
         $oauthTokens->delete();
         DB::table('oauth_auth_codes')->where('user_id', $this->id)->delete();
         DB::table('oauth_device_codes')->where('user_id', $this->id)->delete();
-        DB::table('sessions')->where('user_id', $this->id)->delete();
+        DB::table('sessions')->where('user_id', $this->id)
+            ->when($exceptSessionId, fn ($sessions) => $sessions->where('id', '!=', $exceptSessionId))
+            ->delete();
     }
 
     /** @return array<string, string> */

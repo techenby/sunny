@@ -175,6 +175,8 @@ test('registration in production skips bento when it is not configured', functio
 });
 
 test('the sign-up form stops repeated tries from one network', function () {
+    $this->freezeSecond();
+
     foreach (range(1, 6) as $attempt) {
         $this->post(route('register.store'), ['name' => 'Nami'])->assertSessionHasErrors('password');
     }

@@ -1,5 +1,6 @@
 <?php
 
+use Livewire\Attributes\Locked;
 use App\Actions\Recipes\SaveSharedRecipeToTeam;
 use App\Models\Recipe;
 use Illuminate\Support\Facades\Auth;
@@ -11,9 +12,17 @@ new #[Layout('layouts::guest')] class extends Component
 {
     public Recipe $recipe;
 
+    #[Locked]
+    public string $shareToken = '';
+
     public function mount(string $shareToken): void
     {
         $this->recipe = Recipe::where('share_token', $shareToken)->firstOrFail();
+    }
+
+    public function hydrate(): void
+    {
+        abort_unless(hash_equals((string) $this->recipe->share_token, $this->shareToken), 404);
     }
 
     public function addToMyTeam(): void

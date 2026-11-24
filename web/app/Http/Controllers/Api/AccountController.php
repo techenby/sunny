@@ -25,7 +25,10 @@ class AccountController extends Controller
 
     public function updatePassword(UpdatePasswordRequest $request): Response
     {
-        $request->user()->update(['password' => $request->validated('password')]);
+        $user = $request->user();
+
+        $user->update(['password' => $request->validated('password')]);
+        $user->signOutEverywhere(exceptToken: $user->currentAccessToken());
 
         return response()->noContent();
     }

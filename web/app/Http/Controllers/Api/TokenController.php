@@ -16,6 +16,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Contracts\LockoutResponse;
@@ -24,6 +25,7 @@ use Laravel\Fortify\Events\TwoFactorAuthenticationFailed;
 use Laravel\Fortify\Events\ValidTwoFactorAuthenticationCodeProvided;
 use Laravel\Fortify\Fortify;
 use Laravel\Fortify\LoginRateLimiter;
+use Laravel\Sanctum\NewAccessToken;
 use Laravel\Sanctum\PersonalAccessToken;
 
 class TokenController extends Controller
@@ -35,7 +37,7 @@ class TokenController extends Controller
         $request->validate([
             Fortify::username() => ['required', 'email'],
             'password' => ['required'],
-            'device_name' => ['required'],
+            'device_name' => ['required', 'string', 'max:255'],
         ]);
 
         if (config('fortify.lowercase_usernames')) {
@@ -84,9 +86,17 @@ class TokenController extends Controller
 
         abort_unless($current instanceof PersonalAccessToken, 400, 'Only token-authenticated requests can be refreshed.');
 
-        $token = $request->user()->createToken($current->name, $current->abilities, TokenLifetime::fromToken($current)->expiresAt());
+        $token = DB::transaction(function () use ($request, $current): NewAccessToken {
+            $locked = PersonalAccessToken::query()->whereKey($current->getKey())->lockForUpdate()->first();
 
-        $current->delete();
+            abort_if($locked === null, 401);
+
+            $token = $request->user()->createToken($locked->name, $locked->abilities, TokenLifetime::fromToken($locked)->expiresAt());
+
+            $locked->delete();
+
+            return $token;
+        });
 
         return response()->json([
             'token' => $token->plainTextToken,
