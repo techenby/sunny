@@ -98,48 +98,20 @@
             @elseif ($this->steps)
                 <column class="w-full {{ Card::classes() }}">
                     @foreach ($this->steps as $step)
-                        @if ($editingStepId === $step['id'])
-                            <row ref="routine-step-{{ $step['id'] }}" class="w-full items-center pr-1">
-                                <row class="min-h-12 flex-1 items-center gap-3 py-2 pl-4">
-                                    <text class="w-6 text-center text-sm text-theme-on-surface-variant">{{ $loop->iteration }}</text>
-                                    <bare-text-input
-                                        ref="routine-step-{{ $step['id'] }}-name"
-                                        class="flex-1 text-base"
-                                        a11y-label="Step name"
-                                        autocapitalize="sentences"
-                                        autofocus
-                                        native:model.debounce.300ms="editingName"
-                                        @submit="renameStep"
-                                    />
-                                </row>
-                                <x-ui.button
-                                    ref="routine-step-{{ $step['id'] }}-save"
-                                    variant="text"
-                                    :ios="Ios::Checkmark"
-                                    :android="Android::Check"
-                                    a11y-label="Save step"
-                                    tap="renameStep"
-                                />
-                            </row>
-                            @unless ($loop->last)
-                                <x-ui.row-divider leading="number" />
-                            @endunless
-                        @else
-                            <x-ui.row
-                                :ref="'routine-step-'.$step['id']"
-                                :press-ref="'routine-step-'.$step['id'].'-edit'"
-                                :a11y-label="'Edit '.$step['name']"
-                                :number="$loop->iteration"
-                                :headline="$step['name']"
-                                plain
-                                :error="$step['error'] ? 'Not saved. '.$step['error'] : null"
-                                :error-ref="'routine-step-'.$step['id'].'-error'"
-                                :tap="'editStep('.$step['id'].')'"
-                                :menu="$this->stepMenu($step)"
-                                :menu-label="'More for '.$step['name']"
-                                :last="$loop->last"
-                            />
-                        @endif
+                        <x-ui.row
+                            :ref="'routine-step-'.$step['id']"
+                            :press-ref="'routine-step-'.$step['id'].'-edit'"
+                            :a11y-label="'Rename '.$step['name']"
+                            :number="$loop->iteration"
+                            :headline="$step['name']"
+                            plain
+                            :error="$step['error'] ? 'Not saved. '.$step['error'] : null"
+                            :error-ref="'routine-step-'.$step['id'].'-error'"
+                            :tap="'editStep('.$step['id'].')'"
+                            :menu="$this->stepMenu($step)"
+                            :menu-label="'More for '.$step['name']"
+                            :last="$loop->last"
+                        />
                     @endforeach
                 </column>
             @else
@@ -153,6 +125,26 @@
             @endif
         </column>
     </scroll-view>
+
+    <native:bottom-sheet ref="routine-rename-sheet" :visible="$editingStepId !== null" @dismiss="cancelEdit" detents="fit">
+        @if ($editingStepId !== null)
+            <column class="w-full bg-theme-background">
+                <x-ui.sheet-header ref="routine-rename-close" title="Rename step" close="cancelEdit" />
+                <column class="w-full gap-4 px-4 pt-4">
+                    <outlined-text-input
+                        ref="routine-rename-name"
+                        label="Name"
+                        autocapitalize="sentences"
+                        :error="$stepError !== ''"
+                        :supporting="$stepError !== '' ? $stepError : null"
+                        native:model="editingName"
+                        @submit="renameStep"
+                    />
+                </column>
+                <x-ui.sheet-confirm ref="routine-rename-save" tap="renameStep">Save</x-ui.sheet-confirm>
+            </column>
+        @endif
+    </native:bottom-sheet>
 @else
     <x-ui.not-found ref="routine-missing" thing="routine" />
 @endif
