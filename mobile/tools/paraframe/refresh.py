@@ -54,6 +54,7 @@ def log(message):
 
 
 RUN_DIR = None
+LOADED = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
 
 
 def sh(args, cwd=None, check=True, capture=True, timeout=None, env=None):
@@ -573,6 +574,9 @@ def command_run(args):
         return
 
     sh(['git', 'checkout', '--quiet', '--detach', head], cwd=worktree)
+    if digest(Path(__file__)) != LOADED and not os.environ.get('PARAFRAME_RESTARTED'):
+        log('refresh.py changed in this update; restarting with the new version')
+        os.execve(sys.executable, [sys.executable, '-I', __file__, *sys.argv[1:]], {**os.environ, 'PARAFRAME_RESTARTED': '1'})
     for app in ('mobile', 'web'):
         if f'{app}/composer.lock' in sh(['git', 'diff', '--name-only', base, head], cwd=worktree).split():
             log(f'{app}/composer.lock changed; installing')
@@ -723,13 +727,16 @@ def main():
     args = parser.parse_args()
 
     HOME.mkdir(parents=True, exist_ok=True)
+    if args.command != 'run':
+        {'baseline': command_baseline, 'install': command_install}[args.command](args)
+        return
     with open(HOME / 'lock', 'w') as lock:
         try:
             fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError:
             sys.exit('Another refresh is running.')
         try:
-            {'run': command_run, 'baseline': command_baseline, 'install': command_install}[args.command](args)
+            command_run(args)
         except Exception as error:
             log(f'Failed: {error}')
             notify(f'Refresh failed: {error}'[:200])
