@@ -98,7 +98,7 @@
                             <column class="h-10 w-10 items-center justify-center rounded-lg bg-theme-primary/15">
                                 <icon :ios="Ios::Plus" :android="Android::Add" :size="20" class="text-theme-primary-text" />
                             </column>
-                            <text font="semibold" class="flex-1 text-lg text-theme-primary-text">Your own</text>
+                            <text font="semibold" class="flex-1 text-lg text-theme-on-surface">Your own</text>
                         </row>
                     </pressable>
                 @endif

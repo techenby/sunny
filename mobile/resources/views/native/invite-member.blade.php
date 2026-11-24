@@ -42,13 +42,13 @@
 
             @if ($canInvite)
                 @if ($sent)
-                    <row ref="invite-sent" class="w-full items-start gap-2.5 rounded-xl bg-theme-primary/15 p-3.5">
-                        <native:icon :ios="Ios::CheckmarkCircle" :android="Android::CheckCircle" :size="20" class="text-theme-primary-text" />
-                        <column class="flex-1 gap-0.5">
-                            <text font="semibold" class="text-base text-theme-primary-text">Invitation sent</text>
-                            <text class="text-base text-theme-on-surface">{{ $sent['email'] }} can join as {{ $sent['role'] === 'admin' ? 'an admin' : 'a member' }}.</text>
-                        </column>
-                    </row>
+                    <x-ui.alert
+                        ref="invite-sent"
+                        :ios="Ios::CheckmarkCircle"
+                        :android="Android::CheckCircle"
+                        title="Invitation sent"
+                        :message="$sent['email'].' can join as '.($sent['role'] === 'admin' ? 'an admin' : 'a member').'.'"
+                    />
                 @endif
 
                 <column class="w-full gap-4">
@@ -89,7 +89,7 @@
                         <row class="min-h-12 w-full items-center gap-3 px-4 py-2">
                             <x-ui.avatar circle :initials="$inviter['initials']" />
                             <x-ui.heading class="flex-1">{{ $inviter['name'] }}</x-ui.heading>
-                            <x-ui.badge size="sm" class="shrink-0" :color="$inviter['role'] === TeamRole::Admin ? 'red' : null">{{ $inviter['role']->label() }}</x-ui.badge>
+                            <x-ui.badge size="sm" class="shrink-0">{{ $inviter['role']->label() }}</x-ui.badge>
                         </row>
                     @endforeach
                 </column>
@@ -99,29 +99,22 @@
                 <x-ui.subheading class="px-2">Waiting to join</x-ui.subheading>
                 <column ref="invite-waiting" class="{{ Card::classes() }} w-full">
                     @forelse ($invitations as $invitation)
-                        <row ref="waiting-{{ $invitation['code'] }}" class="min-h-12 w-full items-center gap-3 px-4 py-2 {{ $invitation['highlighted'] ? 'bg-theme-primary/10' : '' }}">
-                            <column class="h-9 w-9 items-center justify-center rounded-full bg-theme-primary/15">
-                                <icon :ios="Ios::Envelope" :android="Android::Email" :size="16" class="text-theme-primary-text" />
-                            </column>
-                            <column class="flex-1 gap-1">
-                                <text max-lines="1" class="text-base text-theme-on-surface">{{ $invitation['email'] }}</text>
-                                <x-ui.badge size="sm" class="self-start" :color="$invitation['role'] === TeamRole::Admin ? 'red' : null">{{ $invitation['role']->label() }}</x-ui.badge>
-                                <text class="text-sm {{ $invitation['soon'] ? 'text-theme-destructive' : 'text-theme-on-surface-variant' }}">{{ $invitation['expires'] }}</text>
-                            </column>
-                            @if ($canInvite)
-                                <x-ui.button
-                                    ref="cancel-invitation-{{ $invitation['code'] }}"
-                                    variant="secondary"
-                                    :ios="Ios::Xmark"
-                                    :android="Android::Close"
-                                    :a11y-label="'Cancel the invitation to '.$invitation['email']"
-                                    tap="confirmCancel('{{ $invitation['code'] }}')"
-                                />
-                            @endif
-                        </row>
-                        @unless ($loop->last)
-                            <divider class="ml-16" />
-                        @endunless
+                        <x-ui.row
+                            :ref="'waiting-'.$invitation['code']"
+                            :headline="$invitation['email']"
+                            plain
+                            :max-lines="1"
+                            :badge="$invitation['role']->label()"
+                            :supporting="$invitation['expires']"
+                            :strong="$invitation['soon']"
+                            :ios="Ios::Envelope"
+                            :android="Android::Email"
+                            icon-background="theme-primary/15"
+                            icon-color="theme-primary-text"
+                            :highlighted="$invitation['highlighted']"
+                            :action="$canInvite ? ['ref' => 'cancel-invitation-'.$invitation['code'], 'ios' => Ios::Xmark, 'android' => Android::Close, 'label' => 'Cancel the invitation to '.$invitation['email'], 'tap' => 'confirmCancel(\''.$invitation['code'].'\')'] : null"
+                            :last="$loop->last"
+                        />
                     @empty
                         <x-ui.text ref="invite-none-waiting" class="px-4 py-4">No one is waiting to join.</x-ui.text>
                     @endforelse

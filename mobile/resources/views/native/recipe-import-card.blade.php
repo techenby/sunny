@@ -57,7 +57,7 @@ $notice = match ($card['state']) {
         <text class="text-sm text-theme-on-surface-variant">Reading the recipe from {{ $card['host'] }}… this takes a few seconds.</text>
         <row ref="recipe-import" a11y-label="Importing" class="min-h-12 w-full items-center justify-center gap-2 rounded-full bg-theme-primary/15 px-4">
             <activity-indicator size="sm" />
-            <text font="semibold" class="text-base text-theme-primary-text">Importing</text>
+            <text font="semibold" class="text-base text-theme-on-surface">Importing</text>
         </row>
     @elseif ($notice)
         <divider />

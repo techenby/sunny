@@ -122,6 +122,61 @@ function staleKitExceptions(array $found, array $exceptions): array
 }
 
 /**
+ * @param  array<string, array<string, string>>  $exceptions
+ * @return list<array{view: string, line: int, needle: ?string, text: string, ref: ?string}>
+ */
+function textTagsMatching(string $pattern, array $exceptions, bool $skipGallery = true): array
+{
+    $found = [];
+
+    foreach (nativeViewSources() as $view => $source) {
+        if ($skipGallery && $view === 'ui-kit-gallery') {
+            continue;
+        }
+
+        preg_match_all('/<(text|x-ui\.heading|x-ui\.text)\b'.NATIVE_TAG_ATTRIBUTES.'>(.*?)<\/\1>/s', $source, $tags, PREG_SET_ORDER | PREG_OFFSET_CAPTURE);
+
+        foreach ($tags as $tag) {
+            if (preg_match($pattern, $tag[2][0]) !== 1) {
+                continue;
+            }
+
+            $needle = collect(array_keys($exceptions[$view] ?? []))->first(fn (string $needle): bool => str_contains($tag[0][0], $needle));
+
+            $found[] = ['view' => $view, 'line' => nativeViewLine($source, $tag[0][1]), 'needle' => $needle, 'text' => trim($tag[3][0]), 'ref' => nativeTagRef($tag[2][0])];
+        }
+    }
+
+    return $found;
+}
+
+/**
+ * @param  list<array{view: string, line: int, needle: ?string, text: string, ref: ?string}>  $found
+ * @param  array<string, array<string, string>>  $exceptions
+ * @return list<string>
+ */
+function textTagViolations(array $found, array $exceptions, string $advice): array
+{
+    $violations = [];
+
+    foreach ($found as $hit) {
+        if ($hit['needle'] === null) {
+            $violations[] = sprintf('resources/views/native/%s.blade.php:%d ("%s"): %s', $hit['view'], $hit['line'], mb_strimwidth($hit['text'], 0, 40, '…'), $advice);
+        }
+    }
+
+    foreach ($exceptions as $view => $needles) {
+        foreach (array_keys($needles) as $needle) {
+            if (! collect($found)->contains(fn (array $hit): bool => $hit['view'] === $view && $hit['needle'] === $needle)) {
+                $violations[] = sprintf('%s: "%s" is listed as an exception but no longer matches. Remove it from the list.', $view, $needle);
+            }
+        }
+    }
+
+    return $violations;
+}
+
+/**
  * @param  array<string, string>  $chevronExceptions
  * @return list<string>
  */
@@ -212,7 +267,7 @@ it('keeps native list elements out of the views', function () {
 
         foreach ($tags as $tag) {
             $violations[] = sprintf(
-                'resources/views/native/%s.blade.php:%d: <%s> is a native list element. Use a card (a column with App\Ui\Card::classes()) holding native.owned-row, native.inventory-item-row or native.settings-row.',
+                'resources/views/native/%s.blade.php:%d: <%s> is a native list element. Use a card (a column with App\Ui\Card::classes()) holding <x-ui.row> or native.inventory-item-row.',
                 $view,
                 nativeViewLine($source, $tag[0][1]),
                 $tag[1][0],
@@ -229,7 +284,7 @@ it('keeps hand-written buttons out of the views', function () {
             'cook-tab-{{ strtolower($label) }}' => 'A segmented tab, not a button.',
         ],
         'list-detail' => [
-            "list-item-{{ \$item['id'] }}-link" => 'An inline link under a list item, too small for a 48pt button. Recoloured with the row text in a later pass.',
+            "list-item-{{ \$item['id'] }}-link" => 'An inline link under a list item, too small for a 48pt button.',
         ],
         'parent-picker-sheet' => [
             '{{ $refPrefix }}-parent-crumb-home' => 'A breadcrumb chip, not a button.',
@@ -478,3 +533,197 @@ it('catches a sheet that leaves the template', function (string $sheet, string $
         'Give it @dismiss',
     ],
 ]);
+
+it('keeps coral out of text, except for a selected or active state', function () {
+    $exceptions = [
+        'cook-recipe' => [
+            "\$tab === \$index ? 'bg-theme-primary/15 text-theme-primary-text'" => 'The count on the selected tab.',
+            'CookRecipe::clock(' => 'A running timer.',
+        ],
+        'home' => [
+            'uppercase tracking-widest' => 'The brand name above the welcome.',
+        ],
+        'inventory-item-detail' => [
+            'You’re here' => 'Marks the place you are in.',
+        ],
+        'owner-mark' => [
+            "\$owner['initials']" => 'Initials in an owner mark, like an avatar.',
+        ],
+        'parent-picker-sheet' => [
+            '$hereLabel' => 'Marks the place you are in.',
+        ],
+        'recipe-import-card' => [
+            "\$card['initial']" => 'An initial in a monogram tile.',
+        ],
+        'routine-detail' => [
+            'text-theme-primary-text">{{ $loop->iteration }}' => 'The step just moved, in reorder mode.',
+        ],
+        'today' => [
+            '-just-ticked' => 'A step just ticked off.',
+        ],
+    ];
+
+    $found = textTagsMatching('/text-theme-primary(-text)?(?![\w\/-])/', $exceptions);
+
+    $violations = textTagViolations($found, $exceptions, 'coral is for filled buttons, icons, checkmarks and selected states, not text. An action is dark text with a coral icon (<x-ui.row tone="add">), a text-only action or link is text-theme-secondary in semibold, and a note is <x-ui.alert>. If this is a selected or active state, add it and the reason to the exceptions in tests/Unit/UiKitGuardTest.php.');
+
+    expect($violations)->toBe([], implode("\n", $violations));
+});
+
+it('keeps red text for a delete or an error', function () {
+    $exceptions = [
+        'calendar' => [
+            "\$calendarStatus === 'offline' ? '' : 'text-theme-destructive'" => 'The server is unavailable.',
+        ],
+        'calendar-feed-row' => [
+            "\$feed['detail']" => 'Shown only when the calendar failed to load.',
+        ],
+        'calendar-feeds' => [
+            "\$status === 'offline' ? '' : 'text-theme-destructive'" => 'The server is unavailable.',
+            'The server couldn’t fetch it' => 'A calendar that failed to load.',
+        ],
+        'dashboard' => [
+            'Download failed' => 'A failed download.',
+            'isn’t showing' => 'A calendar that failed to load.',
+        ],
+        'list-link-error' => [
+            '$linkError' => 'A link that could not be read.',
+        ],
+        'recipe-detail' => [
+            'Turn off link' => 'Turns off a shared link, with its icon.',
+        ],
+        'today' => [
+            'isn’t showing' => 'A calendar that failed to load.',
+            'The server is unavailable' => 'The server is unavailable.',
+        ],
+    ];
+
+    $found = array_values(array_filter(
+        textTagsMatching('/text-theme-destructive/', $exceptions),
+        fn (array $hit): bool => ! str_ends_with($hit['ref'] ?? '', '-error'),
+    ));
+
+    $violations = textTagViolations($found, $exceptions, 'red text means a delete or an error. Give an error a ref ending in "-error"; a delete goes in a "more" menu (App\Ui\Menu::delete) or a destructive <x-ui.row>; offline is not an error, so it is dark with a grey icon. If this is an error, add it and the reason to the exceptions in tests/Unit/UiKitGuardTest.php.');
+
+    expect($violations)->toBe([], implode("\n", $violations));
+});
+
+it('keeps red badges and red text colours out of the views', function () {
+    $violations = [];
+
+    foreach (nativeViewSources() as $view => $source) {
+        if ($view === 'ui-kit-gallery') {
+            continue;
+        }
+
+        preg_match_all('/<x-ui\.(badge|text)\b'.NATIVE_TAG_ATTRIBUTES.'>/s', $source, $tags, PREG_SET_ORDER | PREG_OFFSET_CAPTURE);
+
+        foreach ($tags as $tag) {
+            if (preg_match('/(?<![\w:-]):?color="[^"]*\bred\b/', $tag[2][0]) === 1) {
+                $violations[] = sprintf('resources/views/native/%s.blade.php:%d: a red x-ui.%s reads as a delete or an error. Use the neutral badge, or color="primary" for a selected state.', $view, nativeViewLine($source, $tag[0][1]), $tag[1][0]);
+            }
+        }
+    }
+
+    expect($violations)->toBe([], implode("\n", $violations));
+});
+
+it('puts a row’s actions in one menu, and never a bare trash', function () {
+    $violations = [];
+
+    foreach (nativeViewSources() as $view => $source) {
+        preg_match_all('/<x-ui\.button\b'.NATIVE_TAG_ATTRIBUTES.'>/s', $source, $buttons, PREG_SET_ORDER | PREG_OFFSET_CAPTURE);
+
+        $previousEnd = null;
+
+        foreach ($buttons as $button) {
+            $attributes = $button[1][0];
+            $where = sprintf('resources/views/native/%s.blade.php:%d (ref "%s")', $view, nativeViewLine($source, $button[0][1]), nativeTagRef($attributes) ?? 'none');
+            $rowIcon = str_ends_with(rtrim($attributes), '/') && preg_match('/(?<![\w:-])variant="text"/', $attributes) === 1;
+
+            if ($rowIcon && preg_match('/:ios="Ios::Trash"/', $attributes) === 1) {
+                $violations[] = "{$where}: a bare trash on a row. Delete goes last in the row’s \"more\" menu (<x-ui.row :menu> with App\\Ui\\Menu::delete).";
+            }
+
+            if ($rowIcon && $previousEnd !== null && trim(substr($source, $previousEnd, $button[0][1] - $previousEnd)) === '') {
+                $violations[] = "{$where}: two bare icons side by side. A row with two or more actions puts them in one \"more\" menu (<x-ui.row :menu>); reordering is a mode.";
+            }
+
+            $previousEnd = $rowIcon ? $button[0][1] + strlen($button[0][0]) : null;
+        }
+    }
+
+    expect($violations)->toBe([], implode("\n", $violations));
+});
+
+it('lets rows draw their own dividers', function () {
+    $exceptions = [
+        'calendar' => 'Event rows, not on x-ui.row yet.',
+        'calendar-feeds' => 'Calendar feed rows, not on x-ui.row yet.',
+        'cook-recipe' => 'Ingredient tick rows, not on x-ui.row yet.',
+        'create-team' => 'Explainer rows, not on x-ui.row yet.',
+        'dashboard' => 'A warning separator and item rows, not on x-ui.row yet.',
+        'inventory-item-detail' => 'Starter, child-grid, copies and location rows, not on x-ui.row yet.',
+        'inventory-item-form' => 'Extra detail rows hold two text fields.',
+        'invite-member' => 'Inviter rows, not on x-ui.row yet.',
+        'list-detail' => 'List item rows, not on x-ui.row yet.',
+        'parent-picker-sheet' => 'Place picker rows, not on x-ui.row yet.',
+        'recently-deleted-inventory' => 'Deleted item rows, not on x-ui.row yet.',
+        'recipe-detail' => 'Ingredient, step, copy and share rows, not on x-ui.row yet.',
+        'recipe-import-card' => 'A separator inside the import card.',
+        'scan-inventory' => 'Scan candidate rows, not on x-ui.row yet.',
+        'set-up-home' => 'Setup choice rows, not on x-ui.row yet.',
+        'team-settings' => 'Role option rows in the member sheet, not on x-ui.row yet.',
+        'today' => 'Event and routine step rows, not on x-ui.row yet.',
+    ];
+
+    $violations = [];
+
+    foreach (nativeViewSources() as $view => $source) {
+        if ($view === 'ui-kit-gallery' || isset($exceptions[$view])) {
+            continue;
+        }
+
+        preg_match_all('/<divider\b/', $source, $dividers, PREG_OFFSET_CAPTURE);
+
+        foreach ($dividers[0] as $divider) {
+            $violations[] = sprintf('resources/views/native/%s.blade.php:%d: <x-ui.row> draws its own divider, starting under its text. For a row with fields in it, use <x-ui.row-divider leading="…">.', $view, nativeViewLine($source, $divider[1]));
+        }
+    }
+
+    foreach ($exceptions as $view => $reason) {
+        if (! str_contains(nativeViewSources()[$view] ?? '', '<divider')) {
+            $violations[] = "{$view}: listed as drawing its own dividers but it has none now. Remove it from the list.";
+        }
+    }
+
+    expect($violations)->toBe([], implode("\n", $violations));
+});
+
+it('keeps offline boxes neutral', function () {
+    $violations = [];
+
+    foreach (nativeViewSources() as $view => $source) {
+        preg_match_all('/<(column|row)\b'.NATIVE_TAG_ATTRIBUTES.'>\s*<(?:native:)?icon\b'.NATIVE_TAG_ATTRIBUTES.'>/s', $source, $boxes, PREG_SET_ORDER | PREG_OFFSET_CAPTURE);
+
+        foreach ($boxes as $box) {
+            $tinted = preg_match('/\bbg-theme-(primary|destructive|accent)\/\d+/', $box[2][0]) === 1;
+            $offlineIcon = str_contains($box[3][0], 'Ios::WifiSlash');
+            $switchesForOffline = preg_match("/'offline' \\? 'bg-theme-surface-variant'/", $box[2][0]) === 1;
+
+            if ($tinted && $offlineIcon && ! $switchesForOffline) {
+                $violations[] = sprintf('resources/views/native/%s.blade.php:%d (ref "%s"): offline is not an error, so its box is neutral (bg-theme-surface-variant) with a grey icon, not tinted red or coral. Use <x-ui.alert tone="offline"> or <x-ui.offline>.', $view, nativeViewLine($source, $box[0][1]), nativeTagRef($box[2][0]) ?? 'none');
+            }
+        }
+
+        preg_match_all('/<x-ui\.alert\b'.NATIVE_TAG_ATTRIBUTES.'>/s', $source, $alerts, PREG_SET_ORDER | PREG_OFFSET_CAPTURE);
+
+        foreach ($alerts as $alert) {
+            if (str_contains($alert[1][0], 'WifiSlash') && preg_match('/(?<![\w-]):?tone=/', $alert[1][0]) !== 1) {
+                $violations[] = sprintf('resources/views/native/%s.blade.php:%d (ref "%s"): an offline note is <x-ui.alert tone="offline">, which is neutral.', $view, nativeViewLine($source, $alert[0][1]), nativeTagRef($alert[1][0]) ?? 'none');
+            }
+        }
+    }
+
+    expect($violations)->toBe([], implode("\n", $violations));
+});

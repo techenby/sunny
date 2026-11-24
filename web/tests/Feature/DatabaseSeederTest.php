@@ -17,7 +17,7 @@ test('the database seeder builds the Strawhat Pirates household', function () {
         ->and(User::count())->toBeGreaterThan(0)
         ->and(Team::whereNull('slug')->count())->toBe(0)
         ->and(Recipe::whereNull('slug')->count())->toBe(0)
-        ->and(Recipe::count())->toBe(8)
+        ->and($strawhats->recipes()->count())->toBe(8)
         ->and(Recipe::whereNull('description')->count())->toBe(0)
         ->and(Recipe::whereNull('ingredients')->count())->toBe(0)
         ->and(Recipe::whereNull('instructions')->count())->toBe(0)

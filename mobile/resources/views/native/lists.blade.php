@@ -17,17 +17,18 @@
         @if ($this->lists)
             <column class="{{ Card::classes() }} w-full">
                 @foreach ($this->lists as $checklist)
-                    @include('native.owned-row', [
-                        'ref' => 'checklist-'.$checklist['id'],
-                        'url' => '/lists/'.$checklist['id'],
-                        'headline' => $checklist['name'],
-                        'supporting' => $checklist['summary'],
-                        'ios' => $checklist['type']->iosIcon(),
-                        'android' => $checklist['type']->androidIcon(),
-                        'iconBackground' => $checklist['type']->iconColor(),
-                        'owner' => $checklist['owner'],
-                        'last' => $loop->last,
-                    ])
+                    <x-ui.row
+                        :ref="'checklist-'.$checklist['id']"
+                        :url="'/lists/'.$checklist['id']"
+                        :headline="$checklist['name']"
+                        :supporting="$checklist['summary']"
+                        :ios="$checklist['type']->iosIcon()"
+                        :android="$checklist['type']->androidIcon()"
+                        :icon-background="$checklist['type']->iconColor()"
+                        :owner="$checklist['owner']"
+                        trailing="chevron"
+                        :last="$loop->last"
+                    />
                 @endforeach
             </column>
             <x-ui.text ref="lists-count" size="sm" class="px-1">{{ $this->footer }}</x-ui.text>

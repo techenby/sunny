@@ -105,11 +105,14 @@ it('ignores a blank step and rejects one that is too long', function () {
     expect(PendingWrite::count())->toBe(0);
 });
 
-it('renames a step in place and queues the change', function () {
+it('renames a step in a sheet and queues the change', function () {
     $screen = Native::visit('/routines/2')
         ->tap('routine-step-22-edit')
         ->assertSet('editingName', 'Brush teeth')
-        ->submit('routine-step-22-name', '  Floss and brush ')
+        ->assertElement('bottom_sheet', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-rename-sheet' && $node['props']['visible'] === true)
+        ->assertAccessible()
+        ->set('editingName', '  Floss and brush ')
+        ->tap('routine-rename-save')
         ->assertSee('Floss and brush')
         ->assertSet('editingStepId', null);
 
@@ -118,22 +121,57 @@ it('renames a step in place and queues the change', function () {
         ->and(PendingWrite::sole()->only('resource', 'record_id', 'payload'))->toBe(['resource' => 'routine_steps', 'record_id' => 22, 'payload' => ['name' => 'Floss and brush', 'routine_id' => 2]]);
 });
 
-it('keeps a step’s name when the edit is blank, unchanged, or too long', function () {
+it('opens the rename sheet from the step’s menu and saves from the keyboard', function () {
     Native::visit('/routines/2')
-        ->tap('routine-step-22-edit')->submit('routine-step-22-name', '   ')->assertSet('editingStepId', null)
-        ->tap('routine-step-22-edit')->submit('routine-step-22-name', 'Brush teeth')->assertSet('editingStepId', null)
-        ->tap('routine-step-22-edit')->submit('routine-step-22-name', str_repeat('a', 256))
-        ->assertSee('The step is too long (255 characters max).')
-        ->assertSet('editingStepId', 22);
+        ->tap('routine-step-22-rename')
+        ->assertSet('editingStepId', 22)
+        ->submit('routine-rename-name', 'Floss')
+        ->assertSet('editingStepId', null)
+        ->assertSee('Floss');
+
+    expect(RoutineStep::find(22)->name)->toBe('Floss');
+});
+
+it('keeps the rename sheet open with an error when the name is blank or too long', function () {
+    Native::visit('/routines/2')
+        ->tap('routine-step-22-edit')
+        ->set('editingName', '   ')
+        ->tap('routine-rename-save')
+        ->assertSet('editingStepId', 22)
+        ->assertElement('outlined_text_input', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-rename-name'
+            && ($node['props']['is_error'] ?? null) === true
+            && ($node['props']['supporting'] ?? null) === 'Give the step a name.')
+        ->set('editingName', str_repeat('a', 256))
+        ->tap('routine-rename-save')
+        ->assertSet('editingStepId', 22)
+        ->assertSet('stepError', 'The step is too long (255 characters max).')
+        ->assertSet('error', '');
 
     expect(RoutineStep::find(22)->name)->toBe('Brush teeth')->and(PendingWrite::count())->toBe(0);
+});
+
+it('closes the rename sheet without saving by the x, by swiping down, or with the name unchanged', function () {
+    Native::visit('/routines/2')
+        ->tap('routine-step-22-edit')->set('editingName', 'Floss')->tap('routine-rename-close')->assertSet('editingStepId', null)
+        ->tap('routine-step-22-edit')->set('editingName', 'Floss')->dismissSheet('routine-rename-sheet')->assertSet('editingStepId', null)
+        ->tap('routine-step-22-edit')->tap('routine-rename-save')->assertSet('editingStepId', null)
+        ->assertSee('Brush teeth');
+
+    expect(RoutineStep::find(22)->name)->toBe('Brush teeth')->and(PendingWrite::count())->toBe(0);
+});
+
+it('leaves no text field in the step rows, only Add a step', function () {
+    Native::visit('/routines/2')
+        ->tap('routine-step-22-edit')
+        ->assertMissingElement('bare_text_input', fn (array $node): bool => str_starts_with($node['ref'] ?? '', 'routine-step-'))
+        ->assertElement('bare_text_input', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-new-step');
 });
 
 it('folds a rename into a step that has not reached Sunny yet', function () {
     Native::visit('/routines/2')
         ->submit('routine-new-step', 'Story')
         ->tap('routine-step--1-edit')
-        ->submit('routine-step--1-name', 'Read a story');
+        ->submit('routine-rename-name', 'Read a story');
 
     expect(PendingWrite::sole()->only('resource', 'record_id', 'payload'))->toBe(['resource' => 'routine_steps', 'record_id' => -1, 'payload' => ['routine_id' => 2, 'name' => 'Read a story']]);
 });
@@ -144,6 +182,28 @@ it('removes a step and queues its deletion', function () {
     expect(RoutineStep::find(22))->toBeNull()
         ->and(PendingWrite::sole()->only('resource', 'record_id', 'deletes', 'payload'))->toBe(['resource' => 'routine_steps', 'record_id' => 22, 'deletes' => true, 'payload' => ['routine_id' => 2]])
         ->and(array_column($screen->get('steps'), 'name'))->toBe(['Pajamas']);
+});
+
+it('puts Rename and Delete step in each step’s menu, and renames from it', function () {
+    $menu = function (array $node, string $ref) use (&$menu): ?array {
+        if (($node['ref'] ?? null) === $ref) {
+            return collect($node['children'])->where('type', 'top_bar_action')->map(fn (array $action): array => [$action['props']['label'], $action['props']['destructive'] ?? false])->values()->all();
+        }
+
+        foreach ($node['children'] ?? [] as $child) {
+            if (($found = $menu($child, $ref)) !== null) {
+                return $found;
+            }
+        }
+
+        return null;
+    };
+
+    $screen = Native::visit('/routines/2')->assertAccessible();
+
+    expect($menu($screen->tree(), 'routine-step-22-more'))->toBe([['Rename', false], ['Delete step', true]]);
+
+    $screen->tap('routine-step-22-rename')->assertSet('editingStepId', 22);
 });
 
 it('removes a step that never reached Sunny without queueing anything', function () {
@@ -158,12 +218,12 @@ it('starts and stops reordering a routine’s steps', function () {
         ->tap('routine-reorder')
         ->assertSet('reordering', true)
         ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-step-12-up')
-        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-step-12-remove')
+        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-step-12-more')
         ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-reorder')
         ->assertAccessible()
         ->tap('routine-reorder-done')
         ->assertSet('reordering', false)
-        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-step-12-remove');
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-step-12-more');
 
     expect(PendingWrite::count())->toBe(0);
 });

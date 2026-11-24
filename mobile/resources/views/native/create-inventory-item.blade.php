@@ -9,4 +9,5 @@
     'browsedParent' => $this->browsedParent,
     'parentPickerRows' => $this->parentPickerRows,
     'parentTrail' => $this->parentTrail,
+    'photoMenus' => $this->photoMenus('create-item'),
 ])

@@ -136,7 +136,7 @@
                                 <column class="h-10 w-10 items-center justify-center rounded-lg bg-theme-primary/15">
                                     <icon :ios="Ios::Plus" :android="Android::Add" :size="20" class="text-theme-primary-text" />
                                 </column>
-                                <text font="semibold" class="flex-1 text-lg text-theme-primary-text">Add to {{ $item['name'] }}</text>
+                                <text font="semibold" class="flex-1 text-lg text-theme-on-surface">Add to {{ $item['name'] }}</text>
                             </row>
                         </pressable>
                     </column>
@@ -240,8 +240,7 @@
                     @endforeach
                     @else
                     @foreach ($this->children as $child)
-                        @include('native.inventory-item-row', ['item' => $child, 'ref' => 'item-child-'.$child['id'], 'from' => $item['id']])
-                        <divider class="ml-[72]" />
+                        @include('native.inventory-item-row', ['item' => $child, 'ref' => 'item-child-'.$child['id'], 'from' => $item['id'], 'last' => false])
                     @endforeach
                     <pressable
                         ref="item-add"
@@ -253,7 +252,7 @@
                             <column class="h-10 w-10 items-center justify-center rounded-lg bg-theme-primary/15">
                                 <icon :ios="Ios::Plus" :android="Android::Add" :size="20" class="text-theme-primary-text" />
                             </column>
-                            <text font="semibold" class="flex-1 text-lg text-theme-primary-text">Add to {{ $item['name'] }}</text>
+                            <text font="semibold" class="flex-1 text-lg text-theme-on-surface">Add to {{ $item['name'] }}</text>
                         </row>
                     </pressable>
                     @endif
@@ -360,18 +359,14 @@
 
                     @if ($copiesProblem !== null)
                         @php($note = $this->copiesNote())
-                        <row ref="item-copies-problem" class="w-full items-start gap-2.5 rounded-xl bg-theme-primary/15 p-3.5">
-                            <native:icon
-                                :ios="$copiesProblem === 'offline' ? Ios::WifiSlash : Ios::ExclamationmarkCircle"
-                                :android="$copiesProblem === 'offline' ? Android::WifiOff : Android::ErrorOutline"
-                                :size="20"
-                                class="text-theme-primary-text"
-                            />
-                            <column class="flex-1 gap-0.5">
-                                <text font="semibold" class="text-base text-theme-primary-text">{{ $note['title'] }}</text>
-                                <text class="text-base text-theme-on-surface">{{ $note['message'] }}</text>
-                            </column>
-                        </row>
+                        <x-ui.alert
+                            ref="item-copies-problem"
+                            :tone="match ($copiesProblem) { 'offline' => 'offline', 'unsent' => 'info', default => 'error' }"
+                            :ios="$copiesProblem === 'offline' ? Ios::WifiSlash : Ios::ExclamationmarkCircle"
+                            :android="$copiesProblem === 'offline' ? Android::WifiOff : Android::ErrorOutline"
+                            :title="$note['title']"
+                            :message="$note['message']"
+                        />
                     @endif
                 </column>
 
@@ -425,18 +420,14 @@
 
                     @if ($teamMoveProblem !== null)
                         @php($note = $this->teamMoveNote())
-                        <row ref="item-team-move-problem" class="w-full items-start gap-2.5 rounded-xl bg-theme-primary/15 p-3.5">
-                            <native:icon
-                                :ios="$teamMoveProblem === 'offline' ? Ios::WifiSlash : Ios::ExclamationmarkCircle"
-                                :android="$teamMoveProblem === 'offline' ? Android::WifiOff : Android::ErrorOutline"
-                                :size="20"
-                                class="text-theme-primary-text"
-                            />
-                            <column class="flex-1 gap-0.5">
-                                <text font="semibold" class="text-base text-theme-primary-text">{{ $note['title'] }}</text>
-                                <text class="text-base text-theme-on-surface">{{ $note['message'] }}</text>
-                            </column>
-                        </row>
+                        <x-ui.alert
+                            ref="item-team-move-problem"
+                            :tone="match ($teamMoveProblem) { 'offline' => 'offline', 'unsent' => 'info', default => 'error' }"
+                            :ios="$teamMoveProblem === 'offline' ? Ios::WifiSlash : Ios::ExclamationmarkCircle"
+                            :android="$teamMoveProblem === 'offline' ? Android::WifiOff : Android::ErrorOutline"
+                            :title="$note['title']"
+                            :message="$note['message']"
+                        />
                     @endif
                 </column>
 

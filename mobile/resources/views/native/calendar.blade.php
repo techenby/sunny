@@ -45,11 +45,11 @@
     @else
         <column class="w-full gap-5 px-4 pt-2 pb-8">
             @if ($calendarStatus !== '')
-                <column ref="calendar-problem" class="w-full gap-3 rounded-xl bg-theme-primary/15 px-4 py-4">
+                <column ref="calendar-problem" class="w-full gap-3 rounded-xl {{ $calendarStatus === 'offline' ? 'bg-theme-surface-variant' : 'bg-theme-primary/15' }} px-4 py-4">
                     <row class="w-full items-start gap-3">
-                        <icon :ios="Ios::WifiSlash" :android="Android::WifiOff" :size="20" class="text-theme-destructive" />
+                        <icon :ios="Ios::WifiSlash" :android="Android::WifiOff" :size="20" class="{{ $calendarStatus === 'offline' ? 'text-theme-on-surface-variant' : 'text-theme-destructive' }}" />
                         <column class="flex-1 gap-0.5">
-                            <x-ui.heading class="text-theme-destructive">{{ $calendarStatus === 'offline' ? 'You’re offline' : 'The server is unavailable' }}</x-ui.heading>
+                            <x-ui.heading :class="$calendarStatus === 'offline' ? '' : 'text-theme-destructive'">{{ $calendarStatus === 'offline' ? 'You’re offline' : 'The server is unavailable' }}</x-ui.heading>
                             @if ($this->calendarUpdatedAt)
                                 <text class="text-base text-theme-on-surface">These are the events from {{ $this->calendarUpdatedAt }}, so they may be out of date.</text>
                             @elseif ($calendarStatus === 'offline')

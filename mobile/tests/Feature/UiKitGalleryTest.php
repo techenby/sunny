@@ -57,9 +57,9 @@ it('shows every kit piece under the name a developer types', function (string $p
         ->assertSee('x-ui.badge')
         ->assertSee('x-ui.alert')
         ->assertSee('App\Ui\Card::classes()')
-        ->assertSee('native.owned-row')
+        ->assertSee('x-ui.row')
         ->assertSee('native.inventory-item-row')
-        ->assertSee('native.settings-row')
+        ->assertSee('x-ui.row, settings')
         ->assertAccessible();
 
     foreach (['primary', 'secondary', 'glass', 'text', 'destructive'] as $look) {

@@ -3,10 +3,14 @@
 namespace App\Concerns;
 
 use App\Http\Integrations\Sunny\SunnyOutbox;
+use App\Icons\Android;
+use App\Icons\Ios;
 use App\Models\Item;
 use App\Models\ItemPhoto;
+use App\Ui\Menu;
 use Illuminate\Support\Str;
 use Native\Mobile\Attributes\On;
+use Native\Mobile\Edge\Elements\TopBarAction;
 use Native\Mobile\Events\Camera\PhotoTaken;
 use Native\Mobile\Events\Gallery\MediaSelected;
 use Native\Mobile\Facades\Camera;
@@ -80,6 +84,30 @@ trait ManagesItemPhotos
     public function movePhotoDown(int $index): void
     {
         $this->movePhoto($index, $index + 1);
+    }
+
+    /**
+     * @return list<list<TopBarAction>>
+     */
+    public function photoMenus(string $refPrefix): array
+    {
+        return array_map(fn (int $index): array => $this->photoMenu($index, $refPrefix), array_keys($this->photos));
+    }
+
+    /**
+     * @return list<TopBarAction>
+     */
+    protected function photoMenu(int $index, string $refPrefix): array
+    {
+        $ref = $refPrefix.'-photo-'.$index;
+        $label = 'photo '.($index + 1);
+
+        return array_values(array_filter([
+            $index > 0 ? Menu::item($ref.'-primary', 'Make main photo', Ios::Star, Android::Star, 'makePrimary('.$index.')', 'Make '.$label.' the main photo') : null,
+            $index > 0 ? Menu::item($ref.'-up', 'Move up', Ios::ArrowUp, Android::ArrowUpward, 'movePhotoUp('.$index.')', 'Move '.$label.' up') : null,
+            $index < count($this->photos) - 1 ? Menu::item($ref.'-down', 'Move down', Ios::ArrowDown, Android::ArrowDownward, 'movePhotoDown('.$index.')', 'Move '.$label.' down') : null,
+            Menu::delete($ref.'-remove', 'Delete photo', 'removePhoto('.$index.')', 'Delete '.$label),
+        ]));
     }
 
     public function remainingPhotos(): int

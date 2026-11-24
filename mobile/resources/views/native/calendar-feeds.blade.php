@@ -25,11 +25,11 @@
         <x-ui.text>Their events show on the team’s calendar. Anyone on the team can add, edit or remove them.</x-ui.text>
 
         @if ($status !== '')
-            <column ref="calendar-feeds-problem" class="w-full gap-3 rounded-xl bg-theme-primary/15 px-4 py-4">
+            <column ref="calendar-feeds-problem" class="w-full gap-3 rounded-xl {{ $status === 'offline' ? 'bg-theme-surface-variant' : 'bg-theme-primary/15' }} px-4 py-4">
                 <row class="w-full items-start gap-3">
-                    <icon :ios="Ios::WifiSlash" :android="Android::WifiOff" :size="20" class="text-theme-destructive" />
+                    <icon :ios="Ios::WifiSlash" :android="Android::WifiOff" :size="20" class="{{ $status === 'offline' ? 'text-theme-on-surface-variant' : 'text-theme-destructive' }}" />
                     <column class="flex-1 gap-0.5">
-                        <x-ui.heading class="text-theme-destructive">{{ $status === 'offline' ? Offline::TITLE : 'The server is unavailable' }}</x-ui.heading>
+                        <x-ui.heading :class="$status === 'offline' ? '' : 'text-theme-destructive'">{{ $status === 'offline' ? Offline::TITLE : 'The server is unavailable' }}</x-ui.heading>
                         <text class="text-base text-theme-on-surface">{{ $feeds !== null ? 'These may be out of date. ' : '' }}{{ $status === 'offline' ? Offline::ADVICE : 'Try again in a moment.' }}</text>
                     </column>
                 </row>

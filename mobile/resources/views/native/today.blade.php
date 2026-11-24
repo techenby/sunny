@@ -64,7 +64,7 @@
                         <row class="w-full items-center gap-2">
                             <icon :ios="Ios::ExclamationmarkTriangleFill" :android="Android::Warning" :size="14" class="text-theme-destructive" />
                             <text font="medium" class="flex-1 text-sm text-theme-destructive">{{ $warning['feed_name'] }} isn’t showing</text>
-                            <text font="semibold" class="text-sm text-theme-primary-text">Fix</text>
+                            <text font="semibold" class="text-sm text-theme-secondary">Fix</text>
                         </row>
                     </pressable>
                 @endforeach
@@ -88,12 +88,12 @@
         @endif
 
         @if ($loadError)
-            <column ref="day-unavailable" class="w-full gap-4 rounded-xl bg-theme-destructive/10 px-4 py-4">
+            <column ref="day-unavailable" class="w-full gap-4 rounded-xl {{ $loadError === 'offline' ? 'bg-theme-surface-variant' : 'bg-theme-destructive/10' }} px-4 py-4">
                 <row class="w-full items-start gap-3">
-                    <icon :ios="Ios::WifiSlash" :android="Android::WifiOff" :size="22" class="text-theme-destructive" />
+                    <icon :ios="Ios::WifiSlash" :android="Android::WifiOff" :size="22" class="{{ $loadError === 'offline' ? 'text-theme-on-surface-variant' : 'text-theme-destructive' }}" />
                     <column class="flex-1 gap-0.5">
                         @if ($loadError === 'offline')
-                            <x-ui.heading class="text-theme-destructive">You’re offline</x-ui.heading>
+                            <x-ui.heading>You’re offline</x-ui.heading>
                             <x-ui.text>Your phone only keeps today and tomorrow. Connect to see {{ $this->labels['possessive'] }} routines and tick things off.</x-ui.text>
                         @else
                             <x-ui.heading class="text-theme-destructive">The server is unavailable</x-ui.heading>
