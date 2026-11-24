@@ -27,7 +27,7 @@ class ReorderRoutineSteps extends Tool
     {
         $validated = $request->validate([
             'routine_id' => ['required', 'integer'],
-            'step_ids' => ['required', 'array', 'min:1'],
+            'step_ids' => ['required', 'array', 'min:1', 'max:' . RoutineStep::MAX_PER_OWNER],
             'step_ids.*' => ['required', 'integer', 'distinct'],
         ], [
             'step_ids.*.distinct' => 'Each step id may only be listed once.',

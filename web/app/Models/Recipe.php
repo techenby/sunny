@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Casts\RecipeList;
+use App\Concerns\LimitedPerOwner;
 use Database\Factories\RecipeFactory;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -24,6 +25,9 @@ class Recipe extends Model
 {
     /** @use HasFactory<RecipeFactory> */
     use HasFactory, SoftDeletes;
+    use LimitedPerOwner;
+
+    public const int MAX_PER_OWNER = 2_000;
 
     protected static function booted(): void
     {
@@ -157,5 +161,15 @@ class Recipe extends Model
         return Attribute::make(
             get: fn () => $this->thumb_path ? Storage::temporaryUrl($this->thumb_path, now()->addMinutes(30)) : $this->photo_url,
         );
+    }
+
+    protected function ownerColumn(): string
+    {
+        return 'team_id';
+    }
+
+    protected function ownerLimitMessage(): string
+    {
+        return __('A team can have up to :count recipes, counting recently deleted ones.', ['count' => number_format(self::MAX_PER_OWNER)]);
     }
 }

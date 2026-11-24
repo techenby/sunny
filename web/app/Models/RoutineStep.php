@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Concerns\LimitedPerOwner;
 use Database\Factories\RoutineStepFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -17,6 +18,9 @@ class RoutineStep extends Model
 {
     /** @use HasFactory<RoutineStepFactory> */
     use HasFactory;
+    use LimitedPerOwner;
+
+    public const int MAX_PER_OWNER = 50;
 
     /**
      * Steps are soft deleted so already-generated occurrences keep rendering
@@ -43,5 +47,15 @@ class RoutineStep extends Model
     public function routine(): BelongsTo
     {
         return $this->belongsTo(Routine::class);
+    }
+
+    protected function ownerColumn(): string
+    {
+        return 'routine_id';
+    }
+
+    protected function ownerLimitMessage(): string
+    {
+        return __('A routine can have up to :count steps.', ['count' => self::MAX_PER_OWNER]);
     }
 }

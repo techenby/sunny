@@ -6,6 +6,7 @@ namespace App\Mcp\Tools\Inventory;
 
 use App\Actions\Inventory\UpdateItem as UpdateItemAction;
 use App\Enums\ItemType;
+use App\Rules\MaxJsonSize;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Gate;
@@ -27,7 +28,7 @@ class UpdateItem extends Tool
             'name' => ['sometimes', 'required', 'string', 'max:255'],
             'type' => ['sometimes', 'required', new Enum(ItemType::class)],
             'parent_id' => ['sometimes', 'nullable', 'integer'],
-            'metadata' => ['sometimes', 'nullable', 'array'],
+            'metadata' => ['sometimes', 'nullable', 'array', new MaxJsonSize(10_000)],
         ]);
 
         $team = $request->user()->currentTeam;

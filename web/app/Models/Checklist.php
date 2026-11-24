@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Concerns\LimitedPerOwner;
 use App\Enums\ChecklistType;
 use Database\Factories\ChecklistFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -20,6 +21,9 @@ class Checklist extends Model
 {
     /** @use HasFactory<ChecklistFactory> */
     use HasFactory;
+    use LimitedPerOwner;
+
+    public const int MAX_PER_OWNER = 200;
     use SoftDeletes;
 
     /** @return HasMany<ChecklistItem, $this> */
@@ -90,5 +94,15 @@ class Checklist extends Model
         return [
             'type' => ChecklistType::class,
         ];
+    }
+
+    protected function ownerColumn(): string
+    {
+        return 'team_id';
+    }
+
+    protected function ownerLimitMessage(): string
+    {
+        return __('A team can have up to :count lists.', ['count' => self::MAX_PER_OWNER]);
     }
 }

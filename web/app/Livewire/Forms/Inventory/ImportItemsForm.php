@@ -7,12 +7,13 @@ namespace App\Livewire\Forms\Inventory;
 use App\Actions\Inventory\ImportItemsFromAmazonAction;
 use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Validate;
 use Livewire\Form;
 
 class ImportItemsForm extends Form
 {
-    #[Validate('required|file|mimes:csv,txt')]
+    #[Validate('required|file|mimes:csv,txt|max:2048')]
     public $file = null;
 
     public bool $filterGifts = true;
@@ -27,17 +28,21 @@ class ImportItemsForm extends Form
     {
         $this->validateOnly('file');
 
-        $result = resolve(ImportItemsFromAmazonAction::class)->handle(
-            $this->file,
-            Auth::user()->currentTeam,
-            $parentId,
-            [
-                'filterGifts' => $this->filterGifts,
-                'filterConsumables' => $this->filterConsumables,
-                'startDate' => $this->startDate,
-                'endDate' => $this->endDate,
-            ],
-        );
+        try {
+            $result = resolve(ImportItemsFromAmazonAction::class)->handle(
+                $this->file,
+                Auth::user()->currentTeam,
+                $parentId,
+                [
+                    'filterGifts' => $this->filterGifts,
+                    'filterConsumables' => $this->filterConsumables,
+                    'startDate' => $this->startDate,
+                    'endDate' => $this->endDate,
+                ],
+            );
+        } catch (ValidationException $exception) {
+            throw ValidationException::withMessages(["{$this->getPropertyName()}.file" => $exception->getMessage()]);
+        }
 
         $this->reset('file', 'filterGifts', 'filterConsumables', 'startDate', 'endDate');
 

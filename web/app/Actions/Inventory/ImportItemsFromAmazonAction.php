@@ -9,8 +9,10 @@ use App\Models\Item;
 use App\Models\Team;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Spatie\SimpleExcel\SimpleExcelReader;
 
@@ -29,6 +31,8 @@ class ImportItemsFromAmazonAction
         'band-aid', 'bandage', 'first aid',
         'razors', 'floss', 'cotton',
     ];
+
+    public const int MAX_ROWS = 1_000;
 
     public $stats = ['skipped' => 0, 'imported' => 0];
 
@@ -71,9 +75,13 @@ class ImportItemsFromAmazonAction
                     ];
                 });
 
+            throw_if(count($toImport) > self::MAX_ROWS, ValidationException::withMessages([
+                'file' => [__('An import can add up to :count items at a time. Narrow the dates and try again.', ['count' => number_format(self::MAX_ROWS)])],
+            ]));
+
             $this->stats['imported'] = count($toImport);
 
-            $team->items()->createMany($toImport);
+            DB::transaction(fn () => $team->items()->createMany($toImport));
 
             return $this->stats;
         } finally {

@@ -2,6 +2,8 @@
 
 use App\Actions\Inventory\ImportItemsFromAmazonAction;
 use App\Models\Team;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Validation\ValidationException;
 
 test('can import items from amazon csv', function () {
     $team = Team::factory()->create();
@@ -95,4 +97,13 @@ test('can use all filters', function () {
     // In range and not gift/consumable: Flag, Medieval, Walker
     expect($team->items)->toHaveCount(3)
         ->and($result)->skipped->toBe(4)->imported->toBe(3);
+});
+
+test('an import refuses more than a thousand items and adds none of them', function () {
+    $team = Team::factory()->create();
+    [$header, $row] = explode("\n", file_get_contents(base_path('tests/Fixtures/csv/amazon-import.csv')));
+    $file = UploadedFile::fake()->createWithContent('big.csv', implode("\n", [$header, ...array_fill(0, ImportItemsFromAmazonAction::MAX_ROWS + 1, $row)]));
+
+    expect(fn () => (new ImportItemsFromAmazonAction)->handle($file, $team))->toThrow(ValidationException::class, 'An import can add up to 1,000 items at a time.')
+        ->and($team->items()->count())->toBe(0);
 });
