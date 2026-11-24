@@ -37,3 +37,5 @@ AGENTS.md
 # Vibe service (deployed separately from R2)
 vibe-service/
 public/vibe/
+
+/tools/paraframe/__pycache__/

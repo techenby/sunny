@@ -10,9 +10,9 @@ Run it when you want the board brought up to date: start **M: Refresh Paraframe*
    - Shared styling changed (tokens, `app/Ui`, icons, layouts, CSS, copy): every frame is affected.
    - NativePHP or its patches changed: every screen is captured and compared with last time, and only the ones that look different go on.
 2. **Builds and captures.**
-   - It checks `main` out in its own worktree.
+   - It works in this checkout, which must be on a clean `main`. It pulls it first.
    - It resets a local server's database with the Strawhats seed (`migrate:fresh --seed`) and serves it.
-   - It builds the app onto a dedicated simulator, pointed at that server, and signs in as Nami.
+   - It builds the app onto a dedicated simulator, pointed at that server (it sets `SUNNY_API_URL` in `mobile/.env` for the build and puts it back after), and signs in as Nami.
    - It captures each affected frame. The steps to reach each one are in `manifest.json`: menu taps, searches, the empty team, alerts (always cancelled).
 3. **Updates the frames.** It hands those frames, their new screenshots and the code diff to agents (Claude Code or Codex) with `brief.md`. The agents update the frames in place.
 4. **Reports.** It posts a Trello card listing:
@@ -22,11 +22,11 @@ Run it when you want the board brought up to date: start **M: Refresh Paraframe*
 
 ## Setup (once per Mac)
 
-- **A worktree of `main`** with `composer install` run in `web` and `mobile`, and a database for its server (for example `web_paraframe`).
+- **A database for its server** (for example `web_paraframe`). It's created on the first run if missing.
 - **A simulator of its own.** Nobody else should install builds on it. Set `root_ca` to lerd's mkcert root so the simulator can load photos from local S3.
 - **`~/Library/Application Support/SunnyParaframe/config.json`**, which holds:
-  - the board, the simulator id and the worktree path
-  - the local server: its path, port and database
+  - the board and the simulator id
+  - the local server: its port and database
   - the seeded account to sign in with
   - `lookups`: the seeded records the manifest's placeholders stand for (`{thing}` is the item named "Log Pose"…)
   - `labels`: the seeded names it taps (`{home_team}`, `{feed_name}`…)

@@ -74,7 +74,8 @@ def load_config():
     if not path.exists():
         sys.exit(f'Missing {path}. See {HERE / "README.md"}.')
     config = json.loads(path.read_text())
-    config['worktree'] = Path(os.path.expanduser(config['worktree']))
+    repo = sh(['git', 'rev-parse', '--show-toplevel'], cwd=HERE).strip()
+    config['worktree'] = Path(os.path.expanduser(config.get('worktree') or repo))
     return config
 
 
@@ -94,30 +95,25 @@ def notify(message):
 class Server:
     def __init__(self, config):
         settings = config['server']
-        self.path = Path(os.path.expanduser(settings['path']))
+        self.path = config['worktree'] / 'web'
         self.port = settings['port']
         self.url = f'http://127.0.0.1:{self.port}'
         self.env = {**os.environ, 'DB_DATABASE': settings['database'], 'APP_URL': self.url, 'MAIL_MAILER': 'log',
                     'QUEUE_CONNECTION': 'sync'}
         self.process = None
 
-    def write_env(self):
-        env_file = self.path / '.env'
-        text = env_file.read_text()
-        for key in ('DB_DATABASE', 'APP_URL', 'MAIL_MAILER', 'QUEUE_CONNECTION'):
-            line = f'{key}={self.env[key]}'
-            text, count = re.subn(rf'^{key}=.*$', line, text, flags=re.M)
-            if not count:
-                text += f'\n{line}\n'
-        env_file.write_text(text)
-        sh(['php', 'artisan', 'config:clear'], cwd=self.path, env=self.env)
+    def ensure_database(self):
+        name = self.env['DB_DATABASE']
+        code = (f'if (! DB::selectOne("select 1 from pg_database where datname = ?", ["{name}"])) '
+                f'{{ DB::statement(\'create database "{name}"\'); }}')
+        sh(['php', 'artisan', 'tinker', '--execute', code], cwd=self.path, env={**self.env, 'DB_DATABASE': 'postgres'})
 
     def reset(self):
-        self.write_env()
+        self.ensure_database()
         sh(['php', 'artisan', 'migrate:fresh', '--seed', '--force'], cwd=self.path, env=self.env, timeout=600)
 
     def start(self):
-        self.process = subprocess.Popen(['php', 'artisan', 'serve', '--host', '127.0.0.1', '--port', str(self.port)],
+        self.process = subprocess.Popen(['php', 'artisan', 'serve', '--no-reload', '--host', '127.0.0.1', '--port', str(self.port)],
                                         cwd=self.path, env=self.env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         for _ in range(30):
             try:
@@ -414,6 +410,19 @@ def capture_all(config, sim, server, to_capture, captured, failures):
 
 
 
+def point_mobile_env(worktree, url):
+    env_file, backup = worktree / 'mobile' / '.env', HOME / 'mobile.env.backup'
+    if not backup.exists():
+        shutil.copy(env_file, backup)
+    env_file.write_text(re.sub(r'^SUNNY_API_URL=.*$', f'SUNNY_API_URL={url}', env_file.read_text(), flags=re.M))
+
+
+def restore_mobile_env(worktree):
+    backup = HOME / 'mobile.env.backup'
+    if backup.exists():
+        shutil.move(backup, worktree / 'mobile' / '.env')
+
+
 def board_frames(board):
     with urllib.request.urlopen(f'{PARAFRAME}/boards/{board}', timeout=10) as response:
         frames = json.load(response)['frames']
@@ -557,8 +566,15 @@ def command_run(args):
     if args.manifest:
         manifest = json.loads(Path(args.manifest).read_text())
 
-    sh(['git', 'fetch', '--quiet', 'origin', 'main'], cwd=worktree)
-    head = sh(['git', 'rev-parse', 'origin/main'], cwd=worktree).strip()
+    restore_mobile_env(worktree)
+    if sh(['git', 'branch', '--show-current'], cwd=worktree).strip() != 'main':
+        sys.exit(f'{worktree} is not on main. Switch to a clean main and run the refresh again.')
+    if sh(['git', 'status', '--porcelain', '--untracked-files=no'], cwd=worktree).strip():
+        sys.exit(f'{worktree} has uncommitted changes. Commit or stash them and run the refresh again.')
+    sh(['git', 'pull', '--ff-only', '--quiet'], cwd=worktree)
+    if digest(Path(__file__)) != LOADED and not os.environ.get('PARAFRAME_RESTARTED'):
+        os.execve(sys.executable, [sys.executable, '-I', __file__, *sys.argv[1:]], {**os.environ, 'PARAFRAME_RESTARTED': '1'})
+    head = sh(['git', 'rev-parse', 'HEAD'], cwd=worktree).strip()
     base = args.since or state.get('last_sha')
     if not base:
         sys.exit('No baseline yet: run `refresh.py baseline` first.')
@@ -578,9 +594,6 @@ def command_run(args):
         log('Paraframe is not open; stopping without changing anything')
         return
 
-    if sh(['git', 'status', '--porcelain', '--untracked-files=no'], cwd=worktree).strip():
-        raise RuntimeError(f'{worktree} has local changes; refusing to switch it')
-
     changed = [f for f in sh(['git', 'diff', '--name-only', base, head], cwd=worktree).split() if f.startswith('mobile/')]
     if not changed:
         log('No mobile changes; moving the baseline forward')
@@ -588,10 +601,6 @@ def command_run(args):
         save_state(state)
         return
 
-    sh(['git', 'checkout', '--quiet', '--detach', head], cwd=worktree)
-    if digest(Path(__file__)) != LOADED and not os.environ.get('PARAFRAME_RESTARTED'):
-        log('refresh.py changed in this update; restarting with the new version')
-        os.execve(sys.executable, [sys.executable, '-I', __file__, *sys.argv[1:]], {**os.environ, 'PARAFRAME_RESTARTED': '1'})
     for app in ('mobile', 'web'):
         if f'{app}/composer.lock' in sh(['git', 'diff', '--name-only', base, head], cwd=worktree).split():
             log(f'{app}/composer.lock changed; installing')
@@ -620,9 +629,7 @@ def command_run(args):
             server.reset()
             server.start()
             server.check_login(config['account']['email'], config['account']['password'])
-            env_file = worktree / 'mobile' / '.env'
-            env_text = re.sub(r'^SUNNY_API_URL=.*$', f'SUNNY_API_URL={server.url}/api', env_file.read_text(), flags=re.M)
-            env_file.write_text(env_text)
+            point_mobile_env(worktree, f'{server.url}/api')
         if to_capture and not args.no_build:
             sim.boot()
             log('Building and installing on the simulator')
@@ -633,6 +640,7 @@ def command_run(args):
             capture_all(config, sim, server, to_capture, captured, failures)
     finally:
         server.stop()
+        restore_mobile_env(worktree)
 
     previous = HOME / 'shots'
     previous.mkdir(exist_ok=True)
