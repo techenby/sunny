@@ -4,7 +4,7 @@ Keeps the "SunnyHome - mobile" Paraframe board in step with `main`. Every screen
 
 ## What a run does
 
-When `origin/main` has moved since the last run, `refresh.py run`:
+Run it when you want the board brought up to date: start **M: Refresh Paraframe** in Solo, or run `python3 refresh.py run` here. When `origin/main` has moved since the last run, it:
 
 1. **Finds the affected frames.** It lists the changed files under `mobile/`, then the frames whose source files use them, following Blade includes, components, and the traits and support classes each screen uses.
    - Shared styling changed (tokens, `app/Ui`, icons, layouts, CSS, copy): every frame is affected.
@@ -36,7 +36,6 @@ When `origin/main` has moved since the last run, `refresh.py run`:
   - `security add-generic-password -s sunny-paraframe-trello -a key -w <api key>`
   - `security add-generic-password -s sunny-paraframe-trello -a token -w <token>`
 - **`refresh.py baseline <sha>`:** the commit the board currently matches.
-- **`refresh.py install`:** a launchd job that runs every hour. Pass `--interval <seconds>` to change that.
 
 ## By hand
 
