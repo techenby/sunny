@@ -87,8 +87,12 @@ it('gives every sheet the one header, height and confirm button', function (stri
         expect($confirm['children'][0]['ref'])->toBe($confirmRef)
             ->and($confirm['children'][0]['type'])->toBe('pressable')
             ->and($confirm['children'][0]['layout']['width'])->toBe('fill')
-            ->and($confirm['layout']['padding'])->toEqual([24, 16, 8, 16]);
+            ->and($confirm['layout']['padding'])->toEqual([24, 16, 0, 16]);
     }
+
+    $body = $root['children'][count($root['children']) - 1];
+
+    expect($body['layout']['padding'][2] ?? 0)->toEqual(0);
 
     $screen->assertAccessible()->tap($closeRef);
 

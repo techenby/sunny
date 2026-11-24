@@ -373,5 +373,5 @@ it('confirms a sheet with one full-width primary button that is unavailable only
 
     Native::test(UiKitScreen::class, platform: 'ios')
         ->assertElement('column', fn (array $node): bool => refNode('sheet-confirm')($node['children'][0] ?? [])
-            && $node['layout']['padding'] == [24, 16, 8, 16]);
+            && $node['layout']['padding'] == [24, 16, 0, 16]);
 });

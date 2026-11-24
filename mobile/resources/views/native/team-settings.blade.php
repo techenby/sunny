@@ -250,7 +250,7 @@
         @if ($member = $this->member())
             <column class="w-full bg-theme-background">
                 <x-ui.sheet-header ref="member-close" :title="$member['name']" close="closeMember" />
-                <column class="w-full gap-4 px-4 pt-4 pb-6 ios:pb-2">
+                <column class="w-full gap-4 px-4 pt-4 pb-6 ios:pb-0">
                     <row class="w-full items-center gap-4">
                         <x-ui.avatar size="lg" circle :initials="$member['initials']" color="red" />
                         <x-ui.text class="flex-1">{{ $member['role']->label() }} of {{ $team->name }}</x-ui.text>
