@@ -2,7 +2,6 @@
 
 namespace App\Actions;
 
-use App\Http\Integrations\Sunny\EmailNotVerifiedException;
 use App\Http\Integrations\Sunny\Requests\GetSharedRecipeRequest;
 use App\Http\Integrations\Sunny\SunnyAuth;
 use Illuminate\Auth\AuthenticationException;
@@ -16,7 +15,7 @@ class OpenSharedRecipe
     public function __construct(private readonly SunnyAuth $auth) {}
 
     /**
-     * @return array{status: 'found', recipe: array<string, mixed>}|array{status: 'gone'|'offline'|'verify'}|array{status: 'error', message: string}
+     * @return array{status: 'found', recipe: array<string, mixed>}|array{status: 'gone'|'offline'}|array{status: 'error', message: string}
      */
     public function handle(string $shareToken, #[\SensitiveParameter] ?string $token = null): array
     {
@@ -26,8 +25,6 @@ class OpenSharedRecipe
                 ->json('data');
         } catch (FatalRequestException) {
             return ['status' => 'offline'];
-        } catch (EmailNotVerifiedException) {
-            return ['status' => 'verify'];
         } catch (RequestException $exception) {
             return match ($exception->getResponse()->status()) {
                 404 => ['status' => 'gone'],

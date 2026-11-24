@@ -3,7 +3,6 @@
 namespace App\Concerns;
 
 use App\Actions\ShareRecipe;
-use App\Http\Integrations\Sunny\EmailNotVerifiedException;
 use App\Http\Integrations\Sunny\SunnyStore;
 use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Models\Team;
@@ -138,10 +137,6 @@ trait SharesRecipe
             $record = app(ShareRecipe::class)->handle($team, $recipe['id'], $shared);
         } catch (FatalRequestException) {
             $this->shareProblem = 'offline';
-
-            return;
-        } catch (EmailNotVerifiedException) {
-            $this->openEmailVerification();
 
             return;
         } catch (RequestException $exception) {

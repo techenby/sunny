@@ -155,12 +155,6 @@ class CreateRecipe extends Component implements HidesTabBar
     {
         $this->importing = false;
 
-        if ($result['status'] === 'verify') {
-            $this->openEmailVerification();
-
-            return;
-        }
-
         if ($result['status'] === 'imported' && isset($result['id'])) {
             $this->importedId = $result['id'];
             $this->replace('/recipes/'.$result['id'].'/edit', ['imported' => true]);

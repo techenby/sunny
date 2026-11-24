@@ -4,7 +4,6 @@ namespace App\Concerns;
 
 use App\Actions\MoveItemToTeam;
 use App\Enums\ItemType;
-use App\Http\Integrations\Sunny\EmailNotVerifiedException;
 use App\Http\Integrations\Sunny\EmailVerificationRequired;
 use App\Http\Integrations\Sunny\SunnyStore;
 use App\Http\Integrations\Sunny\SunnySyncCoordinator;
@@ -132,10 +131,6 @@ trait MovesItemToTeam
             $moved = app(MoveItemToTeam::class)->handle($from, $item['id'], $to);
         } catch (FatalRequestException) {
             $this->teamMoveProblem = 'offline';
-
-            return;
-        } catch (EmailNotVerifiedException) {
-            $this->openEmailVerification();
 
             return;
         } catch (RequestException $exception) {

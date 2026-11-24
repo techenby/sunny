@@ -5,7 +5,6 @@ namespace App\NativeComponents;
 use App\Actions\OpenSharedRecipe;
 use App\Actions\SaveSharedRecipe;
 use App\Casts\RecipeLines;
-use App\Http\Integrations\Sunny\EmailNotVerifiedException;
 use App\Http\Integrations\Sunny\SunnyStore;
 use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Http\Integrations\Sunny\SunnyTeam;
@@ -163,10 +162,6 @@ class SharedRecipe extends Component
             $this->saveProblem = 'offline';
 
             return;
-        } catch (EmailNotVerifiedException) {
-            $this->openEmailVerification();
-
-            return;
         } catch (RequestException $exception) {
             $status = $exception->getResponse()->status();
 
@@ -230,12 +225,6 @@ class SharedRecipe extends Component
      */
     protected function loaded(array $result): void
     {
-        if ($result['status'] === 'verify') {
-            $this->openEmailVerification();
-
-            return;
-        }
-
         $this->state = $result['status'];
         $this->message = $result['message'] ?? '';
         $this->recipe = $result['status'] === 'found' ? ($result['recipe'] ?? null) : null;

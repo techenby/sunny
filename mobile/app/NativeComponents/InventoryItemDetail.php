@@ -9,7 +9,6 @@ use App\Concerns\MovesItemToTeam;
 use App\Concerns\SelectsInventoryItems;
 use App\Concerns\ShowsQueuedChange;
 use App\Enums\ItemType;
-use App\Http\Integrations\Sunny\EmailNotVerifiedException;
 use App\Http\Integrations\Sunny\EmailVerificationRequired;
 use App\Http\Integrations\Sunny\SunnyOutbox;
 use App\Http\Integrations\Sunny\SunnyStore;
@@ -279,10 +278,6 @@ class InventoryItemDetail extends Component
             $made = app(DuplicateItem::class)->handle($team, $this->item['id'], $this->copies);
         } catch (FatalRequestException) {
             $this->copiesProblem = 'offline';
-
-            return;
-        } catch (EmailNotVerifiedException) {
-            $this->openEmailVerification();
 
             return;
         } catch (RequestException $exception) {
