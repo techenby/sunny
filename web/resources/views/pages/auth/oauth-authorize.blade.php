@@ -11,6 +11,14 @@
             </flux:callout.text>
         </flux:callout>
 
+        @php($redirectHost = parse_url((string) ($request->query('redirect_uri') ?: collect($client->redirect_uris)->first()), PHP_URL_HOST))
+
+        @if (filled($redirectHost))
+            <flux:text class="text-center" data-test="redirect-host">
+                {{ __('If you allow access, you’ll be sent to :host. Only continue if you recognize it.', ['host' => $redirectHost]) }}
+            </flux:text>
+        @endif
+
         <flux:text class="text-center">{{ __('Signed in as :email', ['email' => $user->email]) }}</flux:text>
 
         <div class="flex flex-col gap-3" x-data="{ submitting: false }">

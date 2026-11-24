@@ -149,3 +149,13 @@ test('a recipe that loses the race for its slug takes the next one', function ()
 
     expect($recipe)->slug->toBe('chocolate-cake-1');
 });
+
+test('only a web address counts as a source link', function (string $source, bool $isLink) {
+    expect(Recipe::factory()->make(['source' => $source])->isSourceUrl())->toBe($isLink);
+})->with([
+    'https' => ['https://example.com/cake', true],
+    'http' => ['http://example.com/cake', true],
+    'javascript' => ['javascript://%0aalert(document.domain)', false],
+    'another app' => ['x://y', false],
+    'a cookbook' => ['Grandma’s cookbook', false],
+]);

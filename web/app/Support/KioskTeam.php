@@ -23,11 +23,14 @@ class KioskTeam
             return null;
         }
 
-        return KioskDevice::query()
+        $device = KioskDevice::query()
             ->paired()
             ->whereBelongsTo($user)
             ->with('team')
-            ->find(session('kiosk_device_id'));
+            ->whereKey(session('kiosk_device_id'))
+            ->first();
+
+        return $device?->hasLostAccess() ? null : $device;
     }
 
     public static function resolve(): Team

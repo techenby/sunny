@@ -16,12 +16,48 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection as BaseCollection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class Item extends Model
 {
     /** @use HasFactory<ItemFactory> */
     use HasFactory;
     use SoftDeletes;
+
+    protected static function booted(): void
+    {
+        static::saving(function (Item $item): void {
+            if ($item->parent_id === null || ! $item->isDirty('parent_id')) {
+                return;
+            }
+
+            $parentId = (int) $item->parent_id;
+
+            throw_unless(
+                self::query()->whereKey($parentId)->where('team_id', $item->team_id)->exists(),
+                ValidationException::withMessages(['parent_id' => [__('That place isn’t in this team.')]]),
+            );
+
+            throw_if(
+                $item->exists && ($parentId === $item->id || $item->descendantIds()->contains($parentId)),
+                ValidationException::withMessages(['parent_id' => [__('An item can’t go inside itself or inside something it holds.')]]),
+            );
+        });
+    }
+
+    /** @param  array<string, mixed>  $options */
+    public function save(array $options = []): bool
+    {
+        if (! $this->exists || $this->parent_id === null || ! $this->isDirty('parent_id')) {
+            return parent::save($options);
+        }
+
+        return DB::transaction(function () use ($options): bool {
+            Team::query()->whereKey($this->team_id)->lockForUpdate()->first();
+
+            return parent::save($options);
+        });
+    }
 
     /** @return BelongsTo<Team, $this> */
     public function team(): BelongsTo
@@ -59,7 +95,7 @@ class Item extends Model
         return collect(DB::select(
             'with recursive descendants as (
                 select id from items where parent_id = ?
-                union all
+                union
                 select items.id from items inner join descendants on descendants.id = items.parent_id
             ) select id from descendants',
             [$this->id],

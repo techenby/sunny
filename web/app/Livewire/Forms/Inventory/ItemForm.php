@@ -82,7 +82,12 @@ class ItemForm extends Form
         return [
             'name' => ['required', 'string', 'max:255'],
             'type' => ['required', Rule::enum(ItemType::class)],
-            'parent_id' => ['nullable', 'integer', 'exists:items,id'],
+            'parent_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('items', 'id')->where('team_id', $this->editingItem->team_id ?? Auth::user()->current_team_id),
+                Rule::notIn($this->editingItem ? [$this->editingItem->id, ...$this->editingItem->descendantIds()] : []),
+            ],
             'metadata' => ['nullable', 'array'],
             'metadata.*.key' => ['nullable', 'string', 'max:255', 'distinct'],
             'metadata.*.value' => ['required_with:metadata.*.key', 'nullable', 'string', 'max:255'],

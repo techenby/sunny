@@ -73,6 +73,11 @@ class KioskDevice extends Model
         return $this->paired_at !== null;
     }
 
+    public function hasLostAccess(): bool
+    {
+        return $this->isPaired() && ($this->user === null || $this->team === null || ! $this->user->belongsToTeam($this->team));
+    }
+
     /** @param Builder<static> $query */
     #[Scope]
     protected function pending(Builder $query): void

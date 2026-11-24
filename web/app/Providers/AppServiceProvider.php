@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Http\Middleware\EnsureTeamMembership;
+use App\Http\Middleware\RestrictKioskSession;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterval;
 use Illuminate\Auth\Middleware\EnsureEmailIsVerified;
@@ -29,7 +31,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
-        Livewire::addPersistentMiddleware([EnsureEmailIsVerified::class]);
+        Livewire::addPersistentMiddleware([EnsureEmailIsVerified::class, EnsureTeamMembership::class, RestrictKioskSession::class]);
         $this->configureHead();
         $this->configurePassport();
     }

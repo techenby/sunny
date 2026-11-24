@@ -176,7 +176,7 @@ new class extends Component
         })->all();
     }
 
-    public function matchedDetail(Item $item): ?string
+    protected function matchedDetail(Item $item): ?string
     {
         if (Str::contains($item->name, $this->search, ignoreCase: true)) {
             return null;
@@ -237,7 +237,7 @@ new class extends Component
         $this->validate([
             'selected' => ['required', 'array', 'min:1'],
             'selected.*' => ['integer'],
-            'bulkParentId' => ['nullable', 'integer', 'exists:items,id'],
+            'bulkParentId' => ['nullable', 'integer', Rule::in($this->bulkParentOptions->modelKeys())],
         ]);
 
         $items = Auth::user()->currentTeam->items()

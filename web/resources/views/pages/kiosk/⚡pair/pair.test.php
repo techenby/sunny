@@ -352,3 +352,58 @@ test('session id rotates after pair-completion login', function (): void {
 
     expect(session()->getId())->not->toBe($sessionIdBefore);
 });
+
+test('only a normal session can run a component taken from a page outside the kiosk', function (bool $kiosk, int $status): void {
+    $user = User::factory()->create();
+    $device = KioskDevice::factory()->paired($user, $user->currentTeam)->create();
+    $snapshot = livewireSnapshotFrom(actingAs($user)->get(route('api-tokens.index'))->assertOk()->getContent(), 'api-tokens');
+
+    actingAs($user)
+        ->withSession($kiosk ? ['kiosk_device_id' => $device->id] : [])
+        ->withHeader('X-Livewire', 'true')
+        ->postJson(EndpointResolver::updatePath(), ['components' => [['snapshot' => $snapshot, 'updates' => [], 'calls' => []]]])
+        ->assertStatus($status);
+})->with([
+    'in a kiosk session' => [true, 403],
+    'in a normal session' => [false, 200],
+]);
+
+test('a kiosk session can still run the components on its own kiosk pages', function (): void {
+    $user = User::factory()->create();
+    $device = KioskDevice::factory()->paired($user, $user->currentTeam)->create();
+    $kiosk = fn () => actingAs($user)->withSession(['kiosk_device_id' => $device->id]);
+    $snapshot = livewireSnapshotFrom($kiosk()->get(route('kiosk.lists'))->assertOk()->getContent(), 'kiosk.lists');
+
+    $kiosk()
+        ->withHeader('X-Livewire', 'true')
+        ->postJson(EndpointResolver::updatePath(), ['components' => [['snapshot' => $snapshot, 'updates' => [], 'calls' => []]]])
+        ->assertOk();
+});
+
+test('a kiosk stops working once its user leaves the team', function (): void {
+    $user = User::factory()->create();
+    $team = Team::factory()->create();
+    $user->teams()->attach($team, ['role' => TeamRole::Member]);
+    $device = KioskDevice::factory()->paired($user, $team)->create();
+    $user->teams()->detach($team);
+
+    actingAs($user)
+        ->withSession(['kiosk_device_id' => $device->id])
+        ->get(route('kiosk.calendar', ['current_team' => $team->slug]))
+        ->assertRedirect(route('kiosk.index'));
+
+    $this->assertGuest();
+});
+
+test('a kiosk whose user left the team has to be paired again', function (): void {
+    $user = User::factory()->create();
+    $team = Team::factory()->create();
+    $device = KioskDevice::factory()->paired($user, $team)->create(['uuid' => 'left-team-uuid']);
+
+    withCookie(KioskDevice::COOKIE_NAME, 'left-team-uuid')
+        ->get('/kiosk')
+        ->assertOk();
+
+    $this->assertGuest();
+    expect($device->fresh())->toBeNull();
+});

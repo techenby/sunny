@@ -45,7 +45,7 @@ class Recipes extends Component
 
     public static function isSourceUrl(?string $source): bool
     {
-        return filter_var($source, FILTER_VALIDATE_URL) !== false;
+        return Str::isUrl($source, ['http', 'https']);
     }
 
     /**

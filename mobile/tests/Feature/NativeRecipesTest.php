@@ -2,6 +2,7 @@
 
 use App\Models\Recipe;
 use App\NativeComponents\RecipeDetail;
+use App\NativeComponents\Recipes;
 use Native\Mobile\Testing\Native;
 
 beforeEach(fn () => seedSunnyData());
@@ -184,3 +185,13 @@ it('keeps a recipe’s edit action above the tab bar', function () {
         ->assertElement('bottom_bar', fn (array $node): bool => str_contains(json_encode($node), '"ref":"recipe-edit"'))
         ->assertMissingElement('top_bar', fn (array $node): bool => str_contains(json_encode($node), 'top_bar_action'));
 });
+
+test('only a web address counts as a recipe source link', function (string $source, bool $isLink) {
+    expect(Recipes::isSourceUrl($source))->toBe($isLink);
+})->with([
+    'https' => ['https://example.com/cake', true],
+    'http' => ['http://example.com/cake', true],
+    'another app' => ['x://y', false],
+    'javascript' => ['javascript://%0aalert(1)', false],
+    'a cookbook' => ['Grandma’s cookbook', false],
+]);
