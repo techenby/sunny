@@ -69,7 +69,7 @@ class Dashboard extends Component
 
         try {
             app(SunnySyncCoordinator::class)->sync();
-        } catch (AuthenticationException|EmailVerificationRequired|RequestException|FatalRequestException|JsonException|ValidationException|RuntimeException $exception) {
+        } catch (AuthenticationException|RequestException|FatalRequestException|JsonException|ValidationException|RuntimeException $exception) {
             $this->syncFailed($exception::class, asked: true);
 
             return;

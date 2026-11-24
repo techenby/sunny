@@ -9,7 +9,6 @@ use App\Concerns\MovesItemToTeam;
 use App\Concerns\SelectsInventoryItems;
 use App\Concerns\ShowsQueuedChange;
 use App\Enums\ItemType;
-use App\Http\Integrations\Sunny\EmailVerificationRequired;
 use App\Http\Integrations\Sunny\SunnyOutbox;
 use App\Http\Integrations\Sunny\SunnyStore;
 use App\Http\Integrations\Sunny\SunnySyncCoordinator;
@@ -254,7 +253,7 @@ class InventoryItemDetail extends Component
                 $this->copiesProblem = 'offline';
 
                 return;
-            } catch (AuthenticationException|EmailVerificationRequired|RequestException|JsonException|ValidationException|RuntimeException) {
+            } catch (AuthenticationException|RequestException|JsonException|ValidationException|RuntimeException) {
             }
 
             $this->refreshLocalSyncedData();

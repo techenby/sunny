@@ -50,7 +50,7 @@ class SunnyConnector extends Connector
     public function getRequestException(Response $response, ?Throwable $senderException): ?Throwable
     {
         if ($response->status() === 423 && (json_decode($response->body(), true)['email_verification_required'] ?? false) === true) {
-            return new EmailNotVerifiedException($response, previous: $senderException);
+            return new EmailVerificationRequired($response, $senderException);
         }
 
         return null;

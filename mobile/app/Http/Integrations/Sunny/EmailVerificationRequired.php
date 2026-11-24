@@ -3,11 +3,18 @@
 namespace App\Http\Integrations\Sunny;
 
 use Exception;
+use Saloon\Exceptions\Request\RequestException;
+use Saloon\Http\Response;
+use Throwable;
 
-class EmailVerificationRequired extends Exception
+class EmailVerificationRequired extends RequestException
 {
-    public function __construct(?\Throwable $previous = null)
+    public function __construct(?Response $response = null, ?Throwable $previous = null)
     {
-        parent::__construct('Verify your email address to keep using SunnyHome.', 0, $previous);
+        if ($response !== null) {
+            $this->response = $response;
+        }
+
+        Exception::__construct('Verify your email address to keep using SunnyHome.', 0, $previous);
     }
 }

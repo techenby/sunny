@@ -4,7 +4,6 @@ namespace App\Concerns;
 
 use App\Actions\MoveItemToTeam;
 use App\Enums\ItemType;
-use App\Http\Integrations\Sunny\EmailVerificationRequired;
 use App\Http\Integrations\Sunny\SunnyStore;
 use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Http\Integrations\Sunny\SunnyTeam;
@@ -97,7 +96,7 @@ trait MovesItemToTeam
                 $this->teamMoveProblem = 'offline';
 
                 return;
-            } catch (AuthenticationException|EmailVerificationRequired|RequestException|JsonException|ValidationException|RuntimeException) {
+            } catch (AuthenticationException|RequestException|JsonException|ValidationException|RuntimeException) {
             }
 
             $this->refreshLocalSyncedData();
@@ -259,7 +258,7 @@ trait MovesItemToTeam
     {
         try {
             app(SunnySyncCoordinator::class)->sync();
-        } catch (AuthenticationException|EmailVerificationRequired|RequestException|FatalRequestException|JsonException|ValidationException|RuntimeException) {
+        } catch (AuthenticationException|RequestException|FatalRequestException|JsonException|ValidationException|RuntimeException) {
             return false;
         }
 

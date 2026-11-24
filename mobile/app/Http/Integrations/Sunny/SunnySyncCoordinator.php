@@ -48,10 +48,10 @@ class SunnySyncCoordinator
             rescue(fn () => app(SunnyTeams::class)->refreshInvitations($token), report: false);
 
             return true;
-        } catch (EmailNotVerifiedException $exception) {
+        } catch (EmailVerificationRequired $exception) {
             $this->store->requireEmailVerification();
 
-            throw new EmailVerificationRequired($exception);
+            throw $exception;
         } finally {
             $lock->release();
         }
