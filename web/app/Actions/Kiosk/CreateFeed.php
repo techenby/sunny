@@ -8,6 +8,7 @@ use App\Actions\Calendars\RefreshCalendarFeed;
 use App\Models\CalendarFeed;
 use App\Models\Team;
 use App\Support\ClientUuid;
+use Illuminate\Validation\ValidationException;
 
 class CreateFeed
 {
@@ -18,6 +19,10 @@ class CreateFeed
             $team->calendarFeeds(),
             $data['client_uuid'] ?? null,
             function () use ($team, $data): CalendarFeed {
+                throw_if($team->calendarFeeds()->count() >= CalendarFeed::MAX_PER_TEAM, ValidationException::withMessages([
+                    'url' => [__('A team can have up to :count calendars.', ['count' => CalendarFeed::MAX_PER_TEAM])],
+                ]));
+
                 $feed = $team->calendarFeeds()->create($data);
 
                 (new RefreshCalendarFeed)->handle($feed);

@@ -12,13 +12,18 @@ use App\Models\User;
 use Bentonow\BentoLaravel\Facades\Bento;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
+use Throwable;
 
 class CreateNewUser implements CreatesNewUsers
 {
     use PasswordValidationRules, ProfileValidationRules;
+
+    public const int ACCOUNTS_PER_NETWORK_PER_DAY = 10;
 
     public function __construct(private CreateTeam $createTeam) {}
 
@@ -30,6 +35,24 @@ class CreateNewUser implements CreatesNewUsers
             'password' => $this->passwordRules(),
         ])->validate();
 
+        $limitKey = 'sign-up:' . request()->ip();
+
+        throw_if(RateLimiter::hit($limitKey, 86400) > self::ACCOUNTS_PER_NETWORK_PER_DAY, ValidationException::withMessages([
+            'email' => [__('Too many accounts have been created from this network today. Please try again tomorrow.')],
+        ]));
+
+        try {
+            return $this->createUser($input);
+        } catch (Throwable $exception) {
+            RateLimiter::decrement($limitKey, 86400);
+
+            throw $exception;
+        }
+    }
+
+    /** @param  array<string, string>  $input */
+    private function createUser(array $input): User
+    {
         return DB::transaction(function () use ($input) {
             $user = User::create([
                 'name' => $input['name'],

@@ -76,3 +76,11 @@ test('it copies a thumbnail alongside another photo', function () {
     expect($path)->toMatch('#^teams/1/items/thumbs/guitar-2-[a-z0-9]{8}\.jpg$#');
     expect(Storage::get($path))->toBe('thumb');
 });
+
+test('it skips a photo whose dimensions are far larger than any camera makes', function () {
+    Storage::fake();
+    $png = UploadedFile::fake()->image('bomb.png', 10, 10)->get();
+    Storage::put('teams/1/items/bomb.png', substr_replace($png, pack('NN', 20000, 20000), 16, 8));
+
+    expect((new CreateThumbnail)->handle('teams/1/items/bomb.png'))->toBeNull();
+});

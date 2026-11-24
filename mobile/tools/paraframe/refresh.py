@@ -58,7 +58,12 @@ LOADED = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
 
 
 def sh(args, cwd=None, check=True, capture=True, timeout=None, env=None):
-    result = subprocess.run(args, cwd=cwd, capture_output=capture, text=True, timeout=timeout, env=env)
+    for attempt in range(4):
+        result = subprocess.run(args, cwd=cwd, capture_output=capture, text=True, timeout=timeout, env=env)
+        flaky = args[0] == 'axe' and 'remote automation session' in (result.stderr or '') + (result.stdout or '')
+        if not flaky or attempt == 3:
+            break
+        time.sleep(5)
     if check and result.returncode != 0:
         raise RuntimeError(f'{" ".join(map(str, args))} failed: {(result.stderr or result.stdout or "").strip()[-800:]}')
     return result.stdout if capture else ''
@@ -215,6 +220,13 @@ class Simulator:
             self.tap_exact_button('Not now')
             time.sleep(1.5)
 
+    def restart(self):
+        sh(['xcrun', 'simctl', 'terminate', self.udid, self.bundle], check=False)
+        time.sleep(1)
+        self.launch()
+        time.sleep(4)
+        self.dismiss_prompts()
+
     def launch(self):
         sh(['xcrun', 'simctl', 'launch', self.udid, self.bundle], check=False)
         time.sleep(8)
@@ -330,6 +342,8 @@ def digest(path):
 
 def capture(sim, frame, values, out):
     slug = re.sub(r'[^a-z0-9]+', '-', frame['title'].lower()).strip('-')
+    if frame.get('steps') or frame.get('dismiss'):
+        sim.restart()
     sim.open(fill(frame['route'], values))
     sim.dismiss_prompts()
     for step in frame.get('steps', []):
@@ -361,7 +375,8 @@ def capture(sim, frame, values, out):
         if any(n.get('type') == 'Button' and n.get('AXLabel') in ('Cancel', 'Keep') for n in sim.nodes()):
             raise RuntimeError(f'The alert for "{frame["title"]}" did not close; stopping')
     elif dismiss == 'sheet':
-        sim.swipe_down()
+        if not sim.tap_exact_button('Close'):
+            sim.swipe_down()
     elif dismiss == 'menu':
         sh(['axe', 'touch', '-x', '201', '-y', '30', '--down', '--up', '--delay', '0.1', '--udid', sim.udid], check=False)
         time.sleep(1)

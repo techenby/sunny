@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Api;
 
+use App\Actions\Photos\CreateThumbnail;
 use App\Models\Item;
 use App\Models\ItemPhoto;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -26,7 +27,7 @@ class StoreItemPhotoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'photo' => ['required', 'image', 'max:10240'],
+            'photo' => ['required', 'image', 'max:10240', CreateThumbnail::DIMENSIONS_RULE],
             'position' => ['nullable', 'integer', 'min:0'],
             'client_uuid' => ['nullable', 'uuid'],
         ];

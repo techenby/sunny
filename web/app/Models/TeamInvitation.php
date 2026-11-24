@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Attributes\RouteKey;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\MassPrunable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -33,6 +34,7 @@ class TeamInvitation extends Model
 {
     /** @use HasFactory<TeamInvitationFactory> */
     use HasFactory;
+    use MassPrunable;
 
     protected static function boot(): void
     {
@@ -43,6 +45,12 @@ class TeamInvitation extends Model
                 $invitation->code = Str::random(64);
             }
         });
+    }
+
+    /** @return Builder<static> */
+    public function prunable(): Builder
+    {
+        return static::query()->whereNotNull('expires_at')->where('expires_at', '<', now());
     }
 
     /** @return BelongsTo<Team, $this> */

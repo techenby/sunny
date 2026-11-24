@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\ThrottleAccountForms;
 use Laravel\Fortify\Features;
 
 return [
@@ -101,7 +102,7 @@ return [
     |
     */
 
-    'middleware' => ['web'],
+    'middleware' => ['web', ThrottleAccountForms::class],
 
     /*
     |--------------------------------------------------------------------------
@@ -118,6 +119,7 @@ return [
         'login' => 'login',
         'two-factor' => 'two-factor',
         'passkeys' => 'passkeys',
+        'verification' => 'verification-email',
     ],
 
     /*

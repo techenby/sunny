@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Validation\ValidationException;
 use App\Actions\Teams\CreateTeam;
 use App\Models\Team;
 use App\Rules\TeamName;
@@ -37,7 +38,11 @@ new class extends Component {
             'teamName' => ['required', 'string', 'max:255', new TeamName],
         ]);
 
-        $team = $createTeam->handle(Auth::user(), $validated['teamName']);
+        try {
+            $team = $createTeam->handle(Auth::user(), $validated['teamName']);
+        } catch (ValidationException $exception) {
+            throw ValidationException::withMessages(['teamName' => $exception->errors()['name'] ?? $exception->getMessage()]);
+        }
 
         $this->dispatch('close-modal', name: 'create-team-switcher');
 

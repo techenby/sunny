@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Api;
 
+use App\Actions\Photos\CreateThumbnail;
 use App\Enums\ItemType;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -29,7 +30,7 @@ class UpdateItemRequest extends FormRequest
             'type' => ['sometimes', 'required', new Enum(ItemType::class)],
             'parent_id' => ['nullable', 'integer', Rule::exists('items', 'id')->where('team_id', $this->route('team')->id)],
             'metadata' => ['nullable', 'array'],
-            'photo' => ['nullable', 'image', 'max:10240'],
+            'photo' => ['nullable', 'image', 'max:10240', CreateThumbnail::DIMENSIONS_RULE],
             'photo_order' => ['sometimes', 'array'],
             'photo_order.*' => ['integer'],
         ];

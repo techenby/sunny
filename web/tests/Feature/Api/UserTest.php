@@ -37,3 +37,14 @@ test('the token response contains only the public user fields and the token', fu
         ->assertOk()
         ->assertExactJsonStructure([...$userFields, 'token', 'expires_at']);
 });
+
+test('the api slows down one account that sends too many requests', function () {
+    $user = User::factory()->create();
+
+    foreach (range(1, 240) as $attempt) {
+        $this->actingAs($user)->getJson(route('api.user'))->assertOk();
+    }
+
+    $this->actingAs($user)->getJson(route('api.user'))->assertTooManyRequests();
+    $this->actingAs(User::factory()->create())->getJson(route('api.user'))->assertOk();
+});

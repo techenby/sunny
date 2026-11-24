@@ -28,6 +28,8 @@ class Team extends Model
     /** @use HasFactory<TeamFactory> */
     use GeneratesUniqueTeamSlugs, HasFactory, SoftDeletes;
 
+    public const int MAX_OWNED_PER_USER = 10;
+
     protected static function boot(): void
     {
         parent::boot();
