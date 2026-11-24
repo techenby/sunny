@@ -13,14 +13,13 @@ class MoveItemToTeam
     public function handle(Item $item, Team $team): Item
     {
         DB::transaction(function () use ($item, $team): void {
+            $item->update(['parent_id' => null]);
+
             Item::withTrashed()
-                ->whereIn('id', $item->descendantIds())
+                ->whereIn('id', [$item->id, ...$item->descendantIds()])
                 ->update(['team_id' => $team->id]);
 
-            $item->update([
-                'team_id' => $team->id,
-                'parent_id' => null,
-            ]);
+            $item->setAttribute('team_id', $team->id)->syncOriginalAttribute('team_id');
         });
 
         return $item;

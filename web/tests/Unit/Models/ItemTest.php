@@ -2,6 +2,7 @@
 
 use App\Models\Item;
 use App\Models\ItemPhoto;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
@@ -45,4 +46,11 @@ test('descendants stop at a loop left in the data', function () {
     Item::query()->whereKey($shelf->id)->update(['parent_id' => $bin->id]);
 
     expect($shelf->descendantIds()->sort()->values()->all())->toBe([$shelf->id, $bin->id]);
+});
+
+test('the database refuses a place in another team even when the model is skipped', function () {
+    $item = Item::factory()->create();
+    $elsewhere = Item::factory()->create();
+
+    expect(fn () => Item::query()->whereKey($item->id)->update(['parent_id' => $elsewhere->id]))->toThrow(QueryException::class);
 });

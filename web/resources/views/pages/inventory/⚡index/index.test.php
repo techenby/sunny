@@ -875,6 +875,22 @@ describe('can import items', function () {
     });
 });
 
+test('the item form refuses a place it should not have', function (string $place) {
+    $user = User::factory()->create();
+    $shelf = Item::factory()->for($user->currentTeam)->create(['name' => 'Shelf']);
+    $bin = Item::factory()->for($user->currentTeam)->childOf($shelf)->create(['name' => 'Bin']);
+    $elsewhere = Item::factory()->create(['name' => 'Their safe']);
+
+    Livewire::actingAs($user)
+        ->test('pages::inventory.index')
+        ->call('edit', $shelf->id)
+        ->set('form.parent_id', ['another team' => $elsewhere, 'itself' => $shelf, 'something it holds' => $bin][$place]->id)
+        ->call('save')
+        ->assertHasErrors('form.parent_id');
+
+    expect($shelf->fresh()->parent_id)->toBeNull();
+})->with(['another team', 'itself', 'something it holds']);
+
 describe('bulk update parent', function () {
     test('can bulk update parent for selected items', function () {
         $user = User::factory()->create();
@@ -920,7 +936,7 @@ describe('bulk update parent', function () {
             ->set('selected', [$item->id])
             ->set('bulkParentId', $elsewhere->id)
             ->call('updateParent')
-            ->assertHasErrors('parent_id');
+            ->assertHasErrors('bulkParentId');
 
         expect($item->fresh()->parent_id)->toBeNull();
     });
@@ -934,7 +950,7 @@ describe('bulk update parent', function () {
             ->set('selected', [$item->id])
             ->set('bulkParentId', $item->id)
             ->call('updateParent')
-            ->assertHasErrors('parent_id');
+            ->assertHasErrors('bulkParentId');
 
         expect($item->fresh()->parent_id)->toBeNull();
     });

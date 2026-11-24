@@ -237,7 +237,7 @@ new class extends Component
         $this->validate([
             'selected' => ['required', 'array', 'min:1'],
             'selected.*' => ['integer'],
-            'bulkParentId' => ['nullable', 'integer', 'exists:items,id'],
+            'bulkParentId' => ['nullable', 'integer', Rule::in($this->bulkParentOptions->modelKeys())],
         ]);
 
         $items = Auth::user()->currentTeam->items()
