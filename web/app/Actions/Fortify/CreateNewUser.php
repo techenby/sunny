@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
+use Throwable;
 
 class CreateNewUser implements CreatesNewUsers
 {
@@ -36,15 +37,17 @@ class CreateNewUser implements CreatesNewUsers
 
         $limitKey = 'sign-up:' . request()->ip();
 
-        throw_if(RateLimiter::tooManyAttempts($limitKey, self::ACCOUNTS_PER_NETWORK_PER_DAY), ValidationException::withMessages([
+        throw_if(RateLimiter::hit($limitKey, 86400) > self::ACCOUNTS_PER_NETWORK_PER_DAY, ValidationException::withMessages([
             'email' => [__('Too many accounts have been created from this network today. Please try again tomorrow.')],
         ]));
 
-        $user = $this->createUser($input);
+        try {
+            return $this->createUser($input);
+        } catch (Throwable $exception) {
+            RateLimiter::decrement($limitKey, 86400);
 
-        RateLimiter::hit($limitKey, 86400);
-
-        return $user;
+            throw $exception;
+        }
     }
 
     /** @param  array<string, string>  $input */

@@ -15,8 +15,10 @@ use App\Http\Responses\VerifyEmailResponse;
 use App\Models\TeamInvitation;
 use App\Models\User;
 use App\Support\TwoFactorChallenge;
+use App\Support\VerificationEmailQuota;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\Database\Query\Builder;
+use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
@@ -124,10 +126,15 @@ class FortifyServiceProvider extends ServiceProvider
                 return Limit::none();
             }
 
-            return [
-                Limit::perMinute(6)->by("user:{$user->id}"),
-                Limit::perDay(User::VERIFICATION_EMAILS_PER_DAY)->by("user:{$user->id}:day"),
-            ];
+            if ($request->isMethod('GET')) {
+                return Limit::perMinute(6)->by("verify:{$user->id}");
+            }
+
+            $quota = new VerificationEmailQuota($user, 'request');
+
+            throw_unless($quota->claim(), ThrottleRequestsException::class, 'Too Many Attempts.', null, ['Retry-After' => $quota->availableIn()]);
+
+            return Limit::none();
         });
 
         RateLimiter::for('account-forms', function (Request $request) {

@@ -193,3 +193,29 @@ test('cancelling an invitation does not give the sender another one', function (
 
     Notification::assertSentTimes(TeamInvitationNotification::class, 10);
 });
+
+test('the last invitation someone may send this hour cannot be claimed twice at once', function () {
+    $invite = fn (string $name) => $this->actingAs($this->luffy)
+        ->postJson(route('api.teams.invitations.store', $this->crew), ['email' => "{$name}@strawhat.pirates", 'role' => 'member']);
+
+    foreach (range(1, 9) as $number) {
+        $invite("recruit{$number}")->assertCreated();
+    }
+
+    $racer = null;
+
+    TeamInvitation::creating(function (TeamInvitation $invitation) use ($invite, &$racer): void {
+        if ($invitation->email === 'last@strawhat.pirates') {
+            $racer = $invite('racer');
+        }
+    });
+
+    $invite('last')->assertCreated();
+
+    $racer->assertUnprocessable()->assertJsonPath('errors.email.0', 'You’ve sent a lot of invitations. Try again in an hour.');
+
+    expect($this->crew->invitations()->pluck('email')->all())->toContain('last@strawhat.pirates')->not->toContain('racer@strawhat.pirates')
+        ->and($this->crew->invitations()->count())->toBe(10);
+
+    Notification::assertSentTimes(TeamInvitationNotification::class, 10);
+});

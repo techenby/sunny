@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class InviteTeamMember
 {
@@ -23,23 +24,27 @@ class InviteTeamMember
 
     public function handle(Team $team, User $inviter, string $email, TeamRole $role): TeamInvitation
     {
-        $this->ensureInviterIsWithinLimits($inviter);
+        $this->reserveInvitation($inviter);
 
-        $invitation = DB::transaction(function () use ($team, $inviter, $email, $role) {
-            $team->invitations()
-                ->whereRaw('LOWER(email) = ?', [Str::lower($email)])
-                ->delete();
+        try {
+            $invitation = DB::transaction(function () use ($team, $inviter, $email, $role) {
+                $team->invitations()
+                    ->whereRaw('LOWER(email) = ?', [Str::lower($email)])
+                    ->delete();
 
-            return $team->invitations()->create([
-                'email' => $email,
-                'role' => $role,
-                'invited_by' => $inviter->id,
-                'expires_at' => now()->addDays(3),
-            ]);
-        });
+                return $team->invitations()->create([
+                    'email' => $email,
+                    'role' => $role,
+                    'invited_by' => $inviter->id,
+                    'expires_at' => now()->addDays(3),
+                ]);
+            });
+        } catch (Throwable $exception) {
+            RateLimiter::decrement($this->hourKey($inviter), 3600);
+            RateLimiter::decrement($this->dayKey($inviter), 86400);
 
-        RateLimiter::hit($this->hourKey($inviter), 3600);
-        RateLimiter::hit($this->dayKey($inviter), 86400);
+            throw $exception;
+        }
 
         Notification::route('mail', $invitation->email)
             ->notify(new TeamInvitationNotification($invitation));
@@ -47,15 +52,15 @@ class InviteTeamMember
         return $invitation;
     }
 
-    private function ensureInviterIsWithinLimits(User $inviter): void
+    private function reserveInvitation(User $inviter): void
     {
-        $message = match (true) {
-            RateLimiter::tooManyAttempts($this->dayKey($inviter), self::PER_DAY) => __('You’ve sent a lot of invitations today. Try again tomorrow.'),
-            RateLimiter::tooManyAttempts($this->hourKey($inviter), self::PER_HOUR) => __('You’ve sent a lot of invitations. Try again in an hour.'),
-            default => null,
-        };
+        throw_if(RateLimiter::hit($this->hourKey($inviter), 3600) > self::PER_HOUR, ValidationException::withMessages([
+            'email' => [__('You’ve sent a lot of invitations. Try again in an hour.')],
+        ]));
 
-        throw_if($message !== null, ValidationException::withMessages(['email' => [$message]]));
+        throw_if(RateLimiter::hit($this->dayKey($inviter), 86400) > self::PER_DAY, ValidationException::withMessages([
+            'email' => [__('You’ve sent a lot of invitations today. Try again tomorrow.')],
+        ]));
     }
 
     private function hourKey(User $inviter): string

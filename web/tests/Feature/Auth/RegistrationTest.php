@@ -209,3 +209,36 @@ test('one network can only create so many accounts in a day', function () {
 
     expect($register(11)->email)->toBe('pirate11@example.com');
 });
+
+test('the last account a network may create today cannot be claimed twice at once', function () {
+    $register = fn (string $name): User => resolve(CreateNewUser::class)->create([
+        'name' => $name,
+        'email' => "{$name}@example.com",
+        'password' => 'password',
+        'password_confirmation' => 'password',
+    ]);
+
+    foreach (range(1, CreateNewUser::ACCOUNTS_PER_NETWORK_PER_DAY - 1) as $number) {
+        $register("pirate{$number}");
+    }
+
+    $refused = null;
+
+    User::creating(function (User $user) use ($register, &$refused): void {
+        if ($user->email !== 'last@example.com') {
+            return;
+        }
+
+        try {
+            $register('racer');
+        } catch (ValidationException $exception) {
+            $refused = $exception;
+        }
+    });
+
+    $register('last');
+
+    expect($refused?->errors()['email'][0])->toStartWith('Too many accounts have been created from this network today.')
+        ->and(User::where('email', 'last@example.com')->exists())->toBeTrue()
+        ->and(User::where('email', 'racer@example.com')->exists())->toBeFalse();
+});

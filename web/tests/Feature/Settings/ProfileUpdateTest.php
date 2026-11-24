@@ -173,3 +173,27 @@ test('resends from the profile page are capped for the day', function () {
 
     Notification::assertSentToTimes($user, VerifyEmail::class, User::VERIFICATION_EMAILS_PER_DAY);
 });
+
+test('the profile page, the app and the verify page share one daily count', function () {
+    Notification::fake();
+    $user = User::factory()->unverified()->create();
+    $token = $user->createToken('iPhone')->plainTextToken;
+    $page = Livewire::actingAs($user)->test('pages::settings.profile');
+
+    foreach (range(1, User::VERIFICATION_EMAILS_PER_DAY / 2) as $attempt) {
+        $this->withToken($token)->postJson(route('api.user.verification.send'))->assertAccepted();
+        $page->call('resendVerificationNotification');
+        $this->travel(11)->seconds();
+    }
+
+    $this->travel(2)->minutes();
+
+    $this->withToken($token)->postJson(route('api.user.verification.send'))->assertTooManyRequests();
+
+    $page->call('resendVerificationNotification')
+        ->assertDispatched('toast-show', fn (string $event, array $params): bool => ($params['slots']['text'] ?? '') === 'Too many verification emails today. Try again tomorrow.');
+
+    $this->actingAs($user, 'web')->post(route('verification.send'))->assertTooManyRequests();
+
+    Notification::assertSentToTimes($user, VerifyEmail::class, User::VERIFICATION_EMAILS_PER_DAY);
+});
