@@ -6,6 +6,7 @@ use App\Models\Recipe;
 use App\Models\Routine;
 use App\Models\RoutineStep;
 use App\Models\Team;
+use App\Models\TeamInvitation;
 use App\Models\User;
 
 test('the database seeder builds the Strawhat Pirates household', function () {
@@ -31,5 +32,6 @@ test('the database seeder builds the Strawhat Pirates household', function () {
         ->and(Checklist::count())->toBeGreaterThan(0)
         ->and(Routine::count())->toBeGreaterThan(0)
         ->and(ChecklistItem::where('position', 0)->count())->toBe(0)
-        ->and(RoutineStep::where('position', 0)->count())->toBe(0);
+        ->and(RoutineStep::where('position', 0)->count())->toBe(0)
+        ->and(TeamInvitation::whereNull('code')->count())->toBe(0);
 });

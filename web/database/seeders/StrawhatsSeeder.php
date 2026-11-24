@@ -118,6 +118,7 @@ class StrawhatsSeeder extends Seeder
         $this->seedBaratie($crew);
 
         TeamInvitation::factory()->for($strawhats)->create([
+            'code' => Str::random(64),
             'email' => 'vivi@alabasta.kingdom',
             'invited_by' => $nami->id,
             'expires_at' => now()->addDays(3),
