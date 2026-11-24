@@ -21,6 +21,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Contracts\LoginResponse as LoginResponseContract;
 use Laravel\Fortify\Contracts\RegisterResponse as RegisterResponseContract;
 use Laravel\Fortify\Contracts\TwoFactorLoginResponse as TwoFactorLoginResponseContract;
@@ -28,6 +29,7 @@ use Laravel\Fortify\Contracts\VerifyEmailResponse as VerifyEmailResponseContract
 use Laravel\Fortify\Fortify;
 use Laravel\Head\Facades\Head;
 use Laravel\Passkeys\Contracts\PasskeyLoginResponse as PasskeyLoginResponseContract;
+use Symfony\Component\HttpFoundation\Response;
 
 class FortifyServiceProvider extends ServiceProvider
 {
@@ -126,6 +128,14 @@ class FortifyServiceProvider extends ServiceProvider
                 Limit::perMinute(6)->by("user:{$user->id}"),
                 Limit::perDay(User::VERIFICATION_EMAILS_PER_DAY)->by("user:{$user->id}:day"),
             ];
+        });
+
+        RateLimiter::for('account-forms', function (Request $request) {
+            return Limit::perMinute(6)
+                ->by($request->route()->getName() . '|' . $request->ip())
+                ->response(fn (Request $request, array $headers) => throw ValidationException::withMessages([
+                    'email' => [__('Too many attempts. Please try again in :seconds seconds.', ['seconds' => $headers['Retry-After']])],
+                ])->status(Response::HTTP_TOO_MANY_REQUESTS));
         });
 
         RateLimiter::for('api', function (Request $request) {

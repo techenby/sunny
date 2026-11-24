@@ -6,6 +6,7 @@ namespace App\Livewire\Forms\Inventory;
 
 use App\Actions\Inventory\CreateItem;
 use App\Actions\Inventory\UpdateItem;
+use App\Actions\Photos\CreateThumbnail;
 use App\Enums\ItemType;
 use App\Models\Item;
 use Illuminate\Support\Facades\Auth;
@@ -85,7 +86,7 @@ class ItemForm extends Form
             'metadata' => ['nullable', 'array'],
             'metadata.*.key' => ['nullable', 'string', 'max:255', 'distinct'],
             'metadata.*.value' => ['required_with:metadata.*.key', 'nullable', 'string', 'max:255'],
-            'photo' => ['nullable', 'image', 'max:5120'],
+            'photo' => ['nullable', 'image', 'max:5120', CreateThumbnail::DIMENSIONS_RULE],
         ];
     }
 }

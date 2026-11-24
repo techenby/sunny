@@ -17,11 +17,17 @@ test('screens that were never paired are cleared out a day after their code expi
     $waiting = KioskDevice::factory()->pending()->create();
     $paired = KioskDevice::factory()->paired()->create(['expires_at' => now()->subDays(2)]);
 
-    collect(resolve(Schedule::class)->events())
-        ->first(fn (Event $event): bool => $event->description === 'Delete kiosk screens that were never paired')
-        ->run(app());
+    $this->artisan('model:prune')->assertSuccessful();
 
     expect($stale->fresh())->toBeNull()
         ->and($waiting->fresh())->not->toBeNull()
         ->and($paired->fresh())->not->toBeNull();
+});
+
+test('the cleanup of expired invitations and unpaired screens is scheduled daily', function () {
+    $event = collect(resolve(Schedule::class)->events())
+        ->first(fn (Event $event): bool => str_contains((string) $event->command, 'model:prune'));
+
+    expect($event)->not->toBeNull()
+        ->and($event->expression)->toBe('0 0 * * *');
 });

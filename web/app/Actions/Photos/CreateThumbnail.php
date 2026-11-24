@@ -14,6 +14,8 @@ class CreateThumbnail
 
     public const int MAX_PIXELS = 50_000_000;
 
+    public const string DIMENSIONS_RULE = 'dimensions:max_width=10000,max_height=10000';
+
     public function handle(string $photoPath): ?string
     {
         $contents = Storage::get($photoPath);

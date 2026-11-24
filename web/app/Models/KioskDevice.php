@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\MassPrunable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -28,6 +29,7 @@ class KioskDevice extends Model
 {
     /** @use HasFactory<KioskDeviceFactory> */
     use HasFactory;
+    use MassPrunable;
 
     public const COOKIE_NAME = 'kiosk_device_uuid';
 
@@ -46,6 +48,12 @@ class KioskDevice extends Model
         }
 
         return $code;
+    }
+
+    /** @return Builder<static> */
+    public function prunable(): Builder
+    {
+        return static::query()->whereNull('paired_at')->where('expires_at', '<', now()->subDay());
     }
 
     /** @return BelongsTo<User, $this> */

@@ -238,3 +238,17 @@ test('photos of another team or another item are out of reach', function () {
     expect($otherItemPhoto->fresh())->not->toBeNull()
         ->and($otherTeamPhoto->fresh())->not->toBeNull();
 });
+
+test('store refuses a photo wider or taller than any camera makes', function () {
+    Storage::fake();
+    $user = User::factory()->create();
+    $item = Item::factory()->for($user->currentTeam)->create();
+
+    $this->actingAs($user)
+        ->postJson(route('api.items.photos.store', [$user->currentTeam, $item]), ['photo' => UploadedFile::fake()->image('wide.png', 10001, 10)])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('photo');
+
+    expect($item->photos()->count())->toBe(0);
+    expect(Storage::allFiles())->toBe([]);
+});

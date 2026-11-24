@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\Photos\CreateThumbnail;
 use App\Actions\Inventory\AddItemPhoto;
 use App\Actions\Inventory\DuplicateItem;
 use App\Actions\Inventory\GenerateItemQrCode;
@@ -158,7 +159,7 @@ new class extends Component
 
         $this->validate([
             'newPhotos' => ['array', 'max:' . max(0, $remaining)],
-            'newPhotos.*' => ['image', 'max:10240'],
+            'newPhotos.*' => ['image', 'max:10240', CreateThumbnail::DIMENSIONS_RULE],
         ], [
             'newPhotos.max' => __('An item can have up to :count photos.', ['count' => ItemPhoto::MAX_PER_ITEM]),
         ]);
