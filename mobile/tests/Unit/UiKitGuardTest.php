@@ -150,6 +150,16 @@ function sheetViolations(string $view, string $source, array $chevronExceptions 
             $violations[] = "{$where}: a sheet starts with one <x-ui.sheet-header> (the x in a glass circle and the centred title), not a header written by hand.";
         } elseif ($dismiss !== null && preg_match('/(?<![\w:-])close="'.preg_quote($dismiss, '/').'"/', $headers[0][1]) !== 1) {
             $violations[] = "{$where}: the header’s x does what swiping down does. Give <x-ui.sheet-header> close=\"{$dismiss}\".";
+        } else {
+            $before = substr($body, 0, strpos($body, '<x-ui.sheet-header'));
+            $before = preg_replace('/@php\b(?!\s*\().*?@endphp/s', '', $before);
+            $before = preg_replace('/@\w+(?:\s*\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))?/', '', $before);
+
+            preg_match_all('/<(?:native:)?([a-z][\w.:-]*)/', $before, $earlier);
+
+            if ($earlier[1] !== ['column']) {
+                $violations[] = "{$where}: <x-ui.sheet-header> is the first thing in the sheet’s one column. It paints the sheet’s colour behind everything after it, so anything before it is drawn over.";
+            }
         }
 
         if (preg_match('/(?<!::)\bCancel\b/', $body) === 1) {
@@ -419,48 +429,52 @@ it('catches a sheet that leaves the template', function (string $sheet, string $
         '<native:bottom-sheet ref="example-sheet" :visible="$open" @dismiss="close" detents="fit"><row><text font="semibold" class="text-center">Rename</text></row></native:bottom-sheet>',
         'starts with one <x-ui.sheet-header>',
     ],
+    'a header that is not first' => [
+        '<native:bottom-sheet ref="example-sheet" :visible="$open" @dismiss="close" detents="fit"><column class="w-full"><x-ui.text>Rename</x-ui.text><x-ui.sheet-header title="Rename" close="close" /></column></native:bottom-sheet>',
+        'the first thing in the sheet’s one column',
+    ],
     'the word Cancel' => [
-        '<native:bottom-sheet ref="example-sheet" :visible="$open" @dismiss="close" detents="fit"><x-ui.sheet-header title="Rename" close="close" /><x-ui.button variant="text" tap="keep">Cancel</x-ui.button></native:bottom-sheet>',
+        '<native:bottom-sheet ref="example-sheet" :visible="$open" @dismiss="close" detents="fit"><column class="w-full"><x-ui.sheet-header title="Rename" close="close" /><x-ui.button variant="text" tap="keep">Cancel</x-ui.button></column></native:bottom-sheet>',
         'no “Cancel” on a sheet',
     ],
     'a Done button' => [
-        '<native:bottom-sheet ref="example-sheet" :visible="$open" @dismiss="close" detents="fit"><x-ui.sheet-header title="Member" close="close" /><x-ui.button variant="text" tap="close">Done</x-ui.button></native:bottom-sheet>',
+        '<native:bottom-sheet ref="example-sheet" :visible="$open" @dismiss="close" detents="fit"><column class="w-full"><x-ui.sheet-header title="Member" close="close" /><x-ui.button variant="text" tap="close">Done</x-ui.button></column></native:bottom-sheet>',
         'only the x in <x-ui.sheet-header> closes a sheet',
     ],
     'an x that does something else' => [
-        '<native:bottom-sheet ref="example-sheet" :visible="$open" @dismiss="close" detents="fit"><x-ui.sheet-header title="Rename" close="reset" /></native:bottom-sheet>',
+        '<native:bottom-sheet ref="example-sheet" :visible="$open" @dismiss="close" detents="fit"><column class="w-full"><x-ui.sheet-header title="Rename" close="reset" /></column></native:bottom-sheet>',
         'close="close"',
     ],
     'a Primary button written by hand' => [
-        '<native:bottom-sheet ref="example-sheet" :visible="$open" @dismiss="close" detents="fit"><x-ui.sheet-header title="Rename" close="close" /><x-ui.button ref="save" class="w-full" tap="save">Save</x-ui.button></native:bottom-sheet>',
+        '<native:bottom-sheet ref="example-sheet" :visible="$open" @dismiss="close" detents="fit"><column class="w-full"><x-ui.sheet-header title="Rename" close="close" /><x-ui.button ref="save" class="w-full" tap="save">Save</x-ui.button></column></native:bottom-sheet>',
         'Use <x-ui.sheet-confirm>',
     ],
     'two confirm buttons' => [
-        '<native:bottom-sheet ref="example-sheet" :visible="$open" @dismiss="close" detents="fit"><x-ui.sheet-header title="Share" close="close" /><x-ui.sheet-confirm tap="send">Send</x-ui.sheet-confirm><x-ui.sheet-confirm tap="retry">Try again</x-ui.sheet-confirm></native:bottom-sheet>',
+        '<native:bottom-sheet ref="example-sheet" :visible="$open" @dismiss="close" detents="fit"><column class="w-full"><x-ui.sheet-header title="Share" close="close" /><x-ui.sheet-confirm tap="send">Send</x-ui.sheet-confirm><x-ui.sheet-confirm tap="retry">Try again</x-ui.sheet-confirm></column></native:bottom-sheet>',
         'one <x-ui.sheet-confirm> at most',
     ],
     'a confirm button dimmed until something changes' => [
-        '<native:bottom-sheet ref="example-sheet" :visible="$open" @dismiss="close" detents="fit"><x-ui.sheet-header title="Rename" close="close" /><x-ui.sheet-confirm :disabled="$name === $old" tap="save">Save</x-ui.sheet-confirm></native:bottom-sheet>',
+        '<native:bottom-sheet ref="example-sheet" :visible="$open" @dismiss="close" detents="fit"><column class="w-full"><x-ui.sheet-header title="Rename" close="close" /><x-ui.sheet-confirm :disabled="$name === $old" tap="save">Save</x-ui.sheet-confirm></column></native:bottom-sheet>',
         'Use loading, not disabled',
     ],
     'a delete confirmed in the sheet' => [
-        '<native:bottom-sheet ref="example-sheet" :visible="$open" @dismiss="close" detents="fit"><x-ui.sheet-header title="Member" close="close" /><x-ui.button variant="destructive" tap="remove">Remove Sam</x-ui.button></native:bottom-sheet>',
+        '<native:bottom-sheet ref="example-sheet" :visible="$open" @dismiss="close" detents="fit"><column class="w-full"><x-ui.sheet-header title="Member" close="close" /><x-ui.button variant="destructive" tap="remove">Remove Sam</x-ui.button></column></native:bottom-sheet>',
         'confirmed with the system alert',
     ],
     'a half-height sheet' => [
-        '<native:bottom-sheet ref="example-sheet" :visible="$open" @dismiss="close" detents="medium"><x-ui.sheet-header title="Rename" close="close" /></native:bottom-sheet>',
+        '<native:bottom-sheet ref="example-sheet" :visible="$open" @dismiss="close" detents="medium"><column class="w-full"><x-ui.sheet-header title="Rename" close="close" /></column></native:bottom-sheet>',
         'as tall as its content',
     ],
     'a full-height sheet with no search field' => [
-        '<native:bottom-sheet ref="example-sheet" :visible="$open" @dismiss="close" detents="large"><x-ui.sheet-header title="Rename" close="close" /></native:bottom-sheet>',
+        '<native:bottom-sheet ref="example-sheet" :visible="$open" @dismiss="close" detents="large"><column class="w-full"><x-ui.sheet-header title="Rename" close="close" /></column></native:bottom-sheet>',
         'only for a long list with a search field',
     ],
     'a chevron on a row that opens nothing deeper' => [
-        '<native:bottom-sheet ref="example-sheet" :visible="$open" @dismiss="close" detents="fit"><x-ui.sheet-header title="Timezone" close="close" /><icon :ios="Ios::ChevronRight" :android="Android::ChevronRight" /></native:bottom-sheet>',
+        '<native:bottom-sheet ref="example-sheet" :visible="$open" @dismiss="close" detents="fit"><column class="w-full"><x-ui.sheet-header title="Timezone" close="close" /><icon :ios="Ios::ChevronRight" :android="Android::ChevronRight" /></column></native:bottom-sheet>',
         'opens a deeper level inside the same sheet',
     ],
     'no way to swipe it closed' => [
-        '<native:bottom-sheet ref="example-sheet" :visible="$open" detents="fit"><x-ui.sheet-header title="Rename" close="close" /></native:bottom-sheet>',
+        '<native:bottom-sheet ref="example-sheet" :visible="$open" detents="fit"><column class="w-full"><x-ui.sheet-header title="Rename" close="close" /></column></native:bottom-sheet>',
         'Give it @dismiss',
     ],
 ]);

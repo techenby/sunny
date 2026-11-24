@@ -53,7 +53,8 @@ it('gives every sheet the one header, height and confirm button', function (stri
 
     $sheet = sheetNode($screen->tree(), $sheetRef);
     $root = $sheet['children'][0];
-    $header = $root['children'][0];
+    $backdrop = $root['children'][0];
+    $header = $root['children'][1];
     $nodes = sheetNodes($sheet);
     $texts = array_values(array_filter(array_map(fn (array $node): ?string => $node['type'] === 'text' ? $node['props']['text'] : null, $nodes)));
     $primaryButtons = array_values(array_filter($nodes, fn (array $node): bool => in_array($node['type'], ['pressable', 'column'], true)
@@ -65,6 +66,9 @@ it('gives every sheet the one header, height and confirm button', function (stri
         ->and($sheet['props']['detents'])->toBe($detents)
         ->and($sheet['children'])->toHaveCount(1)
         ->and($root['style']['bg_color'])->toBe(theme('background'))
+        ->and($backdrop['layout']['position_type'])->toBe(1)
+        ->and($backdrop['layout']['position'])->toEqual([0, 0, -1000, 0])
+        ->and($backdrop['style']['bg_color'])->toBe(theme('background'))
         ->and(array_column($header['children'], 'type'))->toBe(['pressable', 'text', 'column'])
         ->and($header['children'][0]['ref'])->toBe($closeRef)
         ->and($header['children'][0]['props']['a11y_label'])->toBe('Close')
@@ -83,7 +87,7 @@ it('gives every sheet the one header, height and confirm button', function (stri
         expect($confirm['children'][0]['ref'])->toBe($confirmRef)
             ->and($confirm['children'][0]['type'])->toBe('pressable')
             ->and($confirm['children'][0]['layout']['width'])->toBe('fill')
-            ->and($confirm['layout']['padding'])->toEqual([24, 16, 32, 16]);
+            ->and($confirm['layout']['padding'])->toEqual([24, 16, 8, 16]);
     }
 
     $screen->assertAccessible()->tap($closeRef);

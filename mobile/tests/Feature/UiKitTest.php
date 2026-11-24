@@ -329,8 +329,24 @@ it('heads a sheet with an x in a glass circle at the left of a centred title', f
             && $node['children'][0]['props']['name'] === 'close');
 });
 
+it('paints the sheet’s colour behind and below the content on iOS, so no lighter band shows above the keyboard', function () {
+    $backdrop = fn (array $node): bool => ($node['layout']['position_type'] ?? null) === 1
+        && $node['layout']['position'] == [0, 0, -1000, 0]
+        && $node['layout']['width'] === 'fill'
+        && $node['layout']['height'] === 'fill'
+        && $node['style']['bg_color'] === theme('background')
+        && ! isset($node['children']);
+
+    Native::test(UiKitScreen::class, platform: 'ios')
+        ->assertElement('column', fn (array $node): bool => refNode('screen')($node)
+            && collect($node['children'])->search($backdrop) === collect($node['children'])->search(fn (array $child): bool => refNode('sheet-close')($child['children'][0] ?? [])) - 1);
+
+    Native::test(UiKitScreen::class, platform: 'android')->assertMissingElement('column', $backdrop);
+    Native::test(UiKitScreen::class)->assertMissingElement('column', $backdrop);
+});
+
 it('confirms a sheet with one full-width primary button that is unavailable only while saving', function () {
-    $confirm = fn (string $ref): Closure => fn (array $node): bool => $node['layout']['padding'] == [24, 16, 32, 16]
+    $confirm = fn (string $ref): Closure => fn (array $node): bool => $node['layout']['padding'] == [24, 16, 24, 16]
         && refNode($ref)($node['children'][0])
         && $node['children'][0]['layout']['width'] === 'fill';
 
@@ -354,4 +370,8 @@ it('confirms a sheet with one full-width primary button that is unavailable only
         && $node['props']['a11y_label'] === 'Save, unavailable'
         && array_column($node['children'][0]['children'], 'type') === ['activity_indicator', 'text'])
         ->assertMissingElement('pressable', refNode('sheet-confirm-saving'));
+
+    Native::test(UiKitScreen::class, platform: 'ios')
+        ->assertElement('column', fn (array $node): bool => refNode('sheet-confirm')($node['children'][0] ?? [])
+            && $node['layout']['padding'] == [24, 16, 8, 16]);
 });

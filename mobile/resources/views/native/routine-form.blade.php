@@ -114,7 +114,7 @@
     @if ($showStartsOnPicker)
         <column class="w-full bg-theme-background">
             <x-ui.sheet-header ref="{{ $formRef }}-starts-on-close" title="Starts on" close="closeStartsOnPicker" />
-            <column class="w-full px-4 pb-4">
+            <column class="w-full px-4 pb-4 ios:pb-2">
                 <date-picker
                     ref="{{ $formRef }}-starts-on-calendar"
                     label="Starts on"
