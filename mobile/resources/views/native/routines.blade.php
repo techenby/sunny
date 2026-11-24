@@ -17,18 +17,19 @@
         @if ($this->routines)
             <column class="{{ Card::classes() }} w-full">
                 @foreach ($this->routines as $routine)
-                    @include('native.owned-row', [
-                        'ref' => 'all-routines-'.$routine['id'],
-                        'url' => '/routines/'.$routine['id'],
-                        'headline' => $routine['name'],
-                        'supporting' => $routine['summary'],
-                        'ios' => $routine['timeOfDay']->iosIcon(),
-                        'android' => $routine['timeOfDay']->androidIcon(),
-                        'iconBackground' => 'theme-primary',
-                        'iconColor' => 'theme-on-primary',
-                        'owner' => $routine['owner'],
-                        'last' => $loop->last,
-                    ])
+                    <x-ui.row
+                        :ref="'all-routines-'.$routine['id']"
+                        :url="'/routines/'.$routine['id']"
+                        :headline="$routine['name']"
+                        :supporting="$routine['summary']"
+                        :ios="$routine['timeOfDay']->iosIcon()"
+                        :android="$routine['timeOfDay']->androidIcon()"
+                        icon-background="theme-primary"
+                        icon-color="theme-on-primary"
+                        :owner="$routine['owner']"
+                        trailing="chevron"
+                        :last="$loop->last"
+                    />
                 @endforeach
             </column>
             <x-ui.text ref="routines-count" size="sm" class="px-1">{{ trans_choice(':count routine|:count routines', count($this->routines)) }}</x-ui.text>

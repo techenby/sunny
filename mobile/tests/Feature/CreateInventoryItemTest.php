@@ -223,12 +223,38 @@ it('lists captured photos and lets one be removed', function () {
             && ($node['props']['src'] ?? null) === '/tmp/front.jpg')
         ->assertElement('image', fn (array $node): bool => ($node['ref'] ?? null) === 'create-item-photo-1'
             && ($node['props']['src'] ?? null) === '/tmp/back.jpg')
-        ->assertSee('Primary')
-        ->assertSee('Make primary')
+        ->assertSee('Main photo')
         ->tap('create-item-photo-0-remove')
         ->assertElement('image', fn (array $node): bool => ($node['ref'] ?? null) === 'create-item-photo-0'
             && ($node['props']['src'] ?? null) === '/tmp/back.jpg')
         ->assertMissingElement('image', fn (array $node): bool => ($node['ref'] ?? null) === 'create-item-photo-1');
+});
+
+it('puts each photo’s actions in one menu, offering only the moves it can make', function () {
+    $menu = function (array $node, string $ref) use (&$menu): ?array {
+        if (($node['ref'] ?? null) === $ref) {
+            return collect($node['children'])->where('type', 'top_bar_action')->map(fn (array $action): array => [$action['props']['label'], $action['props']['destructive'] ?? false])->values()->all();
+        }
+
+        foreach ($node['children'] ?? [] as $child) {
+            if (($found = $menu($child, $ref)) !== null) {
+                return $found;
+            }
+        }
+
+        return null;
+    };
+
+    $tree = Native::visit('/inventory/create')
+        ->emitNative(PhotoTaken::class, ['path' => '/tmp/front.jpg'])
+        ->emitNative(PhotoTaken::class, ['path' => '/tmp/back.jpg'])
+        ->emitNative(PhotoTaken::class, ['path' => '/tmp/scratch.jpg'])
+        ->assertAccessible()
+        ->tree();
+
+    expect($menu($tree, 'create-item-photo-0-more'))->toBe([['Move down', false], ['Delete photo', true]])
+        ->and($menu($tree, 'create-item-photo-1-more'))->toBe([['Make main photo', false], ['Move up', false], ['Move down', false], ['Delete photo', true]])
+        ->and($menu($tree, 'create-item-photo-2-more'))->toBe([['Make main photo', false], ['Move up', false], ['Delete photo', true]]);
 });
 
 it('reorders photos with taps', function () {

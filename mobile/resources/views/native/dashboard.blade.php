@@ -114,7 +114,7 @@
                                 <row class="w-full items-center gap-2">
                                     <icon :ios="Ios::ExclamationmarkTriangleFill" :android="Android::Warning" :size="14" class="text-theme-destructive" />
                                     <text font="medium" class="flex-1 text-sm text-theme-destructive">{{ $warning['feed_name'] }} isn’t showing</text>
-                                    <text font="semibold" class="text-sm text-theme-primary-text">Fix</text>
+                                    <text font="semibold" class="text-sm text-theme-secondary">Fix</text>
                                 </row>
                             </pressable>
                         @endforeach

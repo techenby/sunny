@@ -38,15 +38,7 @@
             @if ($this->searchResults)
                 <column class="{{ Card::classes() }} w-full">
                     @foreach ($this->searchResults as $result)
-                        @include('native.inventory-item-row', [
-                            'item' => $result,
-                            'ref' => 'inventory-result-'.$result['id'],
-                            'from' => null,
-                            'supporting' => $result['where'],
-                        ])
-                        @unless ($loop->last)
-                            <divider class="ml-[72]" />
-                        @endunless
+                        @include('native.inventory-item-row', ['item' => $result, 'ref' => 'inventory-result-'.$result['id'], 'from' => null, 'supporting' => $result['where'], 'last' => $loop->last])
                     @endforeach
                 </column>
             @else
@@ -64,10 +56,7 @@
                     <x-ui.subheading class="px-1">Places in your home</x-ui.subheading>
                     <column class="{{ Card::classes() }} w-full">
                         @foreach ($this->places as $item)
-                            @include('native.inventory-item-row', ['item' => $item, 'ref' => 'inventory-item-'.$item['id'], 'from' => null])
-                            @unless ($loop->last)
-                                <divider class="ml-[72]" />
-                            @endunless
+                            @include('native.inventory-item-row', ['item' => $item, 'ref' => 'inventory-item-'.$item['id'], 'from' => null, 'last' => $loop->last])
                         @endforeach
                     </column>
                 </column>
@@ -78,10 +67,7 @@
                     <x-ui.subheading class="px-1">Not in a place yet</x-ui.subheading>
                     <column class="{{ Card::classes() }} w-full">
                         @foreach ($this->unplaced as $item)
-                            @include('native.inventory-item-row', ['item' => $item, 'ref' => 'inventory-item-'.$item['id'], 'from' => null])
-                            @unless ($loop->last)
-                                <divider class="ml-[72]" />
-                            @endunless
+                            @include('native.inventory-item-row', ['item' => $item, 'ref' => 'inventory-item-'.$item['id'], 'from' => null, 'last' => $loop->last])
                         @endforeach
                     </column>
                     <x-ui.text size="sm" class="px-1">Open one and tap Move to put it away.</x-ui.text>

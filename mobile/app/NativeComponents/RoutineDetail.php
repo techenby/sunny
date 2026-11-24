@@ -35,6 +35,8 @@ class RoutineDetail extends Component
 
     public string $editingName = '';
 
+    public string $stepError = '';
+
     public bool $reordering = false;
 
     /** @var list<int> */
@@ -97,23 +99,42 @@ class RoutineDetail extends Component
         if ($step !== null) {
             $this->editingStepId = $id;
             $this->editingName = $step['name'];
+            $this->stepError = '';
         }
     }
 
-    public function renameStep(string $text = ''): void
+    public function renameStep(?string $text = null): void
     {
-        $name = trim($text !== '' ? $text : $this->editingName);
+        $name = trim($text ?? $this->editingName);
         $step = collect($this->steps)->firstWhere('id', $this->editingStepId);
 
-        if ($step === null || $name === '' || $name === $step['name'] || $this->saveStep(['name' => $name], $step['id'])) {
+        if ($step === null || $name === $step['name']) {
             $this->cancelEdit();
+
+            return;
         }
+
+        if ($name === '') {
+            $this->stepError = 'Give the step a name.';
+
+            return;
+        }
+
+        if ($this->saveStep(['name' => $name], $step['id'])) {
+            $this->cancelEdit();
+
+            return;
+        }
+
+        $this->stepError = $this->error;
+        $this->error = '';
     }
 
     public function cancelEdit(): void
     {
         $this->editingStepId = null;
         $this->editingName = '';
+        $this->stepError = '';
     }
 
     public function removeStep(int $id): void
@@ -167,6 +188,18 @@ class RoutineDetail extends Component
     public function edit(): void
     {
         $this->navigate('/routines/'.$this->routine['id'].'/edit');
+    }
+
+    /**
+     * @param  array{id: int, name: string}  $step
+     * @return list<TopBarAction>
+     */
+    public function stepMenu(array $step): array
+    {
+        return [
+            Menu::item('routine-step-'.$step['id'].'-rename', 'Rename', Ios::Pencil, Android::Edit, 'editStep('.$step['id'].')', 'Rename '.$step['name']),
+            Menu::delete('routine-step-'.$step['id'].'-remove', 'Delete step', 'removeStep('.$step['id'].')', 'Delete '.$step['name']),
+        ];
     }
 
     /**

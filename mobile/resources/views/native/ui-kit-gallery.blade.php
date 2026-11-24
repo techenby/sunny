@@ -126,7 +126,6 @@
                 <x-ui.heading size="xl">heading size="xl"</x-ui.heading>
                 <x-ui.heading size="lg">heading size="lg"</x-ui.heading>
                 <x-ui.heading>heading</x-ui.heading>
-                <x-ui.heading accent>heading accent</x-ui.heading>
                 <x-ui.subheading size="xl">subheading size="xl"</x-ui.subheading>
                 <x-ui.subheading size="lg">subheading size="lg"</x-ui.subheading>
                 <x-ui.subheading>subheading</x-ui.subheading>
@@ -177,7 +176,7 @@
                     <x-ui.badge rounded>rounded</x-ui.badge>
                 </row>
                 <row class="w-full items-center gap-2">
-                    @foreach (['red', 'amber', 'lime', 'sky', 'purple'] as $color)
+                    @foreach (['primary', 'red', 'amber', 'lime', 'sky', 'purple'] as $color)
                         <x-ui.badge :color="$color" size="sm">{{ $color }}</x-ui.badge>
                     @endforeach
                 </row>
@@ -186,7 +185,9 @@
 
         <column ref="ui-kit-alert" class="w-full gap-2">
             <x-ui.subheading class="px-1">x-ui.alert</x-ui.subheading>
-            <x-ui.alert :ios="Ios::WifiSlash" :android="Android::WifiOff" title="title" message="message, with ios and android for the icon." />
+            <x-ui.alert :ios="Ios::CheckmarkCircle" :android="Android::CheckCircle" title="title" message="message, with ios and android for the icon. For information." />
+            <x-ui.alert tone="offline" :ios="Ios::WifiSlash" :android="Android::WifiOff" title="tone offline" message="Neutral: offline is not an error." />
+            <x-ui.alert tone="error" :ios="Ios::ExclamationmarkCircle" :android="Android::ErrorOutline" title="tone error" message="For something that went wrong. Offline and information use the default." />
         </column>
 
         <column ref="ui-kit-offline" class="w-full gap-2">
@@ -209,14 +210,16 @@
             </column>
         </column>
 
-        <column ref="ui-kit-owned-rows" class="w-full gap-2">
-            <x-ui.subheading class="px-1">native.owned-row</x-ui.subheading>
+        <column ref="ui-kit-rows" class="w-full gap-2">
+            <x-ui.subheading class="px-1">x-ui.row</x-ui.subheading>
             <column class="{{ Card::classes() }} w-full">
-                @include('native.owned-row', ['ref' => 'ui-kit-owned-row-tile', 'url' => '/inventory/0', 'headline' => 'tile', 'supporting' => 'A square tile, for things that can have a photo', 'ios' => Ios::ForkKnife, 'android' => Android::Restaurant, 'tile' => true, 'owner' => null, 'last' => false])
-                @include('native.owned-row', ['ref' => 'ui-kit-owned-row-circle', 'url' => '/inventory/0', 'headline' => 'iconBackground', 'supporting' => 'A filled circle, for categories', 'ios' => Ios::ListBullet, 'android' => Android::FormatListBulleted, 'iconBackground' => 'purple-500', 'owner' => ['name' => 'Andy Swick', 'initials' => 'AS'], 'last' => false])
-                @include('native.owned-row', ['ref' => 'ui-kit-owned-row-glyph', 'url' => '/inventory/0', 'headline' => 'Neither', 'supporting' => 'A bare glyph, with an owner who is the whole team', 'ios' => Ios::ChecklistChecked, 'android' => Android::Checklist, 'owner' => ['name' => 'Family', 'initials' => null], 'last' => true])
+                <x-ui.row ref="ui-kit-row-tile" url="/inventory/0" headline="tile" supporting="A square tile, for things that can have a photo" :ios="Ios::ForkKnife" :android="Android::Restaurant" tile trailing="chevron" />
+                <x-ui.row ref="ui-kit-row-circle" url="/inventory/0" headline="icon-background" supporting="A filled circle, for categories" :ios="Ios::ListBullet" :android="Android::FormatListBulleted" icon-background="purple-500" :owner="['name' => 'Andy Swick', 'initials' => 'AS']" trailing="chevron" />
+                <x-ui.row ref="ui-kit-row-number" :number="1" headline="number, with a menu" press-ref="ui-kit-row-number-open" tap="tapped('row number')" :menu="$menu" />
+                <x-ui.row ref="ui-kit-row-photo" photo="https://picsum.photos/id/200/128" alt="A photo" badge="Main photo" :menu="$menu" menu-label="More for the photo" />
+                <x-ui.row ref="ui-kit-row-action" headline="action" supporting="One action keeps one bare icon" :ios="Ios::Envelope" :android="Android::Email" :action="['ref' => 'ui-kit-row-action-x', 'ios' => Ios::Xmark, 'android' => Android::Close, 'label' => 'Remove', 'tap' => 'tapped(\'row action\')']" last />
             </column>
-            <x-ui.text size="sm" class="px-1">Rows open a made-up item, which shows x-ui.not-found.</x-ui.text>
+            <x-ui.text size="sm" class="px-1">The divider starts under the text: past a 40pt icon, a number or a photo. Two or more actions go in :menu; one keeps a bare icon (:action). Rows that open something use a made-up item, which shows x-ui.not-found.</x-ui.text>
         </column>
 
         <column ref="ui-kit-inventory-rows" class="w-full gap-2">
@@ -227,18 +230,82 @@
         </column>
 
         <column ref="ui-kit-settings-rows" class="w-full gap-2">
-            <x-ui.subheading class="px-1">native.settings-row</x-ui.subheading>
+            <x-ui.subheading class="px-1">x-ui.row, settings</x-ui.subheading>
             <column class="{{ Card::classes() }} w-full">
-                @include('native.settings-row', ['ref' => 'ui-kit-settings-row-plain', 'headline' => 'headline only'])
-                @include('native.settings-row', ['ref' => 'ui-kit-settings-row-chevron', 'headline' => "trailing 'chevron'", 'supporting' => 'supporting, with ios and android', 'ios' => Ios::Person, 'android' => Android::Person, 'trailing' => 'chevron', 'tap' => "tapped('settings-row chevron')"])
-                @include('native.settings-row', ['ref' => 'ui-kit-settings-row-external', 'headline' => "trailing 'external'", 'ios' => Ios::HandRaised, 'android' => Android::Policy, 'trailing' => 'external', 'tap' => "tapped('settings-row external')"])
-                @include('native.settings-row', ['ref' => 'ui-kit-settings-row-refresh', 'headline' => "trailing 'refresh'", 'ios' => Ios::Calendar, 'android' => Android::CalendarMonth, 'trailing' => 'refresh', 'tap' => "tapped('settings-row refresh')"])
-                @include('native.settings-row', ['ref' => 'ui-kit-settings-row-check', 'headline' => "trailing 'check'", 'monogram' => 'F', 'trailing' => 'check', 'tap' => "tapped('settings-row check')"])
-                @include('native.settings-row', ['ref' => 'ui-kit-settings-row-trailing-text', 'headline' => 'trailingText', 'ios' => Ios::Person2, 'android' => Android::Group, 'trailingText' => 'Rename', 'tap' => "tapped('settings-row trailingText')"])
-                @include('native.settings-row', ['ref' => 'ui-kit-settings-row-toggle', 'headline' => 'toggle', 'ios' => Ios::Ladybug, 'android' => Android::BugReport, 'toggle' => ['value' => $toggled, 'change' => 'setToggled']])
-                @include('native.settings-row', ['ref' => 'ui-kit-settings-row-primary', 'headline' => "tone 'primary'", 'ios' => Ios::Plus, 'android' => Android::Add, 'tone' => 'primary', 'tap' => "tapped('settings-row primary')"])
-                @include('native.settings-row', ['ref' => 'ui-kit-settings-row-destructive', 'headline' => "tone 'destructive'", 'ios' => Ios::RectanglePortraitAndArrowRight, 'android' => Android::Logout, 'tone' => 'destructive', 'tap' => "tapped('settings-row destructive')"])
-                @include('native.settings-row', ['ref' => 'ui-kit-settings-row-disabled', 'headline' => 'disabled', 'ios' => Ios::Person, 'android' => Android::Person, 'trailing' => 'chevron', 'disabled' => true, 'tap' => "tapped('settings-row disabled')", 'last' => true])
+                <x-ui.row ref="ui-kit-settings-row-plain" headline="headline only" />
+                <x-ui.row
+                    ref="ui-kit-settings-row-chevron"
+                    :headline="'trailing \'chevron\''"
+                    supporting="supporting, with ios and android"
+                    :ios="Ios::Person"
+                    :android="Android::Person"
+                    trailing="chevron"
+                    :tap="'tapped(\'settings-row chevron\')'"
+                />
+                <x-ui.row
+                    ref="ui-kit-settings-row-external"
+                    :headline="'trailing \'external\''"
+                    :ios="Ios::HandRaised"
+                    :android="Android::Policy"
+                    trailing="external"
+                    :tap="'tapped(\'settings-row external\')'"
+                />
+                <x-ui.row
+                    ref="ui-kit-settings-row-refresh"
+                    :headline="'trailing \'refresh\''"
+                    :ios="Ios::Calendar"
+                    :android="Android::CalendarMonth"
+                    trailing="refresh"
+                    :tap="'tapped(\'settings-row refresh\')'"
+                />
+                <x-ui.row
+                    ref="ui-kit-settings-row-check"
+                    :headline="'trailing \'check\''"
+                    monogram="F"
+                    trailing="check"
+                    :tap="'tapped(\'settings-row check\')'"
+                />
+                <x-ui.row
+                    ref="ui-kit-settings-row-trailing-text"
+                    headline="trailingText"
+                    :ios="Ios::Person2"
+                    :android="Android::Group"
+                    trailing-text="Rename"
+                    :tap="'tapped(\'settings-row trailingText\')'"
+                />
+                <x-ui.row
+                    ref="ui-kit-settings-row-toggle"
+                    headline="toggle"
+                    :ios="Ios::Ladybug"
+                    :android="Android::BugReport"
+                    :toggle="['value' => $toggled, 'change' => 'setToggled']"
+                />
+                <x-ui.row
+                    ref="ui-kit-settings-row-primary"
+                    :headline="'tone \'primary\''"
+                    :ios="Ios::Plus"
+                    :android="Android::Add"
+                    tone="add"
+                    :tap="'tapped(\'settings-row primary\')'"
+                />
+                <x-ui.row
+                    ref="ui-kit-settings-row-destructive"
+                    :headline="'tone \'destructive\''"
+                    :ios="Ios::RectanglePortraitAndArrowRight"
+                    :android="Android::Logout"
+                    tone="destructive"
+                    :tap="'tapped(\'settings-row destructive\')'"
+                />
+                <x-ui.row
+                    ref="ui-kit-settings-row-disabled"
+                    headline="disabled"
+                    :ios="Ios::Person"
+                    :android="Android::Person"
+                    trailing="chevron"
+                    disabled
+                    :tap="'tapped(\'settings-row disabled\')'"
+                    last
+                />
             </column>
         </column>
     </column>

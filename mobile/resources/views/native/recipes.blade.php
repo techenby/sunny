@@ -17,18 +17,19 @@
         @if ($this->recipes)
             <column class="{{ Card::classes() }} w-full">
                 @foreach ($this->recipes as $recipe)
-                    @include('native.owned-row', [
-                        'ref' => 'recipe-'.$recipe['id'],
-                        'url' => '/recipes/'.$recipe['id'],
-                        'headline' => $recipe['name'],
-                        'supporting' => $recipe['summary'],
-                        'ios' => Ios::ForkKnife,
-                        'android' => Android::Restaurant,
-                        'tile' => true,
-                        'photo' => $recipe['photo'],
-                        'owner' => null,
-                        'last' => $loop->last,
-                    ])
+                    <x-ui.row
+                        :ref="'recipe-'.$recipe['id']"
+                        :url="'/recipes/'.$recipe['id']"
+                        :headline="$recipe['name']"
+                        :supporting="$recipe['summary']"
+                        :ios="Ios::ForkKnife"
+                        :android="Android::Restaurant"
+                        tile
+                        :src="$recipe['photo']"
+                        :alt="'Photo of '.$recipe['name']"
+                        trailing="chevron"
+                        :last="$loop->last"
+                    />
                 @endforeach
             </column>
             <x-ui.text ref="recipes-count" size="sm" class="px-1">{{ trans_choice(':count recipe|:count recipes', count($this->recipes)) }}</x-ui.text>

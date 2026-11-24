@@ -115,6 +115,7 @@ it('gives every sheet the one header, height and confirm button', function (stri
     'new routine start date' => ['/routines/create', 'tap', 'create-routine-starts-on', 'create-routine-starts-on-picker', 'create-routine-starts-on-close', 'Starts on', 'fit', null],
     'routine start date' => ['/routines/1/edit', 'tap', 'edit-routine-starts-on', 'edit-routine-starts-on-picker', 'edit-routine-starts-on-close', 'Starts on', 'fit', null],
     'edit a list item' => ['/lists/1', 'press', 'editItem(1)', 'list-edit-sheet', 'list-edit-close', 'Edit item', 'fit', 'list-edit-save'],
+    'rename a step' => ['/routines/1', 'press', 'editStep(11)', 'routine-rename-sheet', 'routine-rename-close', 'Rename step', 'fit', 'routine-rename-save'],
 ]);
 
 it('closes on a pick that is a setting, with no button', function () {

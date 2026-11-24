@@ -1,6 +1,5 @@
 @props([
     'size' => 'base',
-    'accent' => false,
     'ref' => null,
     'maxLines' => null,
     'class' => '',
@@ -8,7 +7,7 @@
 
 @php
 $classes = collect([
-    $accent ? 'text-theme-primary-text' : 'text-theme-on-surface',
+    'text-theme-on-surface',
     match ($size) {
         '2xl' => 'text-4xl',
         'xl' => 'text-2xl',
