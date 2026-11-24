@@ -58,7 +58,12 @@ LOADED = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
 
 
 def sh(args, cwd=None, check=True, capture=True, timeout=None, env=None):
-    result = subprocess.run(args, cwd=cwd, capture_output=capture, text=True, timeout=timeout, env=env)
+    for attempt in range(4):
+        result = subprocess.run(args, cwd=cwd, capture_output=capture, text=True, timeout=timeout, env=env)
+        flaky = args[0] == 'axe' and 'remote automation session' in (result.stderr or '') + (result.stdout or '')
+        if not flaky or attempt == 3:
+            break
+        time.sleep(5)
     if check and result.returncode != 0:
         raise RuntimeError(f'{" ".join(map(str, args))} failed: {(result.stderr or result.stdout or "").strip()[-800:]}')
     return result.stdout if capture else ''
