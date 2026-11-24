@@ -817,64 +817,6 @@ describe('can manage item photos', function () {
     });
 });
 
-describe('can import items', function () {
-    test('can import items from amazon csv', function () {
-        $user = User::factory()->create();
-
-        Livewire::actingAs($user)
-            ->test('pages::inventory.index')
-            ->set('importForm.file', amazonFixtureUpload())
-            ->call('import')
-            ->assertHasNoErrors();
-
-        expect($user->currentTeam->items)->toHaveCount(5);
-    });
-
-    test('import assigns items to the current parent', function () {
-        $user = User::factory()->create();
-        $parent = Item::factory()->for($user->currentTeam)->location()->create(['name' => 'Office']);
-
-        Livewire::actingAs($user)
-            ->test('pages::inventory.index')
-            ->set('parentId', $parent->id)
-            ->set('importForm.file', amazonFixtureUpload())
-            ->call('import')
-            ->assertHasNoErrors();
-
-        expect($user->currentTeam->items()->where('parent_id', $parent->id)->count())->toBe(5);
-    });
-
-    test('import resets file after completion', function () {
-        $user = User::factory()->create();
-
-        Livewire::actingAs($user)
-            ->test('pages::inventory.index')
-            ->set('importForm.file', amazonFixtureUpload())
-            ->call('import')
-            ->assertSet('importForm.file', null);
-    });
-
-    test('import requires a file', function () {
-        $user = User::factory()->create();
-
-        Livewire::actingAs($user)
-            ->test('pages::inventory.index')
-            ->call('import')
-            ->assertHasErrors('importForm.file');
-    });
-
-    test('import rejects non-csv files', function () {
-        $user = User::factory()->create();
-        $file = UploadedFile::fake()->image('photo.png');
-
-        Livewire::actingAs($user)
-            ->test('pages::inventory.index')
-            ->set('importForm.file', $file)
-            ->call('import')
-            ->assertHasErrors('importForm.file');
-    });
-});
-
 test('the item form refuses a place it should not have', function (string $place) {
     $user = User::factory()->create();
     $shelf = Item::factory()->for($user->currentTeam)->create(['name' => 'Shelf']);

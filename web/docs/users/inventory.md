@@ -83,17 +83,3 @@ remove it permanently.
 
 > [!WARNING]
 > **Delete Forever** cannot be undone.
-
-## Import Amazon order history
-
-SunnyHome can turn an Amazon Order History CSV export into inventory items.
-
-1. Navigate to the location or bin where the imported items should be placed.
-2. Open the menu beside **Add Item** and select **Import**.
-3. Upload the Amazon Order History CSV or TXT file.
-4. Optionally filter out gifts, consumables, or orders outside a date range.
-5. Select **Import**.
-
-Imported entries include the purchase amount, ASIN, order date, and Amazon
-website as metadata when those values are present in the export. SunnyHome reports
-how many rows were imported and skipped.

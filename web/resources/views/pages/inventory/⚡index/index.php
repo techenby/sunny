@@ -6,7 +6,6 @@ use App\Actions\Inventory\GenerateItemQrCode;
 use App\Actions\Inventory\MoveItemToTeam;
 use App\Actions\Inventory\RestoreItem;
 use App\Enums\ItemType;
-use App\Livewire\Forms\Inventory\ImportItemsForm;
 use App\Livewire\Forms\Inventory\ItemForm;
 use App\Livewire\Traits\WithSearching;
 use App\Livewire\Traits\WithSorting;
@@ -34,8 +33,6 @@ new class extends Component
     use WithSorting;
 
     public ItemForm $form;
-    public ImportItemsForm $importForm;
-
     public ?int $moveItemId = null;
 
     public ?int $moveToTeamId = null;
@@ -417,14 +414,6 @@ new class extends Component
 
         $this->form->load($item);
         $this->modal('item-form')->show();
-    }
-
-    public function import(): void
-    {
-        $this->importForm->process($this->parentId);
-
-        unset($this->items, $this->parentItems);
-        $this->modal('import-items')->close();
     }
 
     public function navigateDown(int $id): void
