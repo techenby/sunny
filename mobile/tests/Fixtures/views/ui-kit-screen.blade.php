@@ -5,7 +5,7 @@
 <column ref="screen" class="{{ Card::classes() }} w-full">
     <text ref="before">Before</text>
     <x-ui.heading ref="heading">{{ $name }}</x-ui.heading>
-    <x-ui.heading ref="heading-xl" size="xl" accent>Page title</x-ui.heading>
+    <x-ui.heading ref="heading-xl" size="xl">Page title</x-ui.heading>
     <x-ui.heading ref="heading-destructive" class="text-theme-destructive">Download failed</x-ui.heading>
     <x-ui.subheading ref="subheading">Everything in the garage</x-ui.subheading>
     <x-ui.text ref="text" size="sm" max-lines="1">in Garage</x-ui.text>
@@ -35,5 +35,15 @@
     <x-ui.sheet-header ref="sheet-close" :title="'Rename '.$name" close="save" />
     <x-ui.sheet-confirm ref="sheet-confirm" :ios="Ios::Plus" :android="Android::Add" help="Or tap one above to look inside it" tap="save">Put it in {{ $name }}</x-ui.sheet-confirm>
     <x-ui.sheet-confirm ref="sheet-confirm-saving" :loading="$saves > 2" tap="save">Save</x-ui.sheet-confirm>
+    <x-ui.alert ref="alert-error" tone="error" :ios="Ios::ExclamationmarkCircle" :android="Android::ErrorOutline" title="Couldn’t save" message="Try again in a moment." />
+    <x-ui.badge ref="badge-primary" color="primary" size="sm">Current step</x-ui.badge>
+    <column ref="rows" class="w-full">
+        <x-ui.row ref="row-add" headline="Invite someone" :ios="Ios::PlusCircle" :android="Android::AddCircle" tone="add" tap="save" />
+        <x-ui.row ref="row-circle" headline="Morning" :ios="Ios::SunMax" :android="Android::WbSunny" icon-background="theme-primary" icon-color="theme-on-primary" url="/routines/1" />
+        <x-ui.row ref="row-number" :number="1" headline="Brush teeth" plain press-ref="row-number-open" tap="save" :menu="$menu" />
+        <x-ui.row ref="row-photo" photo="https://example.com/photo.jpg" alt="Photo 1" badge="Main photo" :menu="$menu" menu-ref="row-photo-more" menu-label="More for photo 1" />
+        <x-ui.row ref="row-action" headline="jo@example.com" :action="['ref' => 'row-action-x', 'ios' => Ios::Xmark, 'android' => Android::Close, 'label' => 'Cancel the invitation', 'tap' => 'save']" />
+        <x-ui.row ref="row-rename" :headline="$name" trailing-text="Rename" tap="save" last />
+    </column>
     <text ref="after">After</text>
 </column>

@@ -43,6 +43,9 @@ it('renders kit components in place among their siblings', function () {
                 'empty-state',
                 'field-label',
                 'field-help',
+                'alert-error',
+                'badge-primary',
+                'rows',
                 'after',
             ]);
 });
@@ -56,7 +59,7 @@ it('styles headings like flux headings', function () {
             && $node['props']['color'] === theme('on-surface'))
         ->assertElement('text', fn (array $node): bool => refNode('heading-xl')($node)
             && $node['props']['font_size'] == 24
-            && $node['props']['color'] === theme('primary-text'))
+            && $node['props']['color'] === theme('on-surface'))
         ->assertElement('text', fn (array $node): bool => refNode('heading-destructive')($node)
             && $node['props']['color'] === theme('destructive'));
 });
@@ -374,4 +377,53 @@ it('confirms a sheet with one full-width primary button that is unavailable only
     Native::test(UiKitScreen::class, platform: 'ios')
         ->assertElement('column', fn (array $node): bool => refNode('sheet-confirm')($node['children'][0] ?? [])
             && $node['layout']['padding'] == [24, 16, 0, 16]);
+});
+
+it('colours an alert by what it says: red for an error, neutral for offline', function () {
+    Native::test(UiKitScreen::class)
+        ->assertElement('row', fn (array $node): bool => refNode('alert-error')($node)
+            && $node['children'][0]['props']['color'] === theme('destructive')
+            && $node['children'][1]['children'][0]['props']['color'] === theme('destructive'))
+        ->assertElement('row', fn (array $node): bool => refNode('offline')($node)
+            && $node['style']['bg_color'] === theme('surface-variant')
+            && $node['children'][0]['props']['color'] === theme('on-surface-variant')
+            && $node['children'][1]['children'][0]['props']['color'] === theme('on-surface'));
+});
+
+it('tints a primary badge coral for a selected state', function () {
+    Native::test(UiKitScreen::class)
+        ->assertElement('text', fn (array $node): bool => refNode('badge-primary')($node)
+            && $node['props']['color'] === theme('primary-text'));
+});
+
+it('starts each row’s divider under its text, past whatever leads the row', function () {
+    $rows = collect(Native::test(UiKitScreen::class)->tree()['children'])->firstWhere('ref', 'rows');
+
+    expect(collect($rows['children'])->where('type', 'divider')->map(fn (array $node): int => (int) $node['layout']['margin'][3])->values()->all())
+        ->toBe([72, 72, 52, 96, 16])
+        ->and(collect($rows['children'])->last()['type'])->not->toBe('divider');
+});
+
+it('draws an add row in dark text with a coral icon, and a text action in the secondary colour', function () {
+    Native::test(UiKitScreen::class)
+        ->assertElement('text', fn (array $node): bool => ($node['props']['text'] ?? null) === 'Invite someone' && $node['props']['color'] === theme('on-surface'))
+        ->assertElement('icon', fn (array $node): bool => ($node['props']['color'] ?? null) === theme('primary') && ($node['props']['size'] ?? null) == 22)
+        ->assertElement('text', fn (array $node): bool => refNode('row-rename-trailing')($node) && $node['props']['color'] === theme('secondary'));
+});
+
+it('puts two or more row actions in one menu and keeps a single action as one bare icon', function () {
+    Native::test(UiKitScreen::class)
+        ->assertElement('pressable', fn (array $node): bool => refNode('row-number-more')($node)
+            && collect($node['children'])->contains('type', 'top_bar_action'))
+        ->assertElement('pressable', fn (array $node): bool => refNode('row-photo-more')($node))
+        ->assertElement('pressable', fn (array $node): bool => refNode('row-action-x')($node) && ! isset($node['style']['background_color']))
+        ->tap('row-number-open')
+        ->tap('row-action-x')
+        ->assertSet('saves', 2);
+});
+
+it('draws a filled circle’s icon in the colour it is given', function () {
+    Native::test(UiKitScreen::class)
+        ->assertElement('pressable', fn (array $node): bool => refNode('row-circle')($node)
+            && $node['children'][0]['children'][0]['children'][0]['props']['color'] === theme('on-primary'));
 });

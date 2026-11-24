@@ -645,6 +645,7 @@ it('shows that other days need a connection when offline', function (): void {
         ->tap('previous-day')
         ->assertNavTitle(now()->subDays(2)->format('l'))
         ->assertSee('You’re offline')
+        ->assertElement('column', fn (array $node): bool => ($node['ref'] ?? null) === 'day-unavailable' && $node['style']['bg_color'] === theme('surface-variant'))
         ->assertSee('Your phone only keeps today and tomorrow. Connect to see '.now()->subDays(2)->format('l').'’s routines and tick things off.')
         ->assertSee('Try again')
         ->assertElement('row', dayBarWithToday('pressable'))

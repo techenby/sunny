@@ -287,6 +287,7 @@ describe('Calendar', function (): void {
 
         $screen = Native::visit('/calendar')
             ->assertSee('You’re offline')
+            ->assertElement('column', fn (array $node): bool => ($node['ref'] ?? null) === 'calendar-problem' && $node['style']['bg_color'] === theme('surface-variant'))
             ->assertSee('These are the events from this morning at 7:42, so they may be out of date.')
             ->assertSee('Picture day')
             ->assertDontSee('Updated just now');
@@ -361,6 +362,7 @@ describe('Calendars', function (): void {
 
         Native::visit('/calendar/feeds')
             ->assertSee('You’re offline')
+            ->assertElement('column', fn (array $node): bool => ($node['ref'] ?? null) === 'calendar-feeds-problem' && $node['style']['bg_color'] === theme('surface-variant'))
             ->assertSee('These may be out of date. Try again when you’re connected.')
             ->assertSee('Family')
             ->assertSee('School');

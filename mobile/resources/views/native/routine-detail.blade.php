@@ -91,16 +91,16 @@
                             @endforeach
                         </row>
                         @unless ($loop->last)
-                            <divider class="ml-[52]" />
+                            <x-ui.row-divider leading="number" />
                         @endunless
                     @endforeach
                 </column>
             @elseif ($this->steps)
                 <column class="w-full {{ Card::classes() }}">
                     @foreach ($this->steps as $step)
-                        <row ref="routine-step-{{ $step['id'] }}" class="w-full items-center">
-                            @if ($editingStepId === $step['id'])
-                                <row class="flex-1 items-center gap-3 py-3 pl-4">
+                        @if ($editingStepId === $step['id'])
+                            <row ref="routine-step-{{ $step['id'] }}" class="w-full items-center pr-1">
+                                <row class="min-h-12 flex-1 items-center gap-3 py-2 pl-4">
                                     <text class="w-6 text-center text-sm text-theme-on-surface-variant">{{ $loop->iteration }}</text>
                                     <bare-text-input
                                         ref="routine-step-{{ $step['id'] }}-name"
@@ -120,36 +120,26 @@
                                     a11y-label="Save step"
                                     tap="renameStep"
                                 />
-                            @else
-                                <pressable
-                                    ref="routine-step-{{ $step['id'] }}-edit"
-                                    :a11y-label="'Edit '.$step['name']"
-                                    class="flex-1"
-                                    @tap="editStep({{ $step['id'] }})"
-                                >
-                                    <row class="w-full items-start gap-3 py-3 pl-4">
-                                        <text class="w-6 pt-0.5 text-center text-sm text-theme-on-surface-variant">{{ $loop->iteration }}</text>
-                                        <column class="flex-1 gap-0.5">
-                                            <text class="text-base text-theme-on-surface">{{ $step['name'] }}</text>
-                                            @if ($step['error'])
-                                                <text ref="routine-step-{{ $step['id'] }}-error" class="text-sm text-theme-destructive">Not saved. {{ $step['error'] }}</text>
-                                            @endif
-                                        </column>
-                                    </row>
-                                </pressable>
-                            @endif
-                            <x-ui.button
-                                ref="routine-step-{{ $step['id'] }}-remove"
-                                variant="text"
-                                :ios="Ios::Trash"
-                                :android="Android::Delete"
-                                :a11y-label="'Delete '.$step['name']"
-                                tap="removeStep({{ $step['id'] }})"
+                            </row>
+                            @unless ($loop->last)
+                                <x-ui.row-divider leading="number" />
+                            @endunless
+                        @else
+                            <x-ui.row
+                                :ref="'routine-step-'.$step['id']"
+                                :press-ref="'routine-step-'.$step['id'].'-edit'"
+                                :a11y-label="'Edit '.$step['name']"
+                                :number="$loop->iteration"
+                                :headline="$step['name']"
+                                plain
+                                :error="$step['error'] ? 'Not saved. '.$step['error'] : null"
+                                :error-ref="'routine-step-'.$step['id'].'-error'"
+                                :tap="'editStep('.$step['id'].')'"
+                                :menu="$this->stepMenu($step)"
+                                :menu-label="'More for '.$step['name']"
+                                :last="$loop->last"
                             />
-                        </row>
-                        @unless ($loop->last)
-                            <divider class="ml-[52]" />
-                        @endunless
+                        @endif
                     @endforeach
                 </column>
             @else

@@ -184,8 +184,8 @@
                                 @continue
                             @endif
                             <row ref="step-{{ $instruction['number'] }}" class="w-full items-start gap-3">
-                                <column class="h-7 w-7 items-center justify-center rounded-full bg-theme-primary/15">
-                                    <text font="accent" class="text-sm text-theme-primary-text">{{ $instruction['number'] }}</text>
+                                <column class="h-7 w-7 items-center justify-center rounded-full bg-theme-on-surface-variant/15">
+                                    <text font="semibold" class="text-sm text-theme-on-surface-variant">{{ $instruction['number'] }}</text>
                                 </column>
                                 <text class="flex-1 text-base text-theme-on-surface">{{ $instruction['text'] }}</text>
                             </row>
@@ -315,18 +315,14 @@
 
                     @if ($copyProblem !== null)
                         @php($note = $this->copyNote())
-                        <row ref="recipe-copy-problem" class="w-full items-start gap-2.5 rounded-xl bg-theme-primary/15 p-3.5">
-                            <native:icon
-                                :ios="$copyProblem === 'offline' ? Ios::WifiSlash : Ios::ExclamationmarkCircle"
-                                :android="$copyProblem === 'offline' ? Android::WifiOff : Android::ErrorOutline"
-                                :size="20"
-                                class="text-theme-primary-text"
-                            />
-                            <column class="flex-1 gap-0.5">
-                                <text font="semibold" class="text-base text-theme-primary-text">{{ $note['title'] }}</text>
-                                <text class="text-base text-theme-on-surface">{{ $note['message'] }}</text>
-                            </column>
-                        </row>
+                        <x-ui.alert
+                            ref="recipe-copy-problem"
+                            :tone="match ($copyProblem) { 'offline' => 'offline', 'unsent' => 'info', default => 'error' }"
+                            :ios="$copyProblem === 'offline' ? Ios::WifiSlash : Ios::ExclamationmarkCircle"
+                            :android="$copyProblem === 'offline' ? Android::WifiOff : Android::ErrorOutline"
+                            :title="$note['title']"
+                            :message="$note['message']"
+                        />
                     @endif
 
                 </column>
@@ -422,18 +418,14 @@
 
                     @if ($shareProblem !== null)
                         @php($note = $this->shareNote())
-                        <row ref="recipe-share-problem" class="w-full items-start gap-2.5 rounded-xl bg-theme-primary/15 p-3.5">
-                            <native:icon
-                                :ios="$shareProblem === 'offline' ? Ios::WifiSlash : Ios::ExclamationmarkCircle"
-                                :android="$shareProblem === 'offline' ? Android::WifiOff : Android::ErrorOutline"
-                                :size="20"
-                                class="text-theme-primary-text"
-                            />
-                            <column class="flex-1 gap-0.5">
-                                <text font="semibold" class="text-base text-theme-primary-text">{{ $note['title'] }}</text>
-                                <text class="text-base text-theme-on-surface">{{ $note['message'] }}</text>
-                            </column>
-                        </row>
+                        <x-ui.alert
+                            ref="recipe-share-problem"
+                            :tone="match ($shareProblem) { 'offline' => 'offline', 'unsent' => 'info', default => 'error' }"
+                            :ios="$shareProblem === 'offline' ? Ios::WifiSlash : Ios::ExclamationmarkCircle"
+                            :android="$shareProblem === 'offline' ? Android::WifiOff : Android::ErrorOutline"
+                            :title="$note['title']"
+                            :message="$note['message']"
+                        />
                     @endif
 
                 </column>

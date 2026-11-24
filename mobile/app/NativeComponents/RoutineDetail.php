@@ -170,6 +170,18 @@ class RoutineDetail extends Component
     }
 
     /**
+     * @param  array{id: int, name: string}  $step
+     * @return list<TopBarAction>
+     */
+    public function stepMenu(array $step): array
+    {
+        return [
+            Menu::item('routine-step-'.$step['id'].'-rename', 'Rename', Ios::Pencil, Android::Edit, 'editStep('.$step['id'].')', 'Rename '.$step['name']),
+            Menu::delete('routine-step-'.$step['id'].'-remove', 'Delete step', 'removeStep('.$step['id'].')', 'Delete '.$step['name']),
+        ];
+    }
+
+    /**
      * @return list<TopBarAction>
      */
     public function moreMenu(): array

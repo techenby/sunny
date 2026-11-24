@@ -128,7 +128,7 @@
                                         >
                                             <row class="items-center gap-1">
                                                 <icon :ios="Ios::Link" :android="Android::Link" :size="12" :class="$item['completed'] ? 'text-theme-on-surface-variant' : 'text-theme-primary-text'" />
-                                                <text ref="list-item-{{ $item['id'] }}-domain" font="semibold" max-lines="1" :class="$item['completed'] ? 'text-sm text-theme-on-surface-variant' : 'text-sm text-theme-primary-text'">{{ $item['domain'] }}</text>
+                                                <text ref="list-item-{{ $item['id'] }}-domain" font="semibold" max-lines="1" :class="$item['completed'] ? 'text-sm text-theme-on-surface-variant' : 'text-sm text-theme-secondary'">{{ $item['domain'] }}</text>
                                             </row>
                                         </pressable>
                                     </row>

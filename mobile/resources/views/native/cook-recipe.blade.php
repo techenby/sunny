@@ -197,16 +197,16 @@
                         class="w-full"
                     >
                         <row class="w-full items-start gap-3">
-                            <column class="h-8 w-8 items-center justify-center rounded-full {{ $isCurrent || $isDone ? 'bg-theme-primary' : 'bg-theme-primary/15' }}">
+                            <column class="h-8 w-8 items-center justify-center rounded-full {{ $isCurrent || $isDone ? 'bg-theme-primary' : 'bg-theme-on-surface-variant/15' }}">
                                 @if ($isDone)
                                     <icon :ios="Ios::Checkmark" :android="Android::Check" :size="16" class="text-theme-on-primary" />
                                 @else
-                                    <text font="accent" class="text-sm {{ $isCurrent ? 'text-theme-on-primary' : 'text-theme-primary-text' }}">{{ $number }}</text>
+                                    <text font="semibold" class="text-sm {{ $isCurrent ? 'text-theme-on-primary' : 'text-theme-on-surface-variant' }}">{{ $number }}</text>
                                 @endif
                             </column>
                             <column class="flex-1 gap-2">
                                 @if ($isCurrent)
-                                    <x-ui.badge color="red" size="sm" class="self-start">Current step</x-ui.badge>
+                                    <x-ui.badge color="primary" size="sm" class="self-start">Current step</x-ui.badge>
                                 @endif
                                 <text class="{{ $isCurrent ? 'text-xl text-theme-on-surface' : ($isDone ? 'text-base text-theme-on-surface-variant' : 'text-base text-theme-on-surface') }}">{{ $row['text'] }}</text>
                             </column>

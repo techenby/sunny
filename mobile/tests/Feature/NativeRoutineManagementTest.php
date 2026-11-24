@@ -146,6 +146,28 @@ it('removes a step and queues its deletion', function () {
         ->and(array_column($screen->get('steps'), 'name'))->toBe(['Pajamas']);
 });
 
+it('puts Rename and Delete step in each step’s menu, and renames from it', function () {
+    $menu = function (array $node, string $ref) use (&$menu): ?array {
+        if (($node['ref'] ?? null) === $ref) {
+            return collect($node['children'])->where('type', 'top_bar_action')->map(fn (array $action): array => [$action['props']['label'], $action['props']['destructive'] ?? false])->values()->all();
+        }
+
+        foreach ($node['children'] ?? [] as $child) {
+            if (($found = $menu($child, $ref)) !== null) {
+                return $found;
+            }
+        }
+
+        return null;
+    };
+
+    $screen = Native::visit('/routines/2')->assertAccessible();
+
+    expect($menu($screen->tree(), 'routine-step-22-more'))->toBe([['Rename', false], ['Delete step', true]]);
+
+    $screen->tap('routine-step-22-rename')->assertSet('editingStepId', 22);
+});
+
 it('removes a step that never reached Sunny without queueing anything', function () {
     Native::visit('/routines/2')->submit('routine-new-step', 'Story')->tap('routine-step--1-remove')->assertDontSee('Story');
 
@@ -158,12 +180,12 @@ it('starts and stops reordering a routine’s steps', function () {
         ->tap('routine-reorder')
         ->assertSet('reordering', true)
         ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-step-12-up')
-        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-step-12-remove')
+        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-step-12-more')
         ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-reorder')
         ->assertAccessible()
         ->tap('routine-reorder-done')
         ->assertSet('reordering', false)
-        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-step-12-remove');
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'routine-step-12-more');
 
     expect(PendingWrite::count())->toBe(0);
 });

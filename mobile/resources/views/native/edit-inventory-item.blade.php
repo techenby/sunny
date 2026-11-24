@@ -12,6 +12,7 @@
         'browsedParent' => $this->browsedParent,
         'parentPickerRows' => $this->parentPickerRows,
         'parentTrail' => $this->parentTrail,
+        'photoMenus' => $this->photoMenus('edit-item'),
     ])
 @else
     <x-ui.not-found ref="edit-item-missing" thing="thing" class="ios:bg-theme-grouped-background" />

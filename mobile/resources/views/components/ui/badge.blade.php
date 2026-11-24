@@ -16,6 +16,7 @@ $classes = collect([
     $rounded ? 'rounded-full px-3' : 'rounded-md px-2',
     match ($color) {
         null, 'zinc' => 'text-theme-on-surface bg-theme-on-surface-variant/15 dark:bg-theme-on-surface-variant/40',
+        'primary' => 'text-theme-primary-text bg-theme-primary/15',
         'red', 'orange' => "text-{$color}-700 dark:text-{$color}-200 bg-{$color}-400/20 dark:bg-{$color}-400/40",
         'amber', 'yellow' => "text-{$color}-800 dark:text-{$color}-200 bg-{$color}-400/25 dark:bg-{$color}-400/40",
         'lime' => 'text-lime-800 dark:text-lime-200 bg-lime-400/25 dark:bg-lime-400/40',
