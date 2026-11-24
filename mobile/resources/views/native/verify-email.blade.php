@@ -19,7 +19,7 @@ $busy = $sending || $checking;
 
             <x-ui.text ref="verify-email-intro">Verify your email address to start using your household.</x-ui.text>
 
-            <row ref="verify-email-card" class="{{ Card::classes() }} w-full items-center gap-3 py-3 pr-2 pl-4">
+            <row ref="verify-email-card" class="{{ Card::classes() }} w-full items-center gap-3 px-4 py-3">
                 <column class="h-10 w-10 items-center justify-center rounded-full bg-theme-primary/15">
                     <icon :ios="Ios::Envelope" :android="Android::Email" :size="20" class="text-theme-primary-text" />
                 </column>
