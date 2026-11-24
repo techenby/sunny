@@ -11,6 +11,7 @@ use App\Http\Integrations\Sunny\SunnyTeams;
 use App\Http\Integrations\Sunny\SunnyTokenStore;
 use App\Models\Team;
 use App\Support\InvitationExpiry;
+use App\Support\Offline;
 use App\Support\Toast;
 use Carbon\CarbonImmutable;
 use DateTimeZone;
@@ -22,6 +23,7 @@ use Native\Mobile\Facades\Browser;
 use Native\Mobile\Facades\Device;
 use Native\Mobile\Facades\Dialog;
 use Native\Mobile\Facades\Network;
+use Native\Mobile\Facades\System;
 use RuntimeException;
 use Saloon\Http\Response;
 
@@ -45,11 +47,9 @@ class TeamSettings extends Component
 
     public string $timezoneSearch = '';
 
-    public bool $showWeekStart = false;
-
     public ?int $memberId = null;
 
-    public bool $confirmingRemove = false;
+    public ?int $removalToConfirm = null;
 
     public ?string $invitationsRefreshedAt = null;
 
@@ -181,7 +181,7 @@ class TeamSettings extends Component
     /** @return array{id: int, name: string, initials: string, role: TeamRole}|null */
     public function member(): ?array
     {
-        return collect($this->members())->first(fn (array $member): bool => $member['id'] === $this->memberId && $member['tappable']);
+        return $this->manageableMember($this->memberId);
     }
 
     public function retry(): void
@@ -189,7 +189,7 @@ class TeamSettings extends Component
         $this->offline = Network::status()?->connected === false;
 
         if ($this->offline) {
-            Toast::error('Still offline. Try again once you’re connected.');
+            Toast::error(Offline::message());
 
             return;
         }
@@ -261,22 +261,17 @@ class TeamSettings extends Component
         }
     }
 
-    public function openWeekStart(): void
+    public function pickWeekStart(string $day): void
     {
-        if ($this->canEdit()) {
-            $this->showWeekStart = true;
-        }
-    }
+        $index = array_search($day, self::WEEKDAYS, true);
 
-    public function closeWeekStart(): void
-    {
-        $this->showWeekStart = false;
+        if ($index !== false) {
+            $this->chooseWeekStart($index);
+        }
     }
 
     public function chooseWeekStart(int $day): void
     {
-        $this->showWeekStart = false;
-
         if ($this->canEdit() && array_key_exists($day, self::WEEKDAYS) && $day !== ($this->team()?->week_start ?? 0)) {
             $this->updateTeam(['week_start' => $day]);
         }
@@ -286,14 +281,14 @@ class TeamSettings extends Component
     {
         if (! $this->offline && collect($this->members())->contains(fn (array $member): bool => $member['id'] === $id && $member['tappable'])) {
             $this->memberId = $id;
-            $this->confirmingRemove = false;
+            $this->removalToConfirm = null;
         }
     }
 
     public function closeMember(): void
     {
         $this->memberId = null;
-        $this->confirmingRemove = false;
+        $this->askToRemove();
     }
 
     public function changeRole(string $role): void
@@ -307,18 +302,18 @@ class TeamSettings extends Component
 
         $this->callSunny(
             fn () => app(SunnyTeams::class)->changeRole($this->team(), $member['id'], $role),
-            fn (string $problem, ?Response $response) => $this->failed($problem, $response, 'Sunny couldn’t change '.self::firstName($member['name']).'’s role right now.'),
+            fn (string $problem, ?Response $response) => $this->failed($problem, $response, 'The server couldn’t change '.self::firstName($member['name']).'’s role right now.'),
         );
     }
 
     public function confirmRemove(): void
     {
-        $this->confirmingRemove = $this->member() !== null;
-    }
+        $this->removalToConfirm = $this->member()['id'] ?? null;
+        $this->memberId = null;
 
-    public function keepMember(): void
-    {
-        $this->confirmingRemove = false;
+        if (! System::isIos()) {
+            $this->askToRemove();
+        }
     }
 
     public function confirmLeave(): void
@@ -337,23 +332,26 @@ class TeamSettings extends Component
         if ($id === 'leave-team' && $label === 'Leave') {
             $this->leave();
         }
+
+        if ($id !== null && str_starts_with($id, 'remove-member-') && $label === 'Remove') {
+            $this->removeMember((int) substr($id, strlen('remove-member-')));
+        }
     }
 
-    public function removeMember(): void
+    public function removeMember(int $id): void
     {
-        $member = $this->member();
+        $member = $this->manageableMember($id);
 
-        if ($member === null || ! $this->confirmingRemove) {
+        if ($member === null) {
             return;
         }
 
         $removed = $this->callSunny(
             fn () => app(SunnyTeams::class)->removeMember($this->team(), $member['id']),
-            fn (string $problem, ?Response $response) => $this->failed($problem, $response, 'Sunny couldn’t remove '.self::firstName($member['name']).' right now.'),
+            fn (string $problem, ?Response $response) => $this->failed($problem, $response, 'The server couldn’t remove '.self::firstName($member['name']).' right now.'),
         );
 
         if ($removed) {
-            $this->closeMember();
             Toast::success('Removed '.$member['name']);
         }
     }
@@ -368,7 +366,7 @@ class TeamSettings extends Component
 
         $left = $this->callSunny(
             fn () => app(SunnyTeams::class)->leave($team),
-            fn (string $problem, ?Response $response) => $this->failed($problem, $response, 'Sunny couldn’t take you out of '.$team->name.' right now.'),
+            fn (string $problem, ?Response $response) => $this->failed($problem, $response, 'The server couldn’t take you out of '.$team->name.' right now.'),
         );
 
         if ($left) {
@@ -382,7 +380,7 @@ class TeamSettings extends Component
         $team = $this->team();
 
         if ($team?->slug && ! Browser::inApp(app(SunnyConnector::class)->siteUrl().'/settings/teams/'.rawurlencode($team->slug))) {
-            Toast::error('Unable to open the Sunny website. Please try again.');
+            Toast::error('Unable to open the website. Please try again.');
         }
     }
 
@@ -411,6 +409,29 @@ class TeamSettings extends Component
         };
     }
 
+    /** @return array{id: int, name: string, initials: string, role: TeamRole}|null */
+    private function manageableMember(?int $id): ?array
+    {
+        return collect($this->members())->first(fn (array $member): bool => $member['id'] === $id && $member['tappable']);
+    }
+
+    private function askToRemove(): void
+    {
+        $member = $this->manageableMember($this->removalToConfirm);
+        $this->removalToConfirm = null;
+
+        if ($member === null) {
+            return;
+        }
+
+        $firstName = self::firstName($member['name']);
+
+        Dialog::alert('Remove '.$firstName.' from '.$this->team()->name.'?', $firstName.' will lose access to the team’s recipes, inventory, routines and lists.', [
+            ['label' => 'Cancel', 'style' => 'cancel'],
+            ['label' => 'Remove', 'style' => 'destructive'],
+        ])->id('remove-member-'.$member['id'])->show();
+    }
+
     /** @param  array{name?: string, timezone?: string, week_start?: int}  $attributes */
     private function updateTeam(array $attributes): bool
     {
@@ -430,7 +451,7 @@ class TeamSettings extends Component
                 }
 
                 $this->showRename = false;
-                $this->failed($problem, $response, 'Sunny couldn’t save the change right now.');
+                $this->failed($problem, $response, 'The server couldn’t save the change right now.');
             },
         );
     }

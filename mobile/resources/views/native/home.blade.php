@@ -10,11 +10,11 @@
         <image
             ref="sunny-brand-icon"
             src="{{ public_path('images/sunny-icon.png') }}"
-            alt="Sunny"
+            alt="SunnyHome"
             class="h-11 w-11 rounded-xl object-contain shadow-sm"
         />
         <text font="accent" class="text-lg text-theme-on-background">
-            Sunny
+            SunnyHome
         </text>
     </row>
 
@@ -26,7 +26,7 @@
             Your household, organized.
         </text>
         <text ref="welcome-subtitle" class="mt-3 text-base leading-relaxed text-theme-on-surface-variant">
-            Sunny helps your family collaborate on recipes and keep track of what’s in storage, all in one place.
+            SunnyHome helps your family collaborate on recipes and keep track of what’s in storage, all in one place.
         </text>
 
         <column ref="feature-list" class="mt-8 w-full gap-3">
@@ -56,33 +56,28 @@
 
     @if ($error)
         <text ref="session-error" class="text-sm text-theme-destructive">{{ $error }}</text>
-        <button ref="session-retry" variant="ghost" @tap="restoreSession">Retry</button>
+        <x-ui.button ref="session-retry" variant="text" tap="restoreSession">Retry</x-ui.button>
     @endif
 
     <column ref="auth-actions" class="w-full gap-3 pt-6">
-        <button
+        <x-ui.button
             ref="register-button"
-            variant="primary"
-            size="lg"
-            font="semibold"
-            a11y-label="Register"
-            a11y-hint="Opens the registration screen"
-            class="w-full"
-            @navigate='/register'
-        >
-            Register
-        </button>
-        <button
-            ref="login-button"
             variant="secondary"
-            size="lg"
-            font="semibold"
+            a11y-label="Create account"
+            a11y-hint="Opens the Create account screen"
+            class="w-full"
+            navigate="/register"
+        >
+            Create account
+        </x-ui.button>
+        <x-ui.button
+            ref="login-button"
             a11y-label="Log in"
             a11y-hint="Opens the login screen"
             class="w-full"
-            @navigate='/login'
+            navigate="/login"
         >
             Log in
-        </button>
+        </x-ui.button>
     </column>
 </column>

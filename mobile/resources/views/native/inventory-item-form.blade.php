@@ -9,18 +9,22 @@
      including component's ManagesInventoryItemForm properties. Computed
      values have to be passed in because an @include is not bound to $this. --}}
 
+<x-ui.submit-bar
+    ref="{{ $formRef }}-submit"
+    :disabled="$saving || $savedId !== null"
+>
+    {{ $submitLabel }}
+</x-ui.submit-bar>
+
 <scroll-view ref="{{ $formRef }}-screen" fill class="bg-theme-background ios:bg-theme-grouped-background">
-    <column class="w-full gap-7 px-5 py-6">
-        <column class="w-full gap-2">
-            <text font="semibold" class="text-lg text-theme-on-surface">What is it called?</text>
-            <outlined-text-input
-                ref="{{ $formRef }}-name"
-                placeholder="Camping tent"
-                a11y-label="What is it called?"
-                autocapitalize="sentences"
-                native:model.blur="name"
-            />
-        </column>
+    <column class="w-full gap-6 px-4 py-6">
+        <outlined-text-input
+            ref="{{ $formRef }}-name"
+            label="Name"
+            placeholder="Camping tent"
+            autocapitalize="sentences"
+            native:model.blur="name"
+        />
 
         @include('native.parent-field', [
             'refPrefix' => $formRef,
@@ -28,11 +32,9 @@
             'noParentLabel' => $selectedType === ItemType::Location ? 'Home' : null,
         ])
 
-        <column class="w-full gap-2">
-            <column class="w-full gap-0.5">
-                <text font="semibold" class="text-lg text-theme-on-surface">What kind is it?</text>
-                <x-ui.text size="sm">Not sure? Leave it as a thing.</x-ui.text>
-            </column>
+        <column class="w-full gap-1">
+            <x-ui.field-label>What kind is it?</x-ui.field-label>
+            <column class="w-full gap-2">
             @foreach ($typeChoices as $type)
                 <pressable
                     ref="{{ $formRef }}-type-{{ $type->value }}"
@@ -57,12 +59,14 @@
                     </row>
                 </pressable>
             @endforeach
+            </column>
+            <x-ui.field-help>Not sure? Leave it as a thing.</x-ui.field-help>
         </column>
 
         @include('native.item-photos-field', ['photos' => $photos, 'refPrefix' => $formRef])
 
-        <column class="w-full gap-2">
-            <text font="semibold" class="text-lg text-theme-on-surface">Extra details (optional)</text>
+        <column class="w-full gap-1">
+            <x-ui.field-label>Extra details (optional)</x-ui.field-label>
 
             <column class="{{ Card::classes() }} w-full">
                 @foreach ($metadata as $index => $pair)
@@ -85,29 +89,27 @@
                             sync-mode="blur"
                             @change="setMetadataValue({{ $index }})"
                         />
-                        <pressable
+                        <x-ui.button
                             ref="metadata-remove-{{ $index }}"
-                            class="h-12 w-12 items-center justify-center"
+                            variant="text"
+                            :ios="Ios::Xmark"
+                            :android="Android::Close"
                             a11y-label="Remove detail {{ $index + 1 }}"
-                            @tap="removeMetadata({{ $index }})"
-                        >
-                            <native:icon :ios="Ios::Xmark" :android="Android::Close" :size="18" class="text-theme-on-surface-variant" />
-                        </pressable>
+                            tap="removeMetadata({{ $index }})"
+                        />
                     </row>
                     <divider class="ml-3" />
                 @endforeach
 
-                <pressable
+                <x-ui.button
                     ref="metadata-add"
+                    variant="text"
+                    class="w-full px-4"
+                    :ios="Ios::Plus"
+                    :android="Android::Add"
                     a11y-label="Add a detail, like color or size"
-                    class="min-h-12 w-full justify-center px-4"
-                    @tap="addMetadata"
-                >
-                    <row class="items-center gap-2">
-                        <icon :ios="Ios::Plus" :android="Android::Add" :size="16" class="text-theme-primary-text" />
-                        <text font="semibold" class="text-base text-theme-primary-text">Add a detail, like color or size</text>
-                    </row>
-                </pressable>
+                    tap="addMetadata"
+                >Add a detail, like color or size</x-ui.button>
             </column>
         </column>
 
@@ -116,18 +118,6 @@
                 {{ $error }}
             </text>
         @endif
-
-        <button
-            ref="{{ $formRef }}-submit"
-            variant="primary"
-            size="lg"
-            font="semibold"
-            class="w-full"
-            :disabled="$saving || $savedId !== null"
-            @tap="save"
-        >
-            {{ $submitLabel }}
-        </button>
     </column>
 </scroll-view>
 

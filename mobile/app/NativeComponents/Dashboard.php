@@ -14,6 +14,7 @@ use App\Http\Integrations\Sunny\SunnyTeam;
 use App\Models\Onboarding;
 use App\Support\CalendarAgenda;
 use App\Support\CrashReports;
+use App\Support\Offline;
 use App\Support\Toast;
 use Carbon\CarbonImmutable;
 use Illuminate\Auth\AuthenticationException;
@@ -69,7 +70,7 @@ class Dashboard extends Component
         try {
             app(SunnySyncCoordinator::class)->sync();
         } catch (AuthenticationException|EmailVerificationRequired|RequestException|FatalRequestException|JsonException|ValidationException|RuntimeException $exception) {
-            $this->syncFailed($exception::class);
+            $this->syncFailed($exception::class, asked: true);
 
             return;
         }
@@ -152,7 +153,7 @@ class Dashboard extends Component
     public function onAlertButtonPressed(string $label, ?string $id = null): void
     {
         if ($id === 'crash-reports' && $label === 'Share' && ! app(CrashReports::class)->share(true)) {
-            Toast::error('Unable to save your choice. You can turn on crash reports in Preferences.');
+            Toast::error('Unable to save your choice. You can turn on crash reports in Settings.');
         }
     }
 
@@ -171,7 +172,7 @@ class Dashboard extends Component
 
         $crashReports->markAsked();
 
-        Dialog::alert('Help improve Sunny?', 'Share crash reports so we can find and fix problems. They include technical details about the error and your device. You can change this anytime in Preferences.', [
+        Dialog::alert('Help improve the app?', 'Share crash reports so we can find and fix problems. They include technical details about the error and your device. You can change this anytime in Settings.', [
             ['label' => 'Not now', 'style' => 'cancel'],
             ['label' => 'Share'],
         ])->id('crash-reports')->show();
@@ -202,7 +203,7 @@ class Dashboard extends Component
     /**
      * @param  class-string<\Throwable>  $exception
      */
-    private function syncFailed(string $exception): void
+    private function syncFailed(string $exception, bool $asked = false): void
     {
         if (is_a($exception, AuthenticationException::class, true) || is_a($exception, UnauthorizedException::class, true)) {
             rescue(fn () => app(DestroySession::class)->handle(), report: false);
@@ -218,7 +219,9 @@ class Dashboard extends Component
         }
 
         if (app(SunnyStore::class)->lastSyncedAt()) {
-            Toast::info('Unable to sync. Your previously downloaded data is still available.', long: true);
+            if ($asked) {
+                Toast::info(is_a($exception, FatalRequestException::class, true) ? Offline::message() : 'Unable to refresh. Your previously downloaded data is still available.', long: true);
+            }
         } else {
             $this->syncError = 'Unable to download your data. Check your connection and tap here to retry.';
         }

@@ -7,15 +7,19 @@ use App\Enums\ItemType;
 use App\Http\Integrations\Sunny\SunnyOutbox;
 use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Http\Integrations\Sunny\SunnyTeam;
+use App\Icons\Android;
+use App\Icons\Ios;
 use App\Models\Item;
 use App\Models\ItemPhoto;
 use App\Support\Toast;
 use App\Support\ToastAction;
+use App\Ui\Menu;
 use Carbon\CarbonImmutable;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
 use Native\Mobile\Attributes\On;
+use Native\Mobile\Edge\Elements\TopBarAction;
 use Native\Mobile\Events\Alert\ButtonPressed;
 use Native\Mobile\Facades\Dialog;
 
@@ -35,19 +39,31 @@ class RecentlyDeletedInventory extends Component
         $places = Item::withTrashed()->forActiveTeam()->whereKey($items->pluck('parent_id')->filter()->unique())->pluck('name', 'id');
         $today = app(SunnyTeam::class)->current()?->today() ?? CarbonImmutable::today();
 
-        return $items->map(fn (Item $item): array => [
-            'id' => $item->id,
-            'name' => $item->name,
-            'type' => $item->type,
-            'photo' => $item->thumb_path ?? $item->photo_url,
-            'supporting' => $item->type->label().match (true) {
-                $places->has($item->parent_id) => ' · was in '.$places[$item->parent_id],
-                $item->type === ItemType::Location => '',
-                default => ' · wasn’t in a place',
-            },
-            'deleted' => $this->deletedOn($item->deleted_at->setTimezone($today->getTimezone()), $today),
-            'emptied' => $item->type !== ItemType::Item,
-        ])->all();
+        return $items->map(function (Item $item) use ($places, $today): array {
+            $deleted = $this->deletedOn($item->deleted_at->setTimezone($today->getTimezone()), $today);
+
+            return [
+                'id' => $item->id,
+                'name' => $item->name,
+                'type' => $item->type,
+                'photo' => $item->thumb_path ?? $item->photo_url,
+                'supporting' => $places->has($item->parent_id) ? 'Was in '.$places[$item->parent_id].' · '.$deleted : $deleted,
+                'deleted' => $deleted,
+                'emptied' => $item->type !== ItemType::Item,
+            ];
+        })->all();
+    }
+
+    /**
+     * @param  array{id: int, name: string}  $item
+     * @return list<TopBarAction>
+     */
+    public function itemMenu(array $item): array
+    {
+        return [
+            Menu::item('deleted-restore-'.$item['id'], 'Restore', Ios::ArrowUturnBackward, Android::Undo, 'restore('.$item['id'].')', 'Restore '.$item['name']),
+            Menu::delete('deleted-forever-'.$item['id'], 'Delete forever', 'confirmDeleteForever('.$item['id'].')', 'Delete '.$item['name'].' forever'),
+        ];
     }
 
     public function restore(int $id): void

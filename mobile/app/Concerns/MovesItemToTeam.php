@@ -12,6 +12,7 @@ use App\Models\Item;
 use App\Models\PendingWrite;
 use App\Models\Team;
 use App\NativeComponents\Inventory;
+use App\Support\Offline;
 use App\Support\Toast;
 use App\Support\ToastAction;
 use Illuminate\Auth\AuthenticationException;
@@ -113,7 +114,7 @@ trait MovesItemToTeam
         $to = Team::query()->where('server', SunnyStore::server())->find($this->teamMoveTeamId);
 
         if (! $from?->slug || $to === null) {
-            $this->teamMoveFailed('Sync with Sunny before moving it.');
+            $this->teamMoveFailed(SunnySyncCoordinator::REFRESH_ADVICE);
 
             return;
         }
@@ -146,10 +147,10 @@ trait MovesItemToTeam
         if (isset($status) && $moved === null) {
             $this->teamMoveFailed(match ($status) {
                 403 => 'You no longer have permission to move things in '.($this->teamName() ?? 'this team').'.',
-                404 => $item['name'].' isn’t in '.($this->teamName() ?? 'this team').' on Sunny anymore.',
+                404 => $item['name'].' isn’t in '.($this->teamName() ?? 'this team').' on the server anymore.',
                 422 => $teams[$to->id].' isn’t one of your teams anymore.',
                 429 => 'Too many attempts. Please wait before trying again.',
-                default => 'Sunny couldn’t move it right now.',
+                default => 'The server couldn’t move it right now.',
             });
 
             if ($status !== 404) {
@@ -160,7 +161,7 @@ trait MovesItemToTeam
         }
 
         if ($moved === null) {
-            $this->teamMoveFailed('Sunny didn’t confirm the move.');
+            $this->teamMoveFailed('The server didn’t confirm the move.');
             app(SunnySyncCoordinator::class)->dispatch();
 
             return;
@@ -233,9 +234,12 @@ trait MovesItemToTeam
      */
     public function teamMoveNote(): array
     {
+        if ($this->teamMoveProblem === 'offline') {
+            return ['title' => Offline::TITLE, 'message' => Offline::ADVICE];
+        }
+
         [$title, $message] = match ($this->teamMoveProblem) {
-            'offline' => ['You’re offline', 'Moving to another team needs a connection.'],
-            'unsent' => ['Still sending your changes', 'Sunny moves what it has, so your latest changes need to reach it first.'],
+            'unsent' => ['Still sending your changes', 'The server moves what it has, so your latest changes need to reach it first.'],
             default => ['Couldn’t move it', $this->teamMoveError],
         };
 

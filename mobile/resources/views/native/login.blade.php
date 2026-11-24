@@ -16,8 +16,6 @@
                     label="Email address"
                     placeholder="email@example.com"
                     keyboard="email"
-                    :ios-leading-icon="Ios::Envelope"
-                    :android-leading-icon="Android::Email"
                     native:model="email"
                 />
                 <outlined-text-input
@@ -25,55 +23,48 @@
                     label="Password"
                     placeholder="Password"
                     secure
-                    :ios-leading-icon="Ios::Lock"
-                    :android-leading-icon="Android::Lock"
                     native:model="password"
                 />
                 <row class="w-full justify-end">
-                    <button
+                    <x-ui.button
                         ref="login-forgot-password"
-                        variant="ghost"
-                        font="semibold"
+                        variant="text"
                         a11y-hint="Opens password reset"
-                        @tap="forgotPassword"
+                        tap="forgotPassword"
                     >
                         Forgot password?
-                    </button>
+                    </x-ui.button>
                 </row>
             </column>
         @else
             <text class="text-base text-theme-on-surface-variant">{{ $useRecoveryCode ? 'Enter one of your recovery codes.' : 'Enter the code from your authenticator app.' }}</text>
             <outlined-text-input ref="login-code" :label="$useRecoveryCode ? 'Recovery code' : 'Authentication code'" native:model="code" />
-            <button ref="login-recovery" variant="ghost" @tap="toggleRecoveryCode">{{ $useRecoveryCode ? 'Use authenticator code' : 'Use recovery code' }}</button>
-            <button ref="login-restart" variant="ghost" @tap="startOver">Restart login</button>
+            <x-ui.button ref="login-recovery" variant="text" tap="toggleRecoveryCode">{{ $useRecoveryCode ? 'Use authenticator code' : 'Use recovery code' }}</x-ui.button>
+            <x-ui.button ref="login-restart" variant="text" tap="startOver">Restart login</x-ui.button>
         @endif
 
         @if ($error)
             <text ref="login-error" class="text-sm text-theme-destructive">{{ $error }}</text>
         @endif
 
-        <button
+        <x-ui.button
             ref="login-submit"
-            variant="primary"
-            size="lg"
-            font="semibold"
             class="w-full"
-            @tap="submit"
+            tap="submit"
         >
             {{ $twoFactor ? 'Verify code' : 'Log in' }}
-        </button>
+        </x-ui.button>
 
         <row class="w-full items-center justify-center gap-1">
             <text class="text-sm text-theme-on-surface-variant">Don’t have an account?</text>
-            <button
+            <x-ui.button
                 ref="login-register-link"
-                variant="ghost"
-                font="semibold"
-                a11y-hint="Opens the registration screen"
-                @tap="showRegister"
+                variant="text"
+                a11y-hint="Opens the Create account screen"
+                tap="showRegister"
             >
-                Sign up
-            </button>
+                Create account
+            </x-ui.button>
         </row>
     </column>
 </scroll-view>

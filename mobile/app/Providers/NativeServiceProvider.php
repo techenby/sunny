@@ -5,6 +5,7 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Native\Mobile\Providers\BrowserServiceProvider;
 use Native\Mobile\Providers\CameraServiceProvider;
+use Native\Mobile\Providers\NetworkServiceProvider;
 use Native\Mobile\Providers\ScannerServiceProvider;
 use Native\Mobile\Providers\SecureStorageServiceProvider;
 use Native\Mobile\Providers\ShareServiceProvider;
@@ -64,6 +65,7 @@ class NativeServiceProvider extends ServiceProvider
             LocalNotificationsServiceProvider::class,
             LiveActivitiesServiceProvider::class,
             ToastKitServiceProvider::class,
+            NetworkServiceProvider::class,
         ];
     }
 }

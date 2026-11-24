@@ -69,7 +69,7 @@ it('keeps the account and its data when Sunny refuses', function (int $status, a
     'wrong password' => [422, ['errors' => ['password' => ['The password is incorrect.']]], 'The password is incorrect.'],
     'shared team' => [422, ['errors' => ['teams' => ['Other people still use Family.']]], 'Other people still use Family.'],
     'rate limited' => [429, [], 'Too many attempts. Please wait before trying again.'],
-    'server error' => [500, [], 'Sunny is unavailable right now. Your account was not deleted.'],
+    'server error' => [500, [], 'The server is unavailable right now. Your account was not deleted.'],
 ]);
 
 it('opens the team screen for a shared team that blocks deletion', function (): void {

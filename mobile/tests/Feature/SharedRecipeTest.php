@@ -120,7 +120,7 @@ it('says it is offline and opens the recipe on Try again', function (): void {
     Native::visit('/recipes/shared/'.SHARE_TOKEN)
         ->assertSet('state', 'offline')
         ->assertSee('You’re offline')
-        ->assertSee('Opening a shared recipe needs a connection.')
+        ->assertSee('Try again when you’re connected.')
         ->assertSee('Try again')
         ->assertAccessible()
         ->tap('shared-recipe-retry')
@@ -135,7 +135,7 @@ it('explains other problems opening a link', function (): void {
     Native::visit('/recipes/shared/'.SHARE_TOKEN)
         ->assertSet('state', 'error')
         ->assertSee('Couldn’t open this recipe')
-        ->assertSee('Sunny is unavailable right now. Try again in a moment.')
+        ->assertSee('The server is unavailable right now. Try again in a moment.')
         ->assertSee('Try again');
 });
 
@@ -193,7 +193,8 @@ it('saves nothing while offline and retries with the same uuid', function (): vo
     $screen = Native::visit('/recipes/shared/'.SHARE_TOKEN)
         ->tap('shared-recipe-save')
         ->assertSee('You’re offline')
-        ->assertSee('Saving needs a connection. Nothing’s been saved yet.')
+        ->assertSee('Try again when you’re connected.')
+        ->assertDontSee('Nothing’s been saved yet.')
         ->assertSee('Try again');
 
     expect(Recipe::find(77))->toBeNull();
@@ -228,6 +229,6 @@ it('explains when Sunny refuses to save', function (): void {
     Native::visit('/recipes/shared/'.SHARE_TOKEN)
         ->tap('shared-recipe-save')
         ->assertSee('Couldn’t save')
-        ->assertSee('Sunny couldn’t save it right now. Nothing’s been saved yet.')
+        ->assertSee('The server couldn’t save it right now. Nothing’s been saved yet.')
         ->assertSee('Try again');
 });

@@ -24,10 +24,10 @@ it('renders the dashboard', function () {
     Native::visit('/dashboard')
         ->assertNavTitle('Summary')
         ->assertSee('Recent recipes')
-        ->assertSee('Recent items')
+        ->assertSee('Recent inventory')
         ->assertDontSee('Active team')
         ->assertElement('top_bar_action', fn (array $node): bool => ($node['props']['id'] ?? null) === 'preferences'
-            && ($node['props']['label'] ?? null) === 'Preferences')
+            && ($node['props']['label'] ?? null) === 'Settings')
         ->assertMissingElement('top_bar_action', fn (array $node): bool => ($node['props']['id'] ?? null) === 'log-out')
         ->assertElement('refreshable', fn (array $node): bool => isset($node['props']['on_refresh']))
         ->assertAccessible();
@@ -91,5 +91,5 @@ it('adds a new recipe or item from its section', function (string $ref, string $
         ->assertScreen($screen);
 })->with([
     'recipe' => ['New recipe', '/recipes/create', CreateRecipe::class],
-    'item' => ['New item', '/inventory/create', CreateInventoryItem::class],
+    'item' => ['Add to inventory', '/inventory/create', CreateInventoryItem::class],
 ]);

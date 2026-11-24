@@ -2,7 +2,7 @@
 
 @include('native.list-form', [
     'formRef' => 'create-list',
-    'submitLabel' => 'Save list',
+    'submitLabel' => 'Create list',
     'typeOptions' => $this->typeOptions,
     'ownerOptions' => $this->ownerOptions,
 ])

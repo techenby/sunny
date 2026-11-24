@@ -11,22 +11,36 @@ use Saloon\Http\Faking\MockResponse;
 
 beforeEach(fn () => seedSunnyData());
 
-it('opens the create screen from the inventory add menu', function () {
+it('opens the create screen from the inventory add menu with that kind chosen', function (string $label, ItemType $type) {
     Native::visit('/inventory')
-        ->tap('Add one thing')
+        ->tap($label)
         ->assertNavigatedTo('/inventory/create')
         ->follow()
         ->assertScreen(CreateInventoryItem::class)
-        ->assertNavTitle('Add something');
+        ->assertSet('type', $type)
+        ->assertNavTitle($label);
+})->with([
+    'thing' => ['Add a thing', ItemType::Item],
+    'storage' => ['Add storage', ItemType::Bin],
+    'place' => ['Add a place', ItemType::Location],
+]);
+
+it('starts as a thing when no kind was chosen, and retitles when the kind changes', function () {
+    Native::visit('/inventory/create')
+        ->assertSet('type', ItemType::Item)
+        ->assertNavTitle('Add a thing')
+        ->tap('create-item-type-location')
+        ->assertNavTitle('Add a place');
 });
 
-it('renders the form as plain questions', function () {
+it('labels the form with small nouns, keeping a question only where a noun would not explain the field', function () {
     Native::visit('/inventory/create')
-        ->assertSee('What is it called?')
+        ->assertDontSee('What is it called?')
+        ->assertElement('outlined_text_input', fn (array $node): bool => ($node['ref'] ?? null) === 'create-item-name' && $node['props']['label'] === 'Name')
         ->assertSee('Where does it go?')
         ->assertSee('Not in a place yet')
         ->assertSee('What kind is it?')
-        ->assertSee('Save')
+        ->assertSee('Add to inventory')
         ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'create-item-type-item')
         ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'create-item-type-bin')
         ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'create-item-type-location')
@@ -35,7 +49,7 @@ it('renders the form as plain questions', function () {
 
 it('names the place it will save to on the button', function () {
     Native::visit('/inventory/create', data: ['parent' => 7])
-        ->assertSee('Save to Tool chest');
+        ->assertSee('Add to Tool chest');
 });
 
 it('offers every item as a destination, grouped by location then bin then item', function () {
@@ -229,7 +243,9 @@ it('reorders photos with taps', function () {
     $screen->tap('create-item-photo-0-down');
     expect(array_column($screen->get('photos'), 'path'))->toBe(['/tmp/front.jpg', '/tmp/scratch.jpg', '/tmp/back.jpg']);
 
-    $screen->tap('create-item-photo-2-up')->tap('create-item-photo-0-up');
+    $screen->tap('create-item-photo-2-up')
+        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'create-item-photo-0-up')
+        ->call('movePhotoUp', 0);
     expect(array_column($screen->get('photos'), 'path'))->toBe(['/tmp/front.jpg', '/tmp/back.jpg', '/tmp/scratch.jpg']);
 });
 
@@ -260,9 +276,9 @@ it('stops adding photos at ten', function () {
             'success' => true,
             'files' => array_map(fn (int $number): array => ['path' => "/tmp/photo-{$number}.jpg"], range(1, 11)),
         ])
-        ->assertSet('error', 'An item can have up to 10 photos.')
+        ->assertSet('error', 'You can add up to 10 photos.')
         ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'create-item-photo-camera')
-        ->assertSee('That’s the most photos one item can have.');
+        ->assertSee('That’s the most photos it can have.');
 
     expect($screen->get('photos'))->toHaveCount(10);
 });

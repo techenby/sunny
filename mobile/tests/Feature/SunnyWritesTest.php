@@ -136,10 +136,10 @@ it('keeps a change Sunny refuses on the phone and explains why', function (int $
 
     expect(Recipe::find(1)->name)->toBe('Unsaved')
         ->and(PendingWrite::sole()->error)->toBe($message);
-    Native::visit('/recipes/1')->assertSee('Not saved to Sunny')->assertSee($message);
+    Native::visit('/recipes/1')->assertSee('Not saved')->assertSee($message);
 })->with([
     [422, 'That name is taken.'], [403, 'You no longer have permission to save to this team.'],
-    [404, 'This record or team is no longer on Sunny.'],
+    [404, 'This record or team is no longer on the server.'],
 ]);
 
 it('keeps sending a change after Sunny fails for a reason that may pass', function (): void {
@@ -147,7 +147,7 @@ it('keeps sending a change after Sunny fails for a reason that may pass', functi
     Native::visit('/recipes/1/edit')->set('name', 'Unsaved')->tap('edit-recipe-submit')->assertWentBack();
 
     expect(PendingWrite::sole()->error)->toBeNull();
-    Native::visit('/recipes/1')->assertSee('Saved on this phone · syncing with Sunny');
+    Native::visit('/recipes/1')->assertDontSee('syncing with Sunny');
     expect(app(SunnySyncCoordinator::class)->isDue())->toBeTrue();
 });
 
@@ -157,9 +157,9 @@ it('discards a refused edit and leaves the record for the next download', functi
 
     Native::visit('/recipes/1')->tap('recipe-sync-discard')
         ->assertNativeCalled('Dialog.Alert', fn (array $params): bool => $params['id'] === 'discard-queued-change'
-            && $params['message'] === 'Your edit will be replaced by the recipe on Sunny the next time this phone syncs.')
+            && $params['message'] === 'Your edit will be replaced by the recipe on the server.')
         ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Discard', 'id' => 'discard-queued-change'])
-        ->assertNoNavigation()->assertDontSee('Not saved to Sunny');
+        ->assertNoNavigation()->assertDontSee('Not saved');
     expect(PendingWrite::count())->toBe(0);
 });
 
@@ -169,7 +169,7 @@ it('keeps a refused change when discarding it is cancelled', function (): void {
 
     Native::visit('/recipes/1')->tap('recipe-sync-discard')
         ->emitNative(ButtonPressed::class, ['index' => 0, 'label' => 'Cancel', 'id' => 'discard-queued-change'])
-        ->assertSee('Not saved to Sunny');
+        ->assertSee('Not saved');
     expect(PendingWrite::sole()->error)->not->toBeNull()->and(Recipe::find(1)->name)->toBe('Unsaved');
 });
 
@@ -181,7 +181,7 @@ it('discards a refused new item, moving what was put inside it to the top level'
     app(SunnyWrites::class)->push();
 
     Native::visit('/inventory/'.$shelf)->tap('item-sync-discard')
-        ->assertNativeCalled('Dialog.Alert', fn (array $params): bool => $params['message'] === 'This item never reached Sunny, so it will be deleted from this phone.')
+        ->assertNativeCalled('Dialog.Alert', fn (array $params): bool => $params['message'] === 'This thing never reached the server, so it will be deleted from this phone.')
         ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Discard', 'id' => 'discard-queued-change'])
         ->assertWentBack();
 
@@ -277,7 +277,7 @@ it('saves a new recipe on the phone while Sunny is unreachable', function (): vo
     Saloon::fake([SaveRecordRequest::class => MockResponse::make([], 503)]);
     Native::visit('/recipes/create')->set('name', 'Offline draft')->tap('create-recipe-submit')
         ->assertReplacedWith('/recipes/-1');
-    Native::visit('/recipes/-1')->assertSee('Offline draft')->assertSee('Saved on this phone · syncing with Sunny');
+    Native::visit('/recipes/-1')->assertSee('Offline draft')->assertDontSee('syncing with Sunny');
     Native::visit('/recipes')->assertSee('Offline draft');
 });
 
@@ -295,7 +295,7 @@ it('flags responses for another team without writing them locally', function ():
     Saloon::fake([SaveRecordRequest::class => MockResponse::make(['data' => $record])]);
     Native::visit('/recipes/1/edit')->set('name', 'Draft')->tap('edit-recipe-submit');
     expect(Recipe::find(1)->team_id)->toBe(1)->and(Recipe::find(1)->name)->toBe('Draft')
-        ->and(PendingWrite::sole()->error)->toBe('Sunny didn’t confirm this change. Edit it to try again.');
+        ->and(PendingWrite::sole()->error)->toBe('The server didn’t confirm this change. Edit it to try again.');
 });
 
 it('syncs team route keys and remote photo URLs for subsequent edits', function (): void {

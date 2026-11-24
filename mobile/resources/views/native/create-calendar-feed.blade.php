@@ -1,3 +1,3 @@
-<native:top-bar title="Add calendar" back />
+<native:top-bar title="New calendar" back />
 
-@include('native.calendar-feed-form', ['formRef' => 'create-calendar', 'colorOptions' => $this->colorOptions])
+@include('native.calendar-feed-form', ['formRef' => 'create-calendar', 'colorOptions' => $this->colorOptions, 'disconnected' => $this->disconnected, 'submitLabel' => 'Create calendar'])

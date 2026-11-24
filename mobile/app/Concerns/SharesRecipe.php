@@ -6,6 +6,7 @@ use App\Actions\ShareRecipe;
 use App\Http\Integrations\Sunny\SunnyStore;
 use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Models\Team;
+use App\Support\Offline;
 use App\Support\Toast;
 use Illuminate\Auth\AuthenticationException;
 use JsonException;
@@ -93,8 +94,8 @@ trait SharesRecipe
         $afterwards = $this->shareTurningOff ? 'The link still works for now.' : 'The recipe is still private, and no link has been made.';
 
         return match ($this->shareProblem) {
-            'offline' => ['title' => 'You’re offline', 'message' => ($this->shareTurningOff ? 'Turning off the link' : 'Turning on a link').' needs a connection. '.$afterwards],
-            'unsent' => ['title' => 'Still sending this recipe', 'message' => 'It needs to reach Sunny before it can have a link. '.$afterwards],
+            'offline' => ['title' => Offline::TITLE, 'message' => Offline::ADVICE.' '.$afterwards],
+            'unsent' => ['title' => 'Still sending this recipe', 'message' => 'It needs to reach the server before it can have a link. '.$afterwards],
             default => ['title' => $this->shareTurningOff ? 'Couldn’t turn off the link' : 'Couldn’t turn on the link', 'message' => $this->shareError.' '.$afterwards],
         };
     }
@@ -121,7 +122,7 @@ trait SharesRecipe
         $team = Team::query()->where('server', SunnyStore::server())->find($recipe['team_id']);
 
         if (! $team?->slug) {
-            $this->shareFailed('Sync with Sunny first.');
+            $this->shareFailed(SunnySyncCoordinator::REFRESH_ADVICE);
 
             return;
         }
@@ -141,9 +142,9 @@ trait SharesRecipe
         } catch (RequestException $exception) {
             $this->shareFailed(match ($exception->getResponse()->status()) {
                 403 => 'You no longer have permission to share this recipe.',
-                404 => $recipe['name'].' is no longer on Sunny.',
+                404 => $recipe['name'].' is no longer on the server.',
                 429 => 'Too many attempts. Please wait before trying again.',
-                default => 'Sunny couldn’t change the link right now.',
+                default => 'The server couldn’t change the link right now.',
             });
 
             return;
@@ -156,7 +157,7 @@ trait SharesRecipe
         }
 
         if ($record === null) {
-            $this->shareFailed('Sunny didn’t confirm the change.');
+            $this->shareFailed('The server didn’t confirm the change.');
 
             return;
         }

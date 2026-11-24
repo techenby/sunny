@@ -12,6 +12,7 @@ use App\Icons\Ios;
 use App\Models\PendingWrite;
 use App\Support\Toast;
 use App\Support\ToastAction;
+use App\Ui\Menu;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -19,6 +20,7 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
 use Native\Mobile\Attributes\On;
+use Native\Mobile\Edge\Elements\TopBarAction;
 use Native\Mobile\Edge\Layouts\Builders\NavAction;
 use Native\Mobile\Events\Alert\ButtonPressed;
 use Native\Mobile\Facades\Browser;
@@ -223,12 +225,6 @@ class ListDetail extends Component
         $this->linkError = $this->problemWithLink($url, typing: true);
     }
 
-    public function clearEditingUrl(): void
-    {
-        $this->editingUrl = '';
-        $this->linkError = '';
-    }
-
     public function removeLink(): void
     {
         $this->editingUrl = '';
@@ -266,8 +262,28 @@ class ListDetail extends Component
         return array_values(array_filter([
             NavAction::make('list-item-'.$item['id'].'-edit')->label('Edit')->icon(ios: Ios::Pencil->value, android: Android::Edit->value)->press('editItem('.$item['id'].')'),
             $item['url'] !== null ? NavAction::make('list-item-'.$item['id'].'-open-link')->label('Open link')->icon(ios: Ios::ArrowUpRight->value, android: Android::OpenInNew->value)->press('openItemLink('.$item['id'].')') : null,
-            NavAction::make('list-item-'.$item['id'].'-remove')->label('Remove')->icon(ios: Ios::Trash->value, android: Android::Delete->value)->press('removeItem('.$item['id'].')')->destructive(),
+            NavAction::make('list-item-'.$item['id'].'-remove')->label('Delete')->icon(ios: Ios::Trash->value, android: Android::Delete->value)->press('removeItem('.$item['id'].')')->destructive(),
         ]));
+    }
+
+    public function editList(): void
+    {
+        $this->navigate('/lists/'.$this->checklist['id'].'/edit');
+    }
+
+    /**
+     * @return list<TopBarAction>
+     */
+    public function moreMenu(): array
+    {
+        return [
+            Menu::item('edit-list', 'Edit', Ios::Pencil, Android::Edit, 'editList', 'Edit '.$this->checklist['name']),
+            ...($this->completedItems ? [
+                Menu::item('remove-done', 'Delete done', Ios::CheckmarkCircle, Android::RemoveDone, 'confirmRemoveDone'),
+                Menu::item('uncheck-all', 'Uncheck all', Ios::ArrowCounterclockwise, Android::Replay, 'uncheckAll'),
+            ] : []),
+            Menu::delete('delete-list', 'Delete list', 'confirmDeleteList', 'Delete '.$this->checklist['name']),
+        ];
     }
 
     public function confirmDeleteList(): void
@@ -293,11 +309,11 @@ class ListDetail extends Component
         $named = count($names) > 3 ? implode(', ', array_slice($names, 0, 3)).' and '.(count($names) - 3).' more' : Arr::join($names, ', ', ' and ');
 
         Dialog::alert(
-            trans_choice('Remove :count done item?|Remove :count done items?', count($names)),
-            $named.' will be removed from '.$this->checklist['name'].' for everyone on your team.',
+            trans_choice('Delete :count done item?|Delete :count done items?', count($names)),
+            $named.' will be deleted from '.$this->checklist['name'].' for everyone on your team.',
             [
                 ['label' => 'Cancel', 'style' => 'cancel'],
-                ['label' => 'Remove', 'style' => 'destructive'],
+                ['label' => 'Delete', 'style' => 'destructive'],
             ],
         )->id('remove-done')->show();
     }
@@ -358,7 +374,7 @@ class ListDetail extends Component
     {
         if ($id === 'delete-list' && $label === 'Delete') {
             $this->deleteList();
-        } elseif ($id === 'remove-done' && $label === 'Remove') {
+        } elseif ($id === 'remove-done' && $label === 'Delete') {
             $this->removeDone();
         } elseif ($id === 'discard-queued-change' && $label === 'Discard') {
             $this->discardQueuedChange();

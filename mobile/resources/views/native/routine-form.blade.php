@@ -4,38 +4,43 @@
 
 @php($frequency = RoutineFrequency::cases()[$frequencyIndex] ?? RoutineFrequency::Daily)
 
+<x-ui.submit-bar
+    ref="{{ $formRef }}-submit"
+    :disabled="$saving || $savedId !== null"
+>
+    {{ $submitLabel }}
+</x-ui.submit-bar>
+
 <scroll-view ref="{{ $formRef }}-screen" fill class="bg-theme-background ios:bg-theme-grouped-background">
-    <column class="w-full gap-6 px-6 py-6">
+    <column class="w-full gap-6 px-4 py-6">
         <column class="w-full gap-4">
             <outlined-text-input
                 ref="{{ $formRef }}-name"
                 label="Name"
                 placeholder="Morning routine"
                 autocapitalize="sentences"
-                :ios-leading-icon="Ios::Tag"
-                :android-leading-icon="Android::Label"
                 native:model.blur="name"
             />
 
-            @include('native.option-list', [
-                'ref' => $formRef.'-time-of-day',
-                'label' => 'Time of day',
-                'options' => $timeOfDayOptions,
-                'selected' => $timeOfDayIndex,
-                'action' => 'chooseTimeOfDay',
-            ])
+            <select
+                ref="{{ $formRef }}-time-of-day"
+                label="Time of day"
+                :options="$timeOfDayOptions"
+                :value="$timeOfDayOptions[$timeOfDayIndex] ?? ''"
+                @change="pickTimeOfDay"
+            />
 
-            @include('native.option-list', [
-                'ref' => $formRef.'-frequency',
-                'label' => 'Repeats',
-                'options' => $frequencyOptions,
-                'selected' => $frequencyIndex,
-                'action' => 'chooseFrequency',
-            ])
+            <select
+                ref="{{ $formRef }}-frequency"
+                label="Repeats"
+                :options="$frequencyOptions"
+                :value="$frequencyOptions[$frequencyIndex] ?? ''"
+                @change="pickFrequency"
+            />
 
             @if ($frequency === RoutineFrequency::Weekly)
-                <column class="w-full gap-2">
-                    <text class="text-sm font-semibold text-theme-on-surface-variant">On these days</text>
+                <column class="w-full gap-1">
+                    <x-ui.field-label>On these days</x-ui.field-label>
                     @foreach ($weekdayRows as $weekdayRow)
                         <row class="w-full items-center justify-start gap-2">
                             @foreach ($weekdayRow as $number => $day)
@@ -58,29 +63,20 @@
                     placeholder="1"
                     keyboard="number"
                     supporting="Routines set past the end of a short month run on its last day."
-                    :ios-leading-icon="Ios::Calendar"
-                    :android-leading-icon="Android::CalendarMonth"
                     native:model.blur="dayOfMonth"
                 />
             @endif
 
-            <column class="w-full gap-2">
-                <text class="text-sm font-semibold text-theme-on-surface-variant">Starts on</text>
-                <pressable
+            <column class="w-full gap-1">
+                <x-ui.picker-field
                     ref="{{ $formRef }}-starts-on"
+                    label="Starts on"
+                    :value="$startsOnLabel"
+                    opens="date"
                     :a11y-label="'Starts on '.$startsOnLabel"
                     a11y-hint="Choose when this routine starts"
-                    class="min-h-12 w-full justify-center rounded-xl border border-theme-outline bg-theme-surface px-4 py-2"
-                    @tap="openStartsOnPicker"
-                >
-                    <row class="w-full items-start gap-3">
-                        <icon :ios="Ios::Calendar" :android="Android::CalendarMonth" :size="20" class="text-theme-primary" />
-                        <column class="flex-1 items-start gap-1">
-                            <text font="medium" class="text-base text-theme-on-surface">{{ $startsOnLabel }}</text>
-                            <x-ui.badge size="sm">Change</x-ui.badge>
-                        </column>
-                    </row>
-                </pressable>
+                    tap="openStartsOnPicker"
+                />
                 @if ($startsOnHint !== '')
                     <row ref="{{ $formRef }}-starts-on-hint" class="w-full items-start gap-1.5">
                         <icon :ios="Ios::InfoCircle" :android="Android::Info" :size="16" class="text-theme-on-surface-variant" />
@@ -111,31 +107,22 @@
                 {{ $error }}
             </text>
         @endif
-
-        <button
-            ref="{{ $formRef }}-submit"
-            variant="primary"
-            size="lg"
-            font="semibold"
-            class="w-full"
-            :disabled="$saving || $savedId !== null"
-            @tap="save"
-        >
-            {{ $submitLabel }}
-        </button>
     </column>
 </scroll-view>
 
 <native:bottom-sheet ref="{{ $formRef }}-starts-on-picker" :visible="$showStartsOnPicker" @dismiss="closeStartsOnPicker" detents="fit">
     @if ($showStartsOnPicker)
-        <column class="w-full bg-theme-background px-4 py-4">
-            <date-picker
-                ref="{{ $formRef }}-starts-on-calendar"
-                label="Starts on"
-                picker-style="inline"
-                :value="$startsOn"
-                @change="chooseStartsOn"
-            />
+        <column class="w-full bg-theme-background">
+            <x-ui.sheet-header ref="{{ $formRef }}-starts-on-close" title="Starts on" close="closeStartsOnPicker" />
+            <column class="w-full px-4 pb-4 ios:pb-0">
+                <date-picker
+                    ref="{{ $formRef }}-starts-on-calendar"
+                    label="Starts on"
+                    picker-style="inline"
+                    :value="$startsOn"
+                    @change="chooseStartsOn"
+                />
+            </column>
         </column>
     @endif
 </native:bottom-sheet>

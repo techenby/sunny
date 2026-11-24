@@ -70,7 +70,7 @@ it('copies the recipe to the team they pick', function (): void {
         ->tap('recipe-copy-submit')
         ->assertSet('showCopy', false)
         ->assertSee('Copied to Lake Cabin')
-        ->assertSee('Switch team in Preferences to see it there')
+        ->assertSee('Switch team in Settings to see it there')
         ->assertSee('Buttermilk Pancakes');
 
     Saloon::assertSent(fn (Request $request): bool => $request instanceof CopyRecipeRequest
@@ -99,7 +99,8 @@ it('copies nothing while offline and retries with the same uuid', function (): v
         ->assertSet('showCopy', true)
         ->assertSet('copyTeamId', 3)
         ->assertSee('You’re offline')
-        ->assertSee('Copying to another team needs a connection. Nothing’s been copied yet.')
+        ->assertSee('Try again when you’re connected.')
+        ->assertDontSee('Nothing’s been copied yet.')
         ->assertSee('Try again');
 
     expect(Recipe::find(90))->toBeNull();
@@ -126,7 +127,8 @@ it('keeps the uuid when the sheet is closed and opened again after a failure', f
     Native::visit('/recipes/1')
         ->tap('Copy to another team')
         ->tap('recipe-copy-submit')
-        ->tap('recipe-copy-cancel')
+        ->assertDontSee('Cancel')
+        ->tap('recipe-copy-close')
         ->assertSet('showCopy', false)
         ->tap('Copy to another team')
         ->assertDontSee('Couldn’t copy')
@@ -150,9 +152,9 @@ it('explains when Sunny refuses to copy', function (int $status, string $message
 
     expect(Recipe::where('team_id', 3)->count())->toBe(0);
 })->with([
-    'server error' => [500, 'Sunny couldn’t copy it right now.'],
+    'server error' => [500, 'The server couldn’t copy it right now.'],
     'no permission' => [403, 'You no longer have permission to copy this recipe.'],
-    'gone' => [404, 'Buttermilk Pancakes is no longer on Sunny.'],
+    'gone' => [404, 'Buttermilk Pancakes is no longer on the server.'],
     'not their team' => [422, 'Grandma’s House isn’t one of your teams anymore.'],
 ]);
 

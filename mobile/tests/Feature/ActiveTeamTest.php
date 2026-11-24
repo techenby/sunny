@@ -32,14 +32,14 @@ it('switches browsing and recent activity locally and remembers the team', funct
     expect((new SunnyTeam)->current()->id)->toBe(2);
     expect(Recipes::find(1))->toBeNull()->and(Inventory::find(1))->toBeNull();
     Native::visit('/recipes/1/edit')->assertSee('Recipe not found');
-    Native::visit('/inventory/1')->assertSee('Item not found');
+    Native::visit('/inventory/1')->assertSee('Thing not found');
     Saloon::assertNothingSent();
 });
 
 it('shows a lone team as the active one', function (): void {
     Team::find(2)->delete();
     Native::visit('/preferences')->assertSet('activeTeamId', 1)
-        ->assertMissingElement('list_item', fn (array $node): bool => ($node['ref'] ?? null) === 'team-2');
+        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'team-2');
 });
 
 it('creates records in the active team without a form picker', function (string $route, string $ref, string $model): void {
@@ -90,7 +90,7 @@ it('does not silently move an open draft when the active team changes', function
     $form = Native::visit('/recipes/create')->set('name', 'Family recipe');
     app(SunnyTeam::class)->select(2);
     $form->tap('create-recipe-submit')->assertNoNavigation()
-        ->assertSee('The active team changed. Reopen this form from the dashboard before saving.');
+        ->assertSee('The active team changed. Reopen this form from Summary before saving.');
 });
 
 it('distinguishes identically named teams and rejects invalid selections', function (): void {

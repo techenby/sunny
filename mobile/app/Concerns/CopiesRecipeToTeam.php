@@ -7,6 +7,7 @@ use App\Http\Integrations\Sunny\SunnyStore;
 use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Http\Integrations\Sunny\SunnyTeam;
 use App\Models\Team;
+use App\Support\Offline;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Support\Str;
 use JsonException;
@@ -96,7 +97,7 @@ trait CopiesRecipeToTeam
         $to = Team::query()->where('server', SunnyStore::server())->find($this->copyTeamId);
 
         if (! $from?->slug || $to === null) {
-            $this->copyFailed('Sync with Sunny before copying.');
+            $this->copyFailed(SunnySyncCoordinator::REFRESH_ADVICE);
 
             return;
         }
@@ -118,10 +119,10 @@ trait CopiesRecipeToTeam
         } catch (RequestException $exception) {
             $this->copyFailed(match ($exception->getResponse()->status()) {
                 403 => 'You no longer have permission to copy this recipe.',
-                404 => $recipe['name'].' is no longer on Sunny.',
+                404 => $recipe['name'].' is no longer on the server.',
                 422 => $teams[$to->id].' isn’t one of your teams anymore.',
                 429 => 'Too many attempts. Please wait before trying again.',
-                default => 'Sunny couldn’t copy it right now.',
+                default => 'The server couldn’t copy it right now.',
             });
             app(SunnySyncCoordinator::class)->dispatch();
 
@@ -135,7 +136,7 @@ trait CopiesRecipeToTeam
         }
 
         if ($copy === null) {
-            $this->copyFailed('Sunny didn’t confirm the copy.');
+            $this->copyFailed('The server didn’t confirm the copy.');
             app(SunnySyncCoordinator::class)->dispatch();
 
             return;
@@ -151,9 +152,12 @@ trait CopiesRecipeToTeam
      */
     public function copyNote(): array
     {
+        if ($this->copyProblem === 'offline') {
+            return ['title' => Offline::TITLE, 'message' => Offline::ADVICE];
+        }
+
         [$title, $message] = match ($this->copyProblem) {
-            'offline' => ['You’re offline', 'Copying to another team needs a connection.'],
-            'unsent' => ['Still sending your changes', 'Sunny copies what it has, so your latest changes need to reach it first.'],
+            'unsent' => ['Still sending your changes', 'The server copies what it has, so your latest changes need to reach it first.'],
             default => ['Couldn’t copy', $this->copyError],
         };
 

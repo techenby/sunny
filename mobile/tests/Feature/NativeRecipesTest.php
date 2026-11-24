@@ -9,18 +9,12 @@ beforeEach(fn () => seedSunnyData());
 it('lists recipes alphabetically with their source and total time', function () {
     $screen = Native::visit('/recipes')
         ->assertNavTitle('Recipes')
-        ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === 'Weeknight Chili'
-            && ($node['props']['supporting'] ?? null) === 'budgetbytes.com · 45 minutes')
-        ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === 'Grandma’s Lasagna'
-            && ($node['props']['supporting'] ?? null) === 'Grandma’s recipe card · 1 hour 30 minutes')
-        ->assertElement('list_item', fn (array $node): bool => ($node['props']['headline'] ?? null) === 'Overnight Oats'
-            && ($node['props']['supporting'] ?? null) === '8 hours')
         ->assertAccessible();
 
-    $headlines = [];
-    $collect = function (array $node) use (&$collect, &$headlines): void {
-        if (($node['type'] ?? null) === 'list_item') {
-            $headlines[] = $node['props']['headline'];
+    $labels = [];
+    $collect = function (array $node) use (&$collect, &$labels): void {
+        if (($node['type'] ?? null) === 'pressable' && str_starts_with($node['ref'] ?? '', 'recipe-')) {
+            $labels[] = $node['props']['a11y_label'] ?? null;
         }
 
         foreach ($node['children'] ?? [] as $child) {
@@ -29,13 +23,13 @@ it('lists recipes alphabetically with their source and total time', function () 
     };
     $collect($screen->tree());
 
-    expect($headlines)->toBe([
-        'Buttermilk Pancakes',
-        'Chocolate Chip Cookies',
-        'Grandma’s Lasagna',
-        'Overnight Oats',
-        'Veggie Lasagna',
-        'Weeknight Chili',
+    expect($labels)->toBe([
+        'Buttermilk Pancakes, allrecipes.com · 25 minutes',
+        'Chocolate Chip Cookies, kingarthurbaking.com · 25 minutes',
+        'Grandma’s Lasagna, Grandma’s recipe card · 1 hour 30 minutes',
+        'Overnight Oats, 8 hours',
+        'Veggie Lasagna, Grandma’s recipe card · 1 hour 30 minutes',
+        'Weeknight Chili, budgetbytes.com · 45 minutes',
     ]);
 });
 
@@ -187,6 +181,6 @@ it('keeps a recipe’s edit action above the tab bar', function () {
     seedSunnyData();
 
     Native::visit('/recipes/1')
-        ->assertElement('bottom_bar', fn (array $node): bool => str_contains(json_encode($node), '"ref":"edit-recipe"'))
+        ->assertElement('bottom_bar', fn (array $node): bool => str_contains(json_encode($node), '"ref":"recipe-edit"'))
         ->assertMissingElement('top_bar', fn (array $node): bool => str_contains(json_encode($node), 'top_bar_action'));
 });

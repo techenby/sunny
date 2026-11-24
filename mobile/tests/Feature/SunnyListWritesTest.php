@@ -134,7 +134,7 @@ it('flags a saved item Sunny says belongs to another list', function (): void {
 
     Native::visit('/lists/1')->tap('list-item-1');
 
-    expect(PendingWrite::sole()->error)->toBe('Sunny didn’t confirm this change. Edit it to try again.')
+    expect(PendingWrite::sole()->error)->toBe('The server didn’t confirm this change. Edit it to try again.')
         ->and(ChecklistItem::find(1)->checklist_id)->toBe(1);
 });
 
@@ -207,14 +207,14 @@ it('forgets a list that never reached Sunny, along with its items', function ():
 
 it('refuses to add an item to a list that is no longer on the phone', function (): void {
     expect(fn () => app(SunnyOutbox::class)->queue('checklist_items', 1, ['checklist_id' => 99, 'name' => 'Nails']))
-        ->toThrow(ValidationException::class, 'This list is no longer available. Sync with Sunny.');
+        ->toThrow(ValidationException::class, 'This list is no longer available.');
 });
 
 it('refuses to change an item from another team', function (): void {
     Team::create(['id' => 2, 'name' => 'Work', 'slug' => 'work', 'server' => SunnyStore::server()]);
 
     expect(fn () => app(SunnyOutbox::class)->queue('checklist_items', 2, ['completed' => true], 1))
-        ->toThrow(ValidationException::class, 'This record is no longer available. Sync with Sunny.');
+        ->toThrow(ValidationException::class, 'This is no longer available.');
 });
 
 it('keeps a list deleted on the phone out of a download that still has it', function (): void {

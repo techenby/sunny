@@ -41,6 +41,7 @@ use App\NativeComponents\SetUpHome;
 use App\NativeComponents\SharedRecipe;
 use App\NativeComponents\TeamSettings;
 use App\NativeComponents\Today;
+use App\NativeComponents\UiKitGallery;
 use App\NativeComponents\VerifyEmail;
 use Illuminate\Support\Facades\Route;
 
@@ -86,4 +87,8 @@ Route::nativeGroup(TabsLayout::class, function () {
     Route::native('/lists/create', CreateList::class);
     Route::native('/lists/{id}', ListDetail::class);
     Route::native('/lists/{id}/edit', EditList::class);
+
+    if (app()->environment('local')) {
+        Route::native('/ui-kit', UiKitGallery::class);
+    }
 });

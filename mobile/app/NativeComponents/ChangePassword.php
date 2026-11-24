@@ -3,7 +3,9 @@
 namespace App\NativeComponents;
 
 use App\Actions\DestroySession;
+use App\Concerns\NeedsConnection;
 use App\Http\Integrations\Sunny\SunnyAccount;
+use App\Layouts\HidesTabBar;
 use App\Support\Toast;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\View\View;
@@ -12,8 +14,10 @@ use RuntimeException;
 use Saloon\Exceptions\Request\FatalRequestException;
 use Saloon\Exceptions\Request\RequestException;
 
-class ChangePassword extends Component
+class ChangePassword extends Component implements HidesTabBar
 {
+    use NeedsConnection;
+
     public string $currentPassword = '';
 
     public string $password = '';
@@ -104,7 +108,7 @@ class ChangePassword extends Component
         }
 
         if ($this->fieldErrors === []) {
-            $this->error = $response->status() === 429 ? 'Too many attempts. Please wait a minute and try again.' : 'Sunny couldn’t change your password right now.';
+            $this->error = $response->status() === 429 ? 'Too many attempts. Please wait a minute and try again.' : 'The server couldn’t change your password right now.';
         }
     }
 }

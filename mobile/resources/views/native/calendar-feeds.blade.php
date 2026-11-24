@@ -1,5 +1,6 @@
 @use('App\Icons\Android')
 @use('App\Icons\Ios')
+@use('App\Support\Offline')
 @use('App\Ui\Card')
 
 @php($feeds = $this->feeds)
@@ -8,12 +9,14 @@
 
 <native:bottom-bar>
     <row class="w-full items-center px-4 pb-2">
-        <pressable ref="add-calendar" a11y-label="Add calendar" class="min-h-12 flex-1 items-center justify-center rounded-full bg-theme-primary" @navigate('/calendar/feeds/create')>
-            <row class="items-center gap-2">
-                <icon :ios="Ios::Plus" :android="Android::Add" :size="18" class="text-theme-on-primary" />
-                <text font="semibold" class="text-lg text-theme-on-primary">Add calendar</text>
-            </row>
-        </pressable>
+        <x-ui.button
+            ref="add-calendar"
+            class="flex-1"
+            :ios="Ios::Plus"
+            :android="Android::Add"
+            a11y-label="New calendar"
+            navigate="/calendar/feeds/create"
+        >New calendar</x-ui.button>
     </row>
 </native:bottom-bar>
 
@@ -26,17 +29,19 @@
                 <row class="w-full items-start gap-3">
                     <icon :ios="Ios::WifiSlash" :android="Android::WifiOff" :size="20" class="text-theme-destructive" />
                     <column class="flex-1 gap-0.5">
-                        <x-ui.heading class="text-theme-destructive">{{ $status === 'offline' ? 'You’re offline' : 'Sunny is unavailable' }}</x-ui.heading>
-                        <text class="text-base text-theme-on-surface">{{ $feeds !== null ? 'These may be out of date. ' : '' }}Adding, editing or removing calendars needs a connection.</text>
+                        <x-ui.heading class="text-theme-destructive">{{ $status === 'offline' ? Offline::TITLE : 'The server is unavailable' }}</x-ui.heading>
+                        <text class="text-base text-theme-on-surface">{{ $feeds !== null ? 'These may be out of date. ' : '' }}{{ $status === 'offline' ? Offline::ADVICE : 'Try again in a moment.' }}</text>
                     </column>
                 </row>
                 <row class="w-full pl-8">
-                    <pressable ref="calendar-feeds-retry" a11y-label="Try again" class="min-h-12 items-center justify-center rounded-full bg-theme-primary px-4" @tap="refresh">
-                        <row class="items-center gap-1.5">
-                            <icon :ios="Ios::ArrowClockwise" :android="Android::Refresh" :size="16" class="text-theme-on-primary" />
-                            <text font="semibold" class="text-base text-theme-on-primary">Try again</text>
-                        </row>
-                    </pressable>
+                    <x-ui.button
+                        ref="calendar-feeds-retry"
+                        variant="secondary"
+                        :ios="Ios::ArrowClockwise"
+                        :android="Android::Refresh"
+                        a11y-label="Try again"
+                        tap="refresh"
+                    >Try again</x-ui.button>
                 </row>
             </column>
         @endif
@@ -49,18 +54,20 @@
                 </column>
             @endif
         @elseif (! $feeds['failing'] && ! $feeds['working'])
-            <column ref="calendar-feeds-empty" class="{{ Card::classes() }} w-full items-center gap-2 px-4 py-6">
-                <icon :ios="Ios::Calendar" :android="Android::CalendarMonth" :size="28" class="text-theme-primary" />
-                <x-ui.heading>No calendars yet</x-ui.heading>
-                <x-ui.text size="sm" class="text-center">Add Google Calendar, Proton or any calendar with an iCal link.</x-ui.text>
-            </column>
+            <x-ui.empty-state
+                ref="calendar-feeds-empty"
+                :ios="Ios::Calendar"
+                :android="Android::CalendarMonth"
+                heading="No calendars yet"
+                text="Connect Google Calendar, Proton or any calendar with an iCal link."
+            />
         @else
             @foreach ($feeds['failing'] as $feed)
                 <column ref="calendar-feed-{{ $feed['id'] }}-card" class="{{ Card::classes() }} w-full pb-3">
-                    @include('native.calendar-feed-row', ['feed' => $feed])
+                    @include('native.calendar-feed-row', ['feed' => $feed, 'menu' => $this->feedMenu($feed)])
                     <column ref="calendar-feed-{{ $feed['id'] }}-fix" class="mx-3 gap-1.5 rounded-xl bg-theme-primary/15 px-4 py-3">
                         <row class="w-full items-center gap-2">
-                            <text font="accent" class="flex-1 text-sm text-theme-destructive">Sunny couldn’t fetch it</text>
+                            <text font="accent" class="flex-1 text-sm text-theme-destructive">The server couldn’t fetch it</text>
                             @if ($feed['problem'] && str_starts_with($feed['problem'], 'HTTP '))
                                 <text font="mono" class="rounded-md bg-theme-surface/70 px-1.5 py-0.5 text-xs text-theme-on-surface">{{ $feed['problem'] }}</text>
                             @endif
@@ -76,7 +83,7 @@
             @if ($feeds['working'])
                 <column class="{{ Card::classes() }} w-full">
                     @foreach ($feeds['working'] as $feed)
-                        @include('native.calendar-feed-row', ['feed' => $feed])
+                        @include('native.calendar-feed-row', ['feed' => $feed, 'menu' => $this->feedMenu($feed)])
                         @unless ($loop->last)
                             <divider class="ml-[66]" />
                         @endunless

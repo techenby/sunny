@@ -8,7 +8,7 @@
     <native:top-bar-action
         ref="preferences"
         id="preferences"
-        label="Preferences"
+        label="Settings"
         :ios-icon="Ios::Gearshape"
         :android-icon="Android::Settings"
         @navigate('/preferences')
@@ -18,21 +18,14 @@
 @php
     $addMenu = [
         NavAction::make('add-recipe')->label('New recipe')->icon(ios: Ios::ForkKnife->value, android: Android::Restaurant->value)->url('/recipes/create'),
-        NavAction::make('add-item')->label('New item')->icon(ios: Ios::Shippingbox->value, android: Android::Inventory2->value)->url('/inventory/create'),
+        NavAction::make('add-item')->label('Add to inventory')->icon(ios: Ios::Shippingbox->value, android: Android::Inventory2->value)->url('/inventory/create'),
         NavAction::make('scan-items')->label('Bulk add')->icon(ios: Ios::CameraViewfinder->value, android: Android::DocumentScanner->value)->url('/inventory/scan'),
     ];
 @endphp
 
 <native:bottom-bar>
     <row class="w-full items-center justify-end px-4 pb-2">
-        <pressable
-            ref="dashboard-add"
-            a11y-label="Add"
-            :menu="$addMenu"
-            class="h-12 w-12 items-center justify-center rounded-full glass android:bg-theme-surface"
-        >
-            <native:icon :ios="Ios::Plus" :android="Android::Add" :size="22" class="text-theme-on-surface" />
-        </pressable>
+        <x-ui.button ref="dashboard-add" variant="glass" :ios="Ios::Plus" :android="Android::Add" a11y-label="Add" :menu="$addMenu" />
     </row>
 </native:bottom-bar>
 
@@ -64,26 +57,21 @@
                         <x-ui.text size="sm">{{ collect([$invitation['sent'] ? 'Sent '.$invitation['sent'] : null, $invitation['expires']])->filter()->implode(' · ') }}</x-ui.text>
                     </column>
                 </row>
-                <button
+                <x-ui.button
                     ref="dashboard-accept-{{ $invitation['code'] }}"
-                    variant="primary"
-                    size="lg"
-                    font="semibold"
                     class="w-full"
-                    @tap="acceptInvitation('{{ $invitation['code'] }}')"
+                    tap="acceptInvitation('{{ $invitation['code'] }}')"
                 >
                     Join {{ $invitation['team'] }}
-                </button>
-                <button
+                </x-ui.button>
+                <x-ui.button
                     ref="dashboard-decline-{{ $invitation['code'] }}"
                     variant="secondary"
-                    size="lg"
-                    font="semibold"
                     class="w-full"
-                    @tap="declineInvitation('{{ $invitation['code'] }}')"
+                    tap="declineInvitation('{{ $invitation['code'] }}')"
                 >
                     Decline
-                </button>
+                </x-ui.button>
             </column>
         @endforeach
 
@@ -107,7 +95,7 @@
                 @if ($comingUp && $calendarStatus !== '' && $this->calendarUpdatedAt)
                     <row ref="coming-up-status" class="w-full items-start gap-2">
                         <icon :ios="Ios::WifiSlash" :android="Android::WifiOff" :size="14" class="mt-0.5 text-theme-on-surface-variant" />
-                        <x-ui.text size="sm" class="flex-1">{{ $calendarStatus === 'offline' ? 'You’re offline.' : 'Sunny couldn’t refresh events.' }} Last updated {{ $this->calendarUpdatedAt }}.</x-ui.text>
+                        <x-ui.text size="sm" class="flex-1">{{ $calendarStatus === 'offline' ? 'You’re offline.' : 'The server couldn’t refresh events.' }} Last updated {{ $this->calendarUpdatedAt }}.</x-ui.text>
                     </row>
                 @endif
 
@@ -154,10 +142,10 @@
                                 <x-ui.text size="sm">Loading events…</x-ui.text>
                             @elseif ($calendarStatus === 'offline')
                                 <icon :ios="Ios::WifiSlash" :android="Android::WifiOff" :size="16" class="text-theme-on-surface-variant" />
-                                <x-ui.text size="sm" class="flex-1">You’re offline. Events show up here once Sunny can be reached.</x-ui.text>
+                                <x-ui.text size="sm" class="flex-1">You’re offline. Events show up here once the server can be reached.</x-ui.text>
                             @else
                                 <icon :ios="Ios::ExclamationmarkTriangle" :android="Android::Warning" :size="16" class="text-theme-on-surface-variant" />
-                                <x-ui.text size="sm" class="flex-1">Sunny couldn’t load events. Pull down to try again.</x-ui.text>
+                                <x-ui.text size="sm" class="flex-1">The server couldn’t load events. Pull down to try again.</x-ui.text>
                             @endif
                         </row>
                     @endif
@@ -196,18 +184,18 @@
                 <pressable
                     ref="recipes-empty"
                     @navigate('/recipes/create')
-                    a11y-label="Add your first recipe"
+                    a11y-label="Create your first recipe"
                     class="{{ Card::classes() }} w-full items-center gap-2 px-4 py-6"
                 >
                     <icon :ios="Ios::ForkKnife" :android="Android::Restaurant" :size="28" class="text-theme-primary" />
-                    <x-ui.heading>Add your first recipe</x-ui.heading>
-                    <x-ui.text size="sm">Recipes you add or update will show up here.</x-ui.text>
+                    <x-ui.heading>Create your first recipe</x-ui.heading>
+                    <x-ui.text size="sm">Recipes you create or update will show up here.</x-ui.text>
                 </pressable>
             @endif
         </column>
 
         <column class="w-full gap-3">
-            <x-ui.heading size="lg">Recent items</x-ui.heading>
+            <x-ui.heading size="lg">Recent inventory</x-ui.heading>
             @if ($this->recentItems)
                 <column class="{{ Card::classes() }} w-full">
                     @foreach ($this->recentItems as $item)
@@ -220,7 +208,6 @@
                         >
                             <row class="w-full items-start gap-4">
                                 <x-ui.avatar
-                                    :size="$item['photo'] ? '2xl' : 'md'"
                                     :src="$item['photo']"
                                     :alt="'Photo of '.$item['name']"
                                     :color="$item['type']->color()"
@@ -243,12 +230,12 @@
                 <pressable
                     ref="items-empty"
                     @navigate('/inventory/create')
-                    a11y-label="Add your first item"
+                    a11y-label="Add to inventory"
                     class="{{ Card::classes() }} w-full items-center gap-2 px-4 py-6"
                 >
                     <icon :ios="Ios::Archivebox" :android="Android::Inventory2" :size="28" class="text-theme-accent" />
-                    <x-ui.heading>Add your first item</x-ui.heading>
-                    <x-ui.text size="sm">Items you add or update will show up here.</x-ui.text>
+                    <x-ui.heading>Add to inventory</x-ui.heading>
+                    <x-ui.text size="sm">Things you add or update will show up here.</x-ui.text>
                 </pressable>
             @endif
         </column>

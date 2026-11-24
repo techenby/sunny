@@ -279,14 +279,21 @@ it('opens the create screen from every routine', function () {
         ->assertAccessible();
 });
 
-it('offers time of day and repeats as vertical option lists', function () {
+it('offers time of day and repeats as dropdowns', function () {
     Native::visit('/routines/create')
         ->assertMissingElement('button_group')
-        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'create-routine-time-of-day-0'
-            && ($node['props']['a11y_label'] ?? null) === 'Morning, selected')
-        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'create-routine-time-of-day-3'
-            && ($node['props']['a11y_label'] ?? null) === 'Anytime')
-        ->tap('create-routine-time-of-day-3')
+        ->assertElement('select', fn (array $node): bool => ($node['ref'] ?? null) === 'create-routine-time-of-day'
+            && $node['props']['label'] === 'Time of day'
+            && $node['props']['value'] === 'Morning'
+            && $node['props']['options'] === ['Morning', 'Afternoon', 'Evening', 'Anytime'])
+        ->assertElement('select', fn (array $node): bool => ($node['ref'] ?? null) === 'create-routine-frequency'
+            && $node['props']['label'] === 'Repeats'
+            && $node['props']['value'] === 'Daily'
+            && $node['props']['options'] === ['Daily', 'Weekly', 'Monthly'])
+        ->select('create-routine-time-of-day', 'Anytime')
+        ->assertSet('timeOfDayIndex', 3)
+        ->assertElement('select', fn (array $node): bool => ($node['ref'] ?? null) === 'create-routine-time-of-day' && $node['props']['value'] === 'Anytime')
+        ->select('create-routine-time-of-day', 'Midnight')
         ->assertSet('timeOfDayIndex', 3)
         ->call('chooseTimeOfDay', 9)
         ->assertSet('timeOfDayIndex', 3)
@@ -297,8 +304,8 @@ it('offers time of day and repeats as vertical option lists', function () {
 it('creates a weekly routine on the phone and opens it', function () {
     Native::visit('/routines/create')
         ->input('create-routine-name', ' Gym ')
-        ->tap('create-routine-time-of-day-1')
-        ->tap('create-routine-frequency-1')
+        ->select('create-routine-time-of-day', 'Afternoon')
+        ->select('create-routine-frequency', 'Weekly')
         ->assertSee('On these days')
         ->toggle('create-routine-weekday-5', true)
         ->toggle('create-routine-weekday-1', true)
@@ -316,7 +323,7 @@ it('creates a weekly routine on the phone and opens it', function () {
     Native::visit('/routines/-1')
         ->assertSee('Afternoon · Mon, Wed')
         ->assertSee('This routine has no steps.')
-        ->assertSee('Saved on this phone · syncing with Sunny');
+        ->assertDontSee('syncing with Sunny');
 });
 
 it('creates a paused monthly routine', function () {

@@ -335,7 +335,10 @@ it('steps back no further than a week before today', function (): void {
         ->assertElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'routines-date' && str_ends_with($node['props']['text'] ?? '', ' · 7 days ago'))
         ->assertElement('row', dayBarWithToday('pressable'))
         ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'previous-day')
-        ->assertElement('column', fn (array $node): bool => ($node['ref'] ?? null) === 'previous-day' && ($node['style']['opacity'] ?? null) === 0.4)
+        ->assertElement('column', fn (array $node): bool => ($node['ref'] ?? null) === 'previous-day'
+            && isset($node['props']['glass'])
+            && ($node['style']['bg_color'] ?? null) !== theme('surface-variant')
+            && $node['children'][0]['props']['color'] === '#66'.substr(theme('on-surface'), 1))
         ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'next-day')
         ->assertAccessible()
         ->call('previousDay')
@@ -358,7 +361,10 @@ it('steps forward no further than a week after tomorrow', function (): void {
         ->assertElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'routines-date' && str_ends_with($node['props']['text'] ?? '', ' · in 8 days'))
         ->assertElement('row', dayBarWithToday('pressable'))
         ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'next-day')
-        ->assertElement('column', fn (array $node): bool => ($node['ref'] ?? null) === 'next-day' && ($node['style']['opacity'] ?? null) === 0.4)
+        ->assertElement('column', fn (array $node): bool => ($node['ref'] ?? null) === 'next-day'
+            && isset($node['props']['glass'])
+            && ($node['style']['bg_color'] ?? null) !== theme('surface-variant')
+            && $node['children'][0]['props']['color'] === '#66'.substr(theme('on-surface'), 1))
         ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'previous-day')
         ->assertAccessible()
         ->call('nextDay')
@@ -368,13 +374,15 @@ it('steps forward no further than a week after tomorrow', function (): void {
         ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'next-day');
 });
 
-it('fades the Today button on today so it can’t be tapped', function (): void {
+it('dims the Today button on today so it can’t be tapped', function (): void {
     Native::visit('/today')
         ->assertElement('row', dayBarWithToday('column'))
         ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'back-to-today')
         ->assertElement('column', fn (array $node): bool => ($node['ref'] ?? null) === 'back-to-today'
-            && ($node['style']['opacity'] ?? null) === 0.4
-            && array_column(array_column($node['children'], 'props'), 'text') === ['Today'])
+            && isset($node['props']['glass'])
+            && ($node['style']['bg_color'] ?? null) !== theme('surface-variant')
+            && $node['children'][0]['props']['text'] === 'Today'
+            && $node['children'][0]['props']['color'] === '#66'.substr(theme('on-surface'), 1))
         ->assertAccessible();
 });
 
@@ -543,7 +551,7 @@ it('keeps showing a downloaded day when it cannot be refreshed', function (MockR
         ->assertSet('loadError', '')
         ->assertSee('Get ready')
         ->assertDontSee('You’re offline')
-        ->assertDontSee('Sunny is unavailable');
+        ->assertDontSee('The server is unavailable');
 })->with([
     'offline' => fn (): MockResponse => routineDayOfflineResponse(),
     'unavailable' => fn (): MockResponse => MockResponse::make([], 500),
@@ -681,7 +689,7 @@ it('says when Sunny cannot send another day', function (): void {
 
     Native::visit('/today')
         ->tap('previous-day')
-        ->assertSee('Sunny is unavailable')
+        ->assertSee('The server is unavailable')
         ->assertDontSee('You’re offline');
 });
 

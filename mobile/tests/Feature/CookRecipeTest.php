@@ -45,7 +45,7 @@ it('opens on the prep tab with the ingredients and no tab bar', function () {
         ->assertSee('Start cooking')
         ->assertDontSee('Whisk the flour and sugar together.')
         ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'cook-ingredient-0')
-        ->assertMissingElement('native_root_tabs')
+        ->assertTabBarHidden()
         ->assertAccessible();
 });
 

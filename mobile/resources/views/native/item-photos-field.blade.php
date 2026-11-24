@@ -3,13 +3,8 @@
 @use('App\Models\ItemPhoto')
 @use('App\Ui\Card')
 
-<column class="w-full gap-2">
-    <column class="w-full gap-0.5">
-        <text font="semibold" class="text-lg text-theme-on-surface">Photos (optional)</text>
-        @if (count($photos) > 1)
-            <x-ui.text size="sm">The first photo shows in lists. Use the arrows to change the order.</x-ui.text>
-        @endif
-    </column>
+<column class="w-full gap-1">
+    <x-ui.field-label>Photos (optional)</x-ui.field-label>
 
     @if ($photos !== [])
         <column ref="{{ $refPrefix }}-photos" class="{{ Card::classes() }} w-full">
@@ -26,44 +21,43 @@
                         @if ($index === 0)
                             <x-ui.badge :ref="$refPrefix.'-photo-primary-badge'" color="red">Primary</x-ui.badge>
                         @else
-                            <pressable
+                            <x-ui.button
                                 ref="{{ $refPrefix }}-photo-{{ $index }}-primary"
+                                variant="text"
+                                :ios="Ios::StarFill"
+                                :android="Android::Star"
                                 a11y-label="Make photo {{ $index + 1 }} the primary photo"
-                                class="min-h-12 justify-center"
-                                @tap="makePrimary({{ $index }})"
-                            >
-                                <row class="items-center gap-1">
-                                    <icon :ios="Ios::StarFill" :android="Android::Star" :size="14" class="text-theme-primary-text" />
-                                    <text font="semibold" class="text-sm text-theme-primary-text">Make primary</text>
-                                </row>
-                            </pressable>
+                                tap="makePrimary({{ $index }})"
+                            >Make primary</x-ui.button>
                         @endif
                     </column>
 
-                    <pressable
+                    <x-ui.button
                         ref="{{ $refPrefix }}-photo-{{ $index }}-up"
+                        variant="text"
+                        :ios="Ios::ArrowUp"
+                        :android="Android::ArrowUpward"
                         a11y-label="Move photo {{ $index + 1 }} up"
-                        class="h-12 w-12 items-center justify-center"
-                        @tap="movePhotoUp({{ $index }})"
-                    >
-                        <icon :ios="Ios::ArrowUp" :android="Android::ArrowUpward" :size="18" class="{{ $index === 0 ? 'text-theme-on-surface-variant/40' : 'text-theme-on-surface' }}" />
-                    </pressable>
-                    <pressable
+                        tap="movePhotoUp({{ $index }})"
+                        :disabled="$index === 0"
+                    />
+                    <x-ui.button
                         ref="{{ $refPrefix }}-photo-{{ $index }}-down"
+                        variant="text"
+                        :ios="Ios::ArrowDown"
+                        :android="Android::ArrowDownward"
                         a11y-label="Move photo {{ $index + 1 }} down"
-                        class="h-12 w-12 items-center justify-center"
-                        @tap="movePhotoDown({{ $index }})"
-                    >
-                        <icon :ios="Ios::ArrowDown" :android="Android::ArrowDownward" :size="18" class="{{ $loop->last ? 'text-theme-on-surface-variant/40' : 'text-theme-on-surface' }}" />
-                    </pressable>
-                    <pressable
+                        tap="movePhotoDown({{ $index }})"
+                        :disabled="$loop->last"
+                    />
+                    <x-ui.button
                         ref="{{ $refPrefix }}-photo-{{ $index }}-remove"
+                        variant="text"
+                        :ios="Ios::Trash"
+                        :android="Android::Delete"
                         a11y-label="Remove photo {{ $index + 1 }}"
-                        class="h-12 w-12 items-center justify-center"
-                        @tap="removePhoto({{ $index }})"
-                    >
-                        <icon :ios="Ios::Trash" :android="Android::Delete" :size="18" class="text-theme-on-surface-variant" />
-                    </pressable>
+                        tap="removePhoto({{ $index }})"
+                    />
                 </row>
                 @unless ($loop->last)
                     <divider class="ml-3" />
@@ -72,33 +66,33 @@
         </column>
     @endif
 
+    @if (count($photos) > 1)
+        <x-ui.field-help>The first photo shows in lists. Use the arrows to change the order.</x-ui.field-help>
+    @endif
+
     @if (count($photos) < ItemPhoto::MAX_PER_ITEM)
         <row class="w-full flex-wrap gap-3">
-            <pressable
+            <x-ui.button
                 ref="{{ $refPrefix }}-photo-camera"
+                variant="secondary"
+                class="flex-1"
+                :ios="Ios::Camera"
+                :android="Android::PhotoCamera"
                 a11y-label="Take photo"
-                class="min-h-12 flex-1 items-center justify-center rounded-xl border border-theme-outline bg-theme-surface px-4"
-                @tap="takePhoto"
-            >
-                <row class="items-center gap-2">
-                    <native:icon :ios="Ios::Camera" :android="Android::PhotoCamera" :size="20" class="text-theme-on-surface" />
-                    <text font="semibold" class="text-base text-theme-on-surface">Take photo</text>
-                </row>
-            </pressable>
-            <pressable
+                tap="takePhoto"
+            >Take photo</x-ui.button>
+            <x-ui.button
                 ref="{{ $refPrefix }}-photo-library"
+                variant="secondary"
+                class="flex-1"
+                :ios="Ios::Photo"
+                :android="Android::Image"
                 a11y-label="Choose photos"
                 a11y-hint="Opens the photo library"
-                class="min-h-12 flex-1 items-center justify-center rounded-xl border border-theme-outline bg-theme-surface px-4"
-                @tap="choosePhoto"
-            >
-                <row class="items-center gap-2">
-                    <native:icon :ios="Ios::Photo" :android="Android::Image" :size="20" class="text-theme-on-surface" />
-                    <text font="semibold" class="text-base text-theme-on-surface">Choose photo</text>
-                </row>
-            </pressable>
+                tap="choosePhoto"
+            >Choose photo</x-ui.button>
         </row>
     @else
-        <x-ui.text size="sm" ref="{{ $refPrefix }}-photos-full">That’s the most photos one item can have. Remove one to add another.</x-ui.text>
+        <x-ui.text size="sm" ref="{{ $refPrefix }}-photos-full">That’s the most photos it can have. Remove one to add another.</x-ui.text>
     @endif
 </column>

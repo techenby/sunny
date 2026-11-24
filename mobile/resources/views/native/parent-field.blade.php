@@ -7,8 +7,8 @@
      tapping calls the including component's openParentPicker() from
      ChoosesInventoryParent. --}}
 
-<column class="w-full gap-2">
-    <text font="semibold" class="text-lg text-theme-on-surface">{{ $label ?? 'Where does it go?' }}</text>
+<column class="w-full gap-1">
+    <x-ui.field-label>{{ $label ?? 'Where does it go?' }}</x-ui.field-label>
     <pressable
         ref="{{ $refPrefix }}-parent"
         :a11y-label="($label ?? 'Where does it go?').' '.($selectedParent['name'] ?? ($noParentLabel ?? 'Not in a place yet'))"
@@ -16,7 +16,7 @@
         class="min-h-12 w-full justify-center rounded-xl border border-theme-outline bg-theme-surface py-2 pr-3 pl-4"
         @tap="openParentPicker"
     >
-        <row class="w-full items-start gap-3">
+        <row class="w-full items-center gap-3">
             @if ($selectedParent)
                 <x-ui.avatar :color="$selectedParent['type']->color()" :ios="$selectedParent['type']->iosIcon()" :android="$selectedParent['type']->androidIcon()" />
             @else

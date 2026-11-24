@@ -42,7 +42,7 @@ it('confirms with the server’s message whatever the email', function (): void 
         ->assertSee('Check your email')
         ->assertSee('alex@example.com')
         ->assertSee(RESET_LINK_SENT)
-        ->assertSee('The link opens the Sunny website, where you can set your new password.')
+        ->assertSee('The link opens the website, where you can set your new password.')
         ->assertSee('Back to log in')
         ->assertSee('Open Mail')
         ->assertNoNavigation();
@@ -120,7 +120,7 @@ it('keeps the email when offline and tries again', function (): void {
         ->input('forgot-password-email', 'alex@example.com')
         ->tap('forgot-password-submit')
         ->assertSee('You’re offline')
-        ->assertSee('Sending a reset link needs a connection. Nothing’s been sent yet.')
+        ->assertSee('Try again when you’re connected. Nothing’s been sent yet.')
         ->assertSee('Try again')
         ->assertSet('email', 'alex@example.com');
 
@@ -133,12 +133,21 @@ it('does not contact Sunny when the phone knows it is offline', function (): voi
     Native::fakeBridge()->respondTo('Network.Status', ['connected' => false]);
     Saloon::fake([SendPasswordResetLinkRequest::class => MockResponse::make(['message' => RESET_LINK_SENT], 202)]);
 
-    Native::visit('/forgot-password')
+    $screen = Native::visit('/forgot-password')
+        ->assertSee('You’re offline')
+        ->assertSee('Try again when you’re connected.')
+        ->assertDontSee('Nothing’s been sent yet.')
         ->input('forgot-password-email', 'alex@example.com')
-        ->tap('forgot-password-submit')
+        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'forgot-password-submit')
+        ->call('send')
         ->assertSee('You’re offline');
 
     Saloon::assertNothingSent();
+
+    $screen->bridge()->respondTo('Network.Status', ['connected' => true]);
+
+    $screen->firePolls()
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'forgot-password-submit');
 });
 
 it('asks people to wait after too many tries', function (): void {
@@ -149,8 +158,9 @@ it('asks people to wait after too many tries', function (): void {
         ->tap('forgot-password-submit')
         ->assertSee('Too many tries')
         ->assertSee('Wait a minute and try again. In the meantime, check your inbox for the links we sent.')
-        ->assertElement('button', fn (array $node): bool => ($node['ref'] ?? null) === 'forgot-password-submit' && ($node['props']['disabled'] ?? null) === true)
-        ->tap('forgot-password-submit');
+        ->assertElement('column', fn (array $node): bool => ($node['ref'] ?? null) === 'forgot-password-submit')
+        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'forgot-password-submit')
+        ->call('send');
 
     Saloon::assertSentCount(1);
 

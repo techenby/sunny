@@ -37,7 +37,7 @@ class RecipeController extends Controller
         $recipe = ClientUuid::firstOrCreate(
             $team->recipes()->withTrashed(),
             $request->validated('client_uuid'),
-            fn (): Recipe => $action->handle($team, $request->validated()),
+            fn (): Recipe => $action->handle($team, $request->safe()->except('remove_photo'), $request->boolean('remove_photo')),
         );
 
         return RecipeResource::make($recipe)

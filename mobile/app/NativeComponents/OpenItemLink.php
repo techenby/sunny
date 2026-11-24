@@ -64,7 +64,7 @@ class OpenItemLink extends Component
     public function openInBrowser(): void
     {
         $url = self::urlFor((int) $this->param('id'));
-        $this->error = Browser::open($url) ? '' : 'Unable to open Sunny in the browser. Please try again.';
+        $this->error = Browser::open($url) ? '' : 'Unable to open the website. Please try again.';
     }
 
     protected static function siteUrl(): string

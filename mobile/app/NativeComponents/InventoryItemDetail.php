@@ -18,14 +18,17 @@ use App\Icons\Ios;
 use App\Models\ItemPhoto;
 use App\Models\PendingWrite;
 use App\Models\Team;
+use App\Support\Offline;
 use App\Support\Toast;
 use App\Support\ToastAction;
+use App\Ui\Menu;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use JsonException;
 use Native\Mobile\Attributes\Computed;
 use Native\Mobile\Attributes\On;
+use Native\Mobile\Edge\Elements\TopBarAction;
 use Native\Mobile\Edge\Layouts\Builders\NavAction;
 use Native\Mobile\Events\Alert\ButtonPressed;
 use Native\Mobile\Facades\Dialog;
@@ -196,15 +199,22 @@ class InventoryItemDetail extends Component
         return $this->item['team_id'] ?? null;
     }
 
+    public function edit(): void
+    {
+        $this->navigate('/inventory/'.$this->item['id'].'/edit');
+    }
+
     /**
-     * @return list<NavAction>
+     * @return list<NavAction|TopBarAction>
      */
     public function moreMenu(): array
     {
         return array_values(array_filter([
+            Menu::item('item-edit', 'Edit', Ios::Pencil, Android::Edit, 'edit'),
             NavAction::make('item-print-label')->label('Print label')->icon(ios: Ios::Qrcode->value, android: Android::QrCode2->value)->press('showQrCode'),
             NavAction::make('item-make-copies')->label('Make copies')->icon(ios: Ios::SquareOnSquare->value, android: Android::ContentCopy->value)->press('openCopies'),
             $this->teamMoveTeams() === [] ? null : NavAction::make('item-move-to-team')->label('Move to another team')->icon(ios: Ios::ArrowLeftArrowRight->value, android: Android::SwapHoriz->value)->press('openTeamMove'),
+            Menu::delete('delete-item', 'Delete '.mb_strtolower($this->item['type']->label()), 'confirmDeleteItem', 'Delete '.$this->item['name']),
         ]));
     }
 
@@ -259,7 +269,7 @@ class InventoryItemDetail extends Component
         $team = Team::query()->where('server', SunnyStore::server())->find($this->item['team_id']);
 
         if (! $team?->slug) {
-            $this->copiesFailed('Sync with Sunny before making copies.');
+            $this->copiesFailed(SunnySyncCoordinator::REFRESH_ADVICE);
 
             return;
         }
@@ -274,10 +284,10 @@ class InventoryItemDetail extends Component
             $response = $exception->getResponse();
             $this->copiesFailed(match ($response->status()) {
                 403 => 'You no longer have permission to add things to this team.',
-                404 => $this->item['name'].' is no longer on Sunny.',
-                422 => collect($response->json('errors') ?? [])->flatten()->first() ?? 'Sunny couldn’t make copies.',
+                404 => $this->item['name'].' is no longer on the server.',
+                422 => collect($response->json('errors') ?? [])->flatten()->first() ?? 'The server couldn’t make copies.',
                 429 => 'Too many attempts. Please wait before trying again.',
-                default => 'Sunny couldn’t make copies right now.',
+                default => 'The server couldn’t make copies right now.',
             });
             app(SunnySyncCoordinator::class)->dispatch();
 
@@ -291,7 +301,7 @@ class InventoryItemDetail extends Component
         }
 
         if ($made === 0) {
-            $this->copiesFailed('Sunny didn’t confirm the copies.');
+            $this->copiesFailed('The server didn’t confirm the copies.');
             app(SunnySyncCoordinator::class)->dispatch();
 
             return;
@@ -335,9 +345,12 @@ class InventoryItemDetail extends Component
      */
     public function copiesNote(): array
     {
+        if ($this->copiesProblem === 'offline') {
+            return ['title' => Offline::TITLE, 'message' => Offline::ADVICE];
+        }
+
         [$title, $message] = match ($this->copiesProblem) {
-            'offline' => ['You’re offline', 'Making copies needs a connection, since Sunny copies the photos for you.'],
-            'unsent' => ['Still sending your changes', 'Sunny copies what it has, so your latest changes need to reach it first.'],
+            'unsent' => ['Still sending your changes', 'The server copies what it has, so your latest changes need to reach it first.'],
             default => ['Couldn’t make copies', $this->copiesError],
         };
 
@@ -364,7 +377,9 @@ class InventoryItemDetail extends Component
     public function addMenu(): array
     {
         return [
-            NavAction::make('item-add-child')->label('Add one thing')->icon(ios: Ios::Plus->value, android: Android::Add->value)->press('addChild'),
+            NavAction::make('item-add-child')->label(ItemType::Item->addLabel())->icon(ios: ItemType::Item->iosIcon()->value, android: ItemType::Item->androidIcon()->value)->press("addChild('".ItemType::Item->value."')"),
+            NavAction::make('item-add-storage')->label(ItemType::Bin->addLabel())->icon(ios: ItemType::Bin->iosIcon()->value, android: ItemType::Bin->androidIcon()->value)->press("addChild('".ItemType::Bin->value."')"),
+            NavAction::make('item-add-place')->label(ItemType::Location->addLabel())->icon(ios: ItemType::Location->iosIcon()->value, android: ItemType::Location->androidIcon()->value)->press("addChild('".ItemType::Location->value."')"),
             NavAction::make('item-scan-children')->label('Bulk add')->icon(ios: Ios::CameraViewfinder->value, android: Android::DocumentScanner->value)->press('scanChildren'),
         ];
     }
@@ -412,9 +427,9 @@ class InventoryItemDetail extends Component
         $this->navigate('/inventory/'.$this->item['id'].'/edit');
     }
 
-    public function addChild(): void
+    public function addChild(string $type): void
     {
-        $this->navigate('/inventory/create', ['parent' => $this->item['id']]);
+        $this->navigate('/inventory/create', ['parent' => $this->item['id'], 'type' => $type]);
     }
 
     public function showQrCode(): void

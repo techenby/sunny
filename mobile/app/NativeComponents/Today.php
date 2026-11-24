@@ -144,7 +144,7 @@ class Today extends Component
             'possessive' => ($named !== null ? strtolower($named) : $title).'’s',
             'empty' => $named !== null ? 'No routines '.strtolower($named) : 'No routines on '.$title,
             'emptyDetail' => match (true) {
-                $offset === 0 => 'Routines due today will show up here. Pull down on the summary to refresh.',
+                $offset === 0 => 'Routines due today will show up here. Pull down on Summary to refresh.',
                 $offset < 0 => 'No routines were scheduled on this day.',
                 default => 'No routines are scheduled on this day.',
             },

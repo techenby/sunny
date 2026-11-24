@@ -89,15 +89,19 @@ it('makes several copies at once', function (): void {
 it('keeps the number of copies between 1 and 25', function (): void {
     $screen = Native::visit('/inventory/12')
         ->tap('Make copies')
-        ->tap('item-copies-fewer')
+        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'item-copies-fewer')
+        ->call('changeCopies', -1)
         ->assertSet('copies', 1)
         ->assertSee('Up to 25 at a time');
 
-    foreach (range(1, 30) as $tap) {
+    foreach (range(1, 24) as $tap) {
         $screen->tap('item-copies-more');
     }
 
     $screen->assertSet('copies', 25)
+        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'item-copies-more')
+        ->call('changeCopies', 1)
+        ->assertSet('copies', 25)
         ->assertSee('Make 25 copies')
         ->tap('item-copies-fewer')
         ->assertSet('copies', 24);
@@ -141,7 +145,8 @@ it('copies nothing while offline and lets them try again', function (): void {
         ->assertSet('showCopies', true)
         ->assertSet('copies', 3)
         ->assertSee('You’re offline')
-        ->assertSee('Making copies needs a connection, since Sunny copies the photos for you. Nothing’s been copied yet.')
+        ->assertSee('Try again when you’re connected.')
+        ->assertDontSee('Nothing’s been copied yet.')
         ->assertSee('Try again');
 
     expect(Item::count())->toBe(15);
@@ -168,9 +173,9 @@ it('explains when Sunny refuses to make copies', function (int $status, array $b
 
     expect(Item::count())->toBe(15);
 })->with([
-    'server error' => [500, [], 'Sunny couldn’t make copies right now.'],
+    'server error' => [500, [], 'The server couldn’t make copies right now.'],
     'no permission' => [403, [], 'You no longer have permission to add things to this team.'],
-    'gone' => [404, [], 'Holiday decorations is no longer on Sunny.'],
+    'gone' => [404, [], 'Holiday decorations is no longer on the server.'],
     'invalid' => [422, ['errors' => ['count' => ['The count field must not be greater than 25.']]], 'The count field must not be greater than 25.'],
 ]);
 

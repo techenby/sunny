@@ -53,9 +53,9 @@ class DeleteAccount extends Component
             }
 
             $this->error = match ($response->status()) {
-                422 => collect($response->json('errors') ?? [])->flatten()->first() ?? 'Sunny couldn’t delete your account.',
+                422 => collect($response->json('errors') ?? [])->flatten()->first() ?? 'The server couldn’t delete your account.',
                 429 => 'Too many attempts. Please wait before trying again.',
-                default => 'Sunny is unavailable right now. Your account was not deleted.',
+                default => 'The server is unavailable right now. Your account was not deleted.',
             };
 
             if ($response->status() === 422) {
@@ -67,7 +67,7 @@ class DeleteAccount extends Component
 
             return;
         } catch (FatalRequestException) {
-            $this->error = 'Unable to connect to Sunny. Your account was not deleted.';
+            $this->error = 'Unable to connect to the server. Your account was not deleted.';
 
             return;
         } catch (RuntimeException) {
@@ -97,7 +97,7 @@ class DeleteAccount extends Component
         }
 
         if (! Browser::inApp(app(SunnyConnector::class)->siteUrl().'/settings/teams/'.rawurlencode($slug))) {
-            Toast::error('Unable to open the Sunny website. Please try again.');
+            Toast::error('Unable to open the website. Please try again.');
         }
     }
 

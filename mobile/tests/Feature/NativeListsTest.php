@@ -21,7 +21,7 @@ it('lists the team’s lists alphabetically with their progress', function () {
         ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'checklist-1'
             && ($node['props']['a11y_label'] ?? null) === 'Groceries, Shopping · 1 of 3 done')
         ->assertSee('Wish list · No items')
-        ->assertElement('list_section', fn (array $node): bool => ($node['props']['footer'] ?? null) === '3 lists')
+        ->assertElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'lists-count' && $node['props']['text'] === '3 lists')
         ->assertAccessible();
 
     expect(array_column($screen->get('lists'), 'name'))->toBe(['Birthday ideas', 'Chores', 'Groceries']);
@@ -48,7 +48,7 @@ it('shows who each list belongs to when the team has several members', function 
             && ($node['props']['a11y_label'] ?? null) === 'Household')
         ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'checklist-1'
             && ($node['props']['a11y_label'] ?? null) === 'Groceries, Household, Shopping · 1 of 3 done')
-        ->assertElement('list_section', fn (array $node): bool => ($node['props']['footer'] ?? null) === '3 lists · 2 for the household')
+        ->assertElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'lists-count' && $node['props']['text'] === '3 lists · 2 for the household')
         ->assertAccessible();
 });
 
@@ -166,7 +166,7 @@ it('renames an item from the keyboard without changing whether it is checked', f
     $screen = Native::visit('/lists/1')
         ->press('editItem(2)')
         ->assertSet('editingName', 'Eggs')
-        ->assertElement('bare_text_input', fn (array $node): bool => ($node['ref'] ?? null) === 'list-edit-name')
+        ->assertElement('outlined_text_input', fn (array $node): bool => ($node['ref'] ?? null) === 'list-edit-name')
         ->assertAccessible()
         ->submit('list-edit-name', '  Free-range eggs ')
         ->assertSet('editingItemId', null)
@@ -179,6 +179,26 @@ it('renames an item from the keyboard without changing whether it is checked', f
             'resource' => 'checklist_items', 'record_id' => 2, 'payload' => ['name' => 'Free-range eggs', 'checklist_id' => 1],
         ]);
 });
+
+it('edits an item in a sheet and leaves the add bar where it was', function (string $platform) {
+    $sheet = fn (array $node): bool => ($node['ref'] ?? null) === 'list-edit-sheet';
+    $refs = function (array $node) use (&$refs): array {
+        return array_merge(isset($node['ref']) ? [$node['ref']] : [], ...array_map($refs, $node['children'] ?? []));
+    };
+
+    Native::visit('/lists/1', platform: $platform)
+        ->assertElement('bottom_sheet', fn (array $node): bool => $sheet($node) && $node['props']['visible'] === false && ($node['children'] ?? []) === [])
+        ->press('editItem(1)')
+        ->assertElement('bottom_sheet', fn (array $node): bool => $sheet($node)
+            && $node['props']['visible'] === true
+            && $node['props']['detents'] === 'fit'
+            && array_values(array_intersect($refs($node), ['list-edit-close', 'list-edit-name', 'list-edit-url', 'list-edit-remove-link', 'list-edit-save'])) === ['list-edit-close', 'list-edit-name', 'list-edit-url', 'list-edit-remove-link', 'list-edit-save'])
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'list-edit-close' && $node['props']['a11y_label'] === 'Close')
+        ->assertElement('bottom_bar', fn (array $node): bool => in_array('list-new-item', $refs($node), true) && ! in_array('list-edit-name', $refs($node), true))
+        ->assertSee('Edit item')
+        ->assertDontSee('Cancel')
+        ->assertAccessible();
+})->with(['ios', 'android']);
 
 it('saves the typed name with the save button', function () {
     Native::visit('/lists/1')
@@ -204,7 +224,12 @@ it('cancels an edit or an unchanged name without queueing anything', function ()
     Native::visit('/lists/1')
         ->press('editItem(1)')
         ->set('editingName', 'Oat milk')
-        ->tap('list-edit-cancel')
+        ->tap('list-edit-close')
+        ->assertSet('editingItemId', null)
+        ->assertSee('Milk')
+        ->press('editItem(1)')
+        ->set('editingName', 'Oat milk')
+        ->dismissSheet('list-edit-sheet')
         ->assertSet('editingItemId', null)
         ->assertSee('Milk')
         ->press('editItem(1)')
@@ -243,9 +268,9 @@ it('removes an item that never reached Sunny without queueing anything', functio
 
 it('flags an item change Sunny refused', function () {
     Native::visit('/lists/1')->tap('list-item-1');
-    PendingWrite::sole()->update(['error' => 'This record or team is no longer on Sunny.']);
+    PendingWrite::sole()->update(['error' => 'This record or team is no longer on the server.']);
 
-    Native::visit('/lists/1')->assertSee('Not saved to Sunny. This record or team is no longer on Sunny.');
+    Native::visit('/lists/1')->assertSee('Not saved. This record or team is no longer on the server.');
 });
 
 it('shows a link’s domain under the item’s name and opens it from there', function () {
@@ -277,8 +302,8 @@ it('puts edit, open link and remove in each item’s menu', function () {
 
     $tree = Native::visit('/lists/1')->assertAccessible()->tree();
 
-    expect($menu($tree, 'list-item-1-actions'))->toBe([['Edit', false], ['Open link', false], ['Remove', true]])
-        ->and($menu($tree, 'list-item-3-actions'))->toBe([['Edit', false], ['Remove', true]]);
+    expect($menu($tree, 'list-item-1-actions'))->toBe([['Edit', false], ['Open link', false], ['Delete', true]])
+        ->and($menu($tree, 'list-item-3-actions'))->toBe([['Edit', false], ['Delete', true]]);
 });
 
 it('opens an item’s link from its menu', function () {
@@ -357,10 +382,10 @@ it('adds https:// to a link typed without one', function (string $typed, string 
     'http' => ['http://lego.com/product/123', 'http://lego.com/product/123'],
 ]);
 
-it('uses the same glass add button on a wish list as on other lists', function () {
-    $button = function (string $path): array {
-        $find = function (array $node) use (&$find): ?array {
-            if (($node['ref'] ?? null) === 'list-add-item') {
+it('uses the same add and more buttons on a wish list as on other lists', function () {
+    $button = function (string $path, string $ref): array {
+        $find = function (array $node) use (&$find, $ref): ?array {
+            if (($node['ref'] ?? null) === $ref) {
                 return $node;
             }
 
@@ -374,11 +399,13 @@ it('uses the same glass add button on a wish list as on other lists', function (
         };
         $node = $find(Native::visit($path)->tree());
 
-        return [$node['layout'], $node['style'], $node['props'], array_map(fn (array $child): array => [$child['type'], $child['props']], $node['children'])];
+        return [$node['layout'], $node['style'] ?? null, $node['props'], array_map(fn (array $child): array => [$child['type'], $child['props']], $node['children'])];
     };
 
-    expect($button('/lists/3'))->toBe($button('/lists/1'))
-        ->and($button('/lists/3')[2]['glass'])->toBe(1);
+    expect($button('/lists/3', 'list-add-item'))->toBe($button('/lists/1', 'list-add-item'))
+        ->and($button('/lists/3', 'list-add-item')[1])->toBeNull()
+        ->and(array_slice($button('/lists/3', 'list-more'), 0, 3))->toBe(array_slice($button('/lists/1', 'list-more'), 0, 3))
+        ->and($button('/lists/3', 'list-more')[2]['glass'])->toBe(1);
 });
 
 it('waits for the rest of a web address before calling it wrong', function () {
@@ -440,7 +467,8 @@ it('adds a link to an item on a wish list but not on other lists', function () {
 
     Native::visit('/lists/1')
         ->press('editItem(3)')
-        ->assertMissingElement('bare_text_input', fn (array $node): bool => ($node['ref'] ?? null) === 'list-edit-url');
+        ->assertElement('outlined_text_input', fn (array $node): bool => ($node['ref'] ?? null) === 'list-edit-name')
+        ->assertMissingElement('outlined_text_input', fn (array $node): bool => ($node['ref'] ?? null) === 'list-edit-url');
 });
 
 it('keeps editing when the new link isn’t a web address', function () {
@@ -479,8 +507,8 @@ it('removes the item being edited and closes the edit', function () {
 it('closes the edit when its item is removed as done, and keeps it open otherwise', function () {
     Native::visit('/lists/1')
         ->press('editItem(2)')
-        ->tap('remove-done')
-        ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Remove', 'id' => 'remove-done'])
+        ->call('confirmRemoveDone')
+        ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Delete', 'id' => 'remove-done'])
         ->assertSet('editingItemId', null)
         ->assertDontSee('Edit item')
         ->assertDontSee('Eggs');
@@ -489,8 +517,8 @@ it('closes the edit when its item is removed as done, and keeps it open otherwis
 
     Native::visit('/lists/1')
         ->press('editItem(3)')
-        ->tap('remove-done')
-        ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Remove', 'id' => 'remove-done'])
+        ->call('confirmRemoveDone')
+        ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Delete', 'id' => 'remove-done'])
         ->assertSet('editingItemId', 3)
         ->assertSee('Edit item')
         ->assertDontSee('Milk');
@@ -524,10 +552,12 @@ function listDetailRef(string $ref): Closure
     return fn (array $node): bool => ($node['ref'] ?? null) === $ref;
 }
 
-it('keeps the list’s actions in one menu, offering Remove done and Uncheck all only while something is ticked', function () {
+it('keeps the list’s actions in one menu, offering Delete done and Uncheck all only while something is ticked', function () {
     Native::visit('/lists/1')
-        ->assertElement('top_bar_action', fn (array $node): bool => ($node['ref'] ?? null) === 'list-actions'
-            && array_column($node['children'], 'ref') === ['remove-done', 'uncheck-all', 'edit-list', 'delete-list'])
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'list-more'
+            && collect($node['children'])->where('type', 'top_bar_action')->pluck('ref')->all() === ['edit-list', 'remove-done', 'uncheck-all', 'delete-list'])
+        ->assertElement('top_bar_action', fn (array $node): bool => ($node['ref'] ?? null) === 'edit-list' && $node['props']['label'] === 'Edit' && $node['props']['a11y_label'] === 'Edit Groceries')
+        ->assertElement('top_bar_action', fn (array $node): bool => ($node['ref'] ?? null) === 'remove-done' && $node['props']['label'] === 'Delete done')
         ->assertElement('top_bar_action', fn (array $node): bool => ($node['ref'] ?? null) === 'delete-list' && $node['props']['destructive'] === true)
         ->tap('list-item-2')
         ->assertMissingElement('top_bar_action', listDetailRef('remove-done'))
@@ -544,9 +574,9 @@ it('asks before removing done items, naming them', function () {
         ->tap('list-item-1')
         ->tap('remove-done')
         ->assertNativeCalled('Dialog.Alert', fn (array $params): bool => $params['id'] === 'remove-done'
-            && $params['title'] === 'Remove 2 done items?'
-            && $params['message'] === 'Milk and Eggs will be removed from Groceries for everyone on your team.'
-            && array_column($params['buttons'], 'label') === ['Cancel', 'Remove']);
+            && $params['title'] === 'Delete 2 done items?'
+            && $params['message'] === 'Milk and Eggs will be deleted from Groceries for everyone on your team.'
+            && array_column($params['buttons'], 'label') === ['Cancel', 'Delete']);
 
     ChecklistItem::query()->where('checklist_id', 1)->update(['completed_at' => now()]);
     ChecklistItem::query()->create(['id' => 9, 'server' => ChecklistItem::find(1)->server, 'checklist_id' => 1, 'name' => 'Butter', 'position' => 4, 'completed_at' => now()]);
@@ -554,14 +584,14 @@ it('asks before removing done items, naming them', function () {
 
     Native::visit('/lists/1')
         ->tap('remove-done')
-        ->assertNativeCalled('Dialog.Alert', fn (array $params): bool => $params['message'] === 'Milk, Eggs, Bread and 2 more will be removed from Groceries for everyone on your team.');
+        ->assertNativeCalled('Dialog.Alert', fn (array $params): bool => $params['message'] === 'Milk, Eggs, Bread and 2 more will be deleted from Groceries for everyone on your team.');
 
     ChecklistItem::query()->where('checklist_id', 1)->where('id', '!=', 2)->delete();
 
     Native::visit('/lists/1')
         ->tap('remove-done')
-        ->assertNativeCalled('Dialog.Alert', fn (array $params): bool => $params['title'] === 'Remove 1 done item?'
-            && $params['message'] === 'Eggs will be removed from Groceries for everyone on your team.');
+        ->assertNativeCalled('Dialog.Alert', fn (array $params): bool => $params['title'] === 'Delete 1 done item?'
+            && $params['message'] === 'Eggs will be deleted from Groceries for everyone on your team.');
 });
 
 it('keeps done items when the removal is cancelled', function () {
@@ -577,7 +607,7 @@ it('removes done items on the phone straight away and queues one clear for Sunny
     $screen = Native::visit('/lists/1')
         ->tap('list-item-1')
         ->tap('remove-done')
-        ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Remove', 'id' => 'remove-done'])
+        ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Delete', 'id' => 'remove-done'])
         ->assertDontSee('Milk')
         ->assertDontSee('Eggs')
         ->assertSee('Shopping · 0 of 1 done')
@@ -710,16 +740,18 @@ it('opens the create screen from the overview', function () {
 it('creates a list on the phone and opens it', function () {
     Native::visit('/lists/create')
         ->input('create-list-name', ' Hardware store ')
-        ->tap('create-list-type-1')
-        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'create-list-type-1'
-            && ($node['props']['a11y_label'] ?? null) === 'Shopping, selected')
+        ->select('create-list-type', 'Shopping')
+        ->assertElement('select', fn (array $node): bool => ($node['ref'] ?? null) === 'create-list-type'
+            && $node['props']['label'] === 'Type'
+            && $node['props']['value'] === 'Shopping'
+            && $node['props']['options'] === ['To-do', 'Shopping', 'Wish list'])
         ->tap('create-list-submit')
         ->assertSet('error', '')
         ->assertReplacedWith('/lists/-1');
 
     expect(Checklist::find(-1)->only('team_id', 'name', 'type'))->toBe(['team_id' => 1, 'name' => 'Hardware store', 'type' => ChecklistType::Shopping])
         ->and(PendingWrite::sole()->payload)->toBe(['name' => 'Hardware store', 'type' => 'shopping']);
-    Native::visit('/lists/-1')->assertSee('This list is empty.')->assertSee('Saved on this phone · syncing with Sunny');
+    Native::visit('/lists/-1')->assertSee('This list is empty.')->assertDontSee('syncing with Sunny');
 });
 
 it('refuses to save a list without a valid name', function (string $name, string $message) {

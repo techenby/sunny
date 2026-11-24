@@ -1,139 +1,19 @@
 @use('App\Icons\Android')
 @use('App\Icons\Ios')
+@use('App\Ui\Card')
 
 @php($checklist = $this->checklist)
 
-<native:top-bar :title="$checklist['name'] ?? 'List'" back>
-    @if ($checklist)
-        <native:top-bar-action
-            ref="list-actions"
-            id="list-actions"
-            label="More"
-            :ios-icon="Ios::Ellipsis"
-            :android-icon="Android::MoreVert"
-        >
-            @if ($this->completedItems)
-                <native:top-bar-action
-                    native:key="remove-done"
-                    ref="remove-done"
-                    id="remove-done"
-                    label="Remove done"
-                    :ios-icon="Ios::CheckmarkCircle"
-                    :android-icon="Android::RemoveDone"
-                    @tap="confirmRemoveDone"
-                />
-                <native:top-bar-action
-                    native:key="uncheck-all"
-                    ref="uncheck-all"
-                    id="uncheck-all"
-                    label="Uncheck all"
-                    :ios-icon="Ios::ArrowCounterclockwise"
-                    :android-icon="Android::Replay"
-                    @tap="uncheckAll"
-                />
-                <native:top-bar-action native:key="list-actions-divider" id="list-actions-divider" divider />
-            @endif
-            <native:top-bar-action
-                ref="edit-list"
-                id="edit-list"
-                label="Edit list"
-                :ios-icon="Ios::Pencil"
-                :android-icon="Android::Edit"
-                @navigate('/lists/'.$checklist['id'].'/edit')
-            />
-            <native:top-bar-action
-                ref="delete-list"
-                id="delete-list"
-                label="Delete list"
-                destructive
-                :ios-icon="Ios::Trash"
-                :android-icon="Android::Delete"
-                @tap="confirmDeleteList"
-            />
-        </native:top-bar-action>
-    @endif
-</native:top-bar>
+<native:top-bar :title="$checklist['name'] ?? 'List'" display-mode="large" back />
 
 @if ($checklist)
     @php($editingItem = $editingItemId !== null ? collect($this->items)->firstWhere('id', $editingItemId) : null)
 
     <native:bottom-bar>
-        @if ($editingItem)
-            @php($showsLinkField = $this->takesLinks || $editingItem['url'] !== null)
-            <column class="w-full px-3 pb-2">
-                <column ref="list-edit-item" class="w-full gap-2.5 rounded-[24] p-3 glass android:bg-theme-surface">
-                    <row class="w-full items-center">
-                        <text class="flex-1 text-sm text-theme-on-surface-variant">Edit item</text>
-                        <pressable ref="list-edit-cancel" a11y-label="Cancel" class="min-h-8 justify-center pl-3" @tap="cancelEdit">
-                            <text class="text-sm text-theme-on-surface-variant">Cancel</text>
-                        </pressable>
-                    </row>
-
-                    <column class="w-full gap-1">
-                        <text class="text-xs text-theme-on-surface-variant">Name</text>
-                        <row class="min-h-11 w-full items-center rounded-xl border border-theme-outline bg-theme-surface px-3">
-                            <bare-text-input
-                                ref="list-edit-name"
-                                class="flex-1"
-                                a11y-label="Item name"
-                                autocapitalize="sentences"
-                                autofocus
-                                native:model="editingName"
-                                @submit="saveItem"
-                            />
-                        </row>
-                    </column>
-
-                    @if ($showsLinkField)
-                        <column class="w-full gap-1">
-                            <text class="text-xs text-theme-on-surface-variant">Link</text>
-                            <row class="min-h-11 w-full items-center gap-2 rounded-xl border bg-theme-surface pr-1 pl-3 {{ $linkError !== '' ? 'border-theme-primary' : 'border-theme-outline' }}">
-                                <icon :ios="Ios::Link" :android="Android::Link" :size="16" class="text-theme-primary" />
-                                <bare-text-input
-                                    ref="list-edit-url"
-                                    class="flex-1"
-                                    placeholder="Link"
-                                    a11y-label="Link"
-                                    keyboard="url"
-                                    native:model="editingUrl"
-                                    @submit="submitEditingUrl"
-                                />
-                                @if ($editingUrl !== '')
-                                    <pressable ref="list-edit-url-clear" a11y-label="Clear link" class="h-8 w-8 items-center justify-center" @tap="clearEditingUrl">
-                                        <icon :ios="Ios::XmarkCircleFill" :android="Android::Cancel" :size="18" class="text-theme-on-surface-variant" />
-                                    </pressable>
-                                @endif
-                            </row>
-                            @if ($linkError !== '')
-                                @include('native.list-link-error')
-                            @endif
-                        </column>
-                    @endif
-
-                    @if ($error !== '')
-                        <text ref="list-edit-error" class="text-sm text-theme-destructive">{{ $error }}</text>
-                    @endif
-
-                    <row class="w-full items-center gap-3">
-                        @if ($editingItem['url'] !== null)
-                            <pressable ref="list-edit-remove-link" a11y-label="Remove link" class="min-h-10 justify-center" @tap="removeLink">
-                                <row class="items-center gap-1.5">
-                                    <icon :ios="Ios::Xmark" :android="Android::LinkOff" :size="14" class="text-theme-primary-text" />
-                                    <text font="semibold" class="text-sm text-theme-primary-text">Remove link</text>
-                                </row>
-                            </pressable>
-                        @endif
-                        <column class="flex-1" />
-                        <pressable ref="list-edit-save" a11y-label="Save" class="min-h-10 shrink-0 items-center justify-center rounded-full bg-theme-primary px-5" @tap="saveItem">
-                            <text font="semibold" class="text-base text-theme-on-primary">Save</text>
-                        </pressable>
-                    </row>
-                </column>
-            </column>
-        @elseif ($this->takesLinks)
+        @if ($this->takesLinks)
             <column class="w-full px-3 pb-2">
                 <column ref="list-new-item-card" class="w-full gap-1.5 rounded-[24] p-2 glass android:bg-theme-surface">
-                    <row class="min-h-10 w-full items-center px-3">
+                    <row class="min-h-10 w-full items-center pl-3">
                         <bare-text-input
                             ref="list-new-item"
                             class="flex-1"
@@ -143,6 +23,7 @@
                             next-focus="list-new-item-url"
                             native:model="newItem"
                         />
+                        <x-ui.button ref="list-add-item" variant="text" :ios="Ios::Plus" :android="Android::Add" a11y-label="Add an item" tap="addItem" />
                     </row>
                     <row class="w-full items-center gap-2">
                         <row class="min-h-12 flex-1 items-center gap-2 rounded-full border bg-theme-surface pr-1 pl-3 {{ $linkError !== '' ? 'border-theme-primary' : 'border-theme-outline' }}">
@@ -151,26 +32,24 @@
                                 ref="list-new-item-url"
                                 class="flex-1"
                                 placeholder="Link"
-                                a11y-label="Link, optional"
+                                a11y-label="Link"
                                 keyboard="url"
                                 next-focus="list-new-item"
                                 native:model="newItemUrl"
                                 @submit="submitNewItemUrl"
                             />
                             @if ($newItemUrl !== '')
-                                <pressable ref="list-new-item-url-clear" a11y-label="Clear link" class="h-8 w-8 items-center justify-center" @tap="clearNewItemUrl">
-                                    <icon :ios="Ios::XmarkCircleFill" :android="Android::Cancel" :size="18" class="text-theme-on-surface-variant" />
-                                </pressable>
+                                <x-ui.button
+                                    ref="list-new-item-url-clear"
+                                    variant="text"
+                                    :ios="Ios::XmarkCircleFill"
+                                    :android="Android::Cancel"
+                                    a11y-label="Clear link"
+                                    tap="clearNewItemUrl"
+                                />
                             @endif
                         </row>
-                        <pressable
-                            ref="list-add-item"
-                            a11y-label="Add item"
-                            class="h-12 w-12 items-center justify-center rounded-full glass android:bg-theme-surface"
-                            @tap="addItem"
-                        >
-                            <native:icon :ios="Ios::Plus" :android="Android::Add" :size="22" class="text-theme-on-surface" />
-                        </pressable>
+                        <x-ui.button ref="list-more" variant="glass" :ios="Ios::Ellipsis" :android="Android::MoreHoriz" a11y-label="More" :menu="$this->moreMenu()" />
                     </row>
                     @if ($linkError !== '')
                         @include('native.list-link-error')
@@ -181,7 +60,7 @@
             </column>
         @else
             <row class="w-full items-center gap-3 px-4 pb-2">
-                <row class="h-12 flex-1 items-center gap-2 rounded-full px-4 glass android:bg-theme-surface">
+                <row class="h-12 flex-1 items-center gap-2 rounded-full pr-1 pl-4 glass android:bg-theme-surface">
                     <bare-text-input
                         ref="list-new-item"
                         class="flex-1"
@@ -192,15 +71,9 @@
                         native:model="newItem"
                         @submit="addItem"
                     />
+                    <x-ui.button ref="list-add-item" variant="text" :ios="Ios::Plus" :android="Android::Add" a11y-label="Add an item" tap="addItem" />
                 </row>
-                <pressable
-                    ref="list-add-item"
-                    a11y-label="Add item"
-                    class="h-12 w-12 items-center justify-center rounded-full glass android:bg-theme-surface"
-                    @tap="addItem"
-                >
-                    <native:icon :ios="Ios::Plus" :android="Android::Add" :size="22" class="text-theme-on-surface" />
-                </pressable>
+                <x-ui.button ref="list-more" variant="glass" :ios="Ios::Ellipsis" :android="Android::MoreHoriz" a11y-label="More" :menu="$this->moreMenu()" />
             </row>
         @endif
     </native:bottom-bar>
@@ -219,9 +92,9 @@
             @endif
 
             @if ($this->items)
-                <column class="w-full rounded-xl bg-theme-surface">
+                <column class="w-full {{ Card::classes() }}">
                     @foreach ($this->items as $item)
-                        <row class="w-full items-center {{ $editingItemId === $item['id'] ? 'bg-theme-primary/10' : '' }}">
+                        <row class="w-full items-center {{ $editingItemId === $item['id'] ? 'bg-theme-primary/10' : '' }} {{ $loop->first ? 'rounded-t-[17]' : '' }} {{ $loop->last ? 'rounded-b-[17]' : '' }}">
                             <column class="flex-1">
                                 <pressable
                                     ref="list-item-{{ $item['id'] }}"
@@ -239,7 +112,7 @@
                                         <column class="flex-1 gap-0.5">
                                             <text :class="$item['completed'] ? 'text-base text-theme-on-surface-variant line-through' : 'text-base text-theme-on-surface'">{{ $item['name'] }}</text>
                                             @if ($item['error'])
-                                                <text ref="list-item-{{ $item['id'] }}-error" class="text-sm text-theme-destructive">Not saved to Sunny. {{ $item['error'] }}</text>
+                                                <text ref="list-item-{{ $item['id'] }}-error" class="text-sm text-theme-destructive">Not saved. {{ $item['error'] }}</text>
                                             @endif
                                         </column>
                                     </row>
@@ -261,29 +134,77 @@
                                     </row>
                                 @endif
                             </column>
-                            <pressable
+                            <x-ui.button
                                 ref="list-item-{{ $item['id'] }}-actions"
-                                :a11y-label="'Edit or remove '.$item['name']"
-                                class="h-12 w-12 items-center justify-center"
+                                variant="text"
+                                :ios="Ios::Ellipsis"
+                                :android="Android::MoreHoriz"
+                                :a11y-label="'Edit or delete '.$item['name']"
                                 :menu="$this->itemMenu($item)"
-                            >
-                                <icon :ios="Ios::Ellipsis" :android="Android::MoreHoriz" :size="18" class="text-theme-on-surface-variant" />
-                            </pressable>
+                            />
                         </row>
                         @unless ($loop->last)
-                            <divider class="ml-14" />
+                            <divider class="ml-[50]" />
                         @endunless
                     @endforeach
                 </column>
             @else
-                <column ref="list-empty" class="w-full items-center gap-2 rounded-xl bg-theme-surface px-4 py-6">
-                    <icon :ios="Ios::ListBullet" :android="Android::FormatListBulleted" :size="26" class="text-theme-primary" />
-                    <text font="semibold" class="text-base text-theme-on-surface">This list is empty.</text>
-                    <text class="text-sm text-theme-on-surface-variant">Add an item below.</text>
-                </column>
+                <x-ui.empty-state
+                    ref="list-empty"
+                    :ios="Ios::ListBullet"
+                    :android="Android::FormatListBulleted"
+                    heading="This list is empty."
+                    text="Add an item below."
+                />
             @endif
         </column>
     </scroll-view>
+
+    <native:bottom-sheet ref="list-edit-sheet" :visible="$editingItem !== null" @dismiss="cancelEdit" detents="fit">
+        @if ($editingItem)
+            <column class="w-full bg-theme-background">
+                <x-ui.sheet-header ref="list-edit-close" title="Edit item" close="cancelEdit" />
+                <column ref="list-edit-item" class="w-full gap-4 px-4 pt-4">
+                    <outlined-text-input
+                        ref="list-edit-name"
+                        label="Name"
+                        autocapitalize="sentences"
+                        :error="$error !== ''"
+                        :supporting="$error !== '' ? $error : null"
+                        native:model="editingName"
+                        @submit="saveItem"
+                    />
+
+                    @if ($this->takesLinks || $editingItem['url'] !== null)
+                        <column class="w-full items-start gap-1">
+                            <outlined-text-input
+                                ref="list-edit-url"
+                                label="Link"
+                                keyboard="url"
+                                :ios-leading-icon="Ios::Link"
+                                :android-leading-icon="Android::Link"
+                                :error="$linkError !== ''"
+                                :supporting="$linkError !== '' ? $linkError : null"
+                                native:model="editingUrl"
+                                @submit="submitEditingUrl"
+                            />
+                            @if ($editingItem['url'] !== null)
+                                <x-ui.button
+                                    ref="list-edit-remove-link"
+                                    variant="text"
+                                    :ios="Ios::Xmark"
+                                    :android="Android::LinkOff"
+                                    a11y-label="Remove link"
+                                    tap="removeLink"
+                                >Remove link</x-ui.button>
+                            @endif
+                        </column>
+                    @endif
+                </column>
+                <x-ui.sheet-confirm ref="list-edit-save" tap="saveItem">Save</x-ui.sheet-confirm>
+            </column>
+        @endif
+    </native:bottom-sheet>
 @else
     <x-ui.not-found ref="list-missing" thing="list" />
 @endif

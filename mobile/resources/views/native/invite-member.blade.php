@@ -12,6 +12,16 @@
 
 <native:top-bar title="Invite your family" back />
 
+@if ($team !== null && $canInvite)
+    <x-ui.submit-bar
+        ref="invite-send"
+        :disabled="$this->disconnected"
+        tap="send"
+    >
+        {{ $offline && ! $this->disconnected ? 'Try again' : 'Send invitation' }}
+    </x-ui.submit-bar>
+@endif
+
 <scroll-view ref="invite-screen" fill class="bg-theme-background ios:bg-theme-grouped-background">
     @if ($team === null)
         <column class="w-full items-center gap-2 px-6 py-12">
@@ -41,49 +51,27 @@
                     </row>
                 @endif
 
-                <column class="w-full gap-2">
-                    <column class="{{ Card::classes() }} w-full gap-4 p-4">
-                        <outlined-text-input
-                            ref="invite-email"
-                            label="Email address"
-                            placeholder="name@example.com"
-                            keyboard="email"
-                            content-type="email"
-                            :ios-leading-icon="Ios::Envelope"
-                            :android-leading-icon="Android::Email"
-                            :error="$emailError !== ''"
-                            :supporting="$emailError !== '' ? $emailError : null"
-                            native:model="email"
-                        />
+                <column class="w-full gap-4">
+                    <outlined-text-input
+                        ref="invite-email"
+                        label="Email address"
+                        placeholder="name@example.com"
+                        keyboard="email"
+                        content-type="email"
+                        :error="$emailError !== ''"
+                        :supporting="$emailError !== '' ? $emailError : 'We’ll email them a link that lasts 3 days.'"
+                        native:model="email"
+                    />
 
-                        @include('native.role-options', ['ref' => 'invite-role', 'roles' => TeamRole::assignable(), 'selected' => TeamRole::tryFrom($role) ?? TeamRole::Member, 'action' => 'chooseRole'])
+                    @include('native.role-options', ['ref' => 'invite-role', 'roles' => TeamRole::assignable(), 'selected' => TeamRole::tryFrom($role) ?? TeamRole::Member, 'action' => 'chooseRole'])
 
-                        @if ($offline)
-                            <row ref="invite-offline" class="w-full items-start gap-2.5 rounded-xl bg-theme-primary/15 p-3.5">
-                                <native:icon :ios="Ios::WifiSlash" :android="Android::WifiOff" :size="20" class="text-theme-primary-text" />
-                                <column class="flex-1 gap-0.5">
-                                    <text font="semibold" class="text-base text-theme-primary-text">You’re offline</text>
-                                    <text class="text-base text-theme-on-surface">Sending an invitation needs a connection, since Sunny emails it right away. Nothing’s been sent{{ trim($email) !== '' ? ' to '.trim($email) : '' }} yet.</text>
-                                </column>
-                            </row>
-                        @endif
+                    @if ($offline || $this->disconnected)
+                        <x-ui.offline ref="invite-offline" :extra="$this->disconnected ? null : 'Nothing’s been sent'.(trim($email) !== '' ? ' to '.trim($email) : '').' yet.'" />
+                    @endif
 
-                        @if ($error !== '')
-                            <text ref="invite-error" class="text-sm text-theme-destructive">{{ $error }}</text>
-                        @endif
-
-                        <button
-                            ref="invite-send"
-                            variant="primary"
-                            size="lg"
-                            font="semibold"
-                            class="w-full"
-                            @tap="send"
-                        >
-                            {{ $offline ? 'Try again' : 'Send invitation' }}
-                        </button>
-                    </column>
-                    <x-ui.text size="sm" class="px-2">We’ll email them a link that lasts 3 days.</x-ui.text>
+                    @if ($error !== '')
+                        <text ref="invite-error" class="text-sm text-theme-destructive">{{ $error }}</text>
+                    @endif
                 </column>
             @else
                 <column ref="invite-ask" class="{{ Card::classes() }} w-full">
@@ -121,14 +109,14 @@
                                 <text class="text-sm {{ $invitation['soon'] ? 'text-theme-destructive' : 'text-theme-on-surface-variant' }}">{{ $invitation['expires'] }}</text>
                             </column>
                             @if ($canInvite)
-                                <pressable
+                                <x-ui.button
                                     ref="cancel-invitation-{{ $invitation['code'] }}"
-                                    a11y-label="Cancel the invitation to {{ $invitation['email'] }}"
-                                    class="h-12 w-12 items-center justify-center rounded-full bg-theme-surface-variant"
-                                    @tap="confirmCancel('{{ $invitation['code'] }}')"
-                                >
-                                    <icon :ios="Ios::Xmark" :android="Android::Close" :size="16" class="text-theme-on-surface-variant" />
-                                </pressable>
+                                    variant="secondary"
+                                    :ios="Ios::Xmark"
+                                    :android="Android::Close"
+                                    :a11y-label="'Cancel the invitation to '.$invitation['email']"
+                                    tap="confirmCancel('{{ $invitation['code'] }}')"
+                                />
                             @endif
                         </row>
                         @unless ($loop->last)

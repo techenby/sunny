@@ -23,14 +23,14 @@
             />
         </row>
         @isset($createUrl)
-            <pressable
+            <x-ui.button
                 ref="{{ $refPrefix }}-create"
-                a11y-label="{{ $createLabel }}"
-                class="h-12 w-12 items-center justify-center rounded-full glass android:bg-theme-surface"
-                @navigate($createUrl)
-            >
-                <native:icon :ios="Ios::Plus" :android="Android::Add" :size="22" class="text-theme-on-surface" />
-            </pressable>
+                variant="glass"
+                :ios="Ios::Plus"
+                :android="Android::Add"
+                :a11y-label="$createLabel"
+                :navigate="$createUrl"
+            />
         @endisset
     </row>
 </native:bottom-bar>

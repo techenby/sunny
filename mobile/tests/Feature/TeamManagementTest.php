@@ -69,11 +69,6 @@ function signInAs(int $userId): void
     DB::table('sunny_accounts')->updateOrInsert(['server' => SunnyStore::server()], ['user_id' => $userId]);
 }
 
-function sectionFooter(string $footer): Closure
-{
-    return fn (array $node): bool => ($node['props']['footer'] ?? null) === $footer;
-}
-
 function offlineTeamResponse(): MockResponse
 {
     return MockResponse::make()->throw(fn (PendingRequest $pending) => new FatalRequestException(new ConnectException('Could not resolve host', new GuzzleRequest('POST', 'https://sunny.example')), $pending));
@@ -103,7 +98,7 @@ it('opens the picked team from preferences, and offers a new team', function ():
     signInAs(7);
 
     Native::visit('/preferences', platform: 'ios')
-        ->assertElement('list_item', fn (array $node): bool => ($node['ref'] ?? null) === 'team-settings' && $node['props']['headline'] === 'Family' && $node['props']['supporting'] === '4 members · 2 invitations')
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'team-settings' && $node['props']['a11y_label'] === 'Family, 4 members · 2 invitations')
         ->assertSee('New team')
         ->assertAccessible()
         ->tap('team-settings')
@@ -117,19 +112,20 @@ it('shows the owner everything they can change', function (): void {
 
     Native::visit('/preferences/team', platform: 'ios')
         ->assertNavTitle('Family')
-        ->assertElement('list_item', fn (array $node): bool => ($node['ref'] ?? null) === 'team-name' && ($node['props']['trailing_value'] ?? null) === 'Rename')
+        ->assertElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'team-name-trailing' && $node['props']['text'] === 'Rename')
         ->assertSee('America/Chicago')
         ->assertSee('Sunday')
-        ->assertElement('list_item', fn (array $node): bool => ($node['ref'] ?? null) === 'member-7' && $node['props']['supporting'] === 'Owner · You')
-        ->assertElement('list_item', fn (array $node): bool => ($node['ref'] ?? null) === 'member-8' && $node['props']['supporting'] === 'Admin' && ($node['props']['trailing_icon'] ?? null) === 'chevron.right')
-        ->assertElement('list_item', fn (array $node): bool => ($node['ref'] ?? null) === 'member-7' && ! isset($node['props']['trailing_icon']))
-        ->assertElement('list_section', sectionFooter('Tap someone to make them an admin or a member, or to remove them from the team.'))
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'member-7' && str_ends_with($node['props']['a11y_label'], ', Owner · You'))
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'member-8' && str_ends_with($node['props']['a11y_label'], ', Admin'))
+        ->assertElement('icon', fn (array $node): bool => ($node['ref'] ?? null) === 'member-8-trailing' && $node['props']['name'] === 'chevron.right')
+        ->assertMissingElement('icon', listItem('member-7-trailing'))
+        ->assertSee('Tap someone to make them an admin or a member, or to remove them from the team.')
         ->assertSee('sam.ortega@gmail.com')
         ->assertSee('Member · expires in 2 days')
         ->assertSee('Admin · expires tomorrow')
         ->assertSee('Invite someone')
         ->assertSee('Open team page')
-        ->assertMissingElement('list_item', listItem('leave-team'))
+        ->assertMissingElement('pressable', listItem('leave-team'))->assertMissingElement('column', listItem('leave-team'))
         ->assertAccessible();
 });
 
@@ -137,13 +133,13 @@ it('lets an admin change the team but not its members', function (): void {
     signInAs(8);
 
     Native::visit('/preferences/team', platform: 'ios')
-        ->assertElement('list_item', fn (array $node): bool => ($node['ref'] ?? null) === 'team-name' && ($node['props']['trailing_value'] ?? null) === 'Rename')
-        ->assertElement('list_item', fn (array $node): bool => ($node['ref'] ?? null) === 'member-9' && ! isset($node['props']['trailing_icon']))
-        ->assertElement('list_section', sectionFooter('Only Andy, the owner, can change someone’s role or remove them from the team.'))
+        ->assertElement('text', fn (array $node): bool => ($node['ref'] ?? null) === 'team-name-trailing' && $node['props']['text'] === 'Rename')
+        ->assertMissingElement('icon', listItem('member-9-trailing'))
+        ->assertSee('Only Andy, the owner, can change someone’s role or remove them from the team.')
         ->assertSee('Invite someone')
         ->assertDontSee('Open team page')
         ->assertSee('Leave Family')
-        ->assertElement('list_section', sectionFooter('You’ll lose access to its recipes, inventory, routines and lists. Andy can invite you back.'))
+        ->assertSee('You’ll lose access to its recipes, inventory, routines and lists. Andy can invite you back.')
         ->assertAccessible()
         ->tap('member-9')
         ->assertSet('memberId', null);
@@ -154,12 +150,12 @@ it('shows a member the team without anything to change', function (): void {
     Saloon::fake([UpdateTeamRequest::class => MockResponse::make(['data' => familyTeam()])]);
 
     Native::visit('/preferences/team', platform: 'ios')
-        ->assertMissingElement('list_item', fn (array $node): bool => ($node['ref'] ?? null) === 'team-name' && isset($node['props']['trailing_value']))
-        ->assertMissingElement('list_item', listItem('invite-someone'))
-        ->assertElement('list_section', sectionFooter('Andy and Jamie can rename the team, change its settings and handle invitations. Only Andy can change roles or remove someone.'))
-        ->assertElement('list_section', sectionFooter('They’ll join the team once they accept.'))
+        ->assertMissingElement('text', listItem('team-name-trailing'))
+        ->assertMissingElement('pressable', listItem('invite-someone'))->assertMissingElement('column', listItem('invite-someone'))
+        ->assertSee('Andy and Jamie can rename the team, change its settings and handle invitations. Only Andy can change roles or remove someone.')
+        ->assertSee('They’ll join the team once they accept.')
         ->assertSee('Leave Family')
-        ->assertElement('list_section', sectionFooter('You’ll lose access to its recipes, inventory, routines and lists. Andy or Jamie can invite you back.'))
+        ->assertSee('You’ll lose access to its recipes, inventory, routines and lists. Andy or Jamie can invite you back.')
         ->assertAccessible()
         ->tap('team-name')
         ->assertSet('showRename', false)
@@ -221,11 +217,13 @@ it('changes the household timezone and week start', function (): void {
         ->assertDontSee('America/Chicago ')
         ->tap('team-timezone-Europe/London')
         ->assertSet('showTimezone', false)
-        ->tap('team-week-start')
-        ->assertSet('showWeekStart', true)
-        ->tap('team-week-start-option-1')
-        ->assertSet('showWeekStart', false)
-        ->assertSee('Monday');
+        ->assertElement('select', fn (array $node): bool => ($node['ref'] ?? null) === 'team-week-start'
+            && $node['props']['label'] === 'Week starts on'
+            && $node['props']['value'] === 'Sunday'
+            && $node['props']['options'] === ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'])
+        ->assertMissingElement('bottom_sheet', fn (array $node): bool => ($node['ref'] ?? null) === 'team-week-start-sheet')
+        ->select('team-week-start', 'Monday')
+        ->assertElement('select', fn (array $node): bool => ($node['ref'] ?? null) === 'team-week-start' && $node['props']['value'] === 'Monday');
 
     Saloon::assertSent(fn (Request $request): bool => $request instanceof UpdateTeamRequest && $request->body()->all() === ['timezone' => 'Europe/London']);
     Saloon::assertSent(fn (Request $request): bool => $request instanceof UpdateTeamRequest && $request->body()->all() === ['week_start' => 1]);
@@ -257,24 +255,64 @@ it('removes a member once the owner confirms', function (): void {
     signInAs(7);
     Saloon::fake([RemoveTeamMemberRequest::class => MockResponse::make([], 204)]);
 
-    Native::visit('/preferences/team')
+    $screen = Native::visit('/preferences/team')
+        ->tap('member-10')
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'member-close' && $node['props']['a11y_label'] === 'Close')
+        ->assertDontSee('Done')
+        ->assertAccessible()
+        ->tap('member-remove')
+        ->assertSet('memberId', null)
+        ->assertNativeCalled('Dialog.Alert', fn (array $params): bool => $params['id'] === 'remove-member-10'
+            && $params['title'] === 'Remove Grandma from Family?'
+            && $params['message'] === 'Grandma will lose access to the team’s recipes, inventory, routines and lists.'
+            && $params['buttons'] === [['label' => 'Cancel', 'style' => 'cancel'], ['label' => 'Remove', 'style' => 'destructive']])
+        ->assertDontSee('Remove Grandma from Family?')
+        ->assertDontSee('Keep Grandma')
+        ->emitNative(ButtonPressed::class, ['index' => 0, 'label' => 'Cancel', 'id' => 'remove-member-10'])
+        ->assertSee('Grandma Jo');
+
+    Saloon::assertNotSent(RemoveTeamMemberRequest::class);
+
+    $screen
         ->tap('member-10')
         ->tap('member-remove')
-        ->assertNativeNotCalled('Dialog.Alert')
-        ->assertSee('Remove Grandma from Family?')
-        ->assertSee('Grandma will lose access to the team’s recipes, inventory, routines and lists.')
-        ->assertAccessible()
-        ->tap('member-remove-keep')
-        ->assertDontSee('Remove Grandma from Family?')
-        ->tap('member-remove')
-        ->tap('member-remove-confirm-button')
+        ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Remove', 'id' => 'remove-member-10'])
         ->assertSet('memberId', null)
-        ->assertSet('confirmingRemove', false)
+        ->assertSet('removalToConfirm', null)
         ->assertToastShown(fn (array $params): bool => $params['message'] === 'Removed Grandma Jo')
         ->assertDontSee('Grandma Jo');
 
     Saloon::assertSent(fn (Request $request): bool => $request instanceof RemoveTeamMemberRequest && $request->resolveEndpoint() === '/teams/family/members/10');
     expect(Team::find(1)->roleOf(10))->toBeNull();
+});
+
+it('waits for the member sheet to close before asking on an iPhone, where an alert cannot open over a sheet', function (): void {
+    signInAs(7);
+
+    Native::visit('/preferences/team', platform: 'ios')
+        ->tap('member-10')
+        ->tap('member-remove')
+        ->assertSet('memberId', null)
+        ->assertNativeNotCalled('Dialog.Alert')
+        ->dismissSheet('team-member-sheet')
+        ->assertNativeCalledTimes('Dialog.Alert', 1)
+        ->assertNativeCalled('Dialog.Alert', fn (array $params): bool => $params['id'] === 'remove-member-10')
+        ->tap('member-9')
+        ->tap('member-close')
+        ->dismissSheet('team-member-sheet')
+        ->assertNativeCalledTimes('Dialog.Alert', 1);
+});
+
+it('does not remove a member the alert was not about', function (): void {
+    signInAs(7);
+    Saloon::fake([RemoveTeamMemberRequest::class => MockResponse::make([], 204)]);
+
+    Native::visit('/preferences/team')
+        ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Remove', 'id' => 'remove-member-7'])
+        ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Remove', 'id' => 'remove-member-999']);
+
+    Saloon::assertNotSent(RemoveTeamMemberRequest::class);
+    expect(Team::find(1)->roleOf(7))->not->toBeNull();
 });
 
 it('leaves the current team and switches to another one', function (): void {
@@ -305,7 +343,7 @@ it('does not offer leaving to the owner or on a personal team', function (): voi
     signInAs(8);
     Team::find(1)->update(['is_personal' => true]);
 
-    Native::visit('/preferences/team')->assertMissingElement('list_item', listItem('leave-team'));
+    Native::visit('/preferences/team')->assertMissingElement('pressable', listItem('leave-team'))->assertMissingElement('column', listItem('leave-team'));
 });
 
 it('opens the team page on the website for the owner', function (): void {
@@ -334,16 +372,18 @@ it('shows the team look-only while offline', function (): void {
     Native::visit('/preferences/team', platform: 'ios')
         ->assertSet('offline', true)
         ->assertSee('You’re offline')
-        ->assertElement('list_item', fn (array $node): bool => ($node['ref'] ?? null) === 'team-name' && ($node['props']['disabled'] ?? false) === true)
-        ->assertElement('list_item', fn (array $node): bool => ($node['ref'] ?? null) === 'member-9' && ($node['props']['disabled'] ?? false) === true)
-        ->assertElement('list_section', sectionFooter('Roles can be changed and people removed once you’re back online.'))
+        ->assertElement('column', listItem('team-name'))
+        ->assertElement('column', listItem('member-9'))
+        ->assertSee('Roles can be changed and people removed once you’re back online.')
         ->assertAccessible()
-        ->tap('team-name')
+        ->assertMissingElement('pressable', listItem('team-name'))
+        ->assertMissingElement('pressable', listItem('member-9'))
+        ->call('openRename')
         ->assertSet('showRename', false)
-        ->tap('member-9')
+        ->call('openMember', 9)
         ->assertSet('memberId', null)
         ->tap('team-offline')
-        ->assertToastShown(fn (array $params): bool => $params['message'] === 'Still offline. Try again once you’re connected.');
+        ->assertToastShown(fn (array $params): bool => $params['message'] === 'You’re offline. Try again when you’re connected.');
 
     Saloon::assertNotSent(GetTeamInvitationsRequest::class);
     Saloon::assertNotSent(UpdateTeamRequest::class);
@@ -394,6 +434,21 @@ it('creates a team and switches to it', function (): void {
         ->and(Team::find(5)->currentRole()->value)->toBe('owner');
 });
 
+it('opens the new team form disabled while offline and frees it when the connection returns', function (): void {
+    Native::fakeBridge()->respondTo('Network.Status', ['connected' => false]);
+
+    $screen = Native::visit('/preferences/teams/create')
+        ->assertSee('You’re offline')
+        ->assertSee('Try again when you’re connected.')
+        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'create-team-submit');
+
+    $screen->bridge()->respondTo('Network.Status', ['connected' => true]);
+
+    $screen->firePolls()
+        ->assertDontSee('You’re offline')
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'create-team-submit');
+});
+
 it('shows why a new team was refused, and keeps the name when offline', function (): void {
     $attempts = 0;
     Saloon::fake([CreateTeamRequest::class => function () use (&$attempts): MockResponse {
@@ -410,7 +465,7 @@ it('shows why a new team was refused, and keeps the name when offline', function
         ->assertSet('nameError', 'That name is reserved.')
         ->tap('create-team-submit')
         ->assertSet('offline', true)
-        ->assertSee('Creating a team needs a connection. Nothing’s been created yet.')
+        ->assertSee('Try again when you’re connected.')
         ->assertSee('Try again')
         ->assertSet('name', 'Settings')
         ->assertNoNavigation();

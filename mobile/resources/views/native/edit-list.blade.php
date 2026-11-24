@@ -5,7 +5,7 @@
 @if ($checklist)
     @include('native.list-form', [
         'formRef' => 'edit-list',
-        'submitLabel' => 'Update list',
+        'submitLabel' => 'Save',
         'typeOptions' => $this->typeOptions,
         'ownerOptions' => $this->ownerOptions,
     ])

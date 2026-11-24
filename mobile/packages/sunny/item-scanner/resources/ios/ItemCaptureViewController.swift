@@ -127,7 +127,7 @@ final class ItemCaptureViewController: UIViewController, AVCapturePhotoCaptureDe
         countLabel.textColor = .white
         countLabel.textAlignment = .center
         countLabel.isHidden = single
-        countLabel.text = "Take a photo of each item"
+        countLabel.text = "Take a photo of each thing"
 
         thumbnailView.contentMode = .scaleAspectFill
         thumbnailView.clipsToBounds = true
@@ -142,7 +142,7 @@ final class ItemCaptureViewController: UIViewController, AVCapturePhotoCaptureDe
         repeatConfig.baseBackgroundColor = UIColor.black.withAlphaComponent(0.5)
         repeatConfig.baseForegroundColor = .white
         repeatButton.configuration = repeatConfig
-        repeatButton.accessibilityLabel = "Add another of the last item"
+        repeatButton.accessibilityLabel = "Add another of the last thing"
         repeatButton.addTarget(self, action: #selector(addCopy), for: .touchUpInside)
         repeatButton.isHidden = true
 
@@ -262,7 +262,7 @@ final class ItemCaptureViewController: UIViewController, AVCapturePhotoCaptureDe
 
         DispatchQueue.main.async { [self] in
             captured += 1
-            countLabel.text = captured == 1 ? "1 item" : "\(captured) items"
+            countLabel.text = captured == 1 ? "1 thing" : "\(captured) things"
             thumbnailView.image = UIImage(data: data)?.preparingThumbnail(of: CGSize(width: 112, height: 112))
             thumbnailView.isHidden = false
             savingPhotos -= 1

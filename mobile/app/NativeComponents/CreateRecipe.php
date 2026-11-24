@@ -5,8 +5,10 @@ namespace App\NativeComponents;
 use App\Actions\ImportRecipe;
 use App\Concerns\ChecksSunnySync;
 use App\Concerns\ManagesRecipeForm;
+use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Http\Integrations\Sunny\SunnyTeam;
 use App\Http\Integrations\Sunny\SunnyTokenStore;
+use App\Layouts\HidesTabBar;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Native\Mobile\AsyncTask;
@@ -14,7 +16,7 @@ use Native\Mobile\Attributes\Computed;
 use Native\Mobile\Facades\Network;
 use RuntimeException;
 
-class CreateRecipe extends Component
+class CreateRecipe extends Component implements HidesTabBar
 {
     use ChecksSunnySync;
     use ManagesRecipeForm;
@@ -86,7 +88,7 @@ class CreateRecipe extends Component
         $team = app(SunnyTeam::class)->current();
 
         if ($team === null || $team->id !== $this->teamId || blank($team->slug)) {
-            $this->importFinished(['status' => 'error', 'message' => 'Select a team on the dashboard. If none are listed, sync with Sunny first.']);
+            $this->importFinished(['status' => 'error', 'message' => SunnySyncCoordinator::NO_TEAM_ADVICE]);
 
             return;
         }
@@ -106,7 +108,7 @@ class CreateRecipe extends Component
         }
 
         if ($token === null) {
-            $this->importFinished(['status' => 'error', 'message' => 'Sign in to Sunny to import recipes.']);
+            $this->importFinished(['status' => 'error', 'message' => 'Sign in to import recipes.']);
 
             return;
         }

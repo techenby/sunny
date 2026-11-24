@@ -4,12 +4,10 @@
 
 <native:top-bar title="Inventory" display-mode="large" :back="false" />
 
-{{-- Search with Scan inside it and a labeled Add beside it. The row wraps
-     in reverse, so when large text leaves no room the Add button moves up
-     onto its own line instead of squeezing the search field. --}}
+{{-- Search with Scan inside it and the add button beside it. --}}
 <native:bottom-bar>
-    <row class="w-full flex-wrap-reverse items-center gap-3 px-4 pb-2">
-        <row class="min-h-12 min-w-[220] flex-1 items-center gap-2 rounded-full pr-1 pl-4 glass android:bg-theme-surface">
+    <row class="w-full items-center gap-3 px-4 pb-2">
+        <row class="min-h-12 flex-1 items-center gap-2 rounded-full pr-1 pl-4 glass android:bg-theme-surface">
             <native:icon :ios="Ios::Magnifyingglass" :android="Android::Search" :size="18" class="text-theme-on-surface-variant" />
             <bare-text-input
                 ref="inventory-search"
@@ -21,29 +19,16 @@
                 debounce-ms="300"
                 @change="updateSearch"
             />
-            <pressable
+            <x-ui.button
                 ref="inventory-scan-label"
+                variant="text"
+                :ios="Ios::QrcodeViewfinder"
+                :android="Android::QrCodeScanner"
                 a11y-label="Scan label"
-                class="min-h-10 items-center justify-center rounded-full bg-theme-surface-variant px-3"
-                @tap="scanCode"
-            >
-                <row class="items-center gap-1.5">
-                    <icon :ios="Ios::QrcodeViewfinder" :android="Android::QrCodeScanner" :size="16" class="text-theme-on-surface" />
-                    <text font="semibold" class="text-base text-theme-on-surface">Scan</text>
-                </row>
-            </pressable>
+                tap="scanCode"
+            />
         </row>
-        <pressable
-            ref="inventory-add"
-            a11y-label="Add"
-            class="min-h-12 items-center justify-center rounded-full bg-theme-primary px-4"
-            :menu="$this->addMenu()"
-        >
-            <row class="items-center gap-1.5">
-                <icon :ios="Ios::Plus" :android="Android::Add" :size="16" class="text-theme-on-primary" />
-                <text font="semibold" class="text-base text-theme-on-primary">Add</text>
-            </row>
-        </pressable>
+        <x-ui.button ref="inventory-add" variant="glass" :ios="Ios::Plus" :android="Android::Add" a11y-label="Add" :menu="$this->addMenu()" />
     </row>
 </native:bottom-bar>
 
@@ -65,11 +50,13 @@
                     @endforeach
                 </column>
             @else
-                <column ref="inventory-no-matches" class="w-full items-center gap-2 px-4 py-8">
-                    <icon :ios="Ios::Magnifyingglass" :android="Android::SearchOff" :size="28" class="text-theme-on-surface-variant" />
-                    <x-ui.heading size="lg">Nothing called “{{ $search }}”</x-ui.heading>
-                    <x-ui.text>Check the spelling, or try a shorter word.</x-ui.text>
-                </column>
+                <x-ui.empty-state
+                    ref="inventory-no-matches"
+                    :ios="Ios::Magnifyingglass"
+                    :android="Android::SearchOff"
+                    :heading="'Nothing called “'.$search.'”'"
+                    text="Check the spelling, or try a shorter word."
+                />
             @endif
         @else
             @if ($this->places)
@@ -88,10 +75,7 @@
 
             @if ($this->unplaced)
                 <column class="w-full gap-2">
-                    <column class="w-full gap-0.5 px-1">
-                        <x-ui.subheading>Not in a place yet</x-ui.subheading>
-                        <x-ui.text size="sm">Open one and tap Move to put it away.</x-ui.text>
-                    </column>
+                    <x-ui.subheading class="px-1">Not in a place yet</x-ui.subheading>
                     <column class="{{ Card::classes() }} w-full">
                         @foreach ($this->unplaced as $item)
                             @include('native.inventory-item-row', ['item' => $item, 'ref' => 'inventory-item-'.$item['id'], 'from' => null])
@@ -100,15 +84,18 @@
                             @endunless
                         @endforeach
                     </column>
+                    <x-ui.text size="sm" class="px-1">Open one and tap Move to put it away.</x-ui.text>
                 </column>
             @endif
 
             @if ($this->items === [])
-                <column ref="inventory-empty" class="w-full items-center gap-2 px-4 py-8">
-                    <icon :ios="Ios::Archivebox" :android="Android::Inventory2" :size="28" class="text-theme-on-surface-variant" />
-                    <x-ui.heading size="lg">Nothing here yet</x-ui.heading>
-                    <x-ui.text>Tap Add to start with a room, like Garage. If you've added things on the website, pull down on the Summary tab to bring them in.</x-ui.text>
-                </column>
+                <x-ui.empty-state
+                    ref="inventory-empty"
+                    :ios="Ios::Archivebox"
+                    :android="Android::Inventory2"
+                    heading="Nothing here yet"
+                    text="Tap + to start with a room, like Garage. If you've added things on the website, pull down on Summary to bring them in."
+                />
             @endif
 
             @if ($this->deletedCount > 0)

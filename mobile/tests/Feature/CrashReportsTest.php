@@ -30,7 +30,7 @@ function withCrashReports(bool $sharing = false, ?bool $share = null, bool $save
 it('hides the crash reports setting when NativeWatch is not set up', function () {
     Native::visit('/preferences')
         ->assertSet('canShareCrashReports', false)
-        ->assertMissingElement('list_item', fn (array $node): bool => ($node['ref'] ?? null) === 'crash-reports');
+        ->assertMissingElement('column', fn (array $node): bool => ($node['ref'] ?? null) === 'crash-reports');
 });
 
 it('shows crash reports off until the user turns them on', function () {
@@ -38,9 +38,7 @@ it('shows crash reports off until the user turns them on', function () {
 
     Native::visit('/preferences', platform: 'ios')
         ->assertSee('Share crash reports')
-        ->assertElement('list_item', fn (array $node): bool => ($node['ref'] ?? null) === 'crash-reports'
-            && ($node['props']['trailing_type'] ?? null) === 'switch'
-            && ($node['props']['trailing_checked'] ?? null) === false)
+        ->assertElement('toggle', fn (array $node): bool => ($node['ref'] ?? null) === 'crash-reports-toggle' && $node['props']['value'] === false)
         ->assertAccessible();
 });
 
@@ -68,7 +66,7 @@ it('asks on the dashboard whether to share crash reports', function () {
     withCrashReports();
 
     Native::visit('/dashboard')
-        ->assertNativeCalled('Dialog.Alert', fn (array $params): bool => $params['id'] === 'crash-reports' && $params['title'] === 'Help improve Sunny?');
+        ->assertNativeCalled('Dialog.Alert', fn (array $params): bool => $params['id'] === 'crash-reports' && $params['title'] === 'Help improve the app?');
 
     expect(Storage::exists('crash-reports-asked'))->toBeTrue();
 });

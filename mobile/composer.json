@@ -37,6 +37,7 @@
         "nativephp/mobile-camera": "^1.0",
         "nativephp/mobile-clipboard": "^1.0",
         "nativephp/mobile-local-notifications": "^0.1.0",
+        "nativephp/mobile-network": "^1.1",
         "nativephp/mobile-ota": "^1.0",
         "nativephp/mobile-scanner": "^1.1",
         "nativephp/mobile-secure-storage": "^1.0",
@@ -158,6 +159,10 @@
                 {
                     "description": "iOS: build the app icon from the Icon Composer file set in nativephp.ios_icon so iOS 26 gets the Liquid Glass light, dark and tinted variants",
                     "url": "patches/nativephp-mobile-ios-icon-composer.patch"
+                },
+                {
+                    "description": "iOS: when a screen hides the tab bar, keep the bottom bar's inset on the page so the last field can scroll clear of a pinned button",
+                    "url": "patches/nativephp-mobile-hidden-tab-bar-keeps-bottom-inset.patch"
                 }
             ],
             "nativephp/mobile-secure-storage": [
@@ -194,6 +199,10 @@
                 {
                     "description": "Android: center a :menu pressable's content, so items-center and justify-center work like they do without a menu",
                     "url": "patches/nativephp-mobile-ui-android-menu-pressable-alignment.patch"
+                },
+                {
+                    "description": "iOS: let a fit bottom sheet scroll when its content is taller than the sheet can be, instead of cutting off its top and bottom",
+                    "url": "patches/nativephp-mobile-ui-ios-fit-sheet-scrolls.patch"
                 }
             ],
             "victorycodedev/toastkit": [

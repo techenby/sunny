@@ -1,8 +1,15 @@
 @use('App\Icons\Android')
 @use('App\Icons\Ios')
 
+<x-ui.submit-bar
+    ref="{{ $formRef }}-submit"
+    :disabled="$saving || $disconnected"
+>
+    {{ $submitLabel }}
+</x-ui.submit-bar>
+
 <scroll-view ref="{{ $formRef }}-screen" fill class="bg-theme-background ios:bg-theme-grouped-background">
-    <column class="w-full gap-6 px-6 py-6">
+    <column class="w-full gap-6 px-4 py-6">
         @if ($failure ?? null)
             <row ref="{{ $formRef }}-failing" class="w-full items-start gap-3 rounded-xl border border-theme-destructive/20 bg-theme-destructive/10 px-4 py-3">
                 <icon :ios="Ios::ExclamationmarkTriangleFill" :android="Android::Warning" :size="18" class="text-theme-destructive" />
@@ -19,8 +26,6 @@
                 label="Name"
                 placeholder="Family"
                 autocapitalize="words"
-                :ios-leading-icon="Ios::Tag"
-                :android-leading-icon="Android::Label"
                 native:model.blur="name"
             />
 
@@ -39,7 +44,7 @@
             </column>
 
             <column ref="{{ $formRef }}-color" class="w-full gap-2">
-                <text class="text-sm font-semibold text-theme-on-surface-variant">Color</text>
+                <x-ui.field-label>Color</x-ui.field-label>
                 <row class="w-full items-center justify-between">
                     @foreach ($colorOptions as $index => $option)
                         <pressable
@@ -59,32 +64,10 @@
             </column>
         </column>
 
-        @if ($error !== '')
+        @if ($disconnected)
+            <x-ui.offline ref="{{ $formRef }}-offline" />
+        @elseif ($error !== '')
             <text ref="{{ $formRef }}-error" class="text-sm text-theme-destructive">{{ $error }}</text>
-        @endif
-
-        <column class="w-full gap-2.5">
-            <button
-                ref="{{ $formRef }}-submit"
-                variant="primary"
-                size="lg"
-                font="semibold"
-                class="w-full"
-                :disabled="$saving"
-                @tap="save"
-            >
-                Save calendar
-            </button>
-            <row class="w-full items-center justify-center gap-1.5">
-                <icon :ios="Ios::Wifi" :android="Android::Wifi" :size="14" class="text-theme-on-surface-variant" />
-                <x-ui.text size="sm">Needs a connection</x-ui.text>
-            </row>
-        </column>
-
-        @if ($removeLabel ?? null)
-            <pressable ref="{{ $formRef }}-remove" :a11y-label="$removeLabel" class="min-h-12 w-full items-center justify-center" @tap="confirmRemove">
-                <text class="text-lg text-theme-destructive">{{ $removeLabel }}</text>
-            </pressable>
         @endif
     </column>
 </scroll-view>

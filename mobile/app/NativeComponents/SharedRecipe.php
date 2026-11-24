@@ -6,8 +6,10 @@ use App\Actions\OpenSharedRecipe;
 use App\Actions\SaveSharedRecipe;
 use App\Casts\RecipeLines;
 use App\Http\Integrations\Sunny\SunnyStore;
+use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Http\Integrations\Sunny\SunnyTeam;
 use App\Http\Integrations\Sunny\SunnyTokenStore;
+use App\Support\Offline;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -71,7 +73,7 @@ class SharedRecipe extends Component
         }
 
         if ($token === null) {
-            $this->loaded(['status' => 'error', 'message' => 'Sign in to Sunny to open shared recipes.']);
+            $this->loaded(['status' => 'error', 'message' => 'Sign in to open shared recipes.']);
 
             return;
         }
@@ -141,7 +143,7 @@ class SharedRecipe extends Component
         $team = app(SunnyTeam::class)->current();
 
         if ($team === null) {
-            $this->saveFailed('Sync with Sunny first.');
+            $this->saveFailed(SunnySyncCoordinator::REFRESH_ADVICE);
 
             return;
         }
@@ -174,7 +176,7 @@ class SharedRecipe extends Component
                 403 => 'You can’t add recipes to '.$this->teamName().'.',
                 422 => $this->teamName().' isn’t one of your teams anymore.',
                 429 => 'Too many attempts. Please wait before trying again.',
-                default => 'Sunny couldn’t save it right now.',
+                default => 'The server couldn’t save it right now.',
             });
 
             return;
@@ -187,7 +189,7 @@ class SharedRecipe extends Component
         }
 
         if ($saved === null) {
-            $this->saveFailed('Sunny didn’t confirm the save.');
+            $this->saveFailed('The server didn’t confirm the save.');
 
             return;
         }
@@ -213,11 +215,9 @@ class SharedRecipe extends Component
      */
     public function saveNote(): array
     {
-        [$title, $message] = $this->saveProblem === 'offline'
-            ? ['You’re offline', 'Saving needs a connection.']
-            : ['Couldn’t save', $this->saveError];
-
-        return ['title' => $title, 'message' => $message.' Nothing’s been saved yet.'];
+        return $this->saveProblem === 'offline'
+            ? ['title' => Offline::TITLE, 'message' => Offline::ADVICE]
+            : ['title' => 'Couldn’t save', 'message' => $this->saveError.' Nothing’s been saved yet.'];
     }
 
     /**

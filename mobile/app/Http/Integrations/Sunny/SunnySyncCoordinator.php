@@ -9,6 +9,10 @@ use Saloon\Exceptions\Request\RequestException;
 
 class SunnySyncCoordinator
 {
+    public const string REFRESH_ADVICE = 'Pull down on Summary to refresh.';
+
+    public const string NO_TEAM_ADVICE = 'Select a team in Settings. If none are listed, pull down on Summary to refresh.';
+
     private const LOCK_KEY = 'sunny-sync';
 
     private const LOCK_SECONDS = 120;

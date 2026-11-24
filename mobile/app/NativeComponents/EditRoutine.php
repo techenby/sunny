@@ -6,10 +6,11 @@ use App\Concerns\ChecksSunnySync;
 use App\Concerns\ManagesRoutineForm;
 use App\Enums\RoutineFrequency;
 use App\Enums\TimeOfDay;
+use App\Layouts\HidesTabBar;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
 
-class EditRoutine extends Component
+class EditRoutine extends Component implements HidesTabBar
 {
     use ChecksSunnySync;
     use ManagesRoutineForm;

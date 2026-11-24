@@ -24,14 +24,8 @@
         @endphp
 
         <column fill class="bg-theme-background">
-            <column class="w-full gap-3 px-4 pt-4 pb-2">
-                <row class="w-full items-center">
-                    <pressable ref="{{ $refPrefix }}-parent-cancel" class="min-h-12 w-20 justify-center" @tap="closeParentPicker">
-                        <text class="text-lg text-theme-primary-text">Cancel</text>
-                    </pressable>
-                    <text font="semibold" class="flex-1 text-center text-lg text-theme-on-surface">{{ $title ?? 'Where does it go?' }}</text>
-                    <column class="w-20" />
-                </row>
+            <x-ui.sheet-header ref="{{ $refPrefix }}-parent-close" :title="$title ?? 'Where does it go?'" close="closeParentPicker" />
+            <column class="w-full gap-3 px-4 pt-1 pb-2">
                 @isset($subtitle)
                     <text ref="{{ $refPrefix }}-parent-subtitle" max-lines="1" class="w-full text-center text-sm text-theme-on-surface-variant">{{ $subtitle }}</text>
                 @endisset
@@ -151,34 +145,13 @@
             </scroll-view>
 
             @if ($parentSearch === '')
-                <column class="w-full gap-2 px-4 pt-3 pb-8">
-                    @if ($browsedParent)
-                        <button
-                            ref="{{ $refPrefix }}-parent-choose"
-                            variant="primary"
-                            size="lg"
-                            font="semibold"
-                            class="w-full"
-                            @tap="selectParent({{ $browsedParent['id'] }})"
-                        >
-                            {{ $choosePrefix ?? 'Put it in' }} {{ $browsedParent['name'] }}
-                        </button>
-                    @else
-                        <button
-                            ref="{{ $refPrefix }}-parent-choose"
-                            variant="primary"
-                            size="lg"
-                            font="semibold"
-                            class="w-full"
-                            @tap="selectTopLevel"
-                        >
-                            {{ $topLevelLabel ?? 'Don’t put it in a place yet' }}
-                        </button>
-                    @endif
-                    @if ($openableRows)
-                        <text class="text-center text-sm text-theme-on-surface-variant">Or tap one above to look inside it</text>
-                    @endif
-                </column>
+                <x-ui.sheet-confirm
+                    ref="{{ $refPrefix }}-parent-choose"
+                    :tap="$browsedParent ? 'selectParent('.$browsedParent['id'].')' : 'selectTopLevel'"
+                    :help="$openableRows ? 'Or tap one above to look inside it' : null"
+                >
+                    {{ $browsedParent ? ($choosePrefix ?? 'Put it in').' '.$browsedParent['name'] : ($topLevelLabel ?? 'Don’t put it in a place yet') }}
+                </x-ui.sheet-confirm>
             @endif
         </column>
     @endif

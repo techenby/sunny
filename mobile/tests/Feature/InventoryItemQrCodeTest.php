@@ -32,7 +32,7 @@ it('shares the QR code image for printing', function () {
 it('keeps sharing in the button below the code instead of the top bar', function () {
     Native::visit('/inventory/8/qr-code')
         ->assertMissingElement('top_bar_action')
-        ->assertElement('button', fn (array $node): bool => ($node['ref'] ?? null) === 'item-qr-code-share');
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'item-qr-code-share');
 });
 
 it('copies the item name', function () {
@@ -74,6 +74,6 @@ it('does not share before asked', function () {
 
 it('explains when the item is missing', function () {
     Native::visit('/inventory/999/qr-code')
-        ->assertSee('Item not found')
+        ->assertSee('Thing not found')
         ->assertDontSee('Share for printing');
 });

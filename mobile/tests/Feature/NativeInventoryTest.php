@@ -109,7 +109,7 @@ it('shows an item’s type, the trail to it, and its metadata', function () {
         ->assertSee('DeWalt')
         ->assertSee('Model')
         ->assertSee('DCD771')
-        ->assertSee('Put something inside')
+        ->assertSee('Add to Cordless drill')
         ->assertAccessible();
 });
 
@@ -119,15 +119,30 @@ it('jumps to any container in the path', function () {
         ->assertNavigatedTo('/inventory/6');
 });
 
-it('adds a thing inside a place or storage', function () {
+it('adds each kind inside a place or storage, starting the form there with that kind chosen', function (string $label, ItemType $type) {
     Native::visit('/inventory/7')
-        ->assertSee('Add something here')
-        ->tap('Add one thing')
+        ->assertSee('Add to Tool chest')
+        ->tap($label)
         ->assertNavigatedTo('/inventory/create')
         ->follow()
         ->assertSet('parentId', 7)
-        ->assertSet('type', ItemType::Item);
-});
+        ->assertSet('type', $type)
+        ->assertNavTitle($label)
+        ->assertSee('Add to Tool chest');
+})->with([
+    'thing' => ['Add a thing', ItemType::Item],
+    'storage' => ['Add storage', ItemType::Bin],
+    'place' => ['Add a place', ItemType::Location],
+]);
+
+it('gives each add entry its kind’s icon and keeps the camera on Bulk add', function (string $uri, string $ref) {
+    Native::visit($uri, platform: 'ios')
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === $ref
+            && array_column(array_column($node['children'], 'props'), 'icon') === ['cube', 'archivebox', 'mappin', 'camera.viewfinder']);
+})->with([
+    'the Inventory tab' => ['/inventory', 'inventory-add'],
+    'inside a place' => ['/inventory/6', 'item-add'],
+]);
 
 it('navigates up to the containing item when it is not already on the stack', function () {
     Native::visit('/inventory/8')
@@ -170,8 +185,8 @@ it('asks to put away top-level storage and things', function () {
 
 it('explains when an item does not exist', function () {
     Native::visit('/inventory/999')
-        ->assertNavTitle('Item')
-        ->assertSee('Item not found')
+        ->assertNavTitle('Inventory')
+        ->assertSee('Thing not found')
         ->assertMissingElement('scroll_view');
 });
 
@@ -202,14 +217,15 @@ it('stops walking descendants when the synced data contains a parent cycle', fun
     expect(Inventory::descendantIdsOf(6))->toEqualCanonicalizing([7, 8, 9, 10]);
 });
 
-it('puts edit and a more menu above the tab bar and delete at the end of the page', function () {
+it('puts edit and a more menu above the tab bar, with delete last in the menu', function () {
     Native::visit('/inventory/7')
         ->assertElement('bottom_bar', fn (array $node): bool => array_column($node['children'][0]['children'], 'ref') === ['edit-item', 'item-more'])
         ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'item-more'
-            && array_column(array_column($node['children'], 'props'), 'label') === ['Print label', 'Make copies'])
-        ->assertMissingElement('top_bar_action', fn (array $node): bool => ($node['ref'] ?? null) === 'delete-item')
-        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'delete-item')
-        ->assertSee('Delete Tool chest')
+            && array_column(array_column($node['children'], 'props'), 'label') === ['Edit', 'Print label', 'Make copies', 'Delete storage'])
+        ->assertElement('top_bar_action', fn (array $node): bool => ($node['ref'] ?? null) === 'delete-item'
+            && $node['props']['destructive'] === true
+            && $node['props']['a11y_label'] === 'Delete Tool chest')
+        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'delete-item')
         ->tap('Print label')
         ->assertNavigatedTo('/inventory/7/qr-code');
 });
@@ -218,9 +234,9 @@ it('lets a plain item hold other items, like insoles in shoes', function () {
     Native::visit('/inventory/8')
         ->assertElement('pressable', function (array $node): bool {
             return ($node['ref'] ?? null) === 'item-add'
-                && array_column(array_column($node['children'], 'props'), 'label') === ['Add one thing', 'Bulk add'];
+                && array_column(array_column($node['children'], 'props'), 'label') === ['Add a thing', 'Add storage', 'Add a place', 'Bulk add'];
         })
-        ->tap('Add one thing')
+        ->tap('Add a thing')
         ->assertNavigatedTo('/inventory/create')
         ->follow()
         ->assertSet('parentId', 8);
@@ -232,12 +248,12 @@ it('invites adding to an empty container', function () {
 
     Native::visit('/inventory/90')
         ->assertSee('What’s inside')
-        ->assertSee('Put something inside')
-        ->tap('Add one thing')
+        ->assertSee('Add to Empty bin')
+        ->tap('Add a thing')
         ->assertNavigatedTo('/inventory/create');
 });
 
-it('puts a labeled add button and a scan button inside search in the bottom bar', function () {
+it('puts an add button and a scan button inside search in the bottom bar', function () {
     Native::visit('/inventory')
         ->assertElement('bottom_bar', function (array $node): bool {
             $refs = [];
@@ -253,7 +269,7 @@ it('puts a labeled add button and a scan button inside search in the bottom bar'
         })
         ->assertElement('pressable', function (array $node): bool {
             return ($node['ref'] ?? null) === 'inventory-add'
-                && array_column(array_column($node['children'], 'props'), 'label') === ['Add one thing', 'Bulk add'];
+                && array_column(array_column($node['children'], 'props'), 'label') === ['Add a thing', 'Add storage', 'Add a place', 'Bulk add'];
         })
         ->assertAccessible();
 });

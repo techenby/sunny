@@ -4,9 +4,10 @@ namespace App\NativeComponents;
 
 use App\Concerns\ChecksSunnySync;
 use App\Concerns\ManagesListForm;
+use App\Layouts\HidesTabBar;
 use Illuminate\View\View;
 
-class CreateList extends Component
+class CreateList extends Component implements HidesTabBar
 {
     use ChecksSunnySync;
     use ManagesListForm;

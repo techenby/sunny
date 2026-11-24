@@ -1,12 +1,12 @@
 @use('App\Icons\Android')
 @use('App\Icons\Ios')
 
-{{-- Expects $photoPath, $refPrefix, and $alt, and optionally $label and
-     $labelClass; the including screen supplies takePhoto/choosePhoto/
-     removePhoto via the CapturesPhoto trait. --}}
+{{-- Expects $photoPath, $refPrefix, and $alt, and optionally $label; the
+     including screen supplies takePhoto/choosePhoto/removePhoto via the
+     CapturesPhoto trait. --}}
 
 <column class="w-full gap-2">
-    <text class="{{ $labelClass ?? 'text-sm font-semibold text-theme-on-surface-variant' }}">{{ $label ?? 'Photo' }}</text>
+    <x-ui.field-label>{{ $label ?? 'Photo' }}</x-ui.field-label>
 
     @if ($photoPath)
         <image
@@ -17,38 +17,28 @@
             :height="180"
             :fit="2"
         />
-        <pressable
-            ref="{{ $refPrefix }}-photo-remove"
-            class="h-12 items-start justify-center self-start px-2"
-            @tap="removePhoto"
-        >
-            <text class="text-sm font-semibold text-theme-primary-text">Remove photo</text>
-        </pressable>
+        <x-ui.button ref="{{ $refPrefix }}-photo-remove" variant="text" class="self-start px-2" tap="removePhoto">Remove photo</x-ui.button>
     @else
         <row class="w-full flex-wrap gap-3">
-            <pressable
+            <x-ui.button
                 ref="{{ $refPrefix }}-photo-camera"
+                variant="secondary"
+                class="flex-1"
+                :ios="Ios::Camera"
+                :android="Android::PhotoCamera"
                 a11y-label="Take photo"
-                class="min-h-12 flex-1 items-center justify-center rounded-xl border border-theme-outline bg-theme-surface px-4"
-                @tap="takePhoto"
-            >
-                <row class="items-center gap-2">
-                    <native:icon :ios="Ios::Camera" :android="Android::PhotoCamera" :size="20" class="text-theme-on-surface" />
-                    <text font="semibold" class="text-base text-theme-on-surface">Take photo</text>
-                </row>
-            </pressable>
-            <pressable
+                tap="takePhoto"
+            >Take photo</x-ui.button>
+            <x-ui.button
                 ref="{{ $refPrefix }}-photo-library"
+                variant="secondary"
+                class="flex-1"
+                :ios="Ios::Photo"
+                :android="Android::Image"
                 a11y-label="Choose photo"
                 a11y-hint="Opens the photo library"
-                class="min-h-12 flex-1 items-center justify-center rounded-xl border border-theme-outline bg-theme-surface px-4"
-                @tap="choosePhoto"
-            >
-                <row class="items-center gap-2">
-                    <native:icon :ios="Ios::Photo" :android="Android::Image" :size="20" class="text-theme-on-surface" />
-                    <text font="semibold" class="text-base text-theme-on-surface">Choose photo</text>
-                </row>
-            </pressable>
+                tap="choosePhoto"
+            >Choose photo</x-ui.button>
         </row>
     @endif
 </column>

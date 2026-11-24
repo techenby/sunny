@@ -20,56 +20,48 @@
                         <text font="medium" class="text-xs text-theme-surface/70">STEP {{ $timer['step'] }} TIMER</text>
                         <text :max-lines="1" class="text-base text-theme-surface">{{ $timer['text'] }}</text>
                     </column>
-                    <pressable
+                    <x-ui.button
                         ref="cook-timer-stop"
-                        @press="stopTimer"
+                        variant="secondary"
+                        :ios="Ios::StopFill"
+                        :android="Android::Stop"
                         :a11y-label="'Stop the step '.$timer['step'].' timer, '.CookRecipe::clock($timer['remaining']).' left'"
-                        class="min-h-12 items-center justify-center rounded-full bg-theme-primary px-5"
-                    >
-                        <row class="items-center gap-2">
-                            <icon :ios="Ios::StopFill" :android="Android::Stop" :size="14" class="text-theme-on-primary" />
-                            <text font="medium" class="text-base text-theme-on-primary">Stop timer</text>
-                            <text font="accent" class="text-lg text-theme-on-primary">{{ CookRecipe::clock($timer['remaining']) }}</text>
-                        </row>
-                    </pressable>
+                        tap="stopTimer"
+                    >Stop timer {{ CookRecipe::clock($timer['remaining']) }}</x-ui.button>
                 </row>
             @endif
 
             <row class="w-full items-center gap-3">
                 @if ($onPrep)
                     @if ($this->stepCount)
-                        <pressable
+                        <x-ui.button
                             ref="cook-go-to-steps"
-                            @press="goToStep({{ $step }})"
-                            class="min-h-12 flex-1 items-center justify-center rounded-full bg-theme-primary px-5"
-                        >
-                            <row class="items-center gap-2">
-                                <text font="semibold" class="text-lg text-theme-on-primary">{{ $step === 1 ? 'Start cooking' : 'Back to step '.$step }}</text>
-                                <icon :ios="Ios::ArrowRight" :android="Android::ArrowForward" :size="18" class="text-theme-on-primary" />
-                            </row>
-                        </pressable>
+                            class="flex-1"
+                            :ios="Ios::ArrowRight"
+                            :android="Android::ArrowForward"
+                            icon-trailing
+                            tap="goToStep({{ $step }})"
+                        >{{ $step === 1 ? 'Start cooking' : 'Back to step '.$step }}</x-ui.button>
                     @endif
                 @else
                     @if ($step > 1)
-                        <pressable
+                        <x-ui.button
                             ref="cook-previous-step"
-                            @press="previousStep"
+                            variant="glass"
+                            :ios="Ios::ChevronLeft"
+                            :android="Android::ChevronLeft"
                             a11y-label="Previous step"
-                            class="h-12 w-12 items-center justify-center rounded-full glass android:bg-theme-surface"
-                        >
-                            <icon :ios="Ios::ChevronLeft" :android="Android::ChevronLeft" :size="22" class="text-theme-on-surface" />
-                        </pressable>
+                            tap="previousStep"
+                        />
                     @endif
-                    <pressable
+                    <x-ui.button
                         ref="cook-next-step"
-                        @press="nextStep"
-                        class="min-h-12 flex-1 items-center justify-center rounded-full bg-theme-primary px-5"
-                    >
-                        <row class="items-center gap-2">
-                            <text font="semibold" class="text-lg text-theme-on-primary">{{ $step >= $this->stepCount ? 'Done cooking' : 'Next: step '.($step + 1) }}</text>
-                            <icon :ios="Ios::ArrowRight" :android="Android::ArrowForward" :size="18" class="text-theme-on-primary" />
-                        </row>
-                    </pressable>
+                        class="flex-1"
+                        :ios="Ios::ArrowRight"
+                        :android="Android::ArrowForward"
+                        icon-trailing
+                        tap="nextStep"
+                    >{{ $step >= $this->stepCount ? 'Done cooking' : 'Next: step '.($step + 1) }}</x-ui.button>
                 @endif
             </row>
         </column>
@@ -117,23 +109,23 @@
                             <x-ui.heading>Servings</x-ui.heading>
                             <x-ui.text size="sm">Amounts scale to match</x-ui.text>
                         </column>
-                        <pressable
+                        <x-ui.button
                             ref="cook-fewer-servings"
-                            @press="changeServings(-1)"
+                            variant="secondary"
+                            :ios="Ios::Minus"
+                            :android="Android::Remove"
                             a11y-label="Fewer servings"
-                            class="h-12 w-12 items-center justify-center rounded-full bg-theme-primary/15"
-                        >
-                            <icon :ios="Ios::Minus" :android="Android::Remove" :size="20" class="text-theme-primary-text" />
-                        </pressable>
+                            tap="changeServings(-1)"
+                        />
                         <text ref="cook-servings-count" font="accent" class="w-10 text-center text-xl text-theme-on-surface">{{ $servings }}</text>
-                        <pressable
+                        <x-ui.button
                             ref="cook-more-servings"
-                            @press="changeServings(1)"
+                            variant="secondary"
+                            :ios="Ios::Plus"
+                            :android="Android::Add"
                             a11y-label="More servings"
-                            class="h-12 w-12 items-center justify-center rounded-full bg-theme-primary/15"
-                        >
-                            <icon :ios="Ios::Plus" :android="Android::Add" :size="20" class="text-theme-primary-text" />
-                        </pressable>
+                            tap="changeServings(1)"
+                        />
                     </row>
                 </column>
             @endif
@@ -173,7 +165,7 @@
                                 </row>
                             </pressable>
                             @unless ($loop->last || $this->isHeading($this->ingredients[$position + 1]))
-                                <divider class="ml-14" />
+                                <divider class="ml-[54]" />
                             @endunless
                         @endforeach
                     </column>
@@ -232,18 +224,14 @@
                         </column>
                     @elseif ($row['next'] !== null)
                         <row class="w-full items-center gap-3 pl-11">
-                            <pressable
+                            <x-ui.button
                                 ref="cook-step-{{ $number }}-timer"
-                                @press="toggleTimer({{ $number }})"
+                                variant="secondary"
+                                :ios="Ios::PlayFill"
+                                :android="Android::PlayArrow"
                                 :a11y-label="'Start a '.CookRecipe::minutes($row['next']).' timer for step '.$number"
-                                class="min-h-12 items-center justify-center rounded-full border border-theme-primary px-5"
-                            >
-                                <row class="items-center gap-2">
-                                    <icon :ios="Ios::PlayFill" :android="Android::PlayArrow" :size="14" class="text-theme-primary-text" />
-                                    <text font="medium" class="text-base text-theme-primary-text">Start timer</text>
-                                    <text font="accent" class="text-base text-theme-primary-text">{{ CookRecipe::clock($row['next']) }}</text>
-                                </row>
-                            </pressable>
+                                tap="toggleTimer({{ $number }})"
+                            >Start timer {{ CookRecipe::clock($row['next']) }}</x-ui.button>
                             @if ($row['upcoming'])
                                 <x-ui.text size="sm">then {{ collect($row['upcoming'])->map(fn (int $seconds): string => CookRecipe::minutes($seconds))->implode(', ') }}</x-ui.text>
                             @endif

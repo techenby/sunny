@@ -2,6 +2,7 @@
 
 namespace App\NativeComponents;
 
+use App\Concerns\NeedsConnection;
 use App\Http\Integrations\Sunny\SunnyAuth;
 use App\Http\Integrations\Sunny\SunnyConnector;
 use App\Support\Toast;
@@ -13,6 +14,8 @@ use RuntimeException;
 
 class Register extends Component
 {
+    use NeedsConnection;
+
     public string $name = '';
 
     public string $email = '';
@@ -119,7 +122,7 @@ class Register extends Component
             try {
                 app(SunnyAuth::class)->signIn($body);
             } catch (RuntimeException) {
-                $this->error = 'Your account was created, but Sunny couldn’t sign you in. Log in to continue.';
+                $this->error = 'Your account was created, but you couldn’t be signed in. Log in to continue.';
 
                 return;
             }
@@ -163,7 +166,7 @@ class Register extends Component
     private function openSite(string $path): void
     {
         if (! Browser::inApp(app(SunnyConnector::class)->siteUrl().$path)) {
-            Toast::error('Unable to open the Sunny website. Please try again.');
+            Toast::error('Unable to open the website. Please try again.');
         }
     }
 }

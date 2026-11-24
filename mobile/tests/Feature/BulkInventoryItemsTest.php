@@ -23,7 +23,8 @@ it('picks things from a place and puts the page back when done', function () {
         ->assertSet('selecting', true)
         ->assertTabBarHidden()
         ->assertSee('Nothing picked yet')
-        ->assertMissingElement('pressable', fn (array $node): bool => in_array($node['ref'] ?? null, ['item-add', 'delete-item', 'edit-item'], true))
+        ->assertMissingElement('pressable', fn (array $node): bool => in_array($node['ref'] ?? null, ['item-add', 'item-more', 'edit-item'], true))
+        ->assertMissingElement('top_bar_action', fn (array $node): bool => ($node['ref'] ?? null) === 'delete-item')
         ->tap('item-child-10')
         ->assertNoNavigation()
         ->assertSet('selectedIds', [10])
@@ -36,7 +37,7 @@ it('picks things from a place and puts the page back when done', function () {
         ->assertSet('selecting', false)
         ->assertSet('selectedIds', [])
         ->assertTabBarVisible()
-        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'delete-item');
+        ->assertElement('top_bar_action', fn (array $node): bool => ($node['ref'] ?? null) === 'delete-item');
 });
 
 it('only offers Select when something is inside', function () {
@@ -120,7 +121,8 @@ it('leaves the single Move for the page itself', function () {
         ->tap('item-select')
         ->tap('item-child-8')
         ->tap('selection-move')
-        ->tap('move-parent-cancel')
+        ->assertDontSee('Cancel')
+        ->tap('move-parent-close')
         ->tap('item-move')
         ->assertSee('Where does it go?')
         ->assertDontSee('Moving Cordless drill');

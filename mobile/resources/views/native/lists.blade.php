@@ -1,5 +1,6 @@
 @use('App\Icons\Android')
 @use('App\Icons\Ios')
+@use('App\Ui\Card')
 
 <native:top-bar title="Lists" display-mode="large" :back="false" />
 
@@ -11,33 +12,33 @@
     'createUrl' => '/lists/create',
 ])
 
-<list ref="checklist-list" fill class="bg-theme-background">
-    @if ($this->lists)
-        <list-section :footer="$this->footer">
-            @foreach ($this->lists as $checklist)
-                @include('native.owned-row', [
-                    'ref' => 'checklist-'.$checklist['id'],
-                    'url' => '/lists/'.$checklist['id'],
-                    'headline' => $checklist['name'],
-                    'supporting' => $checklist['summary'],
-                    'ios' => $checklist['type']->iosIcon(),
-                    'android' => $checklist['type']->androidIcon(),
-                    'iconBackground' => $checklist['type']->iconColor(),
-                    'owner' => $checklist['owner'],
-                    'last' => $loop->last,
-                ])
-            @endforeach
-        </list-section>
-    @else
-        <list-section>
-            <list-item
+<scroll-view ref="checklist-list" fill class="bg-theme-background">
+    <column class="w-full gap-2 px-4 pt-2 pb-8">
+        @if ($this->lists)
+            <column class="{{ Card::classes() }} w-full">
+                @foreach ($this->lists as $checklist)
+                    @include('native.owned-row', [
+                        'ref' => 'checklist-'.$checklist['id'],
+                        'url' => '/lists/'.$checklist['id'],
+                        'headline' => $checklist['name'],
+                        'supporting' => $checklist['summary'],
+                        'ios' => $checklist['type']->iosIcon(),
+                        'android' => $checklist['type']->androidIcon(),
+                        'iconBackground' => $checklist['type']->iconColor(),
+                        'owner' => $checklist['owner'],
+                        'last' => $loop->last,
+                    ])
+                @endforeach
+            </column>
+            <x-ui.text ref="lists-count" size="sm" class="px-1">{{ $this->footer }}</x-ui.text>
+        @else
+            <x-ui.empty-state
                 ref="lists-empty"
-                :headline="$search !== '' ? 'No lists match “'.$search.'”' : 'No lists yet'"
-                :supporting="$search !== '' ? 'Try a different search.' : 'Tap + to start a to-do, shopping, or wish list.'"
-                :leadingIconIos="$search !== '' ? Ios::Magnifyingglass : Ios::ListBullet"
-                :leadingIconAndroid="$search !== '' ? Android::SearchOff : Android::FormatListBulleted"
-                :leadingIconColor="theme('on-surface-variant')"
+                :ios="$search !== '' ? Ios::Magnifyingglass : Ios::ListBullet"
+                :android="$search !== '' ? Android::SearchOff : Android::FormatListBulleted"
+                :heading="$search !== '' ? 'No lists match “'.$search.'”' : 'No lists yet'"
+                :text="$search !== '' ? 'Try a different search.' : 'Tap + to start a to-do, shopping, or wish list.'"
             />
-        </list-section>
-    @endif
-</list>
+        @endif
+    </column>
+</scroll-view>

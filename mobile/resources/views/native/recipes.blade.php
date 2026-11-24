@@ -1,5 +1,6 @@
 @use('App\Icons\Android')
 @use('App\Icons\Ios')
+@use('App\Ui\Card')
 
 <native:top-bar title="Recipes" display-mode="large" :back="false" />
 
@@ -11,33 +12,34 @@
     'createUrl' => '/recipes/create',
 ])
 
-<list ref="recipe-list" fill separator class="bg-theme-background">
-    @if ($this->recipes)
-        <list-section :footer="trans_choice(':count recipe|:count recipes', count($this->recipes))">
-            @foreach ($this->recipes as $recipe)
-                <list-item
-                    :headline="$recipe['name']"
-                    :supporting="$recipe['summary']"
-                    :leadingImage="$recipe['photo']"
-                    :leadingIconIos="$recipe['photo'] ? null : Ios::ForkKnife"
-                    :leadingIconAndroid="$recipe['photo'] ? null : Android::Restaurant"
-                    :leadingIconBgColor="theme('primary')"
-                    :trailingIconIos="Ios::ChevronRight"
-                    :trailingIconAndroid="Android::ChevronRight"
-                    @navigate="'/recipes/'.$recipe['id']"
-                />
-            @endforeach
-        </list-section>
-    @else
-        <list-section>
-            <list-item
+<scroll-view ref="recipe-list" fill class="bg-theme-background">
+    <column class="w-full gap-2 px-4 pt-2 pb-8">
+        @if ($this->recipes)
+            <column class="{{ Card::classes() }} w-full">
+                @foreach ($this->recipes as $recipe)
+                    @include('native.owned-row', [
+                        'ref' => 'recipe-'.$recipe['id'],
+                        'url' => '/recipes/'.$recipe['id'],
+                        'headline' => $recipe['name'],
+                        'supporting' => $recipe['summary'],
+                        'ios' => Ios::ForkKnife,
+                        'android' => Android::Restaurant,
+                        'tile' => true,
+                        'photo' => $recipe['photo'],
+                        'owner' => null,
+                        'last' => $loop->last,
+                    ])
+                @endforeach
+            </column>
+            <x-ui.text ref="recipes-count" size="sm" class="px-1">{{ trans_choice(':count recipe|:count recipes', count($this->recipes)) }}</x-ui.text>
+        @else
+            <x-ui.empty-state
                 ref="recipes-empty"
-                :headline="$search !== '' ? 'No recipes match “'.$search.'”' : 'No recipes downloaded'"
-                :supporting="$search !== '' ? 'Try a different search.' : 'Pull down on the dashboard to refresh.'"
-                :leadingIconIos="$search !== '' ? Ios::Magnifyingglass : Ios::ForkKnife"
-                :leadingIconAndroid="$search !== '' ? Android::SearchOff : Android::Restaurant"
-                :leadingIconColor="theme('on-surface-variant')"
+                :ios="$search !== '' ? Ios::Magnifyingglass : Ios::ForkKnife"
+                :android="$search !== '' ? Android::SearchOff : Android::Restaurant"
+                :heading="$search !== '' ? 'No recipes match “'.$search.'”' : 'No recipes downloaded'"
+                :text="$search !== '' ? 'Try a different search.' : 'Pull down on Summary to refresh.'"
             />
-        </list-section>
-    @endif
-</list>
+        @endif
+    </column>
+</scroll-view>

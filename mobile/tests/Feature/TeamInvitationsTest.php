@@ -128,7 +128,7 @@ it('accepts an invitation from Summary', function (): void {
         ->assertSee('Join Miller Cabin')
         ->assertAccessible()
         ->tap('dashboard-accept-miller-code')
-        ->assertToastShown(fn (array $params): bool => $params['message'] === 'You joined Miller Cabin. Switch to it in Preferences.')
+        ->assertToastShown(fn (array $params): bool => $params['message'] === 'You joined Miller Cabin. Switch to it in Settings.')
         ->assertDontSee('Pat Miller invited you');
 
     Saloon::assertSent(fn (Request $request): bool => $request instanceof AcceptInvitationRequest && $request->resolveEndpoint() === '/invitations/miller-code/accept');
@@ -152,6 +152,7 @@ it('declines an invitation from Summary', function (): void {
 });
 
 it('accepts and declines invitations in Preferences', function (): void {
+    $this->travelTo(now()->setTime(12, 0));
     invitedToMillerCabin();
     Invitation::create(['code' => 'lake-code', 'server' => SunnyStore::server(), 'team_name' => 'Lake House', 'inviter_name' => 'Sam Lee', 'role' => 'admin', 'expires_at' => now()->addHours(3), 'created_at' => now()]);
     Saloon::fake([
@@ -160,12 +161,12 @@ it('accepts and declines invitations in Preferences', function (): void {
     ]);
 
     Native::visit('/preferences', platform: 'ios')
-        ->assertElement('list_item', fn (array $node): bool => ($node['ref'] ?? null) === 'invitation-miller-code' && $node['props']['headline'] === 'Pat Miller invited you to join Miller Cabin' && $node['props']['supporting'] === 'Expires in 2 days')
-        ->assertElement('list_item', fn (array $node): bool => ($node['ref'] ?? null) === 'invitation-lake-code' && $node['props']['supporting'] === 'Expires today')
+        ->assertElement('column', fn (array $node): bool => ($node['ref'] ?? null) === 'invitation-miller-code' && $node['props']['a11y_label'] === 'Pat Miller invited you to join Miller Cabin, Expires in 2 days')
+        ->assertElement('column', fn (array $node): bool => ($node['ref'] ?? null) === 'invitation-lake-code' && str_ends_with($node['props']['a11y_label'], ', Expires today'))
         ->assertAccessible()
         ->tap('accept-invitation-miller-code')
         ->assertSee('Miller Cabin')
-        ->assertMissingElement('list_item', fn (array $node): bool => ($node['ref'] ?? null) === 'invitation-miller-code')
+        ->assertMissingElement('column', fn (array $node): bool => ($node['ref'] ?? null) === 'invitation-miller-code')
         ->tap('decline-invitation-lake-code')
         ->assertDontSee('Lake House');
 
@@ -190,7 +191,7 @@ it('keeps an invitation to answer later when offline', function (): void {
 
     Native::visit('/dashboard')
         ->tap('dashboard-accept-miller-code')
-        ->assertToastShown(fn (array $params): bool => $params['message'] === 'You’re offline. Joining a team needs a connection.')
+        ->assertToastShown(fn (array $params): bool => $params['message'] === 'You’re offline. Try again when you’re connected.')
         ->assertSee('Join Miller Cabin');
 
     expect(Invitation::count())->toBe(1);
@@ -268,6 +269,23 @@ it('checks the email before sending', function (): void {
     Saloon::assertNotSent(CreateTeamInvitationRequest::class);
 });
 
+it('opens the invite form disabled while offline and frees it when the connection returns', function (): void {
+    signInToFamilyAs(7);
+    Native::fakeBridge()->respondTo('Network.Status', ['connected' => false]);
+
+    $screen = Native::visit('/preferences/team/invite')
+        ->assertSee('You’re offline')
+        ->assertSee('Try again when you’re connected.')
+        ->assertDontSee('Nothing’s been sent')
+        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'invite-send');
+
+    $screen->bridge()->respondTo('Network.Status', ['connected' => true]);
+
+    $screen->firePolls()
+        ->assertDontSee('You’re offline')
+        ->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'invite-send');
+});
+
 it('sends nothing while offline and lets the person try again', function (): void {
     signInToFamilyAs(7);
     Saloon::fake([
@@ -279,7 +297,7 @@ it('sends nothing while offline and lets the person try again', function (): voi
         ->input('invite-email', 'sam.swick@gmail.com')
         ->tap('invite-send')
         ->assertSet('offline', true)
-        ->assertSee('Sending an invitation needs a connection, since Sunny emails it right away. Nothing’s been sent to sam.swick@gmail.com yet.')
+        ->assertSee('Try again when you’re connected. Nothing’s been sent to sam.swick@gmail.com yet.')
         ->assertSee('Try again')
         ->assertSee('Last updated at')
         ->assertSet('email', 'sam.swick@gmail.com');
@@ -324,3 +342,18 @@ it('shows members who can’t invite who to ask', function (): void {
 
     Saloon::assertNotSent(CancelTeamInvitationRequest::class);
 });
+
+it('counts the days until an invitation expires on the phone’s calendar', function (string $now, string $expiresAt, ?string $timezone, string $label): void {
+    $this->travelTo($now);
+    Native::fakeBridge()->respondTo('Device.GetInfo', ['info' => json_encode(['timezone' => $timezone])]);
+    Invitation::create(['code' => 'lake-code', 'server' => SunnyStore::server(), 'team_name' => 'Lake House', 'inviter_name' => 'Sam Lee', 'role' => 'admin', 'expires_at' => $expiresAt, 'created_at' => now()]);
+
+    Native::visit('/preferences', platform: 'ios')
+        ->assertElement('column', fn (array $node): bool => ($node['ref'] ?? null) === 'invitation-lake-code' && str_ends_with($node['props']['a11y_label'], ', '.$label));
+})->with([
+    'this evening, before midnight UTC' => ['2026-11-19 21:45:00', '2026-11-20T00:45:00+00:00', 'America/Chicago', 'Expires today'],
+    'tomorrow morning, after midnight UTC' => ['2026-11-20 01:00:00', '2026-11-20T15:00:00+00:00', 'America/Chicago', 'Expires tomorrow'],
+    'late tonight, east of UTC' => ['2026-11-19 12:00:00', '2026-11-19T14:30:00+00:00', 'Asia/Tokyo', 'Expires today'],
+    'early tomorrow, east of UTC' => ['2026-11-19 12:00:00', '2026-11-19T16:00:00+00:00', 'Asia/Tokyo', 'Expires tomorrow'],
+    'a phone that doesn’t say its timezone' => ['2026-11-19 21:45:00', '2026-11-20T00:45:00+00:00', null, 'Expires tomorrow'],
+]);

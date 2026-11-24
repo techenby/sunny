@@ -20,196 +20,193 @@
         <x-ui.text class="text-center">Pull down on Summary to download your teams.</x-ui.text>
     </column>
 @else
-    <list ref="team-settings" fill class="bg-theme-background">
-        @if ($offline)
-            <list-section>
-                <list-item
-                    ref="team-offline"
-                    headline="You’re offline"
-                    :supporting="'This is '.$team->name.($this->syncedAt() ? ' as of '.$this->syncedAt() : '').'. Changing the team needs a connection, so it’s look-only until you’re back.'"
-                    :leadingIconIos="Ios::WifiSlash"
-                    :leadingIconAndroid="Android::WifiOff"
-                    :leadingIconColor="theme('primary-text')"
-                    :headlineColor="theme('primary-text')"
-                    :trailingIconIos="Ios::ArrowClockwise"
-                    :trailingIconAndroid="Android::Refresh"
-                    a11y-hint="Checks the connection again"
-                    @tap="retry"
-                />
-            </list-section>
-        @endif
-
-        <list-section header="Team">
-            <list-item
-                ref="team-name"
-                :headline="$team->name"
-                supporting="Name"
-                :leadingMonogram="mb_strtoupper(mb_substr($team->name, 0, 1))"
-                :leadingMonogramColor="theme('primary')"
-                :trailingText="$role?->canUpdateTeam() ? 'Rename' : null"
-                :trailingTextColor="$this->canEdit() ? theme('primary-text') : theme('on-surface-variant')"
-                :disabled="$role?->canUpdateTeam() && ! $this->canEdit()"
-                a11y-hint="{{ $this->canEdit() ? 'Renames the team' : '' }}"
-                @tap="openRename"
-            />
-        </list-section>
-
-        <list-section header="Household" footer="Routines reset at midnight in this timezone, so everyone’s day starts together.">
-            <list-item
-                ref="team-timezone"
-                headline="Timezone"
-                :supporting="$team->timezone ?? 'Not set'"
-                :leadingIconIos="Ios::Globe"
-                :leadingIconAndroid="Android::Public"
-                :trailingIconIos="$role?->canUpdateTeam() ? Ios::ChevronRight : null"
-                :trailingIconAndroid="$role?->canUpdateTeam() ? Android::ChevronRight : null"
-                :disabled="$role?->canUpdateTeam() && ! $this->canEdit()"
-                @tap="openTimezone"
-            />
-            <list-item
-                ref="team-week-start"
-                headline="Week starts on"
-                :supporting="$this->weekStart()"
-                :leadingIconIos="Ios::Calendar"
-                :leadingIconAndroid="Android::CalendarMonth"
-                :trailingIconIos="$role?->canUpdateTeam() ? Ios::ChevronRight : null"
-                :trailingIconAndroid="$role?->canUpdateTeam() ? Android::ChevronRight : null"
-                :disabled="$role?->canUpdateTeam() && ! $this->canEdit()"
-                @tap="openWeekStart"
-            />
-        </list-section>
-
-        <list-section :header="'Members'.($members ? ' · '.count($members) : '')" :footer="$this->membersFooter()">
-            @forelse ($members as $member)
-                <list-item
-                    ref="member-{{ $member['id'] }}"
-                    :headline="$member['name']"
-                    :supporting="$member['role']->label().($member['you'] ? ' · You' : '')"
-                    :leadingMonogram="$member['initials']"
-                    :leadingMonogramColor="theme('primary')"
-                    :trailingIconIos="$member['tappable'] ? Ios::ChevronRight : null"
-                    :trailingIconAndroid="$member['tappable'] ? Android::ChevronRight : null"
-                    :disabled="$member['tappable'] && $offline"
-                    a11y-hint="{{ $member['tappable'] ? 'Changes their role or removes them' : '' }}"
-                    @tap="openMember({{ $member['id'] }})"
-                />
-            @empty
-                <list-item ref="no-members" headline="No members downloaded yet" />
-            @endforelse
-        </list-section>
-
-        <list-section
-            :header="'Invitations'.($invitations ? ' · '.count($invitations).' waiting' : '')"
-            :footer="$this->canInvite() ? null : ($invitations ? 'They’ll join the team once they accept.' : null)"
-        >
-            @foreach ($invitations as $invitation)
-                <list-item
-                    ref="team-invitation-{{ $invitation['code'] }}"
-                    :headline="$invitation['email']"
-                    :supporting="$invitation['supporting']"
-                    :leadingIconIos="Ios::Envelope"
-                    :leadingIconAndroid="Android::Email"
-                    :trailingIconIos="$this->canInvite() ? Ios::ChevronRight : null"
-                    :trailingIconAndroid="$this->canInvite() ? Android::ChevronRight : null"
-                    @navigate="'/preferences/team/invite'"
-                />
-            @endforeach
-            @if ($this->canInvite())
-                <list-item
-                    ref="invite-someone"
-                    headline="Invite someone"
-                    :leadingIconIos="Ios::PlusCircle"
-                    :leadingIconAndroid="Android::AddCircle"
-                    :leadingIconColor="theme('primary-text')"
-                    :headlineColor="theme('primary-text')"
-                    @navigate="'/preferences/team/invite'"
-                />
-            @elseif (! $invitations)
-                <list-item ref="no-invitations" headline="No one is waiting to join" />
+    <scroll-view ref="team-settings" fill class="bg-theme-background">
+        <column class="w-full gap-6 px-4 pt-2 pb-8">
+            @if ($offline)
+                <column class="{{ Card::classes() }} w-full">
+                    @include('native.settings-row', [
+                        'ref' => 'team-offline',
+                        'headline' => 'You’re offline',
+                        'supporting' => 'This is '.$team->name.($this->syncedAt() ? ' as of '.$this->syncedAt() : '').'. Changing the team needs a connection, so it’s look-only until you’re back.',
+                        'ios' => Ios::WifiSlash,
+                        'android' => Android::WifiOff,
+                        'tone' => 'primary',
+                        'trailing' => 'refresh',
+                        'hint' => 'Checks the connection again',
+                        'tap' => 'retry',
+                        'last' => true,
+                    ])
+                </column>
             @endif
-        </list-section>
 
-        @if ($role === TeamRole::Owner)
-            <list-section header="On the website" :footer="'To make someone else the owner or delete '.$team->name.', use the team page on the website.'">
-                <list-item
-                    ref="open-team-page"
-                    headline="Open team page"
-                    :supporting="$this->siteHost()"
-                    :leadingIconIos="Ios::Globe"
-                    :leadingIconAndroid="Android::Public"
-                    :trailingIconIos="Ios::ArrowUpRight"
-                    :trailingIconAndroid="Android::OpenInNew"
-                    a11y-hint="Opens the Sunny website"
-                    @tap="openTeamPage"
-                />
-            </list-section>
-        @endif
+            <column class="w-full gap-2">
+                <x-ui.subheading class="px-1">Team</x-ui.subheading>
+                <column class="{{ Card::classes() }} w-full">
+                    @include('native.settings-row', [
+                        'ref' => 'team-name',
+                        'headline' => $team->name,
+                        'supporting' => 'Name',
+                        'monogram' => mb_strtoupper(mb_substr($team->name, 0, 1)),
+                        'trailingText' => $role?->canUpdateTeam() ? 'Rename' : null,
+                        'disabled' => $role?->canUpdateTeam() && ! $this->canEdit(),
+                        'hint' => $this->canEdit() ? 'Renames the team' : null,
+                        'tap' => 'openRename',
+                        'last' => true,
+                    ])
+                </column>
+            </column>
 
-        @if ($this->canLeave())
-            <list-section :footer="$this->leaveFooter()">
-                <list-item
-                    ref="leave-team"
-                    :headline="'Leave '.$team->name"
-                    :leadingIconIos="Ios::RectanglePortraitAndArrowRight"
-                    :leadingIconAndroid="Android::Logout"
-                    :leadingIconColor="theme('destructive')"
-                    :headlineColor="theme('destructive')"
-                    :disabled="$offline"
-                    @tap="confirmLeave"
-                />
-            </list-section>
-        @endif
-    </list>
+            <column class="w-full gap-2">
+                <x-ui.subheading class="px-1">Household</x-ui.subheading>
+                <column class="{{ Card::classes() }} w-full">
+                    @include('native.settings-row', [
+                        'ref' => 'team-timezone',
+                        'headline' => 'Timezone',
+                        'supporting' => $team->timezone ?? 'Not set',
+                        'ios' => Ios::Globe,
+                        'android' => Android::Public,
+                        'trailing' => $role?->canUpdateTeam() ? 'chevron' : null,
+                        'disabled' => $role?->canUpdateTeam() && ! $this->canEdit(),
+                        'tap' => 'openTimezone',
+                    ])
+                    <column class="w-full px-4 py-3">
+                        <select
+                            ref="team-week-start"
+                            label="Week starts on"
+                            :options="TeamSettings::WEEKDAYS"
+                            :value="$this->weekStart()"
+                            :disabled="! $this->canEdit()"
+                            @change="pickWeekStart"
+                        />
+                    </column>
+                </column>
+                <x-ui.text size="sm" class="px-1">Routines reset at midnight in this timezone, so everyone’s day starts together.</x-ui.text>
+            </column>
 
-    <native:bottom-sheet ref="team-rename-sheet" :visible="$showRename" @dismiss="closeRename" detents="medium">
+            <column class="w-full gap-2">
+                <x-ui.subheading class="px-1">{{ 'Members'.($members ? ' · '.count($members) : '') }}</x-ui.subheading>
+                <column class="{{ Card::classes() }} w-full">
+                    @forelse ($members as $member)
+                        @include('native.settings-row', [
+                            'ref' => 'member-'.$member['id'],
+                            'headline' => $member['name'],
+                            'supporting' => $member['role']->label().($member['you'] ? ' · You' : ''),
+                            'monogram' => $member['initials'],
+                            'trailing' => $member['tappable'] ? 'chevron' : null,
+                            'disabled' => $member['tappable'] && $offline,
+                            'hint' => $member['tappable'] ? 'Changes their role or removes them' : null,
+                            'tap' => 'openMember('.$member['id'].')',
+                            'last' => $loop->last,
+                        ])
+                    @empty
+                        @include('native.settings-row', ['ref' => 'no-members', 'headline' => 'No members downloaded yet', 'last' => true])
+                    @endforelse
+                </column>
+                @if ($this->membersFooter())
+                    <x-ui.text size="sm" class="px-1">{{ $this->membersFooter() }}</x-ui.text>
+                @endif
+            </column>
+
+            <column class="w-full gap-2">
+                <x-ui.subheading class="px-1">{{ 'Invitations'.($invitations ? ' · '.count($invitations).' waiting' : '') }}</x-ui.subheading>
+                <column class="{{ Card::classes() }} w-full">
+                    @foreach ($invitations as $invitation)
+                        @include('native.settings-row', [
+                            'ref' => 'team-invitation-'.$invitation['code'],
+                            'headline' => $invitation['email'],
+                            'supporting' => $invitation['supporting'],
+                            'ios' => Ios::Envelope,
+                            'android' => Android::Email,
+                            'trailing' => $this->canInvite() ? 'chevron' : null,
+                            'url' => '/preferences/team/invite',
+                            'last' => $loop->last && ! $this->canInvite(),
+                        ])
+                    @endforeach
+                    @if ($this->canInvite())
+                        @include('native.settings-row', [
+                            'ref' => 'invite-someone',
+                            'headline' => 'Invite someone',
+                            'ios' => Ios::PlusCircle,
+                            'android' => Android::AddCircle,
+                            'tone' => 'primary',
+                            'url' => '/preferences/team/invite',
+                            'last' => true,
+                        ])
+                    @elseif (! $invitations)
+                        @include('native.settings-row', ['ref' => 'no-invitations', 'headline' => 'No one is waiting to join', 'last' => true])
+                    @endif
+                </column>
+                @if (! $this->canInvite() && $invitations)
+                    <x-ui.text size="sm" class="px-1">They’ll join the team once they accept.</x-ui.text>
+                @endif
+            </column>
+
+            @if ($role === TeamRole::Owner)
+                <column class="w-full gap-2">
+                    <x-ui.subheading class="px-1">On the website</x-ui.subheading>
+                    <column class="{{ Card::classes() }} w-full">
+                        @include('native.settings-row', [
+                            'ref' => 'open-team-page',
+                            'headline' => 'Open team page',
+                            'supporting' => $this->siteHost(),
+                            'ios' => Ios::Globe,
+                            'android' => Android::Public,
+                            'trailing' => 'external',
+                            'hint' => 'Opens the website',
+                            'tap' => 'openTeamPage',
+                            'last' => true,
+                        ])
+                    </column>
+                    <x-ui.text size="sm" class="px-1">To make someone else the owner or delete {{ $team->name }}, use the team page on the website.</x-ui.text>
+                </column>
+            @endif
+
+            @if ($this->canLeave())
+                <column class="w-full gap-2">
+                    <column class="{{ Card::classes() }} w-full">
+                        @include('native.settings-row', [
+                            'ref' => 'leave-team',
+                            'headline' => 'Leave '.$team->name,
+                            'ios' => Ios::RectanglePortraitAndArrowRight,
+                            'android' => Android::Logout,
+                            'tone' => 'destructive',
+                            'disabled' => $offline,
+                            'tap' => 'confirmLeave',
+                            'last' => true,
+                        ])
+                    </column>
+                    @if ($this->leaveFooter())
+                        <x-ui.text size="sm" class="px-1">{{ $this->leaveFooter() }}</x-ui.text>
+                    @endif
+                </column>
+            @endif
+        </column>
+    </scroll-view>
+
+    <native:bottom-sheet ref="team-rename-sheet" :visible="$showRename" @dismiss="closeRename" detents="fit">
         @if ($showRename)
-            <scroll-view fill class="bg-theme-background">
-                <column class="w-full gap-4 px-6 pt-6 pb-8">
-                    <x-ui.heading size="lg">Rename {{ $team->name }}</x-ui.heading>
+            <column class="w-full bg-theme-background">
+                <x-ui.sheet-header ref="team-rename-close" :title="'Rename '.$team->name" close="closeRename" />
+                <column class="w-full px-4 pt-4">
                     <outlined-text-input
                         ref="team-rename-input"
                         label="Name"
                         autocapitalize="words"
-                        :ios-leading-icon="Ios::House"
-                        :android-leading-icon="Android::Home"
                         :error="$renameError !== ''"
                         :supporting="$renameError !== '' ? $renameError : null"
                         native:model="newName"
                     />
-                    <button ref="team-rename-save" variant="primary" size="lg" font="semibold" class="w-full" @tap="rename">Save name</button>
-                    <button ref="team-rename-cancel" variant="ghost" class="w-full" @tap="closeRename">Cancel</button>
                 </column>
-            </scroll-view>
-        @endif
-    </native:bottom-sheet>
-
-    <native:bottom-sheet ref="team-week-start-sheet" :visible="$showWeekStart" @dismiss="closeWeekStart" detents="medium">
-        @if ($showWeekStart)
-            <scroll-view fill class="bg-theme-background">
-                <column class="w-full gap-4 px-6 pt-6 pb-8">
-                    @include('native.option-list', [
-                        'ref' => 'team-week-start-option',
-                        'label' => 'Week starts on',
-                        'options' => TeamSettings::WEEKDAYS,
-                        'selected' => $team->week_start ?? 0,
-                        'action' => 'chooseWeekStart',
-                    ])
-                </column>
-            </scroll-view>
+                <x-ui.sheet-confirm ref="team-rename-save" tap="rename">Save</x-ui.sheet-confirm>
+            </column>
         @endif
     </native:bottom-sheet>
 
     <native:bottom-sheet ref="team-timezone-sheet" :visible="$showTimezone" @dismiss="closeTimezone" detents="large">
         @if ($showTimezone)
             <column fill class="bg-theme-background">
-                <column class="w-full gap-3 px-4 pt-4 pb-2">
-                    <row class="w-full items-center">
-                        <pressable ref="team-timezone-cancel" class="min-h-12 w-20 justify-center" @tap="closeTimezone">
-                            <text class="text-lg text-theme-primary-text">Cancel</text>
-                        </pressable>
-                        <text font="semibold" class="flex-1 text-center text-lg text-theme-on-surface">Timezone</text>
-                        <column class="w-20" />
-                    </row>
+                <x-ui.sheet-header ref="team-timezone-close" title="Timezone" close="closeTimezone" />
+                <column class="w-full px-4 pt-1 pb-2">
                     <outlined-text-input
                         ref="team-timezone-search"
                         placeholder="Find a city or region"
@@ -249,43 +246,34 @@
         @endif
     </native:bottom-sheet>
 
-    <native:bottom-sheet ref="team-member-sheet" :visible="$memberId !== null" @dismiss="closeMember" detents="medium">
+    <native:bottom-sheet ref="team-member-sheet" :visible="$memberId !== null" @dismiss="closeMember" detents="fit">
         @if ($member = $this->member())
-            <scroll-view fill class="bg-theme-background">
-                <column class="w-full gap-4 px-6 pt-6 pb-8">
+            <column class="w-full bg-theme-background">
+                <x-ui.sheet-header ref="member-close" :title="$member['name']" close="closeMember" />
+                <column class="w-full gap-4 px-4 pt-4 pb-6 ios:pb-0">
                     <row class="w-full items-center gap-4">
                         <x-ui.avatar size="lg" circle :initials="$member['initials']" color="red" />
-                        <column class="flex-1 gap-0.5">
-                            <x-ui.heading size="xl">{{ $member['name'] }}</x-ui.heading>
-                            <x-ui.text>{{ $member['role']->label() }} of {{ $team->name }}</x-ui.text>
-                        </column>
+                        <x-ui.text class="flex-1">{{ $member['role']->label() }} of {{ $team->name }}</x-ui.text>
                     </row>
 
-                    @if ($confirmingRemove)
-                        <column ref="member-remove-confirm" class="w-full gap-1">
-                            <text font="semibold" class="text-base text-theme-on-surface">Remove {{ $this->firstName($member['name']) }} from {{ $team->name }}?</text>
-                            <x-ui.text>{{ $this->firstName($member['name']) }} will lose access to the team’s recipes, inventory, routines and lists.</x-ui.text>
-                        </column>
-                        <button ref="member-remove-confirm-button" variant="destructive" size="lg" font="semibold" class="w-full" @tap="removeMember">Remove {{ $this->firstName($member['name']) }}</button>
-                        <button ref="member-remove-keep" variant="ghost" class="w-full" @tap="keepMember">Keep {{ $this->firstName($member['name']) }}</button>
-                    @else
-                        <column class="w-full gap-2">
-                            @include('native.role-options', ['ref' => 'member-role', 'roles' => [TeamRole::Admin, TeamRole::Member], 'selected' => $member['role'], 'action' => 'changeRole'])
-                            <x-ui.text size="sm">Changes as soon as you pick one.</x-ui.text>
-                        </column>
+                    <column class="w-full gap-2">
+                        @include('native.role-options', ['ref' => 'member-role', 'roles' => [TeamRole::Admin, TeamRole::Member], 'selected' => $member['role'], 'action' => 'changeRole'])
+                        <x-ui.text size="sm">Changes as soon as you pick one.</x-ui.text>
+                    </column>
 
-                        <pressable
-                            ref="member-remove"
-                            :a11y-label="'Remove from '.$team->name"
-                            class="min-h-12 w-full items-center justify-center rounded-3xl border border-theme-outline bg-theme-surface px-4"
-                            @tap="confirmRemove"
-                        >
-                            <text font="semibold" class="text-center text-base text-theme-destructive">Remove from {{ $team->name }}</text>
-                        </pressable>
-                        <button ref="member-done" variant="ghost" class="w-full" @tap="closeMember">Done</button>
-                    @endif
+                    <column class="{{ Card::classes() }} w-full">
+                        @include('native.settings-row', [
+                            'ref' => 'member-remove',
+                            'headline' => 'Remove from '.$team->name,
+                            'ios' => Ios::PersonBadgeMinus,
+                            'android' => Android::PersonRemove,
+                            'tone' => 'destructive',
+                            'tap' => 'confirmRemove',
+                            'last' => true,
+                        ])
+                    </column>
                 </column>
-            </scroll-view>
+            </column>
         @endif
     </native:bottom-sheet>
 @endif

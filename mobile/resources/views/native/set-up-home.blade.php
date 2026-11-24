@@ -16,18 +16,15 @@
 <native:bottom-bar>
     <column class="w-full gap-2 px-4 pb-2">
         <text ref="setup-summary" max-lines="1" class="w-full text-center text-sm text-theme-on-surface-variant">{{ $this->summary }}</text>
-        <button
+        <x-ui.button
             ref="setup-submit"
-            variant="primary"
-            size="lg"
-            font="semibold"
             class="w-full"
-            a11y-hint="Creates what you picked, then opens Sunny"
+            a11y-hint="Creates what you picked, then opens your home"
             :disabled="$saving"
-            @tap="setUp"
+            tap="setUp"
         >
             {{ $saving ? 'Setting up…' : 'Set up my home' }}
-        </button>
+        </x-ui.button>
     </column>
 </native:bottom-bar>
 
@@ -37,7 +34,7 @@
             <text ref="setup-title" font="accent" class="text-3xl leading-tight text-theme-on-background">
                 {{ $this->firstName ? 'What’s in your home, '.$this->firstName.'?' : 'What’s in your home?' }}
             </text>
-            <x-ui.text size="lg">Tick what fits and we’ll set it up. You can rename or remove anything later.</x-ui.text>
+            <x-ui.text size="lg">Tick what fits and we’ll set it up. You can rename or delete anything later.</x-ui.text>
         </column>
 
         @if ($error)
@@ -82,14 +79,13 @@
                             native:model="newPlace"
                             @submit="addOwnPlace"
                         />
-                        <pressable
+                        <x-ui.button
                             ref="setup-add-place"
-                            a11y-label="Add place"
-                            class="h-10 w-10 items-center justify-center rounded-full bg-theme-primary"
-                            @tap="addOwnPlace"
-                        >
-                            <icon :ios="Ios::Checkmark" :android="Android::Check" :size="18" class="text-theme-on-primary" />
-                        </pressable>
+                            :ios="Ios::Checkmark"
+                            :android="Android::Check"
+                            a11y-label="Add a place"
+                            tap="addOwnPlace"
+                        />
                     </row>
                 @else
                     <pressable

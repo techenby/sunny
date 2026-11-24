@@ -14,15 +14,15 @@ it('introduces Sunny with native components', function () {
     expect($iconPath)->toBeFile();
 
     Native::visit('/')
-        ->assertSee('Sunny')
+        ->assertSee('SunnyHome')
         ->assertSee('Welcome home')
         ->assertSee('Your household, organized.')
-        ->assertSee('Sunny helps your family collaborate on recipes and keep track of what’s in storage, all in one place.')
+        ->assertSee('SunnyHome helps your family collaborate on recipes and keep track of what’s in storage, all in one place.')
         ->assertSee('Recipes')
         ->assertSee('Inventory')
         ->assertSee('Teams')
         ->assertSee('Log in')
-        ->assertSee('Register')
+        ->assertSee('Create account')
         ->assertMissingElement('top_bar')
         ->assertElement('column', fn (array $node): bool => ($node['ref'] ?? null) === 'welcome-screen'
             && ($node['layout']['width'] ?? null) === 'fill'
@@ -30,7 +30,7 @@ it('introduces Sunny with native components', function () {
             && ($node['layout']['safe_area'] ?? null) === 1)
         ->assertElement('image', fn (array $node): bool => ($node['ref'] ?? null) === 'sunny-brand-icon'
             && ($node['props']['src'] ?? null) === $iconPath
-            && ($node['props']['alt'] ?? null) === 'Sunny'
+            && ($node['props']['alt'] ?? null) === 'SunnyHome'
             && ($node['layout']['width'] ?? null) === 44.0
             && ($node['layout']['height'] ?? null) === 44.0
             && ($node['props']['fit'] ?? null) === 1)
@@ -97,15 +97,14 @@ it('provides accessible authentication actions', function () {
     $screen = Native::visit('/');
 
     foreach ([
-        'login-button' => ['Log in', 'Opens the login screen', 'secondary'],
-        'register-button' => ['Register', 'Opens the registration screen', 'primary'],
-    ] as $ref => [$label, $hint, $variant]) {
-        $screen->assertElement('button', fn (array $node): bool => ($node['ref'] ?? null) === $ref
-            && ($node['props']['label'] ?? null) === $label
+        'login-button' => ['Log in', 'Opens the login screen'],
+        'register-button' => ['Create account', 'Opens the Create account screen'],
+    ] as $ref => [$label, $hint]) {
+        $screen->assertElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === $ref
+            && ($node['children'][0]['props']['text'] ?? null) === $label
             && ($node['props']['a11y_label'] ?? null) === $label
             && ($node['props']['a11y_hint'] ?? null) === $hint
-            && ($node['props']['variant'] ?? null) === $variant
-            && ($node['props']['size'] ?? null) === 'lg');
+            && $node['layout']['min_height'] == 48);
     }
 
     $screen->assertAccessible();

@@ -4,16 +4,23 @@
 
 <native:top-bar title="Account" back />
 
+<x-ui.submit-bar
+    ref="account-save"
+    :ios="$offline === 'save' && ! $this->disconnected ? Ios::ArrowClockwise : null"
+    :android="$offline === 'save' && ! $this->disconnected ? Android::Refresh : null"
+    :disabled="$saving || $this->disconnected"
+>
+    {{ $offline === 'save' && ! $this->disconnected ? 'Try again' : 'Save' }}
+</x-ui.submit-bar>
+
 <scroll-view ref="account-screen" fill class="bg-theme-background ios:bg-theme-grouped-background">
-    <column class="w-full gap-6 px-6 py-6">
+    <column class="w-full gap-6 px-4 py-6">
         <column class="w-full gap-4">
             <outlined-text-input
                 ref="account-name"
                 label="Name"
                 autocapitalize="words"
                 content-type="name"
-                :ios-leading-icon="Ios::Person"
-                :android-leading-icon="Android::Person"
                 :error="isset($fieldErrors['name'])"
                 :supporting="$fieldErrors['name'] ?? null"
                 native:model.blur="name"
@@ -23,8 +30,6 @@
                 label="Email"
                 keyboard="email"
                 content-type="email"
-                :ios-leading-icon="Ios::Envelope"
-                :android-leading-icon="Android::Email"
                 :error="isset($fieldErrors['email'])"
                 :supporting="$fieldErrors['email'] ?? null"
                 native:model.blur="email"
@@ -45,46 +50,25 @@
                         </x-ui.text>
                     </column>
                 </row>
-                <button
+                <x-ui.button
                     ref="account-send-verification"
                     variant="secondary"
-                    size="lg"
-                    font="semibold"
                     class="w-full"
-                    @tap="sendVerification"
+                    :disabled="$this->disconnected"
+                    tap="sendVerification"
                 >
                     {{ $verificationSent ? 'Send it again' : 'Send verification email' }}
-                </button>
+                </x-ui.button>
                 <x-ui.text size="sm" class="text-center">Didn’t get it? You can resend a few times a minute.</x-ui.text>
             </column>
         @endunless
 
-        @if ($offline)
-            <row ref="account-offline" class="w-full items-start gap-2.5 rounded-xl bg-theme-primary/15 p-3.5">
-                <native:icon :ios="Ios::WifiSlash" :android="Android::WifiOff" :size="20" class="text-theme-primary-text" />
-                <column class="flex-1 gap-0.5">
-                    <text font="semibold" class="text-base text-theme-primary-text">You’re offline</text>
-                    <text class="text-base text-theme-on-surface">{{ $this->offlineMessage() }}</text>
-                </column>
-            </row>
+        @if ($offline || $this->disconnected)
+            <x-ui.offline ref="account-offline" :extra="$this->offlineReassurance()" />
         @endif
 
         @if ($error !== '')
             <text ref="account-error" class="text-sm text-theme-destructive">{{ $error }}</text>
         @endif
-
-        <button
-            ref="account-save"
-            variant="primary"
-            size="lg"
-            font="semibold"
-            class="w-full"
-            :ios-icon="$offline === 'save' ? Ios::ArrowClockwise : null"
-            :android-icon="$offline === 'save' ? Android::Refresh : null"
-            :disabled="$saving"
-            @tap="save"
-        >
-            {{ $offline === 'save' ? 'Try again' : 'Save' }}
-        </button>
     </column>
 </scroll-view>

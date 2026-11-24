@@ -6,54 +6,41 @@
 @php($snapshot = $this->calendarSnapshot)
 @php($feedColors = collect($this->calendarFeeds['feeds'] ?? [])->pluck('color', 'id'))
 
-<native:top-bar title="Calendar" back>
-    <native:top-bar-action
-        ref="calendar-more"
-        id="calendar-more"
-        :label="$snapshot && $snapshot['warnings'] ? 'More, a calendar isn’t showing' : 'More'"
-        :ios-icon="Ios::Ellipsis"
-        :android-icon="Android::MoreHoriz"
-    >
-        <native:top-bar-action
-            ref="calendar-feeds"
-            id="calendar-feeds"
-            label="Calendars"
-            :ios-icon="$snapshot && $snapshot['warnings'] ? Ios::ExclamationmarkTriangle : Ios::Calendar"
-            :android-icon="$snapshot && $snapshot['warnings'] ? Android::Warning : Android::CalendarMonth"
-            @navigate('/calendar/feeds')
-        />
-        <native:top-bar-action
-            ref="calendar-refresh"
-            id="calendar-refresh"
-            label="Refresh"
-            :ios-icon="Ios::ArrowClockwise"
-            :android-icon="Android::Refresh"
-            @tap="refresh"
-        />
-    </native:top-bar-action>
-</native:top-bar>
+<native:top-bar title="Calendar" back />
 
-@if ($this->hasNoCalendars)
-    <native:bottom-bar>
-        <row class="w-full items-center justify-center px-4 pb-2">
-            <pressable ref="add-first-calendar" a11y-label="Add a calendar" class="min-h-12 items-center justify-center rounded-full bg-theme-primary px-6" @navigate('/calendar/feeds/create')>
-                <row class="items-center gap-2">
-                    <icon :ios="Ios::Plus" :android="Android::Add" :size="18" class="text-theme-on-primary" />
-                    <text font="semibold" class="text-lg text-theme-on-primary">Add a calendar</text>
-                </row>
-            </pressable>
-        </row>
-    </native:bottom-bar>
-@endif
+<native:bottom-bar>
+    <row class="w-full items-center justify-end gap-3 px-4 pb-2">
+        @if ($this->hasNoCalendars)
+            <x-ui.button
+                ref="add-first-calendar"
+                class="flex-1"
+                :ios="Ios::Plus"
+                :android="Android::Add"
+                a11y-label="New calendar"
+                navigate="/calendar/feeds/create"
+            >New calendar</x-ui.button>
+        @endif
+        <x-ui.button
+            ref="calendar-more"
+            variant="glass"
+            :ios="Ios::Ellipsis"
+            :android="Android::MoreHoriz"
+            :a11y-label="$snapshot && $snapshot['warnings'] ? 'More, a calendar isn’t showing' : 'More'"
+            :menu="$this->moreMenu()"
+        />
+    </row>
+</native:bottom-bar>
 
 <refreshable ref="calendar" fill class="bg-theme-background" @refresh="refresh">
     @if ($this->hasNoCalendars)
-        <column ref="calendar-empty" fill center class="gap-3 px-8 py-24">
-            <column class="h-16 w-16 items-center justify-center rounded-full bg-theme-primary/15">
-                <icon :ios="Ios::Calendar" :android="Android::CalendarMonth" :size="30" class="text-theme-primary" />
-            </column>
-            <x-ui.heading size="xl" class="text-center">No calendars yet</x-ui.heading>
-            <x-ui.text class="text-center">Connect Google Calendar, Proton or any calendar with an iCal link to see the next six weeks of plans here.</x-ui.text>
+        <column class="w-full px-4 pt-2 pb-8">
+            <x-ui.empty-state
+                ref="calendar-empty"
+                :ios="Ios::Calendar"
+                :android="Android::CalendarMonth"
+                heading="No calendars yet"
+                text="Connect Google Calendar, Proton or any calendar with an iCal link to see the next six weeks of plans here."
+            />
         </column>
     @else
         <column class="w-full gap-5 px-4 pt-2 pb-8">
@@ -62,23 +49,24 @@
                     <row class="w-full items-start gap-3">
                         <icon :ios="Ios::WifiSlash" :android="Android::WifiOff" :size="20" class="text-theme-destructive" />
                         <column class="flex-1 gap-0.5">
-                            <x-ui.heading class="text-theme-destructive">{{ $calendarStatus === 'offline' ? 'You’re offline' : 'Sunny is unavailable' }}</x-ui.heading>
+                            <x-ui.heading class="text-theme-destructive">{{ $calendarStatus === 'offline' ? 'You’re offline' : 'The server is unavailable' }}</x-ui.heading>
                             @if ($this->calendarUpdatedAt)
                                 <text class="text-base text-theme-on-surface">These are the events from {{ $this->calendarUpdatedAt }}, so they may be out of date.</text>
                             @elseif ($calendarStatus === 'offline')
                                 <text class="text-base text-theme-on-surface">Events come live from your calendars. Connect to see them.</text>
                             @else
-                                <text class="text-base text-theme-on-surface">Sunny couldn’t load your events. Try again in a moment.</text>
+                                <text class="text-base text-theme-on-surface">Couldn’t load your events. Try again in a moment.</text>
                             @endif
                         </column>
                     </row>
                     <row class="w-full pl-8">
-                        <pressable ref="calendar-retry" a11y-label="Try again" class="min-h-12 items-center justify-center rounded-full bg-theme-primary px-4" @tap="refresh">
-                            <row class="items-center gap-1.5">
-                                <icon :ios="Ios::ArrowClockwise" :android="Android::Refresh" :size="16" class="text-theme-on-primary" />
-                                <text font="semibold" class="text-base text-theme-on-primary">Try again</text>
-                            </row>
-                        </pressable>
+                        <x-ui.button
+                            ref="calendar-retry"
+                            :ios="Ios::ArrowClockwise"
+                            :android="Android::Refresh"
+                            a11y-label="Try again"
+                            tap="refresh"
+                        >Try again</x-ui.button>
                     </row>
                 </column>
             @elseif ($this->updatedLabel)
@@ -107,12 +95,15 @@
                             @endif
                         </column>
                     </row>
-                    <pressable ref="calendar-warning-{{ $warning['feed_id'] }}-fix" a11y-label="Fix it in Calendars" class="min-h-12 w-full items-center justify-center rounded-full bg-theme-primary" @navigate('/calendar/feeds')>
-                        <row class="items-center gap-1.5">
-                            <text font="semibold" class="text-base text-theme-on-primary">Fix it in Calendars</text>
-                            <icon :ios="Ios::ArrowRight" :android="Android::ArrowForward" :size="16" class="text-theme-on-primary" />
-                        </row>
-                    </pressable>
+                    <x-ui.button
+                        ref="calendar-warning-{{ $warning['feed_id'] }}-fix"
+                        class="w-full"
+                        :ios="Ios::ArrowRight"
+                        :android="Android::ArrowForward"
+                        icon-trailing
+                        a11y-label="Fix it in Calendars"
+                        navigate="/calendar/feeds"
+                    >Fix it in Calendars</x-ui.button>
                 </column>
             @endforeach
 
@@ -133,11 +124,13 @@
                         </column>
                     </column>
                 @empty
-                    <column ref="calendar-nothing" class="w-full items-center gap-2 py-12">
-                        <icon :ios="Ios::SunMax" :android="Android::WbSunny" :size="28" class="text-theme-primary" />
-                        <x-ui.heading>Nothing in the next six weeks</x-ui.heading>
-                        <x-ui.text size="sm" class="text-center">Events from your calendars will show up here.</x-ui.text>
-                    </column>
+                    <x-ui.empty-state
+                        ref="calendar-nothing"
+                        :ios="Ios::SunMax"
+                        :android="Android::WbSunny"
+                        heading="Nothing in the next six weeks"
+                        text="Events from your calendars will show up here."
+                    />
                 @endforelse
             @elseif ($this->calendarIsLoading)
                 <column ref="calendar-loading" class="w-full items-center gap-3 py-12">

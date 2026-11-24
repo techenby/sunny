@@ -25,7 +25,7 @@ it('teaches an empty place with one-tap starter Storage', function (): void {
         ->assertSee('Nothing stored here yet')
         ->assertSee('Tap one to add it to Garage')
         ->assertSee('Camping box')
-        ->assertSee('Put something inside')
+        ->assertSee('Add to Garage')
         ->assertSee('Where it is')
         ->assertDontSee('What’s inside')
         ->assertAccessible()

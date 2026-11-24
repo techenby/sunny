@@ -3,20 +3,17 @@
 namespace App\Concerns;
 
 use App\Http\Integrations\Sunny\SunnyCalendar;
+use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Http\Integrations\Sunny\SunnyTeam;
-use Illuminate\Auth\AuthenticationException;
 use Illuminate\Support\Str;
-use Illuminate\Validation\ValidationException;
-use JsonException;
 use Native\Mobile\Attributes\Computed;
-use RuntimeException;
-use Saloon\Exceptions\Request\FatalRequestException;
-use Saloon\Exceptions\Request\RequestException;
 use Throwable;
-use UnexpectedValueException;
 
 trait ManagesCalendarFeedForm
 {
+    use DescribesCalendarFeedFailures;
+    use NeedsConnection;
+
     public string $name = '';
 
     public string $url = '';
@@ -69,7 +66,7 @@ trait ManagesCalendarFeedForm
         $team = app(SunnyTeam::class)->current();
 
         if ($team === null) {
-            $this->error = 'Select a team on the dashboard. If none are listed, sync with Sunny first.';
+            $this->error = SunnySyncCoordinator::NO_TEAM_ADVICE;
 
             return;
         }
@@ -97,24 +94,6 @@ trait ManagesCalendarFeedForm
         }
 
         $this->back();
-    }
-
-    protected function feedFailureMessage(Throwable $exception, string $action): string
-    {
-        return match (true) {
-            $exception instanceof FatalRequestException => 'You’re offline. Calendars can only be changed with a connection.',
-            $exception instanceof RequestException => match ($exception->getResponse()->status()) {
-                422 => collect($exception->getResponse()->json('errors'))->flatten()->first() ?? 'Check the form and try again.',
-                403 => 'You can’t change this team’s calendars.',
-                404 => 'This calendar has already been removed.',
-                429 => 'Too many attempts. Please wait before trying again.',
-                default => 'Sunny couldn’t '.$action.' right now. Try again in a moment.',
-            },
-            $exception instanceof JsonException, $exception instanceof ValidationException, $exception instanceof UnexpectedValueException => 'Sunny sent back something unexpected. Try again in a moment.',
-            $exception instanceof AuthenticationException => 'Sign in to Sunny again to change calendars.',
-            $exception instanceof RuntimeException => 'Unable to read your saved login. Unlock your device and try again.',
-            default => throw $exception,
-        };
     }
 
     protected function feedUrl(): string

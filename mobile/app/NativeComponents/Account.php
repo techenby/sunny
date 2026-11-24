@@ -3,9 +3,11 @@
 namespace App\NativeComponents;
 
 use App\Actions\DestroySession;
+use App\Concerns\NeedsConnection;
 use App\Http\Integrations\Sunny\SunnyAccount;
 use App\Http\Integrations\Sunny\SunnyStore;
 use App\Http\Integrations\Sunny\SunnyTokenStore;
+use App\Layouts\HidesTabBar;
 use App\Support\Toast;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\View\View;
@@ -15,8 +17,10 @@ use RuntimeException;
 use Saloon\Exceptions\Request\FatalRequestException;
 use Saloon\Exceptions\Request\RequestException;
 
-class Account extends Component
+class Account extends Component implements HidesTabBar
 {
+    use NeedsConnection;
+
     public string $name = '';
 
     public string $email = '';
@@ -78,7 +82,7 @@ class Account extends Component
 
             return;
         } catch (RequestException $exception) {
-            $this->failed($exception, 'Sunny couldn’t save your changes right now.');
+            $this->failed($exception, 'The server couldn’t save your changes right now.');
 
             return;
         } catch (AuthenticationException) {
@@ -120,7 +124,7 @@ class Account extends Component
 
             return;
         } catch (RequestException $exception) {
-            $this->failed($exception, 'Sunny couldn’t send the email right now.');
+            $this->failed($exception, 'The server couldn’t send the email right now.');
 
             return;
         } catch (AuthenticationException) {
@@ -144,11 +148,9 @@ class Account extends Component
         Toast::info('Your email is already verified.');
     }
 
-    public function offlineMessage(): string
+    public function offlineReassurance(): ?string
     {
-        return $this->offline === 'verification'
-            ? 'Sending a verification email needs a connection. Nothing’s been sent yet.'
-            : 'Changes to your account need a connection. Nothing’s been saved yet.';
+        return $this->offline === 'verification' && ! $this->disconnected ? 'Nothing’s been sent yet.' : null;
     }
 
     public function render(): View

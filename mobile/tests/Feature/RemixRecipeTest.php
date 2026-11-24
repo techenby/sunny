@@ -2,14 +2,40 @@
 
 use App\Http\Integrations\Sunny\Requests\SaveRecordRequest;
 use App\Http\Integrations\Sunny\Requests\SyncRequest;
+use App\Http\Integrations\Sunny\SunnyOutbox;
+use App\Http\Integrations\Sunny\SunnyThumbnails;
 use App\Models\PendingWrite;
 use App\Models\Recipe;
 use App\NativeComponents\EditRecipe;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Http;
+use Native\Mobile\Events\Camera\PhotoTaken;
 use Native\Mobile\Testing\Native;
 use Saloon\Enums\Method;
 use Saloon\Http\Faking\MockResponse;
+use Saloon\Repositories\Body\JsonBodyRepository;
+use Saloon\Repositories\Body\MultipartBodyRepository;
 
 beforeEach(fn () => seedSunnyData());
+
+afterEach(function (): void {
+    File::deleteDirectory(SunnyThumbnails::directory());
+    File::deleteDirectory(SunnyOutbox::photoDirectory());
+});
+
+function giveThePancakesAPhoto(): Recipe
+{
+    $thumbUrl = 'https://cdn.sunny.example/recipes/thumbs/pancakes-a1.jpg?signature=one';
+    File::ensureDirectoryExists(SunnyThumbnails::directory());
+    File::put(SunnyThumbnails::pathFor($thumbUrl), 'pancake-thumb');
+
+    return tap(Recipe::find(1))->update([
+        'photo_url' => 'https://cdn.sunny.example/recipes/pancakes.jpg?signature=one',
+        'thumb_url' => $thumbUrl,
+        'thumb_path' => SunnyThumbnails::pathFor($thumbUrl),
+    ]);
+}
 
 function bottomBarRefs(array $tree): array
 {
@@ -28,13 +54,13 @@ function bottomBarRefs(array $tree): array
     return $refs;
 }
 
-it('puts Edit, Cook and More in the bottom bar, with Remix in the More menu', function () {
+it('puts Cook and More in the bottom bar, with Edit and Remix in the More menu', function () {
     $screen = Native::visit('/recipes/1')
         ->assertSee('Cook')
         ->assertElement('top_bar_action', fn (array $node): bool => $node['props']['id'] === 'recipe-remix' && $node['props']['label'] === 'Remix')
         ->assertAccessible();
 
-    expect(bottomBarRefs($screen->tree()))->toBe(['edit-recipe', 'cook-recipe', 'recipe-more']);
+    expect(bottomBarRefs($screen->tree()))->toBe(['cook-recipe', 'recipe-more']);
 });
 
 it('offers More without Cook when a recipe has no ingredients or steps', function () {
@@ -75,7 +101,7 @@ it('saves a remix with the original’s fields and opens it for editing', functi
         ->notes->toBe($original->notes)
         ->nutrition->toBe('Calories: 320')
         ->tags->toBe(['breakfast', 'weekend'])
-        ->photo_url->toBeNull()
+        ->photo_url->toBe('https://sunny.example/photos/1.jpg')
         ->and(array_column(Recipe::find(-1)->ingredients, 'text'))->toBe(array_column($original->ingredients, 'text'))
         ->and(array_column(Recipe::find(-1)->instructions, 'text'))->toBe(array_column($original->instructions, 'text'))
         ->and(Recipe::find(1)->name)->toBe('Buttermilk Pancakes');
@@ -92,6 +118,98 @@ it('saves a remix with the original’s fields and opens it for editing', functi
         ->and($write->payload)->not->toHaveKey('photo');
 });
 
+it('shows the original’s photo and thumbnail on a remix Sunny hasn’t saved yet', function () {
+    $original = giveThePancakesAPhoto();
+
+    Native::visit('/recipes/1')
+        ->tap('Remix')
+        ->follow()
+        ->assertSet('photoPath', null)
+        ->assertElement('image', fn (array $node): bool => ($node['props']['src'] ?? null) === $original->photo_url);
+    $listed = collect(Native::visit('/recipes')->get('recipes'))->firstWhere('name', 'Buttermilk Pancakes (Remix)');
+
+    expect($listed['photo'])->toBe($original->thumb_path);
+
+    expect(Recipe::find(-1)->only('photo_url', 'thumb_url', 'thumb_path'))->toBe($original->only('photo_url', 'thumb_url', 'thumb_path'))
+        ->and(PendingWrite::sole()->photo_path)->toBeNull()
+        ->and(PendingWrite::sole()->payload)->not->toHaveKeys(['photo', 'photo_url', 'thumb_url', 'thumb_path']);
+});
+
+it('swaps the original’s photo for the remix’s own once Sunny has saved it', function () {
+    Native::fakeBridge()->respondTo('SecureStorage.Get', ['value' => 'saved-token']);
+    Http::preventStrayRequests();
+    Http::fake(['cdn.sunny.example/*' => Http::response('remix-thumb')]);
+    $original = giveThePancakesAPhoto();
+    $saved = [
+        ...$original->toArray(), 'id' => 90, 'parent_id' => 1, 'name' => 'Buttermilk Pancakes (Remix)',
+        'photo_url' => 'https://cdn.sunny.example/recipes/pancakes-remix-b2.jpg?signature=one',
+        'thumb_url' => 'https://cdn.sunny.example/recipes/thumbs/pancakes-remix-b2.jpg?signature=one',
+    ];
+    Saloon::fake([
+        SaveRecordRequest::class => MockResponse::make(['data' => $saved], 201),
+        SyncRequest::class => MockResponse::make([
+            'teams' => [['id' => 1, 'name' => 'Family', 'slug' => 'family']],
+            'recipes' => [$original->toArray(), $saved],
+            'items' => [], 'checklists' => [], 'checklist_items' => [], 'routines' => [], 'routine_steps' => [], 'routine_occurrences' => [],
+            'synced_at' => '2026-09-23T13:00:00+00:00',
+        ]),
+    ]);
+
+    Native::visit('/recipes/1')->tap('Remix');
+
+    Saloon::assertSent(fn (SaveRecordRequest $request): bool => $request->body() instanceof JsonBodyRepository
+        && array_intersect(array_keys($request->body()->all()), ['photo', 'photo_url', 'thumb_url', 'thumb_path']) === []);
+    expect(Recipe::find(90))
+        ->photo_url->toBe($saved['photo_url'])
+        ->thumb_url->toBe($saved['thumb_url'])
+        ->thumb_path->toBe(SunnyThumbnails::pathFor($saved['thumb_url']))
+        ->and(file_get_contents(Recipe::find(90)->thumb_path))->toBe('remix-thumb')
+        ->and(Recipe::find(1)->thumb_path)->toBe($original->thumb_path)
+        ->and(file_get_contents($original->thumb_path))->toBe('pancake-thumb');
+});
+
+it('leaves the remix without a photo when it is removed before Sunny has saved it', function () {
+    giveThePancakesAPhoto();
+    $screen = Native::visit('/recipes/1')->tap('Remix')->follow();
+    Native::fakeBridge()->respondTo('SecureStorage.Get', ['value' => 'saved-token']);
+    $saved = [...Recipe::find(-1)->toArray(), 'id' => 90, 'photo_url' => null, 'thumb_url' => null];
+    Saloon::fake([SaveRecordRequest::class => MockResponse::make(['data' => $saved], 201), SyncRequest::class => MockResponse::make([], 503)]);
+
+    $screen->tap('edit-recipe-photo-remove')
+        ->assertMissingElement('image')
+        ->tap('edit-recipe-submit')
+        ->assertSet('error', '');
+
+    Saloon::assertSent(fn (SaveRecordRequest $request): bool => $request->getMethod() === Method::POST
+        && $request->body()->get('parent_id') === 1
+        && $request->body()->get('remove_photo') === true);
+    expect(Recipe::find(90)->only('photo_url', 'thumb_url', 'thumb_path'))->toBe(['photo_url' => null, 'thumb_url' => null, 'thumb_path' => null])
+        ->and(Recipe::find(1)->thumb_path)->toBeFile();
+});
+
+it('keeps a photo chosen for the remix before Sunny has saved it', function () {
+    giveThePancakesAPhoto();
+    $photo = UploadedFile::fake()->image('blueberry.jpg');
+    $screen = Native::visit('/recipes/1')->tap('Remix')->follow();
+    Native::fakeBridge()->respondTo('SecureStorage.Get', ['value' => 'saved-token']);
+    Saloon::fake([SaveRecordRequest::class => MockResponse::make([], 503)]);
+
+    $screen->emitNative(PhotoTaken::class, ['path' => $photo->getPathname()])
+        ->tap('edit-recipe-submit')
+        ->assertSet('error', '');
+
+    $remix = Recipe::find(-1);
+    Saloon::assertSent(fn (SaveRecordRequest $request): bool => $request->getMethod() === Method::POST
+        && $request->body() instanceof MultipartBodyRepository
+        && $request->body()->get('parent_id')->value === '1'
+        && $request->body()->get('remove_photo')->value === '0'
+        && (string) $request->body()->get('photo')->value === file_get_contents($photo->getPathname()));
+    expect($remix->photo_url)->toStartWith(SunnyOutbox::photoDirectory())
+        ->and(file_get_contents($remix->photo_url))->toBe(file_get_contents($photo->getPathname()))
+        ->and($remix->only('thumb_url', 'thumb_path'))->toBe(['thumb_url' => null, 'thumb_path' => null])
+        ->and(PendingWrite::sole()->photo_path)->toBe($remix->photo_url);
+});
+
 it('lists the new remix under the original', function () {
     Native::visit('/recipes/1')->tap('Remix');
 
@@ -100,7 +218,7 @@ it('lists the new remix under the original', function () {
         ->assertSee('Buttermilk Pancakes (Remix)');
     Native::visit('/recipes/-1')
         ->assertSee('Remixed from')
-        ->assertSee('Saved on this phone · syncing with Sunny');
+        ->assertDontSee('syncing with Sunny');
 });
 
 it('sends the remix to Sunny as a new recipe with its parent', function () {
@@ -144,7 +262,7 @@ it('shows the original on Edit right after remixing', function () {
         ->assertSee('Remix of')
         ->assertSee('Buttermilk Pancakes')
         ->assertSee('The original stays as it is.')
-        ->assertSee('Update recipe')
+        ->assertSee('Save')
         ->assertAccessible()
         ->tap('recipe-remix-of')
         ->assertNavigatedTo('/recipes/1');

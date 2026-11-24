@@ -44,7 +44,7 @@ it('offers to import once a link is in Source', function (): void {
         ->input('recipe-source', PANCAKES_URL)
         ->assertSee('seriouseats.com')
         ->assertSee('/buttermilk-pancakes')
-        ->assertSee('Sunny can read this page and fill in the name, photo, ingredients, steps and times for you.')
+        ->assertSee('This page can be read to fill in the name, photo, ingredients, steps and times for you.')
         ->assertSee('Import this recipe')
         ->assertAccessible();
 });
@@ -61,7 +61,7 @@ it('imports the recipe and opens it to check over', function (): void {
         ->assertSet('name', 'Buttermilk Pancakes')
         ->assertSet('prepTime', '10 min')
         ->assertSee('Imported and saved')
-        ->assertSee('Sunny filled this in from the page. Have a look over it and fix anything that didn’t come across right.')
+        ->assertSee('This was filled in from the page. Have a look over it and fix anything that didn’t come across right.')
         ->tap('recipe-import-dismiss')
         ->assertDontSee('Imported and saved');
 
@@ -87,7 +87,8 @@ it('reads the page in the background while showing progress', function (): void 
         ->assertSee('Reading the recipe from seriouseats.com… this takes a few seconds.')
         ->assertSee('Importing')
         ->assertElement('progress_bar')
-        ->assertElement('button', fn (array $node): bool => ($node['ref'] ?? null) === 'create-recipe-submit' && ($node['props']['disabled'] ?? false) === true);
+        ->assertElement('column', fn (array $node): bool => ($node['ref'] ?? null) === 'create-recipe-submit')
+        ->assertMissingElement('pressable', fn (array $node): bool => ($node['ref'] ?? null) === 'create-recipe-submit');
 });
 
 it('leaves out the progress bar on iOS, where it only draws a second spinner', function (): void {
@@ -105,7 +106,7 @@ it('explains when Sunny couldn’t open the page at all', function (): void {
         ->input('recipe-source', PANCAKES_URL)
         ->tap('recipe-import')
         ->assertSee('Couldn’t open that page')
-        ->assertSee('That site didn’t let Sunny read the page. Try another link, or fill it in yourself.')
+        ->assertSee('That site didn’t allow the page to be read. Try another link, or fill it in yourself.')
         ->assertDontSee('No recipe on that page')
         ->assertElement('outlined_text_input', fn (array $node): bool => ($node['ref'] ?? null) === 'recipe-source' && ($node['props']['is_error'] ?? false) === true)
         ->assertSee('Change link')
@@ -130,7 +131,7 @@ it('explains when Sunny finds no recipe at the link', function (string $url, str
     expect(Recipe::count())->toBe($recipes);
 })->with([
     'a home page' => ['https://joythebaker.com', 'That looks like a home page. Try the link to the recipe itself, or fill it in yourself.'],
-    'another page' => ['https://joythebaker.com/about', 'Sunny couldn’t find a recipe at that address. Try the link to the recipe itself, or fill it in yourself.'],
+    'another page' => ['https://joythebaker.com/about', 'No recipe was found at that address. Try the link to the recipe itself, or fill it in yourself.'],
 ]);
 
 it('lets them fill the recipe in by hand instead', function (): void {
@@ -156,7 +157,7 @@ it('says it can’t import offline without contacting Sunny', function (): void 
         ->tap('recipe-import')
         ->assertNoNavigation()
         ->assertSee('You’re offline')
-        ->assertSee('Importing needs Sunny to read the page, so it can’t wait and sync later like your other changes. Your link stays here, so connect and try again.')
+        ->assertSee('Try again when you’re connected.')
         ->assertSet('source', PANCAKES_URL)
         ->assertSee('Try again')
         ->assertSee('Fill it in myself');
@@ -231,7 +232,7 @@ it('explains other failures and offers a retry', function (int $status, string $
         ->assertSee('Try again');
 })->with([
     'rate limited' => [429, 'That’s a lot of imports in a row. Wait a minute and try again.'],
-    'server down' => [503, 'Sunny is unavailable right now. Try again in a moment.'],
+    'server down' => [503, 'The server is unavailable right now. Try again in a moment.'],
 ]);
 
 it('only offers import on a new recipe', function (): void {
@@ -248,7 +249,7 @@ it('asks them to sign in before importing', function (): void {
     Native::visit('/recipes/create')
         ->input('recipe-source', PANCAKES_URL)
         ->tap('recipe-import')
-        ->assertSee('Sign in to Sunny to import recipes.');
+        ->assertSee('Sign in to import recipes.');
 
     Saloon::assertNothingSent();
 });

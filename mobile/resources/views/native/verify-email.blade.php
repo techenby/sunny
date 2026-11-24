@@ -26,30 +26,11 @@
     </column>
 
     <column ref="verify-email-actions" class="w-full gap-3 pt-6">
-        <button
-            ref="verify-email-check"
-            variant="primary"
-            size="lg"
-            font="semibold"
-            class="w-full"
-            :disabled="$checking"
-            @tap="check"
-        >
-            I’ve verified my email
-        </button>
-        <button
-            ref="verify-email-send"
-            variant="secondary"
-            size="lg"
-            font="semibold"
-            class="w-full"
-            @tap="send"
-        >
-            {{ $sent ? 'Send it again' : 'Send verification email' }}
-        </button>
+        <x-ui.button ref="verify-email-check" variant="primary" class="w-full" :disabled="$checking" tap="check">I’ve verified my email</x-ui.button>
+        <x-ui.button ref="verify-email-send" variant="secondary" class="w-full" tap="send">{{ $sent ? 'Send it again' : 'Send verification email' }}</x-ui.button>
         <row class="w-full items-center justify-between">
-            <button ref="verify-email-change" variant="ghost" @navigate('/preferences/account')>Change email</button>
-            <button ref="verify-email-log-out" variant="ghost" @tap="confirmLogOut">Log out</button>
+            <x-ui.button ref="verify-email-change" variant="text" navigate="/preferences/account">Change email</x-ui.button>
+            <x-ui.button ref="verify-email-log-out" variant="text" tap="confirmLogOut">Log out</x-ui.button>
         </row>
     </column>
 </column>

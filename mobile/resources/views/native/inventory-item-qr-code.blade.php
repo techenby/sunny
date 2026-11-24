@@ -28,9 +28,9 @@
                 @endif
             </column>
 
-            <button ref="item-qr-code-share" variant="primary" size="lg" font="semibold" class="w-full" @tap="share">
+            <x-ui.button ref="item-qr-code-share" class="w-full" tap="share">
                 Share for printing
-            </button>
+            </x-ui.button>
 
             <x-ui.text size="sm" class="text-center">
                 Send it to a label printer app like Niimbot, or copy the name and link into the app’s label.
@@ -38,5 +38,5 @@
         </column>
     </scroll-view>
 @else
-    <x-ui.not-found ref="item-qr-code-missing" thing="item" />
+    <x-ui.not-found ref="item-qr-code-missing" thing="thing" />
 @endif
