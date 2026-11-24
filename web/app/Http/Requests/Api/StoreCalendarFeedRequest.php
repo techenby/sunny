@@ -25,7 +25,7 @@ class StoreCalendarFeedRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'url' => ['required', 'string', 'url:http,https'],
+            'url' => ['required', 'string', 'url:http,https', 'max:2048'],
             'color' => ['required', Rule::enum(CalendarColor::class)],
             'client_uuid' => ['nullable', 'uuid'],
         ];

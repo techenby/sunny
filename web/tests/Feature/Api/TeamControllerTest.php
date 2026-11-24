@@ -132,3 +132,16 @@ test('owners cannot leave their team and nobody can leave a personal team or a t
     'personal team' => [fn ($test) => $test->luffy->personalTeam()],
     'another team' => [fn ($test) => Team::factory()->create()],
 ]);
+
+test('a user can only own so many teams', function () {
+    Team::factory()->count(Team::MAX_OWNED_PER_USER - $this->zoro->ownedTeams()->count())
+        ->create()
+        ->each(fn (Team $team) => $team->memberships()->create(['user_id' => $this->zoro->id, 'role' => TeamRole::Owner]));
+
+    $this->actingAs($this->zoro)
+        ->postJson(route('api.teams.store'), ['name' => 'One Too Many'])
+        ->assertUnprocessable()
+        ->assertJsonPath('errors.name.0', 'You can own up to 10 teams.');
+
+    expect(Team::where('name', 'One Too Many')->exists())->toBeFalse();
+});

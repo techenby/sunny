@@ -31,6 +31,8 @@ return Application::configure(basePath: dirname(__DIR__))
                 ? route('kiosk.index')
                 : route('login'));
 
+        $middleware->throttleApi();
+
         $middleware->api(append: [
             TrackLastActivity::class,
         ]);

@@ -10,6 +10,7 @@ use App\Enums\CalendarColor;
 use App\Models\CalendarFeed;
 use App\Models\Team;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Livewire\Form;
 
 class CalendarFeedForm extends Form
@@ -39,7 +40,11 @@ class CalendarFeedForm extends Form
         if ($this->editingFeed) {
             (new UpdateFeed)->handle($this->editingFeed, $data);
         } else {
-            (new CreateFeed)->handle($team, $data);
+            try {
+                (new CreateFeed)->handle($team, $data);
+            } catch (ValidationException $exception) {
+                throw ValidationException::withMessages(["{$this->getPropertyName()}.url" => $exception->getMessage()]);
+            }
         }
 
         $this->reset();
@@ -50,7 +55,7 @@ class CalendarFeedForm extends Form
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'url' => ['required', 'string', 'url:http,https'],
+            'url' => ['required', 'string', 'url:http,https', 'max:2048'],
             'color' => ['required', Rule::enum(CalendarColor::class)],
         ];
     }

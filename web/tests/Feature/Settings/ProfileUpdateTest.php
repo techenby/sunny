@@ -155,3 +155,21 @@ test('name changes on the profile page do not use up the email limit', function 
 
     expect($user->fresh())->name->toBe('Nami 10')->email->toBe('nami6@example.com');
 });
+
+test('resends from the profile page are capped for the day', function () {
+    Notification::fake();
+    $user = User::factory()->unverified()->create();
+    $page = Livewire::actingAs($user)->test('pages::settings.profile');
+
+    foreach (range(1, User::VERIFICATION_EMAILS_PER_DAY) as $attempt) {
+        $page->call('resendVerificationNotification');
+        $this->travel(11)->seconds();
+    }
+
+    $this->travel(2)->minutes();
+
+    $page->call('resendVerificationNotification')
+        ->assertDispatched('toast-show', fn (string $event, array $params): bool => ($params['slots']['text'] ?? '') === 'Too many verification emails today. Try again tomorrow.');
+
+    Notification::assertSentToTimes($user, VerifyEmail::class, User::VERIFICATION_EMAILS_PER_DAY);
+});

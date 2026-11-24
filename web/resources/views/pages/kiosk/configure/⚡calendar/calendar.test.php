@@ -214,3 +214,20 @@ test('validates calendar feed input', function () {
         ->call('save')
         ->assertHasErrors(['form.name', 'form.url', 'form.color']);
 });
+
+test('the form says when a team already has the most calendars it can have', function () {
+    Http::fake();
+    $team = Team::factory()->create();
+    $user = User::factory()->memberOf($team)->create();
+    CalendarFeed::factory()->count(CalendarFeed::MAX_PER_TEAM)->for($team)->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::kiosk.configure.calendar')
+        ->set('form.name', 'One more')
+        ->set('form.url', 'https://example.com/more.ics')
+        ->set('form.color', CalendarColor::Green->value)
+        ->call('save')
+        ->assertHasErrors(['form.url' => 'A team can have up to 25 calendars.']);
+
+    expect($team->calendarFeeds()->count())->toBe(CalendarFeed::MAX_PER_TEAM);
+});

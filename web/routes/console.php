@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\KioskDevice;
 use App\Models\TeamInvitation;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
@@ -25,3 +26,10 @@ Schedule::call(function () {
         ->where('expires_at', '<', now())
         ->delete();
 })->daily()->description('Delete expired team invitations');
+
+Schedule::call(function () {
+    KioskDevice::query()
+        ->whereNull('paired_at')
+        ->where('expires_at', '<', now()->subDay())
+        ->delete();
+})->daily()->description('Delete kiosk screens that were never paired');

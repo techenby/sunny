@@ -1,5 +1,8 @@
 <?php
 
+use Flux\Flux;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Auth;
 use App\Actions\Recipes\ImportRecipeFromUrl;
 use App\Livewire\Forms\Recipes\RecipeForm;
 use App\Models\Recipe;
@@ -21,8 +24,14 @@ new class extends Component {
     public function import(): void
     {
         $this->validate([
-            'form.source' => ['required', 'url'],
+            'form.source' => ['required', 'url:http,https', 'max:500'],
         ]);
+
+        if (! RateLimiter::attempt('recipe-import:' . Auth::id(), 30, fn (): bool => true)) {
+            Flux::toast(variant: 'danger', heading: 'Import failed', text: __('That’s a lot of imports in a row. Wait a minute and try again.'));
+
+            return;
+        }
 
         try {
             $data = (new ImportRecipeFromUrl)->handle($this->form->source);

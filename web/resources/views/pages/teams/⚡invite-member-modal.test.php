@@ -88,3 +88,17 @@ test('nobody can be invited as an owner', function () {
     expect($this->crew->invitations()->exists())->toBeFalse();
     Notification::assertNothingSent();
 });
+
+test('the invite form says when someone has sent too many invitations', function () {
+    $modal = Livewire::actingAs($this->nami)->test('pages::teams.invite-member-modal', ['team' => $this->crew]);
+
+    foreach (range(1, 10) as $number) {
+        $modal->set('inviteEmail', "recruit{$number}@strawhat.pirates")->call('createInvitation')->assertHasNoErrors();
+    }
+
+    $modal->set('inviteEmail', 'recruit11@strawhat.pirates')
+        ->call('createInvitation')
+        ->assertHasErrors(['inviteEmail' => 'You’ve sent a lot of invitations. Try again in an hour.']);
+
+    expect($this->crew->invitations()->count())->toBe(10);
+});

@@ -22,7 +22,7 @@ class CreateRecipe
         $recipe = $team->recipes()->create($data);
 
         if ($photo instanceof UploadedFile) {
-            $filename = "{$recipe->slug}.{$photo->getClientOriginalExtension()}";
+            $filename = "{$recipe->slug}.{$photo->extension()}";
 
             $path = $photo->storeAs("teams/{$team->id}/recipes", $filename);
 

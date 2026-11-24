@@ -30,7 +30,7 @@ new class extends Component {
 
         if ($validated['email'] === $user->email) {
             $updateProfile->handle($user, $validated);
-        } elseif (RateLimiter::attempt($this->emailLimitKey($user), 6, fn () => $updateProfile->handle($user, $validated)) === false) {
+        } elseif (! $this->sendWithinEmailLimits($user, fn () => $updateProfile->handle($user, $validated))) {
             $this->addError('email', $this->tooManyEmailsMessage($user));
 
             return;
@@ -49,7 +49,7 @@ new class extends Component {
             return;
         }
 
-        if (RateLimiter::attempt($this->emailLimitKey($user), 6, fn () => $user->sendEmailVerificationNotification()) === false) {
+        if (! $this->sendWithinEmailLimits($user, fn () => $user->sendEmailVerificationNotification())) {
             Flux::toast(variant: 'danger', text: $this->tooManyEmailsMessage($user));
 
             return;
@@ -63,8 +63,32 @@ new class extends Component {
         return "verification-email-web:{$user->id}";
     }
 
+    private function sendWithinEmailLimits(User $user, Closure $send): bool
+    {
+        if (RateLimiter::tooManyAttempts($this->dailyEmailLimitKey($user), User::VERIFICATION_EMAILS_PER_DAY)) {
+            return false;
+        }
+
+        if (RateLimiter::attempt($this->emailLimitKey($user), 6, $send) === false) {
+            return false;
+        }
+
+        RateLimiter::hit($this->dailyEmailLimitKey($user), 86400);
+
+        return true;
+    }
+
+    private function dailyEmailLimitKey(User $user): string
+    {
+        return "{$this->emailLimitKey($user)}:day";
+    }
+
     private function tooManyEmailsMessage(User $user): string
     {
+        if (RateLimiter::tooManyAttempts($this->dailyEmailLimitKey($user), User::VERIFICATION_EMAILS_PER_DAY)) {
+            return __('Too many verification emails today. Try again tomorrow.');
+        }
+
         return __('Too many verification emails. Try again in :seconds seconds.', ['seconds' => RateLimiter::availableIn($this->emailLimitKey($user))]);
     }
 

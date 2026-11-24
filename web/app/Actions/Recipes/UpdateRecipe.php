@@ -40,7 +40,7 @@ class UpdateRecipe
 
     private function filename(Recipe $recipe, UploadedFile $photo): string
     {
-        $extension = $photo->getClientOriginalExtension();
+        $extension = $photo->extension();
         $filename = "{$recipe->slug}.{$extension}";
 
         $takenByAnotherRecipe = Recipe::withTrashed()

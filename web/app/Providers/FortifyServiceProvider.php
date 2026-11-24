@@ -122,8 +122,30 @@ class FortifyServiceProvider extends ServiceProvider
                 return Limit::none();
             }
 
-            return Limit::perMinute(6)->by("user:{$user->id}");
+            return [
+                Limit::perMinute(6)->by("user:{$user->id}"),
+                Limit::perDay(User::VERIFICATION_EMAILS_PER_DAY)->by("user:{$user->id}:day"),
+            ];
         });
+
+        RateLimiter::for('api', function (Request $request) {
+            $userId = $request->user()?->id;
+
+            return Limit::perMinute(240)->by($userId ? "user:{$userId}" : $request->ip());
+        });
+
+        RateLimiter::for('mcp-oauth', function (Request $request) {
+            if (! $request->routeIs('mcp.oauth.register')) {
+                return Limit::perMinute(30)->by($request->ip());
+            }
+
+            return [
+                Limit::perMinute(5)->by("register:{$request->ip()}"),
+                Limit::perDay(30)->by("register:{$request->ip()}:day"),
+            ];
+        });
+
+        RateLimiter::for('kiosk-pairing', fn (Request $request) => Limit::perMinute(20)->by($request->ip()));
 
         RateLimiter::for('passkeys', function (Request $request) {
             $credentialId = $request->input('credential.id');

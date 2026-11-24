@@ -5,6 +5,7 @@ use App\Models\TeamInvitation;
 use App\Models\User;
 use Bentonow\BentoLaravel\Facades\Bento;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Validation\ValidationException;
 use Livewire\Livewire;
 
 test('registration screen can be rendered', function () {
@@ -171,4 +172,40 @@ test('registration in production skips bento when it is not configured', functio
     ]);
 
     expect($user->exists)->toBeTrue();
+});
+
+test('the sign-up form stops repeated tries from one network', function () {
+    foreach (range(1, 6) as $attempt) {
+        $this->post(route('register.store'), ['name' => 'Nami'])->assertSessionHasErrors('password');
+    }
+
+    $this->post(route('register.store'), [
+        'name' => 'Nami',
+        'email' => 'nami@example.com',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+    ])->assertSessionHasErrors(['email' => 'Too many attempts. Please try again in 60 seconds.']);
+
+    $this->assertGuest();
+    expect(User::where('email', 'nami@example.com')->exists())->toBeFalse();
+});
+
+test('one network can only create so many accounts in a day', function () {
+    $register = fn (int $number): User => resolve(CreateNewUser::class)->create([
+        'name' => "Pirate {$number}",
+        'email' => "pirate{$number}@example.com",
+        'password' => 'password',
+        'password_confirmation' => 'password',
+    ]);
+
+    foreach (range(1, CreateNewUser::ACCOUNTS_PER_NETWORK_PER_DAY) as $number) {
+        $register($number);
+    }
+
+    expect(fn () => $register(11))->toThrow(ValidationException::class, 'Too many accounts have been created from this network today.');
+    expect(User::where('email', 'pirate11@example.com')->exists())->toBeFalse();
+
+    $this->travel(1)->days();
+
+    expect($register(11)->email)->toBe('pirate11@example.com');
 });

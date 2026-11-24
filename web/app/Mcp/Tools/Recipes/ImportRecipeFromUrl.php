@@ -6,6 +6,7 @@ namespace App\Mcp\Tools\Recipes;
 
 use App\Actions\Recipes\CreateRecipe as CreateRecipeAction;
 use App\Actions\Recipes\ImportRecipeFromUrl as ImportRecipeFromUrlAction;
+use App\Actions\Recipes\RecipePageUnavailable;
 use App\Models\Recipe;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\Support\Facades\Gate;
@@ -25,15 +26,17 @@ class ImportRecipeFromUrl extends Tool
         Gate::forUser($request->user())->authorize('create', Recipe::class);
 
         $validated = $request->validate([
-            'url' => ['required', 'url'],
+            'url' => ['required', 'url:http,https', 'max:500'],
         ], [
             'url.url' => 'The url must be a valid URL, including the scheme (e.g. https://example.com/recipe).',
         ]);
 
         try {
             $data = $import->handle($validated['url']);
-        } catch (Throwable $exception) {
+        } catch (RecipePageUnavailable $exception) {
             return Response::error($exception->getMessage());
+        } catch (Throwable) {
+            return Response::error('No recipe data found on this page.');
         }
 
         if (blank($data['name'] ?? null)) {

@@ -8,6 +8,7 @@ use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
@@ -32,7 +33,11 @@ new class extends Component {
             'inviteRole' => ['required', 'string', Rule::in(array_column(TeamRole::assignable(), 'value'))],
         ]);
 
-        $inviteTeamMember->handle($this->team, Auth::user(), $validated['inviteEmail'], TeamRole::from($validated['inviteRole']));
+        try {
+            $inviteTeamMember->handle($this->team, Auth::user(), $validated['inviteEmail'], TeamRole::from($validated['inviteRole']));
+        } catch (ValidationException $exception) {
+            throw ValidationException::withMessages(['inviteEmail' => $exception->errors()['email'] ?? $exception->getMessage()]);
+        }
 
         $this->reset('inviteEmail', 'inviteRole');
         $this->dispatch('close-modal', name: 'invite-member');

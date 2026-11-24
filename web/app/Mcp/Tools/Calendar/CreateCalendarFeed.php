@@ -24,7 +24,7 @@ class CreateCalendarFeed extends Tool
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'url' => ['required', 'string', 'url:http,https'],
+            'url' => ['required', 'string', 'url:http,https', 'max:2048'],
             'color' => ['required', Rule::enum(CalendarColor::class)],
         ], [
             'url.url' => 'The url must be a valid http or https URL pointing to an ICS calendar file.',

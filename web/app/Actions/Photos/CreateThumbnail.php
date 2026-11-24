@@ -12,11 +12,19 @@ class CreateThumbnail
 {
     public const SIZE = 300;
 
+    public const int MAX_PIXELS = 50_000_000;
+
     public function handle(string $photoPath): ?string
     {
         $contents = Storage::get($photoPath);
 
         if ($contents === null) {
+            return null;
+        }
+
+        $size = @getimagesizefromstring($contents);
+
+        if ($size === false || $size[0] * $size[1] > self::MAX_PIXELS) {
             return null;
         }
 

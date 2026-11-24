@@ -213,3 +213,22 @@ test('name changes do not use up the email limit', function () {
 
     expect($user->fresh()->name)->toBe('Nami');
 });
+
+test('verification emails are capped for the day', function () {
+    Notification::fake();
+    $user = User::factory()->unverified()->create();
+    $token = $user->createToken('iPhone')->plainTextToken;
+
+    foreach (range(1, User::VERIFICATION_EMAILS_PER_DAY) as $attempt) {
+        $this->withToken($token)->postJson(route('api.user.verification.send'))->assertAccepted();
+        $this->travel(11)->seconds();
+    }
+
+    $this->travel(2)->minutes();
+    $this->withToken($token)->postJson(route('api.user.verification.send'))->assertTooManyRequests();
+
+    $this->travel(1)->days();
+    $this->withToken($token)->postJson(route('api.user.verification.send'))->assertAccepted();
+
+    Notification::assertSentToTimes($user, VerifyEmail::class, User::VERIFICATION_EMAILS_PER_DAY + 1);
+});
