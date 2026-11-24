@@ -3,6 +3,7 @@
 namespace App\NativeComponents;
 
 use App\Actions\DestroySession;
+use App\Concerns\CallsSunnyOnline;
 use App\Concerns\NeedsConnection;
 use App\Http\Integrations\Sunny\SunnyAccount;
 use App\Http\Integrations\Sunny\SunnyAuth;
@@ -11,7 +12,6 @@ use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Http\Integrations\Sunny\SunnyTokenStore;
 use App\Support\Offline;
 use App\Support\Toast;
-use Illuminate\Auth\AuthenticationException;
 use Illuminate\View\View;
 use Native\Mobile\AsyncTask;
 use Native\Mobile\Attributes\On;
@@ -23,9 +23,11 @@ use RuntimeException;
 use Saloon\Exceptions\Request\FatalRequestException;
 use Saloon\Exceptions\Request\RequestException;
 use Saloon\Exceptions\Request\Statuses\UnauthorizedException;
+use Saloon\Http\Response;
 
 class VerifyEmail extends Component
 {
+    use CallsSunnyOnline;
     use NeedsConnection;
 
     public string $email = '';
@@ -69,52 +71,29 @@ class VerifyEmail extends Component
         }
 
         $this->problem = null;
-
-        if (Offline::now()) {
-            $this->problem = 'offline';
-
-            return;
-        }
-
         $this->sending = true;
 
-        try {
-            $sent = app(SunnyAccount::class)->sendVerificationEmail();
-        } catch (FatalRequestException) {
-            $this->problem = 'offline';
+        $sent = null;
+        $this->callSunny(
+            function () use (&$sent): void {
+                $sent = app(SunnyAccount::class)->sendVerificationEmail();
+            },
+            function (string $problem, ?Response $response): void {
+                $this->problem = match (true) {
+                    $problem !== 'failed' => $problem,
+                    $response?->status() === 429 => 'throttled',
+                    default => 'send-failed',
+                };
+            },
+        );
 
-            return;
-        } catch (RequestException $exception) {
-            $status = $exception->getResponse()->status();
+        $this->sending = false;
 
-            if ($status === 401) {
-                $this->signedOut();
-
-                return;
-            }
-
-            $this->problem = $status === 429 ? 'throttled' : 'send-failed';
-
-            return;
-        } catch (AuthenticationException) {
-            $this->replace('/');
-
-            return;
-        } catch (RuntimeException) {
-            $this->problem = 'locked';
-
-            return;
-        } finally {
-            $this->sending = false;
-        }
-
-        if (! $sent) {
+        if ($sent === false) {
             $this->continueToSunny();
-
-            return;
+        } elseif ($sent === true) {
+            $this->sent = true;
         }
-
-        $this->sent = true;
     }
 
     public function check(): void
@@ -124,41 +103,22 @@ class VerifyEmail extends Component
         }
 
         $this->problem = null;
-
-        if (Offline::now()) {
-            $this->problem = 'offline';
-
-            return;
-        }
-
         $this->checking = true;
 
-        try {
-            $profile = app(SunnyAccount::class)->refresh();
-        } catch (FatalRequestException) {
-            $this->problem = 'offline';
+        $profile = null;
+        $checked = $this->callSunny(
+            function () use (&$profile): void {
+                $profile = app(SunnyAccount::class)->refresh();
+            },
+            function (string $problem): void {
+                $this->problem = $problem === 'failed' ? 'check-failed' : $problem;
+            },
+        );
 
+        $this->checking = false;
+
+        if (! $checked) {
             return;
-        } catch (RequestException $exception) {
-            if ($exception->getResponse()->status() === 401) {
-                $this->signedOut();
-
-                return;
-            }
-
-            $this->problem = 'check-failed';
-
-            return;
-        } catch (AuthenticationException) {
-            $this->replace('/');
-
-            return;
-        } catch (RuntimeException) {
-            $this->problem = 'locked';
-
-            return;
-        } finally {
-            $this->checking = false;
         }
 
         if ($profile !== null && $profile['verified']) {
@@ -213,34 +173,32 @@ class VerifyEmail extends Component
             return;
         }
 
-        if (Offline::now()) {
-            $this->changeProblem = 'offline';
-
-            return;
-        }
-
         $this->savingEmail = true;
 
-        try {
-            $profile = app(SunnyAccount::class)->update(app(SunnyStore::class)->profile()['name'] ?? '', $this->newEmail);
-        } catch (FatalRequestException) {
-            $this->changeProblem = 'offline';
+        $profile = null;
+        $saved = $this->callSunny(
+            function () use (&$profile): void {
+                $profile = app(SunnyAccount::class)->update(app(SunnyStore::class)->profile()['name'] ?? '', $this->newEmail);
+            },
+            function (string $problem, ?Response $response): void {
+                if (($message = self::firstError($response, 'email')) !== null) {
+                    $this->newEmailError = $message;
 
-            return;
-        } catch (RequestException $exception) {
-            $this->changeFailed($exception);
+                    return;
+                }
 
-            return;
-        } catch (AuthenticationException) {
-            $this->replace('/');
+                $this->changeProblem = match (true) {
+                    $problem !== 'failed' => $problem,
+                    $response?->status() === 429 => 'throttled',
+                    default => 'failed',
+                };
+            },
+        );
 
-            return;
-        } catch (RuntimeException) {
-            $this->changeProblem = 'locked';
+        $this->savingEmail = false;
 
+        if (! $saved) {
             return;
-        } finally {
-            $this->savingEmail = false;
         }
 
         $this->email = $profile['email'] ?? $this->newEmail;
@@ -279,27 +237,6 @@ class VerifyEmail extends Component
     public function render(): View
     {
         return view('native.verify-email');
-    }
-
-    private function changeFailed(RequestException $exception): void
-    {
-        $response = $exception->getResponse();
-
-        if ($response->status() === 401) {
-            $this->signedOut();
-
-            return;
-        }
-
-        $emailError = collect($response->json('errors.email') ?? [])->first();
-
-        if ($response->status() === 422 && is_string($emailError)) {
-            $this->newEmailError = $emailError;
-
-            return;
-        }
-
-        $this->changeProblem = $response->status() === 429 ? 'throttled' : 'failed';
     }
 
     private function checkInBackground(): void
