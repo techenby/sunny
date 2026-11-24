@@ -3,6 +3,7 @@
 namespace App\Concerns;
 
 use App\Actions\CopyRecipeToTeam;
+use App\Http\Integrations\Sunny\EmailNotVerifiedException;
 use App\Http\Integrations\Sunny\SunnyStore;
 use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Http\Integrations\Sunny\SunnyTeam;
@@ -114,6 +115,10 @@ trait CopiesRecipeToTeam
             $copy = app(CopyRecipeToTeam::class)->handle($from, $recipe['id'], $to, $this->copyUuids[$to->id]);
         } catch (FatalRequestException) {
             $this->copyProblem = 'offline';
+
+            return;
+        } catch (EmailNotVerifiedException) {
+            $this->openEmailVerification();
 
             return;
         } catch (RequestException $exception) {

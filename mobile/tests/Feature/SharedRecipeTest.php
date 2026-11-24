@@ -2,6 +2,7 @@
 
 use App\Http\Integrations\Sunny\Requests\GetSharedRecipeRequest;
 use App\Http\Integrations\Sunny\Requests\SaveSharedRecipeRequest;
+use App\Http\Integrations\Sunny\SunnyStore;
 use App\Models\Recipe;
 use App\NativeComponents\SharedRecipe;
 use GuzzleHttp\Exception\ConnectException;
@@ -232,3 +233,24 @@ it('explains when Sunny refuses to save', function (): void {
         ->assertSee('The server couldn’t save it right now. Nothing’s been saved yet.')
         ->assertSee('Try again');
 });
+
+it('opens the verify screen when the server needs a verified email to open or save a shared recipe', function (string $failing): void {
+    seedSunnyData();
+    app(SunnyStore::class)->rememberAccount(5);
+    app(SunnyStore::class)->rememberProfile(['id' => 5, 'name' => 'Andy', 'email' => 'andy@example.com', 'email_verified_at' => now()->toIso8601String()]);
+    Saloon::fake([
+        GetSharedRecipeRequest::class => $failing === 'open' ? MockResponse::make(['message' => 'Verify your email address to keep using SunnyHome.', 'email_verification_required' => true], 423) : MockResponse::make(['data' => sharedRecipePayload()]),
+        SaveSharedRecipeRequest::class => MockResponse::make(['message' => 'Verify your email address to keep using SunnyHome.', 'email_verification_required' => true], 423),
+    ]);
+
+    expect(app(SunnyStore::class)->needsEmailVerification())->toBeFalse();
+
+    $screen = Native::visit('/recipes/shared/'.SHARE_TOKEN);
+
+    if ($failing === 'save') {
+        $screen->tap('shared-recipe-save');
+    }
+
+    $screen->assertReplacedWith('/verify-email');
+    expect(app(SunnyStore::class)->needsEmailVerification())->toBeTrue();
+})->with(['open', 'save']);

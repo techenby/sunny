@@ -3,11 +3,14 @@
 namespace App\NativeComponents;
 
 use App\Actions\SetUpHome as SetUpHomeAction;
+use App\Http\Integrations\Sunny\EmailNotVerifiedException;
+use App\Http\Integrations\Sunny\EmailVerificationRequired;
 use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Http\Integrations\Sunny\SunnyTeam;
 use App\Models\Onboarding;
 use Illuminate\View\View;
 use Native\Mobile\Attributes\Computed;
+use Native\Mobile\Attributes\On;
 use Throwable;
 
 class SetUpHome extends Component
@@ -38,6 +41,14 @@ class SetUpHome extends Component
         }
 
         app(SunnySyncCoordinator::class)->dispatchIfDue();
+    }
+
+    #[On('sunny-sync-complete')]
+    public function onSyncComplete(string $status, ?string $exceptionClass = null): void
+    {
+        if ($status === 'failed' && $exceptionClass === EmailVerificationRequired::class) {
+            $this->replace('/verify-email');
+        }
     }
 
     #[Computed]
@@ -138,6 +149,10 @@ class SetUpHome extends Component
             }
 
             app(SetUpHomeAction::class)->handle($onboarding, $team, $this->places, $this->starters);
+        } catch (EmailVerificationRequired|EmailNotVerifiedException) {
+            $this->openEmailVerification();
+
+            return;
         } catch (Throwable $exception) {
             report($exception);
             $this->error = 'Unable to set up your home on this phone. Try again.';

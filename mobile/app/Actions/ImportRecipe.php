@@ -2,6 +2,7 @@
 
 namespace App\Actions;
 
+use App\Http\Integrations\Sunny\EmailNotVerifiedException;
 use App\Http\Integrations\Sunny\Requests\ImportRecipeRequest;
 use App\Http\Integrations\Sunny\SunnyAuth;
 use App\Http\Integrations\Sunny\SunnyStore;
@@ -21,7 +22,7 @@ class ImportRecipe
     ) {}
 
     /**
-     * @return array{status: 'imported', id: int}|array{status: 'no-recipe'|'unreachable'|'error', message: string}|array{status: 'offline'}
+     * @return array{status: 'imported', id: int}|array{status: 'no-recipe'|'unreachable'|'error', message: string}|array{status: 'offline'|'verify'}
      */
     public function handle(int $teamId, string $teamSlug, string $url, string $clientUuid, #[\SensitiveParameter] ?string $token = null): array
     {
@@ -31,6 +32,8 @@ class ImportRecipe
                 ->json('data');
         } catch (FatalRequestException) {
             return ['status' => 'offline'];
+        } catch (EmailNotVerifiedException) {
+            return ['status' => 'verify'];
         } catch (RequestException $exception) {
             return match ($exception->getResponse()->status()) {
                 422 => ['status' => 'no-recipe', 'message' => self::NO_RECIPE],

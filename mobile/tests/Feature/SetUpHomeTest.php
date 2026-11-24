@@ -3,11 +3,13 @@
 use App\Enums\ItemType;
 use App\Enums\RoutineFrequency;
 use App\Enums\TimeOfDay;
+use App\Http\Integrations\Sunny\EmailVerificationRequired;
 use App\Http\Integrations\Sunny\Requests\CreateTokenRequest;
 use App\Http\Integrations\Sunny\Requests\GetUserRequest;
 use App\Http\Integrations\Sunny\Requests\ImportRecipeRequest;
 use App\Http\Integrations\Sunny\Requests\MarkOnboardedRequest;
 use App\Http\Integrations\Sunny\Requests\SaveRecordRequest;
+use App\Http\Integrations\Sunny\Requests\SyncRequest;
 use App\Http\Integrations\Sunny\SunnyOutbox;
 use App\Http\Integrations\Sunny\SunnyStore;
 use App\Models\Checklist;
@@ -17,6 +19,7 @@ use App\Models\Onboarding;
 use App\Models\Recipe;
 use App\Models\Routine;
 use App\Models\RoutineStep;
+use App\Models\Team;
 use Native\Mobile\Testing\Native;
 use Saloon\Http\Faking\MockResponse;
 use Saloon\Http\Request;
@@ -232,4 +235,33 @@ it('tells Sunny about a finished set-up it couldn’t report earlier', function 
 
     expect(Onboarding::current()->reported_at)->not->toBeNull();
     Saloon::assertSent(MarkOnboardedRequest::class);
+});
+
+it('opens the verify screen when setting up finds the email isn’t verified', function (): void {
+    Onboarding::begin(42);
+    Team::query()->delete();
+    Saloon::fake([SyncRequest::class => MockResponse::make(['message' => 'Verify your email address to keep using SunnyHome.', 'email_verification_required' => true], 423)]);
+
+    Native::visit('/setup')
+        ->tap('setup-submit')
+        ->assertReplacedWith('/verify-email')
+        ->assertSet('error', '');
+
+    expect(Onboarding::current()->set_up_at)->toBeNull();
+});
+
+it('opens the verify screen when a background sync on set-up finds the email isn’t verified', function (): void {
+    Onboarding::begin(42);
+
+    Native::visit('/setup')
+        ->emitNative('sunny-sync-complete', ['status' => 'failed', 'exceptionClass' => EmailVerificationRequired::class])
+        ->assertReplacedWith('/verify-email');
+});
+
+it('stays on set-up when a background sync fails for another reason', function (): void {
+    Onboarding::begin(42);
+
+    Native::visit('/setup')
+        ->emitNative('sunny-sync-complete', ['status' => 'failed', 'exceptionClass' => RuntimeException::class])
+        ->assertNoNavigation();
 });

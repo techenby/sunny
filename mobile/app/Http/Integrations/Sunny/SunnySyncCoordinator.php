@@ -5,7 +5,6 @@ namespace App\Http\Integrations\Sunny;
 use Illuminate\Support\Facades\Cache;
 use Native\Mobile\AsyncTask;
 use RuntimeException;
-use Saloon\Exceptions\Request\RequestException;
 
 class SunnySyncCoordinator
 {
@@ -49,11 +48,7 @@ class SunnySyncCoordinator
             rescue(fn () => app(SunnyTeams::class)->refreshInvitations($token), report: false);
 
             return true;
-        } catch (RequestException $exception) {
-            if ($exception->getResponse()->status() !== 423) {
-                throw $exception;
-            }
-
+        } catch (EmailNotVerifiedException $exception) {
             $this->store->requireEmailVerification();
 
             throw new EmailVerificationRequired($exception);

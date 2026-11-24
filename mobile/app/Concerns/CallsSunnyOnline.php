@@ -3,6 +3,8 @@
 namespace App\Concerns;
 
 use App\Actions\DestroySession;
+use App\Http\Integrations\Sunny\EmailNotVerifiedException;
+use App\Http\Integrations\Sunny\EmailVerificationRequired;
 use Closure;
 use Illuminate\Auth\AuthenticationException;
 use Native\Mobile\Facades\Network;
@@ -32,6 +34,8 @@ trait CallsSunnyOnline
             return true;
         } catch (FatalRequestException) {
             $failed('offline', null);
+        } catch (EmailNotVerifiedException|EmailVerificationRequired) {
+            $this->openEmailVerification();
         } catch (RequestException $exception) {
             if ($exception->getResponse()->status() === 401) {
                 rescue(fn () => app(DestroySession::class)->handle(), report: false);
@@ -69,7 +73,6 @@ trait CallsSunnyOnline
         return match (true) {
             $problem === 'locked' => 'Unable to read your saved login. Unlock your device and try again.',
             $response?->status() === 403 => 'You can’t do that in this team anymore.',
-            $response?->status() === 423 => 'Verify your email to keep using Sunny. You can send a new link from Preferences → Account.',
             $response?->status() === 429 => 'Too many attempts. Please wait a minute and try again.',
             default => self::firstError($response) ?? $fallback,
         };

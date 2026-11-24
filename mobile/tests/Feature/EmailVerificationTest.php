@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Integrations\Sunny\EmailNotVerifiedException;
 use App\Http\Integrations\Sunny\EmailVerificationRequired;
 use App\Http\Integrations\Sunny\Requests\CreateTokenRequest;
 use App\Http\Integrations\Sunny\Requests\GetUserRequest;
@@ -204,6 +205,15 @@ it('drops changes queued before a revoked login when someone else signs in on th
 
     Saloon::assertNotSent(SaveRecordRequest::class);
 });
+
+it('turns only the server’s verification 423 into its own exception', function (array $body, string $exception): void {
+    Saloon::fake([GetUserRequest::class => MockResponse::make($body, 423)]);
+
+    expect(fn () => app(SunnyAuth::class)->authenticatedConnector()->send(new GetUserRequest))->toThrow($exception);
+})->with([
+    'verification required' => [['message' => 'Verify your email address to keep using SunnyHome.', 'email_verification_required' => true], EmailNotVerifiedException::class],
+    'some other lock' => [['message' => 'Locked'], RequestException::class],
+]);
 
 function sequenceOf(MockResponse ...$responses): Closure
 {
