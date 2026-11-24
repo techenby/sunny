@@ -19,8 +19,15 @@ class RefreshCalendarFeedsCommand extends Command
     {
         $refreshed = 0;
         $failed = 0;
+        $waiting = 0;
 
-        CalendarFeed::query()->lazyById()->each(function (CalendarFeed $feed) use ($refresh, &$refreshed, &$failed): void {
+        CalendarFeed::query()->lazyById()->each(function (CalendarFeed $feed) use ($refresh, &$refreshed, &$failed, &$waiting): void {
+            if ($feed->isWaitingToRetry()) {
+                $waiting++;
+
+                return;
+            }
+
             try {
                 $ics = $refresh->handle($feed);
             } catch (Throwable $exception) {
@@ -42,6 +49,10 @@ class RefreshCalendarFeedsCommand extends Command
 
         if ($failed > 0) {
             $this->components->warn(__(':count calendar feed(s) could not be refreshed.', ['count' => $failed]));
+        }
+
+        if ($waiting > 0) {
+            $this->components->info(__(':count failing calendar feed(s) will be tried again later.', ['count' => $waiting]));
         }
 
         return self::SUCCESS;

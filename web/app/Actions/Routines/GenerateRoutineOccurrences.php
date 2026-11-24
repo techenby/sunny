@@ -21,6 +21,8 @@ use Illuminate\Support\Collection;
  */
 class GenerateRoutineOccurrences
 {
+    public const int GENERATES_WITHIN_DAYS = 31;
+
     /**
      * Generate occurrences for a team from one date through another, inclusive.
      * Omitting the end date generates a single day.
@@ -82,7 +84,11 @@ class GenerateRoutineOccurrences
     {
         $date = CarbonImmutable::parse($date ?? $team->today())->startOfDay();
 
-        $this->handle($team, $date);
+        $daysFromToday = CarbonImmutable::parse($team->today()->toDateString())->diffInDays(CarbonImmutable::parse($date->toDateString()));
+
+        if (abs($daysFromToday) <= self::GENERATES_WITHIN_DAYS) {
+            $this->handle($team, $date);
+        }
 
         // Pausing a routine should clear it from today onward without rewriting
         // history, so is_active only filters dates that haven't happened yet.

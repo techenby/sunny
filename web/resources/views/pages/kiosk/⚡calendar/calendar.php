@@ -244,7 +244,11 @@ new #[Layout('layouts::kiosk')] class extends Component
 
     private function focusedDate(): CarbonImmutable
     {
-        return CarbonImmutable::parse($this->focusedDate, $this->timezoneName());
+        return rescue(
+            fn () => CarbonImmutable::parse($this->focusedDate, $this->timezoneName()),
+            fn () => CarbonImmutable::now($this->timezoneName()),
+            report: false,
+        );
     }
 
     /** @return array<int, array<string, mixed>> */
