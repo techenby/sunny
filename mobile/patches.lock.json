@@ -1,5 +1,5 @@
 {
-    "_hash": "10a40201261951baefe0b0c4c70d8d3faec3ddc5e894b6f23db74aeb06097b58",
+    "_hash": "e509f8a4b9ce8c2134690281a76876a783e1324ffc7043e7a1badfb3d9b9292d",
     "patches": {
         "nativephp/mobile-camera": [
             {
@@ -189,6 +189,16 @@
                 "description": "Android: center a :menu pressable's content, so items-center and justify-center work like they do without a menu",
                 "url": "patches/nativephp-mobile-ui-android-menu-pressable-alignment.patch",
                 "sha256": "e203a03144cbca6adcf71a496961ec59b796f4383dc7ef198654670a9dbc6ba6",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
+            },
+            {
+                "package": "nativephp/mobile-ui",
+                "description": "iOS: let a fit bottom sheet scroll when its content is taller than the sheet can be, instead of cutting off its top and bottom",
+                "url": "patches/nativephp-mobile-ui-ios-fit-sheet-scrolls.patch",
+                "sha256": "26fa52471d8db2fdf6dbe324fefd0bd1cb96d171984cbb951d8d52db506368e1",
                 "depth": 1,
                 "extra": {
                     "provenance": "root"
