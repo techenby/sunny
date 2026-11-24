@@ -23,8 +23,7 @@ processes:
     restart_when_changed: []
     env: {}
   'M: Refresh Paraframe':
-    command: python3 refresh.py run
-    working_dir: /Users/techenby/Sites/Personal/trees/sunny-main-sim/mobile/tools/paraframe
+    command: python3 /Users/techenby/Sites/Personal/trees/sunny-main-sim/mobile/tools/paraframe/refresh.py run
     auto_start: false
     auto_restart: false
     restart_when_changed: []
