@@ -9,6 +9,7 @@ use App\Models\PendingWrite;
 use App\Models\RoutineOccurrence;
 use App\Models\RoutineOccurrenceStep;
 use App\Models\Team;
+use App\Support\UnusedFiles;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
@@ -338,11 +339,7 @@ class SunnyOutbox
             ->merge(ItemPhoto::query()->pluck('url'))
             ->filter()->flip();
 
-        foreach (File::glob(self::photoDirectory().'/*') as $path) {
-            if (! $inUse->has($path) && ($includingNew || File::lastModified($path) < now()->subMinute()->getTimestamp())) {
-                File::delete($path);
-            }
-        }
+        UnusedFiles::delete(self::photoDirectory(), $inUse, $includingNew);
     }
 
     public static function photoDirectory(): string

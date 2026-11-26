@@ -3,6 +3,7 @@
 use App\Http\Integrations\Sunny\SunnyOutbox;
 use App\Http\Integrations\Sunny\SunnyStore;
 use App\Http\Integrations\Sunny\SunnyThumbnails;
+use App\Models\Item;
 use Illuminate\Support\Facades\File;
 
 beforeEach(function (): void {
@@ -53,4 +54,27 @@ it('removes every unused photo and thumbnail when the phone is cleared, new ones
 
     expect($photo)->not->toBeFile()
         ->and($thumbnail)->not->toBeFile();
+});
+
+it('skips a file that another prune deleted after listing it', function (string $files): void {
+    $directory = $files === 'outbox' ? SunnyOutbox::photoDirectory() : SunnyThumbnails::directory();
+    $gone = $directory.'/gone.jpg';
+    $leftOver = ($this->file)($directory, 'left-over.jpg', 2);
+    File::partialMock()->shouldReceive('glob')->andReturn([$gone, $leftOver]);
+
+    $files === 'outbox' ? app(SunnyOutbox::class)->prunePhotos() : app(SunnyThumbnails::class)->prune();
+
+    expect($gone)->not->toBeFile()
+        ->and($leftOver)->not->toBeFile();
+})->with(['outbox', 'thumbnails']);
+
+it('keeps an older thumbnail that a refresh is about to reuse', function (): void {
+    seedSunnyData();
+    $url = 'https://cdn.sunny.example/thumbs/kitchen.jpg?signature=new';
+    $reused = ($this->file)(SunnyThumbnails::directory(), basename(SunnyThumbnails::pathFor($url)), 10);
+    Item::query()->firstOrFail()->update(['thumb_url' => $url, 'thumb_path' => null]);
+
+    app(SunnyThumbnails::class)->prune();
+
+    expect($reused)->toBeFile();
 });

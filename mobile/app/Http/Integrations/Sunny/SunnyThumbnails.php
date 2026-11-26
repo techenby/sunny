@@ -5,8 +5,11 @@ namespace App\Http\Integrations\Sunny;
 use App\Models\Item;
 use App\Models\ItemPhoto;
 use App\Models\Recipe;
+use App\Support\UnusedFiles;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Client\Pool;
 use Illuminate\Http\Client\Response;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 
@@ -55,16 +58,17 @@ class SunnyThumbnails
      */
     public function prune(bool $includingNew = false): void
     {
-        $inUse = Item::withTrashed()->pluck('thumb_path')
-            ->merge(ItemPhoto::query()->pluck('thumb_path'))
-            ->merge(Recipe::query()->pluck('thumb_path'))
+        $records = [Item::withTrashed(), ItemPhoto::query(), Recipe::query()];
+
+        $inUse = collect($records)
+            ->flatMap(fn (Builder $query): Collection => $query->get(['thumb_url', 'thumb_path'])
+                ->flatMap(fn (Item|ItemPhoto|Recipe $record): array => [
+                    $record->thumb_path,
+                    $record->thumb_url === null ? null : self::pathFor($record->thumb_url),
+                ]))
             ->filter()->flip();
 
-        foreach (File::glob(self::directory().'/*') as $path) {
-            if (! $inUse->has($path) && ($includingNew || File::lastModified($path) < now()->subMinute()->getTimestamp())) {
-                File::delete($path);
-            }
-        }
+        UnusedFiles::delete(self::directory(), $inUse, $includingNew);
     }
 
     public static function directory(): string
