@@ -26,6 +26,17 @@ new class extends Component
         return $this->checklist->items()->with('completedBy')->get();
     }
 
+    public function deleteDoneMessage(): string
+    {
+        $names = $this->items->filter(fn (ChecklistItem $item): bool => $item->isCompleted())->pluck('name');
+
+        $named = $names->count() > 3
+            ? $names->take(3)->implode(', ') . ' ' . __('and :count more', ['count' => $names->count() - 3])
+            : $names->join(', ', ' ' . __('and') . ' ');
+
+        return __(':items will be deleted from “:list” for everyone on your team.', ['items' => $named, 'list' => $this->checklist->name]);
+    }
+
     public function addItem(): void
     {
         $this->authorize('update', $this->checklist);

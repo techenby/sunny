@@ -37,7 +37,8 @@ remove it.
 Once a list contains completed items, its menu provides two cleanup options:
 
 - **Uncheck all** keeps every item and makes the whole list active again.
-- **Clear completed** permanently removes only the checked items.
+- **Delete done items** permanently deletes only the checked items, after asking
+  you to confirm.
 
 From the Lists overview, use a list card's menu to edit its name, type, or
 owner; open its items; or delete the entire list.
