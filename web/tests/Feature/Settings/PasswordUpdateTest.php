@@ -54,3 +54,44 @@ test('changing the password signs out the app and other browsers but keeps this 
     expect($user->tokens()->count())->toBe(0)
         ->and(DB::table('sessions')->where('user_id', $user->id)->pluck('id')->all())->toBe([session()->getId()]);
 });
+
+test('password updates are limited to six attempts a minute', function () {
+    $this->freezeTime();
+    $user = User::factory()->create([
+        'password' => Hash::make('password'),
+    ]);
+
+    foreach (range(1, 6) as $attempt) {
+        Livewire::actingAs($user)
+            ->test('pages::settings.security')
+            ->set('current_password', 'wrong-password')
+            ->set('password', 'new-password')
+            ->set('password_confirmation', 'new-password')
+            ->call('updatePassword')
+            ->assertHasErrors(['current_password']);
+    }
+
+    Livewire::actingAs($user)
+        ->test('pages::settings.security')
+        ->set('current_password', 'password')
+        ->set('password', 'new-password')
+        ->set('password_confirmation', 'new-password')
+        ->call('updatePassword')
+        ->assertHasErrors(['current_password' => 'Too many attempts. Please try again in 60 seconds.'])
+        ->assertSet('current_password', '')
+        ->assertSet('password', '');
+
+    expect(Hash::check('password', $user->refresh()->password))->toBeTrue();
+
+    $this->travel(1)->minute();
+
+    Livewire::actingAs($user)
+        ->test('pages::settings.security')
+        ->set('current_password', 'password')
+        ->set('password', 'new-password')
+        ->set('password_confirmation', 'new-password')
+        ->call('updatePassword')
+        ->assertHasNoErrors();
+
+    expect(Hash::check('new-password', $user->refresh()->password))->toBeTrue();
+});

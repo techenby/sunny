@@ -3,6 +3,8 @@
 use App\Concerns\PasswordValidationRules;
 use App\Livewire\Actions\Logout;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
@@ -19,6 +21,16 @@ new class extends Component {
 
     public function deleteUser(Logout $logout): void
     {
+        $throttleKey = 'delete-user:' . Auth::id();
+
+        if (RateLimiter::tooManyAttempts($throttleKey, 6)) {
+            throw ValidationException::withMessages([
+                'password' => __('Too many attempts. Please try again in :seconds seconds.', ['seconds' => RateLimiter::availableIn($throttleKey)]),
+            ]);
+        }
+
+        RateLimiter::hit($throttleKey);
+
         $this->validate([
             'password' => $this->currentPasswordRules(),
         ]);
