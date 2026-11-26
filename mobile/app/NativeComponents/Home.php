@@ -18,6 +18,8 @@ use Saloon\Exceptions\Request\Statuses\UnauthorizedException;
 #[Lazy]
 class Home extends Component
 {
+    protected bool $hidesNavBar = true;
+
     public string $error = '';
 
     public function mount(): void

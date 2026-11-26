@@ -50,7 +50,7 @@ it('sends a brand-new account to set-up after logging in', function (): void {
     ]);
 
     Native::visit('/login')->input('login-email', 'alex@example.com')->input('login-password', 'secret')
-        ->tap('login-submit')->assertReplacedWith('/')
+        ->tap('login-submit')->assertReplacedStackWith('/')
         ->follow()->assertReplacedWith('/setup');
 
     expect(Onboarding::current())->first_name->toBe('Alex');
@@ -63,7 +63,7 @@ it('sends an existing account straight to the summary', function (array $user): 
     ]);
 
     Native::visit('/login')->input('login-email', 'alex@example.com')->input('login-password', 'secret')
-        ->tap('login-submit')->assertReplacedWith('/')
+        ->tap('login-submit')->assertReplacedStackWith('/')
         ->follow()->assertReplacedWith('/dashboard');
 
     expect(Onboarding::current())->toBeNull();

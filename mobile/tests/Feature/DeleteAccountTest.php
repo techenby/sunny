@@ -30,7 +30,7 @@ it('deletes the account, forgets everything on the phone and returns to the welc
         ->input('delete-account-password', 'secret')
         ->tap('delete-account-submit')
         ->assertSet('password', '')
-        ->assertReplacedWith('/');
+        ->assertReplacedStackWith('/');
 
     Saloon::assertSent(fn (Request $request): bool => $request instanceof DeleteAccountRequest
         && $request->body()->all() === ['password' => 'secret']);
@@ -127,7 +127,7 @@ it('returns to the welcome screen when the saved login has already expired', fun
     Native::visit('/preferences/delete-account')
         ->input('delete-account-password', 'secret')
         ->tap('delete-account-submit')
-        ->assertReplacedWith('/');
+        ->assertReplacedStackWith('/');
 
     Native::fakeBridge()->assertCalled('SecureStorage.Delete');
 });

@@ -1,0 +1,107 @@
+--- a/src/Edge/NavigationIntent.php
++++ b/src/Edge/NavigationIntent.php
+@@ -19,5 +19,6 @@
+         public readonly ?string $uri = null,
+         public readonly array $data = [],
+         public readonly Transition|string|null $transition = null,
++        public readonly bool $clearsStack = false,
+     ) {}
+ }
+--- a/src/Edge/NativeComponent.php
++++ b/src/Edge/NativeComponent.php
+@@ -3672,6 +3672,31 @@
+ 
+         $this->flushDispatchedEvents();
+         $this->nativeNavigationIntent = new NavigationIntent(NavigationIntent::REPLACE, static::appPath($uri), $data);
++        $this->publishFinalState();
++        $this->stop();
++
++        return $this;
++    }
++
++    /**
++     * Replace the whole navigation stack with one screen: every screen
++     * below this one unmounts too, so nothing is left to go back to.
++     * For starting over, such as after logging out.
++     */
++    public function replaceStack(string $uri, array $data = []): static
++    {
++        if ($this->openedExternally($uri)) {
++            return $this;
++        }
++
++        if ($this->nativeParentComponent !== null) {
++            $this->rootScreen()->replaceStack($uri, $data);
++
++            return $this;
++        }
++
++        $this->flushDispatchedEvents();
++        $this->nativeNavigationIntent = new NavigationIntent(NavigationIntent::REPLACE, static::appPath($uri), $data, clearsStack: true);
+         $this->publishFinalState();
+         $this->stop();
+ 
+@@ -3751,6 +3776,7 @@
+                 $this->nativeNavigationIntent->uri,
+                 $this->nativeNavigationIntent->data,
+                 $type,
++                $this->nativeNavigationIntent->clearsStack,
+             );
+         }
+ 
+--- a/src/Edge/NativeRouter.php
++++ b/src/Edge/NativeRouter.php
+@@ -886,8 +886,7 @@
+                     }
+ 
+                     static::debugLog("REPLACE: resolved to {$resolved['class']}");
+-                    $this->unmountComponent($component);
+-                    array_pop($this->stack);
++                    $this->popForReplace($component, $intent);
+ 
+                     static::debugLog('REPLACE: deferring transition, stack='.count($this->stack));
+                     $this->deferredTransition = $intent->transition ?? Transition::Fade;
+@@ -943,6 +942,21 @@
+         static::debugLog('loop: stack empty, returning null');
+ 
+         return null;
++    }
++
++    /**
++     * Take the replaced screen off the stack, and every screen below it
++     * when the intent replaces the whole stack.
++     */
++    protected function popForReplace(NativeComponent $component, NavigationIntent $intent): void
++    {
++        $this->unmountComponent($component);
++        array_pop($this->stack);
++
++        while ($intent->clearsStack && ! empty($this->stack)) {
++            $this->unmountComponent($this->stack[count($this->stack) - 1]['component']);
++            array_pop($this->stack);
++        }
+     }
+ 
+     /**
+--- a/src/Testing/TestableComponent.php
++++ b/src/Testing/TestableComponent.php
+@@ -702,7 +702,7 @@
+         if ($intent->type === NavigationIntent::REPLACE) {
+             // Replaced screens leave the stack entirely.
+             $this->component->unmount();
+-            $next->parent = $this->parent;
++            $next->parent = $intent->clearsStack ? null : $this->parent;
+             $this->suspended = true;
+         } else {
+             $next->parent = $this;
+--- a/resources/xcode/NativePHP/NativeRender/NavigationCoordinator.swift
++++ b/resources/xcode/NativePHP/NativeRender/NavigationCoordinator.swift
+@@ -30,7 +30,7 @@
+     /// Bottommost URI in the stack — the root of the NavigationStack
+     /// closure. Set once on the first publish, then updated only when the
+     /// renderer detects a fresh stack (different layout / cold remount).
+-    private(set) var rootUri: String?
++    @Published private(set) var rootUri: String?
+ 
+     /// PHP router stack depth at the moment this stack session's root was
+     /// seeded. A stack session can start on an already-pushed PHP level

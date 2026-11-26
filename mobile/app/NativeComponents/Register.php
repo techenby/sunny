@@ -129,7 +129,7 @@ class Register extends Component
 
             $this->password = '';
             $this->passwordConfirmation = '';
-            $this->replace('/');
+            $this->replaceStack('/');
 
             return;
         }

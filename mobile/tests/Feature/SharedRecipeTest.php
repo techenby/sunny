@@ -55,13 +55,13 @@ function sharedRecipeConnectionLost(): MockResponse
 }
 
 it('sends a shared link to the welcome screen before anything has synced', function (): void {
-    Native::visit('/recipes/shared/'.SHARE_TOKEN)->assertReplacedWith('/');
+    Native::visit('/recipes/shared/'.SHARE_TOKEN)->assertReplacedStackWith('/');
 
     Saloon::assertNothingSent();
 });
 
 it('paints the screen with its back button before leaving it in mount', function (): void {
-    Native::visit('/recipes/shared/'.SHARE_TOKEN)->assertReplacedWith('/');
+    Native::visit('/recipes/shared/'.SHARE_TOKEN)->assertReplacedStackWith('/');
 
     $publishes = Native::fakeBridge()->publishes;
 

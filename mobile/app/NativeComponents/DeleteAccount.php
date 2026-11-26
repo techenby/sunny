@@ -39,7 +39,7 @@ class DeleteAccount extends Component
         try {
             app(SunnyAuth::class)->deleteAccount($this->password);
         } catch (AuthenticationException) {
-            $this->replace('/');
+            $this->replaceStack('/');
 
             return;
         } catch (RequestException $exception) {
@@ -47,7 +47,7 @@ class DeleteAccount extends Component
 
             if ($response->status() === 401) {
                 rescue(fn () => app(DestroySession::class)->handle(), report: false);
-                $this->replace('/');
+                $this->replaceStack('/');
 
                 return;
             }
@@ -78,7 +78,7 @@ class DeleteAccount extends Component
             $this->password = '';
         }
 
-        $this->replace('/');
+        $this->replaceStack('/');
     }
 
     public function openTeamSettings(string $slug): void
