@@ -116,6 +116,21 @@ new #[Layout('layouts::kiosk')] class extends Component
         unset($this->lists, $this->list);
     }
 
+    public function uncheckAll(): void
+    {
+        $list = $this->list;
+
+        if (! $list instanceof Checklist) {
+            return;
+        }
+
+        $this->authorize('update', $list);
+
+        $list->reset();
+
+        unset($this->lists, $this->list);
+    }
+
     private function findItem(int $itemId): ChecklistItem
     {
         return ChecklistItem::query()

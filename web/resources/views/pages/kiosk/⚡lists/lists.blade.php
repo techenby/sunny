@@ -3,7 +3,10 @@
         <x-ui.clock :timezone="$this->team->timezone" />
 
         @if ($this->list?->items->isNotEmpty())
-            <div class="hidden group-has-data-completed/lists:block">
+            <div class="hidden gap-2 group-has-data-completed/lists:flex">
+                <flux:button variant="subtle" icon="arrow-path" wire:click="uncheckAll">
+                    {{ __('Uncheck all') }}
+                </flux:button>
                 <flux:button variant="subtle" icon="trash" wire:click="clearCompleted">
                     {{ __('Clear completed') }}
                 </flux:button>

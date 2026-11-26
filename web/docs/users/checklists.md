@@ -51,6 +51,7 @@ between the team's lists.
 - Add an item with the input at the top of the selected list.
 - Tap an item to check or uncheck it.
 - Use the **×** button to remove an item.
+- Select **Uncheck all** to make every item on the selected list active again.
 - Select **Clear completed** to remove all checked items from the selected list.
 
 The kiosk can update list items, but it cannot create or delete an entire list

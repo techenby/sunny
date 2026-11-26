@@ -148,6 +148,21 @@ test('it clears completed items', function () {
     expect($list->items()->count())->toBe(2);
 });
 
+test('it unchecks every item without deleting any', function () {
+    $user = User::factory()->create();
+    $list = Checklist::factory()->for($user->currentTeam)->create();
+    ChecklistItem::factory()->for($list)->create();
+    ChecklistItem::factory()->for($list)->completed()->count(2)->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::kiosk.lists')
+        ->assertSee('Uncheck all')
+        ->call('uncheckAll');
+
+    expect($list->items()->count())->toBe(3)
+        ->and($list->items()->get()->filter(fn (ChecklistItem $item): bool => $item->isCompleted()))->toBeEmpty();
+});
+
 test('it will not touch another team list', function () {
     $user = User::factory()->create();
     $item = ChecklistItem::factory()->create();
