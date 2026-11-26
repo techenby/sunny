@@ -1298,3 +1298,24 @@ test('a search detail cannot be asked for by item id', function () {
         ->set('search', 'SN')
         ->call('matchedDetail', $elsewhere->id);
 })->throws(MethodNotFoundException::class);
+
+test('search and edit cope with details saved before they had to be text', function () {
+    $user = User::factory()->create();
+    $item = Item::factory()->for($user->currentTeam)->create([
+        'name' => 'Tent',
+        'metadata' => ['size' => ['w' => 2, 'h' => 3], 'count' => 4, 'brand' => 'REI'],
+    ]);
+
+    Livewire::actingAs($user)
+        ->test('pages::inventory.index')
+        ->set('search', 'rei')
+        ->assertSee('Brand: REI')
+        ->set('search', '"w":2')
+        ->assertSee('Size: {"w":2,"h":3}')
+        ->call('edit', $item->id)
+        ->assertSet('form.metadata', [
+            ['key' => 'size', 'value' => '{"w":2,"h":3}'],
+            ['key' => 'count', 'value' => '4'],
+            ['key' => 'brand', 'value' => 'REI'],
+        ]);
+});

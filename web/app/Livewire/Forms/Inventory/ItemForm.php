@@ -32,7 +32,7 @@ class ItemForm extends Form
 
     public function load(Item $item): void
     {
-        $metadata = collect($item->metadata ?? [])
+        $metadata = collect($item->details)
             ->map(fn (string $value, string $key) => ['key' => $key, 'value' => $value])
             ->values()
             ->all();

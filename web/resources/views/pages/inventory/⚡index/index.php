@@ -179,9 +179,9 @@ new class extends Component
             return null;
         }
 
-        foreach ($item->metadata ?? [] as $key => $value) {
-            if (Str::contains((string) $value, $this->search, ignoreCase: true)) {
-                return ucfirst((string) $key) . ': ' . $value;
+        foreach ($item->details as $key => $value) {
+            if (Str::contains($value, $this->search, ignoreCase: true)) {
+                return ucfirst($key) . ': ' . $value;
             }
         }
 
