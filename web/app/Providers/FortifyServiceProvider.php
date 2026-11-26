@@ -151,6 +151,8 @@ class FortifyServiceProvider extends ServiceProvider
             return Limit::perMinute(240)->by($userId ? "user:{$userId}" : $request->ip());
         });
 
+        RateLimiter::for('recipe-imports', fn (Request $request) => Limit::perMinute(30)->by("user:{$request->user()?->id}"));
+
         RateLimiter::for('mcp-oauth', function (Request $request) {
             if (! $request->routeIs('mcp.oauth.register')) {
                 return Limit::perMinute(30)->by($request->ip());
