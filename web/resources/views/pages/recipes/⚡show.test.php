@@ -312,30 +312,47 @@ describe('copy to team feature', function () {
 });
 
 describe('sharing feature', function () {
-    test('can toggle sharing on recipe from team user does belong to', function () {
+    test('turns sharing on and off', function () {
         $user = User::factory()->create();
         $recipe = Recipe::factory()->create(['team_id' => $user->currentTeam->id]);
 
         $this->actingAs($user);
 
         Livewire::test('pages::recipes.show', ['recipe' => $recipe])
-            ->call('toggleSharing');
+            ->call('setSharing', true);
 
         expect($recipe->fresh()->isShared())->toBeTrue();
 
         Livewire::test('pages::recipes.show', ['recipe' => $recipe])
-            ->call('toggleSharing');
+            ->call('setSharing', false);
 
         expect($recipe->fresh()->isShared())->toBeFalse();
     });
 
-    test('cannot toggle sharing on recipe from team user does not belong to', function () {
+    test('a page opened before sharing changed elsewhere does not undo it', function () {
+        $user = User::factory()->create();
+        $recipe = Recipe::factory()->create(['team_id' => $user->currentTeam->id]);
+        $staleTab = Livewire::actingAs($user)->test('pages::recipes.show', ['recipe' => $recipe]);
+
+        $recipe->enableSharing();
+        $token = $recipe->fresh()->share_token;
+
+        $staleTab->call('setSharing', true);
+
+        expect($recipe->fresh()->share_token)->toBe($token);
+
+        $staleTab->call('setSharing', false)->call('setSharing', false);
+
+        expect($recipe->fresh()->isShared())->toBeFalse();
+    });
+
+    test('cannot change sharing on recipe from team user does not belong to', function () {
         $user = User::factory()->create();
         $recipe = Recipe::factory()->create();
 
         Livewire::actingAs($user)
             ->test('pages::recipes.show', ['recipe' => $recipe])
-            ->call('toggleSharing')
+            ->call('setSharing', true)
             ->assertForbidden();
     });
 });

@@ -8,7 +8,7 @@
 
         <div class="flex items-center justify-between">
             <flux:text>{{ __('Public Link') }}</flux:text>
-            <flux:switch wire:click="toggleSharing" :checked="$recipe->isShared()" />
+            <flux:switch wire:click="setSharing({{ $recipe->isShared() ? 'false' : 'true' }})" :checked="$recipe->isShared()" />
         </div>
 
         @if ($recipe->isShared())
