@@ -35,6 +35,12 @@ class ItemMetadata implements ValidationRule
             return;
         }
 
+        if (array_any(array_keys($value), fn (int|string $label): bool => trim((string) $label) === '')) {
+            $fail(__('Each detail needs a label.'));
+
+            return;
+        }
+
         $tooLong = array_any(
             $value,
             fn (string $detail, int|string $label): bool => mb_strlen((string) $label) > self::MAX_LENGTH || mb_strlen($detail) > self::MAX_LENGTH,

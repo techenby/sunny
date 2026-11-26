@@ -794,7 +794,7 @@ test('store and update refuse details that are not text', function (array $metad
     'number' => [['volts' => 20]],
 ]);
 
-test('store refuses a list of details, too many details and details that are too long', function (array $metadata, string $message) {
+test('store refuses a list of details, too many details, blank labels and details that are too long', function (array $metadata, string $message) {
     $user = User::factory()->create();
 
     $this->actingAs($user)
@@ -804,6 +804,8 @@ test('store refuses a list of details, too many details and details that are too
 })->with([
     'list' => [['DeWalt', '20'], 'The details must be labels with text values.'],
     'too many' => [array_fill_keys(array_map(fn (int $number) => "label {$number}", range(1, 51)), 'value'), 'An item can have at most 50 details.'],
+    'empty label' => [['' => 'value'], 'Each detail needs a label.'],
+    'blank label' => [['   ' => 'value'], 'Each detail needs a label.'],
     'label too long' => [[str_repeat('a', 256) => 'value'], 'Each detail label and value must be at most 255 characters.'],
     'value too long' => [['label' => str_repeat('a', 256)], 'Each detail label and value must be at most 255 characters.'],
 ]);
