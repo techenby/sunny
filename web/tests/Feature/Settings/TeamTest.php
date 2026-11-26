@@ -135,7 +135,7 @@ test('team deletion requires name confirmation', function () {
     ]);
 });
 
-test('deleting current team switches to alphabetically first remaining team', function () {
+test('deleting the current team switches to the personal team even when another team sorts first', function () {
     $user = User::factory()->create(['name' => 'Mike']);
 
     $zuluTeam = Team::factory()->create(['name' => 'Zulu Team']);
@@ -143,9 +143,6 @@ test('deleting current team switches to alphabetically first remaining team', fu
 
     $alphaTeam = Team::factory()->create(['name' => 'Alpha Team']);
     $alphaTeam->members()->attach($user, ['role' => TeamRole::Owner->value]);
-
-    $betaTeam = Team::factory()->create(['name' => 'Beta Team']);
-    $betaTeam->members()->attach($user, ['role' => TeamRole::Owner->value]);
 
     $user->update(['current_team_id' => $zuluTeam->id]);
 
@@ -159,28 +156,7 @@ test('deleting current team switches to alphabetically first remaining team', fu
         'id' => $zuluTeam->id,
     ]);
 
-    expect($user->fresh()->current_team_id)->toEqual($alphaTeam->id);
-});
-
-test('deleting current team falls back to personal team when alphabetically first', function () {
-    $user = User::factory()->create();
-    $personalTeam = $user->personalTeam();
-    $team = Team::factory()->create(['name' => 'Zulu Team']);
-    $team->members()->attach($user, ['role' => TeamRole::Owner->value]);
-
-    $user->update(['current_team_id' => $team->id]);
-
-    Livewire::actingAs($user)
-        ->test('pages::teams.delete-team-modal', ['team' => $team])
-        ->set('deleteName', $team->name)
-        ->call('deleteTeam')
-        ->assertHasNoErrors();
-
-    $this->assertSoftDeleted('teams', [
-        'id' => $team->id,
-    ]);
-
-    expect($user->fresh()->current_team_id)->toEqual($personalTeam->id);
+    expect($user->fresh()->current_team_id)->toBe($user->personalTeam()->id);
 });
 
 test('deleting non current team leaves current team unchanged', function () {
@@ -290,7 +266,7 @@ test('members can leave a team they joined', function () {
     expect($zoro->fresh()->belongsToTeam($team))->toBeFalse();
 });
 
-test('leaving the current team switches to the alphabetically first remaining team', function () {
+test('leaving the current team switches to the personal team even when another team sorts first', function () {
     $luffy = User::factory()->create();
     $zoro = User::factory()->create(['name' => 'Zoro']);
     $zuluTeam = Team::factory()->create(['name' => 'Zulu Team']);
@@ -304,7 +280,7 @@ test('leaving the current team switches to the alphabetically first remaining te
         ->test('pages::teams.index')
         ->call('leaveTeam', $zuluTeam->id);
 
-    expect($zoro->fresh()->current_team_id)->toBe($alphaTeam->id);
+    expect($zoro->fresh()->current_team_id)->toBe($zoro->personalTeam()->id);
 });
 
 test('users cannot leave personal teams, teams they own, or teams they are not in', function (string $teamFor) {

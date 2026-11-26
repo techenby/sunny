@@ -41,10 +41,6 @@ new class extends Component {
 
         $user = Auth::user();
 
-        $fallbackTeam = $user->isCurrentTeam($this->team)
-            ? $user->fallbackTeam($this->team)
-            : null;
-
         DB::transaction(function () use ($user) {
             User::where('current_team_id', $this->team->id)
                 ->where('id', '!=', $user->id)
@@ -55,8 +51,8 @@ new class extends Component {
             $this->team->delete();
         });
 
-        if ($fallbackTeam) {
-            $user->switchTeam($fallbackTeam);
+        if ($user->isCurrentTeam($this->team)) {
+            $user->switchTeam($user->personalTeam());
         }
 
         Flux::toast(variant: 'success', text: __('Team deleted.'));

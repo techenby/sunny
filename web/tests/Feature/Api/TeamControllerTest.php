@@ -113,7 +113,8 @@ test('members and admins can leave a team', function (string $user) {
     expect($this->{$user}->belongsToTeam($this->crew))->toBeFalse();
 })->with(['nami', 'zoro']);
 
-test('leaving the current team switches to another team', function () {
+test('leaving the current team switches to the personal team even when another team sorts first', function () {
+    Team::factory()->create(['name' => 'Alabasta'])->memberships()->create(['user_id' => $this->zoro->id, 'role' => TeamRole::Member]);
     $this->zoro->switchTeam($this->crew);
 
     $this->actingAs($this->zoro)
