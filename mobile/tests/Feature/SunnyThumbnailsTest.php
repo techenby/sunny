@@ -65,12 +65,14 @@ it('swaps in the new thumbnail when the photo changes and forgets the old one', 
     Http::fake(['cdn.sunny.example/*' => Http::response('thumb-bytes')]);
     ($this->sync)('https://cdn.sunny.example/thumbs/kitchen-a1.jpg?signature=one');
     $old = Item::find(10)->thumb_path;
+    $this->travel(2)->minutes();
 
     ($this->sync)('https://cdn.sunny.example/thumbs/kitchen-c3.jpg?signature=one');
 
     expect(Item::find(10)->thumb_path)->not->toBe($old)->toBeFile()
         ->and($old)->not->toBeFile();
 
+    $this->travel(2)->minutes();
     ($this->sync)(null);
 
     expect(Item::find(10)->thumb_path)->toBeNull()

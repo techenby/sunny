@@ -330,7 +330,7 @@ class SunnyOutbox
     /**
      * Delete kept photos that neither a queued change nor a local record still points at.
      */
-    public function prunePhotos(): void
+    public function prunePhotos(bool $includingNew = false): void
     {
         $inUse = PendingWrite::query()->pluck('photo_path')
             ->merge(Item::withTrashed()->pluck('photo_url'))
@@ -339,7 +339,7 @@ class SunnyOutbox
             ->filter()->flip();
 
         foreach (File::glob(self::photoDirectory().'/*') as $path) {
-            if (! $inUse->has($path)) {
+            if (! $inUse->has($path) && ($includingNew || File::lastModified($path) < now()->subMinute()->getTimestamp())) {
                 File::delete($path);
             }
         }

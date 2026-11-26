@@ -53,7 +53,7 @@ class SunnyThumbnails
     /**
      * Delete downloaded thumbnails that no local record points at any more.
      */
-    public function prune(): void
+    public function prune(bool $includingNew = false): void
     {
         $inUse = Item::withTrashed()->pluck('thumb_path')
             ->merge(ItemPhoto::query()->pluck('thumb_path'))
@@ -61,7 +61,7 @@ class SunnyThumbnails
             ->filter()->flip();
 
         foreach (File::glob(self::directory().'/*') as $path) {
-            if (! $inUse->has($path)) {
+            if (! $inUse->has($path) && ($includingNew || File::lastModified($path) < now()->subMinute()->getTimestamp())) {
                 File::delete($path);
             }
         }
