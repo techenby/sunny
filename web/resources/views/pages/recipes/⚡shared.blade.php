@@ -28,6 +28,8 @@ new #[Layout('layouts::guest')] class extends Component
     public function addToMyTeam(): void
     {
         if (! Auth::check()) {
+            redirect()->setIntendedUrl(route('recipes.shared', $this->shareToken));
+
             $this->redirect(route('login'));
 
             return;
