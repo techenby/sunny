@@ -60,17 +60,19 @@ new class extends Component
         Flux::toast(__('Recipe copied successfully.'));
     }
 
-    public function toggleSharing(): void
+    public function setSharing(bool $shared): void
     {
         $this->authorize('share', $this->recipe);
 
-        if ($this->recipe->isShared()) {
-            $this->recipe->disableSharing();
-        } else {
+        $this->recipe->refresh();
+
+        if ($shared && ! $this->recipe->isShared()) {
             $this->recipe->enableSharing();
         }
 
-        $this->recipe->refresh();
+        if (! $shared && $this->recipe->isShared()) {
+            $this->recipe->disableSharing();
+        }
     }
 
     public function render()
