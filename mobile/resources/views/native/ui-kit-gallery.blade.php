@@ -183,16 +183,16 @@
             </column>
         </column>
 
-        <column ref="ui-kit-alert" class="w-full gap-2">
-            <x-ui.subheading class="px-1">x-ui.alert</x-ui.subheading>
-            <x-ui.alert :ios="Ios::CheckmarkCircle" :android="Android::CheckCircle" title="title" message="message, with ios and android for the icon. For information." />
-            <x-ui.alert tone="offline" :ios="Ios::WifiSlash" :android="Android::WifiOff" title="tone offline" message="Neutral: offline is not an error." />
-            <x-ui.alert tone="error" :ios="Ios::ExclamationmarkCircle" :android="Android::ErrorOutline" title="tone error" message="For something that went wrong. Offline and information use the default." />
+        <column ref="ui-kit-note" class="w-full gap-2">
+            <x-ui.subheading class="px-1">x-ui.note</x-ui.subheading>
+            <x-ui.note :ios="Ios::CheckmarkCircle" :android="Android::CheckCircle" title="title" message="message, with ios and android for the icon. For information." />
+            <x-ui.note tone="offline" :ios="Ios::WifiSlash" :android="Android::WifiOff" title="tone offline" message="Neutral: offline is not an error." />
+            <x-ui.note tone="error" :ios="Ios::ExclamationmarkCircle" :android="Android::ErrorOutline" title="tone error" message="For something that went wrong. Offline and information use the default." />
         </column>
 
         <column ref="ui-kit-offline" class="w-full gap-2">
             <x-ui.subheading class="px-1">x-ui.offline</x-ui.subheading>
-            <x-ui.offline ref="ui-kit-offline-alert" />
+            <x-ui.offline ref="ui-kit-offline-note" />
             <x-ui.text size="sm" class="px-1">extra="Nothing’s been sent yet.", for after a send that failed</x-ui.text>
             <x-ui.offline ref="ui-kit-offline-extra" extra="Nothing’s been sent yet." />
         </column>

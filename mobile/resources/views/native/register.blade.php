@@ -81,13 +81,13 @@
         @if ($this->disconnected || $failure === 'offline')
             <x-ui.offline ref="register-offline" :extra="$this->disconnected ? null : 'Nothing’s been sent yet.'" />
         @elseif ($failure === 'server')
-            <x-ui.alert ref="register-server-error" tone="error" :ios="Ios::ExclamationmarkTriangle" :android="Android::Warning" title="Something went wrong on our end" message="No account was created. Try again in a moment." />
+            <x-ui.note ref="register-server-error" tone="error" :ios="Ios::ExclamationmarkTriangle" :android="Android::Warning" title="Something went wrong on our end" message="No account was created. Try again in a moment." />
         @elseif ($failure === 'throttled' && $this->throttled())
             <column class="w-full" native:poll="5s">
-                <x-ui.alert ref="register-throttled" tone="error" :ios="Ios::Clock" :android="Android::Schedule" title="Too many tries" message="Wait a minute and try again." />
+                <x-ui.note ref="register-throttled" tone="error" :ios="Ios::Clock" :android="Android::Schedule" title="Too many tries" message="Wait a minute and try again." />
             </column>
         @elseif ($failure === 'unavailable')
-            <x-ui.alert ref="register-unavailable" tone="error" :ios="Ios::ExclamationmarkTriangle" :android="Android::Warning" title="Creating an account isn’t available right now" message="No account was created. Try again later." />
+            <x-ui.note ref="register-unavailable" tone="error" :ios="Ios::ExclamationmarkTriangle" :android="Android::Warning" title="Creating an account isn’t available right now" message="No account was created. Try again later." />
         @endif
 
         @if ($error !== '')

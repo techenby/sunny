@@ -33,7 +33,7 @@
                     @php
                         $note = $this->saveNote();
                     @endphp
-                    <x-ui.alert
+                    <x-ui.note
                         ref="shared-recipe-problem"
                         :tone="match ($saveProblem) { 'offline' => 'offline', 'unsent' => 'info', default => 'error' }"
                         :ios="$saveProblem === 'offline' ? Ios::WifiSlash : Ios::ExclamationmarkCircle"

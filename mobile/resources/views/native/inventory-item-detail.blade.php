@@ -359,7 +359,7 @@
 
                     @if ($copiesProblem !== null)
                         @php($note = $this->copiesNote())
-                        <x-ui.alert
+                        <x-ui.note
                             ref="item-copies-problem"
                             :tone="match ($copiesProblem) { 'offline' => 'offline', 'unsent' => 'info', default => 'error' }"
                             :ios="$copiesProblem === 'offline' ? Ios::WifiSlash : Ios::ExclamationmarkCircle"
@@ -420,7 +420,7 @@
 
                     @if ($teamMoveProblem !== null)
                         @php($note = $this->teamMoveNote())
-                        <x-ui.alert
+                        <x-ui.note
                             ref="item-team-move-problem"
                             :tone="match ($teamMoveProblem) { 'offline' => 'offline', 'unsent' => 'info', default => 'error' }"
                             :ios="$teamMoveProblem === 'offline' ? Ios::WifiSlash : Ios::ExclamationmarkCircle"

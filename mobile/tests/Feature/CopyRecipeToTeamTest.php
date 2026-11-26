@@ -69,8 +69,7 @@ it('copies the recipe to the team they pick', function (): void {
         ->assertSee('Copy to Lake Cabin')
         ->tap('recipe-copy-submit')
         ->assertSet('showCopy', false)
-        ->assertSee('Copied to Lake Cabin')
-        ->assertSee('Switch team in Settings to see it there')
+        ->assertToastShown(fn (array $params): bool => $params['message'] === 'Copied to Lake Cabin' && ! isset($params['action']))
         ->assertSee('Buttermilk Pancakes');
 
     Saloon::assertSent(fn (Request $request): bool => $request instanceof CopyRecipeRequest
@@ -108,7 +107,7 @@ it('copies nothing while offline and retries with the same uuid', function (): v
     $screen->tap('recipe-copy-submit')
         ->assertSet('showCopy', false)
         ->assertSet('copyProblem', null)
-        ->assertSee('Copied to Grandma’s House');
+        ->assertToastShown(fn (array $params): bool => $params['message'] === 'Copied to Grandma’s House');
 
     expect($uuids)->toHaveCount(2)
         ->and($uuids[0])->toBe($uuids[1])
@@ -148,7 +147,7 @@ it('explains when Sunny refuses to copy', function (int $status, string $message
         ->assertSee('Couldn’t copy')
         ->assertSee($message.' Nothing’s been copied yet.')
         ->assertSee('Try again')
-        ->assertDontSee('Copied to');
+        ->assertNativeNotCalled('ToastKit.Show');
 
     expect(Recipe::where('team_id', 3)->count())->toBe(0);
 })->with([
