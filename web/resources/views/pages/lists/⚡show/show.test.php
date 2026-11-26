@@ -270,6 +270,24 @@ describe('crud and actions', function () {
         expect($list->items())->count()->toBe(2);
     });
 
+    test('asks before deleting done items, naming them', function (array $done, string $message) {
+        $user = User::factory()->create();
+        $list = Checklist::factory()->for($user->currentTeam)->create(['name' => 'Groceries']);
+        ChecklistItem::factory()->for($list)->create(['name' => 'Rice']);
+        foreach ($done as $name) {
+            ChecklistItem::factory()->for($list)->completed()->create(['name' => $name]);
+        }
+
+        Livewire::actingAs($user)
+            ->test('pages::lists.show', ['checklist' => $list])
+            ->assertSee('Delete done items')
+            ->assertSeeHtml('wire:confirm="' . e($message) . '"');
+    })->with([
+        'one' => [['Milk'], 'Milk will be deleted from “Groceries” for everyone on your team.'],
+        'three' => [['Milk', 'Eggs', 'Bread'], 'Milk, Eggs and Bread will be deleted from “Groceries” for everyone on your team.'],
+        'more than three' => [['Milk', 'Eggs', 'Bread', 'Tea', 'Jam'], 'Milk, Eggs, Bread and 2 more will be deleted from “Groceries” for everyone on your team.'],
+    ]);
+
     test('unchecks everything without deleting', function () {
         $user = User::factory()->create();
         $list = Checklist::factory()->for($user->currentTeam)->create();

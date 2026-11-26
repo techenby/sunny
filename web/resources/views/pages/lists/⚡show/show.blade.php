@@ -17,7 +17,7 @@
         @if ($this->items->contains(fn ($item) => $item->isCompleted()))
             <x-ui.actions size="base">
                 <flux:menu.item icon="arrow-path" wire:click="resetList">{{ __('Uncheck all') }}</flux:menu.item>
-                <flux:menu.item icon="trash" variant="danger" wire:click="clearCompleted">{{ __('Clear completed') }}</flux:menu.item>
+                <flux:menu.item icon="trash" variant="danger" wire:click="clearCompleted" wire:confirm="{{ $this->deleteDoneMessage() }}">{{ __('Delete done items') }}</flux:menu.item>
             </x-ui.actions>
         @endif
     </div>
