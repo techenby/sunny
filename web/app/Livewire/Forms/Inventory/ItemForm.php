@@ -9,6 +9,7 @@ use App\Actions\Inventory\UpdateItem;
 use App\Actions\Photos\CreateThumbnail;
 use App\Enums\ItemType;
 use App\Models\Item;
+use App\Rules\ItemMetadata;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
@@ -31,7 +32,7 @@ class ItemForm extends Form
 
     public function load(Item $item): void
     {
-        $metadata = collect($item->metadata ?? [])
+        $metadata = collect($item->details)
             ->map(fn (string $value, string $key) => ['key' => $key, 'value' => $value])
             ->values()
             ->all();
@@ -88,9 +89,9 @@ class ItemForm extends Form
                 Rule::exists('items', 'id')->where('team_id', $this->editingItem->team_id ?? Auth::user()->current_team_id),
                 Rule::notIn($this->editingItem ? [$this->editingItem->id, ...$this->editingItem->descendantIds()] : []),
             ],
-            'metadata' => ['nullable', 'array', 'max:50'],
-            'metadata.*.key' => ['nullable', 'string', 'max:255', 'distinct'],
-            'metadata.*.value' => ['required_with:metadata.*.key', 'nullable', 'string', 'max:255'],
+            'metadata' => ['nullable', 'array', 'max:' . ItemMetadata::MAX_DETAILS],
+            'metadata.*.key' => ['nullable', 'string', 'max:' . ItemMetadata::MAX_LENGTH, 'distinct'],
+            'metadata.*.value' => ['required_with:metadata.*.key', 'nullable', 'string', 'max:' . ItemMetadata::MAX_LENGTH],
             'photo' => ['nullable', 'image', 'max:5120', CreateThumbnail::DIMENSIONS_RULE],
         ];
     }

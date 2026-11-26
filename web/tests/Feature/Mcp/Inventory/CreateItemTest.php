@@ -65,3 +65,16 @@ test('it rejects a parent belonging to another team', function () {
 
     expect(Item::query()->where('name', 'Hammer')->count())->toBe(0);
 });
+
+test('it refuses details that are not text', function (array $metadata) {
+    $user = User::factory()->create();
+
+    SunnyServer::actingAs($user)
+        ->tool(CreateItem::class, ['name' => 'Hammer', 'type' => 'item', 'metadata' => $metadata])
+        ->assertHasErrors(['Each detail must be text.']);
+
+    expect(Item::query()->count())->toBe(0);
+})->with([
+    'nested' => [['brand' => ['name' => 'DeWalt']]],
+    'number' => [['weight' => 16]],
+]);

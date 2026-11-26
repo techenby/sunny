@@ -795,3 +795,52 @@ test('move validates the team is given and is not the item\'s own team', functio
         ->assertUnprocessable()
         ->assertJsonValidationErrors('team_id');
 });
+
+test('store and update accept details that are text', function () {
+    $user = User::factory()->create();
+
+    $item = $this->actingAs($user)
+        ->postJson(route('api.items.store', $user->currentTeam), ['name' => 'Drill', 'type' => 'item', 'metadata' => ['brand' => 'DeWalt', 'volts' => '20']])
+        ->assertCreated()
+        ->assertJsonPath('data.metadata', ['brand' => 'DeWalt', 'volts' => '20']);
+
+    $this->patchJson(route('api.items.update', [$user->currentTeam, $item->json('data.id')]), ['metadata' => ['brand' => 'Makita']])
+        ->assertOk()
+        ->assertJsonPath('data.metadata', ['brand' => 'Makita']);
+});
+
+test('store and update refuse details that are not text', function (array $metadata) {
+    $user = User::factory()->create();
+    $item = Item::factory()->for($user->currentTeam)->create(['metadata' => ['brand' => 'DeWalt']]);
+
+    $this->actingAs($user)
+        ->postJson(route('api.items.store', $user->currentTeam), ['name' => 'Drill', 'type' => 'item', 'metadata' => $metadata])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['metadata' => 'Each detail must be text.']);
+
+    $this->patchJson(route('api.items.update', [$user->currentTeam, $item]), ['metadata' => $metadata])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['metadata' => 'Each detail must be text.']);
+
+    expect(Item::query()->count())->toBe(1)
+        ->and($item->refresh()->metadata)->toBe(['brand' => 'DeWalt']);
+})->with([
+    'nested' => [['brand' => ['name' => 'DeWalt']]],
+    'number' => [['volts' => 20]],
+]);
+
+test('store refuses a list of details, too many details, blank labels and details that are too long', function (array $metadata, string $message) {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->postJson(route('api.items.store', $user->currentTeam), ['name' => 'Drill', 'type' => 'item', 'metadata' => $metadata])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['metadata' => $message]);
+})->with([
+    'list' => [['DeWalt', '20'], 'The details must be labels with text values.'],
+    'too many' => [array_fill_keys(array_map(fn (int $number) => "label {$number}", range(1, 51)), 'value'), 'An item can have at most 50 details.'],
+    'empty label' => [['' => 'value'], 'Each detail needs a label.'],
+    'blank label' => [['   ' => 'value'], 'Each detail needs a label.'],
+    'label too long' => [[str_repeat('a', 256) => 'value'], 'Each detail label and value must be at most 255 characters.'],
+    'value too long' => [['label' => str_repeat('a', 256)], 'Each detail label and value must be at most 255 characters.'],
+]);

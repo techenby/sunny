@@ -240,12 +240,12 @@
                 </ol>
             </flux:card>
 
-            @if ($item->metadata)
+            @if ($item->details)
                 <flux:card>
                     <flux:heading size="lg" class="mb-2">{{ __('Details') }}</flux:heading>
 
                     <dl>
-                        @foreach ($item->metadata as $key => $value)
+                        @foreach ($item->details as $key => $value)
                             <dt class="[:where(&)]:font-normal [:where(&)]:text-sm [:where(&)]:text-zinc-500 [:where(&)]:dark:text-white/70 mt-2 mb-1">{{ ucfirst($key) }}</dt>
                             <dd class="font-medium [:where(&)]:text-zinc-800 [:where(&)]:dark:text-white text-sm [&:has(+[data-flux-subheading])]:mb-2 [[data-flux-subheading]+&]:mt-2">{{ $value }}</dd>
                         @endforeach

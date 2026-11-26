@@ -714,3 +714,21 @@ describe('move to team feature', function () {
         expect($item->fresh()->team_id)->toBe($user->current_team_id);
     });
 });
+
+test('shows and edits details saved before they had to be text', function () {
+    $user = User::factory()->create();
+    $item = Item::factory()->for($user->currentTeam)->create([
+        'name' => 'Tent',
+        'metadata' => ['size' => ['w' => 2, 'h' => 3], 'count' => 4],
+    ]);
+
+    Livewire::actingAs($user)
+        ->test('pages::inventory.show', ['item' => $item])
+        ->assertSee('{"w":2,"h":3}')
+        ->assertSee('Count')
+        ->call('edit')
+        ->assertSet('form.metadata', [
+            ['key' => 'size', 'value' => '{"w":2,"h":3}'],
+            ['key' => 'count', 'value' => '4'],
+        ]);
+});

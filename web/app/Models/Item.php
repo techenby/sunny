@@ -19,6 +19,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
+/**
+ * @property array<array-key, mixed>|null $metadata
+ * @property-read array<string, string> $details
+ */
 class Item extends Model
 {
     /** @use HasFactory<ItemFactory> */
@@ -134,6 +138,16 @@ class Item extends Model
             'type' => ItemType::class,
             'metadata' => 'array',
         ];
+    }
+
+    /** @return Attribute<array<string, string>, never> */
+    protected function details(): Attribute
+    {
+        return Attribute::get(fn (): array => collect($this->metadata ?? [])
+            ->mapWithKeys(fn (mixed $value, int|string $label): array => [
+                (string) $label => is_string($value) ? $value : (string) json_encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+            ])
+            ->all());
     }
 
     protected function truncatedName(): Attribute

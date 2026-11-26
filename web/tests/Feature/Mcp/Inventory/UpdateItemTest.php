@@ -81,3 +81,17 @@ test('it rejects a parent belonging to another team', function () {
 
     expect($item->refresh()->parent_id)->toBeNull();
 });
+
+test('it refuses details that are not text', function (array $metadata) {
+    $user = User::factory()->create();
+    $item = Item::factory()->item()->for($user->currentTeam)->create(['metadata' => ['brand' => 'DeWalt']]);
+
+    SunnyServer::actingAs($user)
+        ->tool(UpdateItem::class, ['id' => $item->id, 'metadata' => $metadata])
+        ->assertHasErrors(['Each detail must be text.']);
+
+    expect($item->refresh()->metadata)->toBe(['brand' => 'DeWalt']);
+})->with([
+    'nested' => [['brand' => ['name' => 'DeWalt']]],
+    'number' => [['weight' => 16]],
+]);

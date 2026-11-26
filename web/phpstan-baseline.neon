@@ -421,18 +421,6 @@ parameters:
 			path: app/Livewire/Forms/Inventory/ItemForm.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,string\>\:\:map\(\) expects callable\(string, 0\)\: array\{key\: string, value\: string\}, Closure\(string, string\)\: array\{key\: string, value\: string\} given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Livewire/Forms/Inventory/ItemForm.php
-
-		-
-			message: '#^Parameter \#1 \$value of function collect expects Illuminate\\Contracts\\Support\\Arrayable\<\*NEVER\*, \*NEVER\*\>\|iterable\<\*NEVER\*, \*NEVER\*\>\|null, array\{\}\|string given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Livewire/Forms/Inventory/ItemForm.php
-
-		-
 			message: '#^Unable to resolve the template type TKey in call to function collect$#'
 			identifier: argument.templateType
 			count: 1
