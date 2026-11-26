@@ -7,7 +7,7 @@ namespace App\Http\Requests\Api;
 use App\Actions\Photos\CreateThumbnail;
 use App\Enums\ItemType;
 use App\Models\Item;
-use App\Rules\MaxJsonSize;
+use App\Rules\ItemMetadata;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Gate;
@@ -30,7 +30,7 @@ class StoreItemRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'type' => ['required', new Enum(ItemType::class)],
             'parent_id' => ['nullable', 'integer', Rule::exists('items', 'id')->where('team_id', $this->route('team')->id)],
-            'metadata' => ['nullable', 'array', new MaxJsonSize(10_000)],
+            'metadata' => ['nullable', 'bail', 'array', new ItemMetadata],
             'photo' => ['nullable', 'image', 'max:10240', CreateThumbnail::DIMENSIONS_RULE],
             'client_uuid' => ['nullable', 'uuid'],
         ];

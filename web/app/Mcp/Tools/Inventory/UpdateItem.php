@@ -6,7 +6,7 @@ namespace App\Mcp\Tools\Inventory;
 
 use App\Actions\Inventory\UpdateItem as UpdateItemAction;
 use App\Enums\ItemType;
-use App\Rules\MaxJsonSize;
+use App\Rules\ItemMetadata;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Gate;
@@ -28,7 +28,7 @@ class UpdateItem extends Tool
             'name' => ['sometimes', 'required', 'string', 'max:255'],
             'type' => ['sometimes', 'required', new Enum(ItemType::class)],
             'parent_id' => ['sometimes', 'nullable', 'integer'],
-            'metadata' => ['sometimes', 'nullable', 'array', new MaxJsonSize(10_000)],
+            'metadata' => ['sometimes', 'nullable', 'bail', 'array', new ItemMetadata],
         ]);
 
         $team = $request->user()->currentTeam;
@@ -82,7 +82,7 @@ class UpdateItem extends Tool
                 ->description('Move the item inside the item with this id, or pass null to make it top-level.'),
             'metadata' => $schema->object()
                 ->nullable()
-                ->description('Replace the item\'s key/value metadata (e.g. {"brand": "DeWalt"}). Pass null to clear it.'),
+                ->description('Replace the item\'s details, as labels with text values (at most 50, each label and value at most 255 characters, e.g. {"brand": "DeWalt"}). Pass null to clear them.'),
         ];
     }
 }

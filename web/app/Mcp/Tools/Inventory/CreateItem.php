@@ -7,7 +7,7 @@ namespace App\Mcp\Tools\Inventory;
 use App\Actions\Inventory\CreateItem as CreateItemAction;
 use App\Enums\ItemType;
 use App\Models\Item;
-use App\Rules\MaxJsonSize;
+use App\Rules\ItemMetadata;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rules\Enum;
@@ -27,7 +27,7 @@ class CreateItem extends Tool
             'name' => ['required', 'string', 'max:255'],
             'type' => ['required', new Enum(ItemType::class)],
             'parent_id' => ['nullable', 'integer'],
-            'metadata' => ['nullable', 'array', new MaxJsonSize(10_000)],
+            'metadata' => ['nullable', 'bail', 'array', new ItemMetadata],
         ]);
 
         $team = $request->user()->currentTeam;
@@ -62,7 +62,7 @@ class CreateItem extends Tool
             'parent_id' => $schema->integer()
                 ->description('The id of an existing item (usually a location or bin) to place this item inside. Omit for a top-level item.'),
             'metadata' => $schema->object()
-                ->description('Optional key/value metadata to store with the item (e.g. {"brand": "DeWalt", "serial": "123"}).'),
+                ->description('Optional details to store with the item, as labels with text values (at most 50, each label and value at most 255 characters, e.g. {"brand": "DeWalt", "serial": "123"}).'),
         ];
     }
 }
