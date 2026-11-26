@@ -193,6 +193,7 @@ class Dashboard extends Component
     protected function invitationsChanged(): void
     {
         $this->refreshLocalData();
+        $this->refreshCalendar();
     }
 
     protected function refreshLocalSyncedData(): void

@@ -128,13 +128,14 @@ it('accepts an invitation from Summary', function (): void {
         ->assertSee('Join Miller Cabin')
         ->assertAccessible()
         ->tap('dashboard-accept-miller-code')
-        ->assertToastShown(fn (array $params): bool => $params['message'] === 'You joined Miller Cabin. Switch to it in Settings.')
+        ->assertToastShown(fn (array $params): bool => $params['message'] === 'You joined Miller Cabin')
         ->assertDontSee('Pat Miller invited you');
 
     Saloon::assertSent(fn (Request $request): bool => $request instanceof AcceptInvitationRequest && $request->resolveEndpoint() === '/invitations/miller-code/accept');
+    Saloon::assertSentCount(1);
     expect(Invitation::count())->toBe(0)
         ->and(app(SunnyTeam::class)->choices())->toBe([1 => 'Family', 3 => 'Miller Cabin'])
-        ->and(app(SunnyTeam::class)->current()->id)->toBe(1)
+        ->and(app(SunnyTeam::class)->current()->id)->toBe(3)
         ->and(Team::find(3)->currentRole()->value)->toBe('member');
 });
 
@@ -165,7 +166,9 @@ it('accepts and declines invitations in Preferences', function (): void {
         ->assertElement('column', fn (array $node): bool => ($node['ref'] ?? null) === 'invitation-lake-code' && str_ends_with($node['props']['a11y_label'], ', Expires today'))
         ->assertAccessible()
         ->tap('accept-invitation-miller-code')
-        ->assertSee('Miller Cabin')
+        ->assertToastShown(fn (array $params): bool => $params['message'] === 'You joined Miller Cabin')
+        ->assertElement('icon', fn (array $node): bool => ($node['ref'] ?? null) === 'team-3-trailing' && $node['props']['name'] === 'checkmark')
+        ->assertMissingElement('icon', fn (array $node): bool => ($node['ref'] ?? null) === 'team-1-trailing')
         ->assertMissingElement('column', fn (array $node): bool => ($node['ref'] ?? null) === 'invitation-miller-code')
         ->tap('decline-invitation-lake-code')
         ->assertDontSee('Lake House');
