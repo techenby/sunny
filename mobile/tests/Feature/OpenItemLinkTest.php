@@ -39,3 +39,45 @@ it('offers the browser when the linked item is not on this phone', function () {
         ->assertNoNavigation()
         ->assertSet('error', '');
 });
+
+it('says a linked item was deleted, where it was, and opens Recently deleted', function () {
+    seedSunnyData();
+    $item = Item::find(8);
+    $place = Item::find($item->parent_id);
+    $item->delete();
+
+    Native::visit('/i/8')
+        ->assertScreen(OpenItemLink::class)
+        ->assertSee($item->name.' was deleted')
+        ->assertSee('It’s waiting in Recently deleted. You can restore it there, or delete it forever.')
+        ->assertSee('Where it was')
+        ->assertSee($place->name)
+        ->assertDontSee('This thing isn’t on this phone')
+        ->assertAccessible()
+        ->tap('item-link-open-deleted')
+        ->assertReplacedWith('/inventory/deleted');
+});
+
+it('says a deleted linked item was not in a place', function () {
+    seedSunnyData();
+    $item = Item::find(8);
+    $item->update(['parent_id' => null]);
+    $item->delete();
+
+    Native::visit('/i/8')
+        ->assertSee($item->name.' was deleted')
+        ->assertSee('Not in a place yet');
+});
+
+it('switches to a deleted linked item’s team before opening Recently deleted', function () {
+    seedSunnyData();
+    Team::create(['id' => 2, 'server' => SunnyStore::server(), 'name' => 'Work', 'slug' => 'work']);
+    Item::create([...Item::find(1)->toArray(), 'id' => 90, 'team_id' => 2, 'parent_id' => null, 'name' => 'Office'])->delete();
+
+    Native::visit('/i/90')
+        ->assertSee('Office was deleted')
+        ->tap('item-link-open-deleted')
+        ->assertReplacedWith('/inventory/deleted');
+
+    expect(app(SunnyTeam::class)->current()->id)->toBe(2);
+});

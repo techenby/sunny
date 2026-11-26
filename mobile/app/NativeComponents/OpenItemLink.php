@@ -13,6 +13,9 @@ class OpenItemLink extends Component
 {
     public string $error = '';
 
+    /** @var array{name: string, team_id: int, place: array{name: string, type: string}|null}|null */
+    public ?array $deleted = null;
+
     public function mount(): void
     {
         if (app(SunnyStore::class)->lastSyncedAt() === null) {
@@ -24,6 +27,8 @@ class OpenItemLink extends Component
         $item = Item::forCurrentServer()->find((int) $this->param('id'));
 
         if ($item === null) {
+            $this->deleted = $this->deletedItem((int) $this->param('id'));
+
             return;
         }
 
@@ -32,6 +37,35 @@ class OpenItemLink extends Component
         }
 
         $this->replace('/inventory/'.$item->id);
+    }
+
+    public function openRecentlyDeleted(): void
+    {
+        if ($this->deleted !== null && $this->deleted['team_id'] !== app(SunnyTeam::class)->current()?->id) {
+            app(SunnyTeam::class)->select($this->deleted['team_id']);
+        }
+
+        $this->replace('/inventory/deleted');
+    }
+
+    /**
+     * @return array{name: string, team_id: int, place: array{name: string, type: string}|null}|null
+     */
+    private function deletedItem(int $id): ?array
+    {
+        $item = Item::onlyTrashed()->forCurrentServer()->find($id);
+
+        if ($item === null) {
+            return null;
+        }
+
+        $place = $item->parent_id === null ? null : Item::withTrashed()->forCurrentServer()->find($item->parent_id);
+
+        return [
+            'name' => $item->name,
+            'team_id' => $item->team_id,
+            'place' => $place === null ? null : ['name' => $place->name, 'type' => $place->type->value],
+        ];
     }
 
     /**
