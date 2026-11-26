@@ -80,6 +80,38 @@ test('correct password must be provided to delete account', function () {
     expect($user->fresh())->not->toBeNull();
 });
 
+test('account deletion is limited to six attempts a minute', function () {
+    $this->freezeTime();
+    $user = User::factory()->create();
+
+    foreach (range(1, 6) as $attempt) {
+        Livewire::actingAs($user)
+            ->test('pages::settings.delete-user-form')
+            ->set('password', 'wrong-password')
+            ->call('deleteUser')
+            ->assertHasErrors(['password']);
+    }
+
+    Livewire::actingAs($user)
+        ->test('pages::settings.delete-user-form')
+        ->set('password', 'password')
+        ->call('deleteUser')
+        ->assertHasErrors(['password' => 'Too many attempts. Please try again in 60 seconds.']);
+
+    expect($user->fresh())->not->toBeNull();
+
+    $this->travel(1)->minute();
+
+    Livewire::actingAs($user)
+        ->test('pages::settings.delete-user-form')
+        ->set('password', 'password')
+        ->call('deleteUser')
+        ->assertHasNoErrors()
+        ->assertRedirect('/');
+
+    expect($user->fresh())->toBeNull();
+});
+
 test('account deletion is blocked while the user owns a team other people use', function () {
     $user = User::factory()->create();
     $user->currentTeam->update(['name' => 'Straw Hats']);
