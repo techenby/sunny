@@ -51,18 +51,38 @@
  
 --- a/src/Edge/NativeRouter.php
 +++ b/src/Edge/NativeRouter.php
-@@ -889,6 +889,11 @@
-                     $this->unmountComponent($component);
-                     array_pop($this->stack);
+@@ -886,8 +886,7 @@
+                     }
  
-+                    while ($intent->clearsStack && ! empty($this->stack)) {
-+                        $this->unmountComponent($this->stack[count($this->stack) - 1]['component']);
-+                        array_pop($this->stack);
-+                    }
-+
+                     static::debugLog("REPLACE: resolved to {$resolved['class']}");
+-                    $this->unmountComponent($component);
+-                    array_pop($this->stack);
++                    $this->popForReplace($component, $intent);
+ 
                      static::debugLog('REPLACE: deferring transition, stack='.count($this->stack));
                      $this->deferredTransition = $intent->transition ?? Transition::Fade;
+@@ -943,6 +942,21 @@
+         static::debugLog('loop: stack empty, returning null');
  
+         return null;
++    }
++
++    /**
++     * Take the replaced screen off the stack, and every screen below it
++     * when the intent replaces the whole stack.
++     */
++    protected function popForReplace(NativeComponent $component, NavigationIntent $intent): void
++    {
++        $this->unmountComponent($component);
++        array_pop($this->stack);
++
++        while ($intent->clearsStack && ! empty($this->stack)) {
++            $this->unmountComponent($this->stack[count($this->stack) - 1]['component']);
++            array_pop($this->stack);
++        }
+     }
+ 
+     /**
 --- a/src/Testing/TestableComponent.php
 +++ b/src/Testing/TestableComponent.php
 @@ -702,7 +702,7 @@

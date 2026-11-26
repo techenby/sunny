@@ -1,5 +1,5 @@
 {
-    "_hash": "9966d111c8619ea1ad4b3e1ec986c0fde12a79a9f3c3e538444e0330ae1c70c2",
+    "_hash": "2aa4f76984961f09b71a187558d020cc11535e7558dd234491a83caa963f7511",
     "patches": {
         "nativephp/mobile-camera": [
             {
@@ -120,7 +120,7 @@
                 "package": "nativephp/mobile",
                 "description": "iOS + PHP: let a screen replace the whole navigation stack (replaceStack) and redraw the stack root when its address changes, so logging out leaves nothing to go back to and a replace at the root is not dropped",
                 "url": "patches/nativephp-mobile-replace-whole-stack.patch",
-                "sha256": "b857fc6b9b997e5e51b59a2cf2dd32ca2742efa6745fa1a3ac71b42e8afccb7d",
+                "sha256": "9ffdeb7656c0ae80a0b3de9d2746011a9ed7037c244e817abfd5a1be25b80f9a",
                 "depth": 1,
                 "extra": {
                     "provenance": "root"
