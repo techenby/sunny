@@ -7,6 +7,7 @@ use App\Models\Team;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Livewire\Livewire;
 
 test('guests cannot access items', function () {
     $this->getJson(route('api.items.index', 'household'))->assertUnauthorized();
@@ -252,6 +253,40 @@ test('update modifies an item', function () {
         'name' => 'Updated Name',
     ]);
 });
+
+test('a move that sends only parent_id keeps a rename made on the web and the existing details', function (?string $destination) {
+    $user = User::factory()->create();
+    $garage = Item::factory()->for($user->currentTeam)->create(['name' => 'Garage', 'type' => 'location']);
+    $shelf = Item::factory()->for($user->currentTeam)->create(['name' => 'Shelf', 'type' => 'location']);
+    $tent = Item::factory()->for($user->currentTeam)->create([
+        'name' => 'Tent',
+        'parent_id' => $garage->id,
+        'metadata' => ['brand' => 'REI'],
+    ]);
+
+    Livewire::actingAs($user)
+        ->test('pages::inventory.show', ['item' => $tent])
+        ->call('edit')
+        ->set('form.name', 'Big tent')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $parentId = $destination === null ? null : $shelf->id;
+
+    $this->actingAs($user)
+        ->patchJson(route('api.items.update', [$user->currentTeam, $tent]), ['parent_id' => $parentId])
+        ->assertOk()
+        ->assertJsonPath('data.name', 'Big tent')
+        ->assertJsonPath('data.parent_id', $parentId);
+
+    expect($tent->fresh())
+        ->name->toBe('Big tent')
+        ->parent_id->toBe($parentId)
+        ->metadata->toBe(['brand' => 'REI']);
+})->with([
+    'into another place' => ['shelf'],
+    'to the top level' => [null],
+]);
 
 test('update returns 403 for a team the user does not belong to item', function () {
     $user = User::factory()->create();

@@ -10,6 +10,7 @@ use Native\Mobile\Events\Alert\ButtonPressed;
 use Native\Mobile\Testing\Native;
 use Saloon\Exceptions\Request\RequestException;
 use Saloon\Http\Faking\MockResponse;
+use Saloon\Http\PendingRequest;
 
 beforeEach(function (): void {
     Native::fakeBridge()->respondTo('SecureStorage.Get', ['value' => 'saved-token']);
@@ -89,6 +90,27 @@ it('moves the picked things into another container', function () {
         ->toBe([[7, 11], [10, 11]]);
 });
 
+it('sends only the new place for each picked thing', function () {
+    Saloon::fake([SaveRecordRequest::class => fn (PendingRequest $request): MockResponse => MockResponse::make(['data' => [
+        ...Item::find((int) basename($request->getUrl()))->only('id', 'team_id', 'type', 'name', 'metadata', 'created_at', 'updated_at'), ...$request->body()->all(),
+    ]])]);
+
+    Native::visit('/inventory/6')
+        ->tap('item-select')
+        ->tap('selection-all')
+        ->tap('selection-move')
+        ->tap('move-parent-11')
+        ->tap('move-parent-choose');
+    app(SunnyWrites::class)->push();
+
+    Saloon::assertSentCount(2);
+    foreach ([7, 10] as $id) {
+        Saloon::assertSent(fn (SaveRecordRequest $request): bool => $request->resolveEndpoint() === '/teams/family/items/'.$id
+            && $request->body()->all() === ['parent_id' => 11]);
+    }
+    expect(PendingWrite::count())->toBe(0);
+});
+
 it('never moves a picked container into itself or anything inside it', function () {
     Native::visit('/inventory/6')
         ->tap('item-select')
@@ -103,6 +125,10 @@ it('never moves a picked container into itself or anything inside it', function 
 });
 
 it('takes one picked thing out of every place', function () {
+    Saloon::fake([SaveRecordRequest::class => fn (PendingRequest $request): MockResponse => MockResponse::make(['data' => [
+        ...Item::find((int) basename($request->getUrl()))->only('id', 'team_id', 'type', 'name', 'metadata', 'created_at', 'updated_at'), ...$request->body()->all(),
+    ]])]);
+
     Native::visit('/inventory/6')
         ->tap('item-select')
         ->tap('item-child-10')
@@ -114,6 +140,13 @@ it('takes one picked thing out of every place', function () {
         ->assertToastShown(fn (array $params): bool => $params['message'] === 'Moved 1 thing to “Not in a place yet”' && $params['variant'] === 'success');
 
     expect(Item::find(10)->parent_id)->toBeNull();
+
+    app(SunnyWrites::class)->push();
+
+    Saloon::assertSentCount(1);
+    Saloon::assertSent(fn (SaveRecordRequest $request): bool => $request->resolveEndpoint() === '/teams/family/items/10'
+        && $request->body()->all() === ['parent_id' => null]);
+    expect(PendingWrite::count())->toBe(0);
 });
 
 it('leaves the single Move for the page itself', function () {

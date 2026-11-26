@@ -94,12 +94,7 @@ trait SelectsInventoryItems
         try {
             DB::transaction(function () use ($items): void {
                 foreach ($items as $item) {
-                    app(SunnyOutbox::class)->queue('items', $item['team_id'], [
-                        'name' => $item['name'],
-                        'type' => $item['type']->value,
-                        'parent_id' => $this->parentId,
-                        'metadata' => $item['metadata'],
-                    ], $item['id']);
+                    app(SunnyOutbox::class)->queue('items', $item['team_id'], ['parent_id' => $this->parentId], $item['id']);
                 }
             });
         } catch (ValidationException $exception) {

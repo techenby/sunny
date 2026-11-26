@@ -522,12 +522,7 @@ class InventoryItemDetail extends Component
         }
 
         try {
-            app(SunnyOutbox::class)->queue('items', $this->item['team_id'], [
-                'name' => $this->item['name'],
-                'type' => $this->item['type']->value,
-                'parent_id' => $this->parentId,
-                'metadata' => $this->item['metadata'],
-            ], $this->item['id']);
+            app(SunnyOutbox::class)->queue('items', $this->item['team_id'], ['parent_id' => $this->parentId], $this->item['id']);
         } catch (ValidationException $exception) {
             $this->error = collect($exception->errors())->flatten()->first() ?? 'Unable to move it on this phone. Try again.';
 
