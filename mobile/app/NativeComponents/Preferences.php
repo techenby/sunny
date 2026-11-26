@@ -81,6 +81,7 @@ class Preferences extends Component
 
     protected function invitationsChanged(): void
     {
+        $this->activeTeamId = app(SunnyTeam::class)->current()?->id;
         unset($this->invitations, $this->teamOptions, $this->currentTeam);
     }
 

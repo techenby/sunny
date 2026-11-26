@@ -124,6 +124,7 @@ class SunnyTeams
     {
         $team = $this->saveTeam($this->auth->authenticatedConnector()->send(new AcceptInvitationRequest($invitation->code))->json('data'));
         $invitation->delete();
+        $this->teams->select($team->id);
         app(SunnySyncCoordinator::class)->dispatch();
 
         return $team;

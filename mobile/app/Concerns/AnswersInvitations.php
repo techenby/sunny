@@ -47,7 +47,7 @@ trait AnswersInvitations
         );
 
         if ($joined) {
-            Toast::success('You joined '.$invitation->team_name.'. Switch to it in Settings.');
+            Toast::success('You joined '.$invitation->team_name);
         }
 
         $this->invitationsChanged();
