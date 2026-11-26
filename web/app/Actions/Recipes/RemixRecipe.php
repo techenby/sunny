@@ -14,6 +14,7 @@ class RemixRecipe
             ->fill([
                 'name' => $recipe->name . ' (Remix)',
                 'parent_id' => $recipe->id,
+                'share_token' => null,
             ]);
         $remix->save();
 
