@@ -175,4 +175,20 @@ describe('copy to team feature', function () {
             ->call('copyToTeam')
             ->assertHasErrors('copyToTeamId');
     });
+
+    test('cannot copy recipe to its own team', function () {
+        $otherTeam = Team::factory()->create();
+        $user = User::factory()->hasAttached($otherTeam)->create();
+
+        $recipe = Recipe::factory()->for($user->currentTeam)->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::recipes.index')
+            ->call('openCopyModal', $recipe->id)
+            ->set('copyToTeamId', $user->current_team_id)
+            ->call('copyToTeam')
+            ->assertHasErrors(['copyToTeamId' => 'not_in']);
+
+        expect(Recipe::count())->toBe(1);
+    });
 });
