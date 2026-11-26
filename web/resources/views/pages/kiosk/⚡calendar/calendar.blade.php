@@ -45,5 +45,9 @@
         </div>
     </div>
 
-    <x-dynamic-component :component="'kiosk.calendar.' . $format" />
+    @if ($format === '')
+        <div class="flex-1" x-init="$wire.pickAutomaticView(window.matchMedia('(min-width: 80rem)').matches)"></div>
+    @else
+        <x-dynamic-component :component="'kiosk.calendar.' . $format" />
+    @endif
 </div>

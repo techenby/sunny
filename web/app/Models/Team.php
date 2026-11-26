@@ -7,6 +7,8 @@ namespace App\Models;
 use App\Actions\Recipes\DeleteUnusedRecipePhotos;
 use App\Concerns\GeneratesUniqueTeamSlugs;
 use App\Enums\Appearance;
+use App\Enums\CalendarEventStyle;
+use App\Enums\CalendarView;
 use App\Enums\TeamRole;
 use Carbon\CarbonImmutable;
 use Database\Factories\TeamFactory;
@@ -21,7 +23,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
-#[Fillable(['name', 'slug', 'is_personal', 'address', 'timezone', 'week_start', 'appearance', 'rotation', 'screensaver_after', 'return_home_after', 'night_starts_at', 'night_ends_at'])]
+/**
+ * @property CalendarView $calendar_view
+ * @property CalendarEventStyle $calendar_event_style
+ */
+#[Fillable(['name', 'slug', 'is_personal', 'address', 'timezone', 'week_start', 'appearance', 'rotation', 'calendar_view', 'calendar_event_style', 'screensaver_after', 'return_home_after', 'night_starts_at', 'night_ends_at'])]
 #[RouteKey('slug')]
 class Team extends Model
 {
@@ -162,6 +168,8 @@ class Team extends Model
             'is_personal' => 'boolean',
             'address' => 'array',
             'appearance' => Appearance::class,
+            'calendar_view' => CalendarView::class,
+            'calendar_event_style' => CalendarEventStyle::class,
             'screensaver_after' => 'integer',
             'return_home_after' => 'integer',
         ];

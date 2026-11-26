@@ -50,6 +50,8 @@ erDiagram
 		json address  ""
 		varchar appearance  ""
 		integer rotation  ""
+		varchar calendar_view  ""
+		varchar calendar_event_style  ""
 		datetime deleted_at  ""
 		datetime created_at  ""
 		datetime updated_at  ""

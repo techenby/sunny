@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\Calendars\FetchCalendarEvents;
+use App\Enums\CalendarView;
 use App\Livewire\Traits\WithKioskTeam;
 use App\Models\CalendarFeed;
 use Carbon\CarbonImmutable;
@@ -17,14 +18,25 @@ new #[Layout('layouts::kiosk')] class extends Component
     #[Url]
     public string $focusedDate = '';
 
-    #[Url]
-    public string $format = 'week';
+    #[Url(as: 'format')]
+    public string $chosenFormat = '';
+
+    public string $format = '';
 
     public array $selectedFeeds = [];
 
     public function mount(): void
     {
         $this->focusedDate = CarbonImmutable::now($this->timezoneName())->toDateString();
+
+        $view = CalendarView::tryFrom($this->chosenFormat);
+
+        if ($view === null || $view === CalendarView::Automatic) {
+            $this->chosenFormat = '';
+            $view = $this->team->calendar_view;
+        }
+
+        $this->format = $view === CalendarView::Automatic ? '' : $view->value;
 
         $this->selectedFeeds = $this->feeds->pluck('id')->toArray();
     }
@@ -51,8 +63,9 @@ new #[Layout('layouts::kiosk')] class extends Component
     {
         match ($this->format) {
             'day' => $this->dayEvents,
+            'week' => $this->weekEvents,
             'month' => $this->monthEvents,
-            default => $this->weekEvents,
+            default => null,
         };
 
         return $this->feeds
@@ -181,6 +194,18 @@ new #[Layout('layouts::kiosk')] class extends Component
                 ];
             })
             ->all();
+    }
+
+    public function updatedFormat(string $format): void
+    {
+        $this->chosenFormat = $format;
+    }
+
+    public function pickAutomaticView(bool $wide): void
+    {
+        if ($this->format === '') {
+            $this->format = $wide ? CalendarView::Month->value : CalendarView::Week->value;
+        }
     }
 
     public function previous(): void
