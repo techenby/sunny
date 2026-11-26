@@ -93,7 +93,7 @@ Route::middleware(['auth:sanctum', RequireVerifiedEmail::class])
 
                 Route::get('recipes', [RecipeController::class, 'index'])->name('recipes.index');
                 Route::post('recipes', [RecipeController::class, 'store'])->name('recipes.store');
-                Route::post('recipes/import', RecipeImportController::class)->middleware('throttle:30,1')->name('recipes.import');
+                Route::post('recipes/import', RecipeImportController::class)->middleware('throttle:recipe-imports')->name('recipes.import');
                 Route::get('recipes/{recipe}', [RecipeController::class, 'show'])->name('recipes.show');
                 Route::patch('recipes/{recipe}', [RecipeController::class, 'update'])->name('recipes.update');
                 Route::delete('recipes/{recipe}', [RecipeController::class, 'destroy'])->name('recipes.destroy');

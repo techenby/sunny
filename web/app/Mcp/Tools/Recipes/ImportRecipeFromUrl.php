@@ -8,8 +8,11 @@ use App\Actions\Recipes\CreateRecipe as CreateRecipeAction;
 use App\Actions\Recipes\ImportRecipeFromUrl as ImportRecipeFromUrlAction;
 use App\Actions\Recipes\RecipePageUnavailable;
 use App\Models\Recipe;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
+use Illuminate\Http\Request as HttpRequest;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\RateLimiter;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\Server\Attributes\Description;
@@ -30,6 +33,15 @@ class ImportRecipeFromUrl extends Tool
         ], [
             'url.url' => 'The url must be a valid URL, including the scheme (e.g. https://example.com/recipe).',
         ]);
+
+        $limit = RateLimiter::limiter('recipe-imports')((new HttpRequest)->setUserResolver(fn (): ?Authenticatable => $request->user()));
+        $key = "mcp:recipe-imports:{$limit->key}";
+
+        if (RateLimiter::tooManyAttempts($key, $limit->maxAttempts)) {
+            return Response::error('Too many recipe imports. Try again in ' . RateLimiter::availableIn($key) . ' seconds.');
+        }
+
+        RateLimiter::hit($key, $limit->decaySeconds);
 
         try {
             $data = $import->handle($validated['url']);

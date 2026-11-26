@@ -128,7 +128,8 @@ test('import explains when a page has no recipe', function () {
     $this->actingAs($user)
         ->postJson(route('api.recipes.import', $user->currentTeam), ['url' => 'https://example.com/not-a-recipe'])
         ->assertUnprocessable()
-        ->assertJsonValidationErrors(['url' => 'Sunny couldn’t find a recipe at that address.']);
+        ->assertJsonValidationErrors(['url' => 'No recipe data found on this page.'])
+        ->assertDontSee('Sunny');
 
     expect(Recipe::count())->toBe(0);
 });
@@ -143,7 +144,8 @@ test('import tells a page it couldn’t open apart from one without a recipe', f
     $this->actingAs($user)
         ->postJson(route('api.recipes.import', $user->currentTeam), ['url' => $url])
         ->assertStatus(424)
-        ->assertJsonValidationErrors(['url' => 'Sunny couldn’t open that page.']);
+        ->assertJsonValidationErrors(['url' => 'Failed to fetch the URL. Please check the URL and try again.'])
+        ->assertDontSee('Sunny');
 
     expect(Recipe::count())->toBe(0);
 })->with([
@@ -151,6 +153,35 @@ test('import tells a page it couldn’t open apart from one without a recipe', f
     'blocked' => 'https://example.com/paywalled',
     'connection failed' => 'https://example.com/unreachable',
 ]);
+
+test('import explains when a recipe has no name', function () {
+    Http::fake(['example.com/nameless' => Http::response(fakeRecipeHtml(['@type' => 'Recipe', 'recipeYield' => '4']))]);
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->postJson(route('api.recipes.import', $user->currentTeam), ['url' => 'https://example.com/nameless'])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['url' => 'No recipe name found on this page.'])
+        ->assertDontSee('Sunny');
+
+    expect(Recipe::count())->toBe(0);
+});
+
+test('import is limited to 30 a minute per user', function () {
+    $user = User::factory()->create();
+
+    foreach (range(1, 30) as $attempt) {
+        $this->actingAs($user)
+            ->postJson(route('api.recipes.import', $user->currentTeam), ['url' => 'https://example.com/not-a-recipe'])
+            ->assertUnprocessable();
+    }
+
+    $this->actingAs($user)
+        ->postJson(route('api.recipes.import', $user->currentTeam), ['url' => 'https://example.com/apple-cider-donuts'])
+        ->assertTooManyRequests();
+
+    expect(Recipe::count())->toBe(0);
+});
 
 test('import validates the url', function () {
     $user = User::factory()->create();

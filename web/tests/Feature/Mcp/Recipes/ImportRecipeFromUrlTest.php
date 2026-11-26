@@ -75,3 +75,25 @@ test('it requires a valid url', function () {
         ->tool(ImportRecipeFromUrl::class, ['url' => 'not-a-url'])
         ->assertHasErrors();
 });
+
+test('it refuses imports after 30 in a minute', function () {
+    Http::fake(['example.com/*' => Http::response('<html><body>No recipes here.</body></html>')]);
+
+    $user = User::factory()->create();
+
+    foreach (range(1, 30) as $attempt) {
+        SunnyServer::actingAs($user)
+            ->tool(ImportRecipeFromUrl::class, ['url' => 'https://example.com/blog-post'])
+            ->assertHasErrors(['No recipe data found on this page.']);
+    }
+
+    SunnyServer::actingAs($user)
+        ->tool(ImportRecipeFromUrl::class, ['url' => 'https://example.com/blog-post'])
+        ->assertHasErrors(['Too many recipe imports. Try again in 60 seconds.']);
+
+    Http::assertSentCount(30);
+
+    SunnyServer::actingAs(User::factory()->create())
+        ->tool(ImportRecipeFromUrl::class, ['url' => 'https://example.com/blog-post'])
+        ->assertHasErrors(['No recipe data found on this page.']);
+});

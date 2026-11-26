@@ -30,13 +30,13 @@ class RecipeImportController extends Controller
 
         try {
             $data = $import->handle($request->validated('url'));
-        } catch (RecipePageUnavailable) {
-            throw ValidationException::withMessages(['url' => 'Sunny couldn’t open that page.'])->status(424);
+        } catch (RecipePageUnavailable $exception) {
+            throw ValidationException::withMessages(['url' => $exception->getMessage()])->status(424);
         } catch (Throwable) {
-            throw ValidationException::withMessages(['url' => 'Sunny couldn’t find a recipe at that address.']);
+            throw ValidationException::withMessages(['url' => 'No recipe data found on this page.']);
         }
 
-        throw_if(blank($data['name'] ?? null), ValidationException::withMessages(['url' => 'Sunny couldn’t find a recipe at that address.']));
+        throw_if(blank($data['name'] ?? null), ValidationException::withMessages(['url' => 'No recipe name found on this page.']));
 
         $recipe = ClientUuid::firstOrCreate(
             $team->recipes()->withTrashed(),
