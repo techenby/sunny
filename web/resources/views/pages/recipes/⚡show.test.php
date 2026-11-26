@@ -267,6 +267,36 @@ describe('copy to team feature', function () {
             ->assertHasErrors('copyToTeamId');
     });
 
+    test('cannot copy recipe to its own team', function () {
+        $otherTeam = Team::factory()->create();
+        $user = User::factory()->hasAttached($otherTeam)->create();
+
+        $recipe = Recipe::factory()->for($user->currentTeam)->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::recipes.show', ['recipe' => $recipe])
+            ->set('copyToTeamId', $user->current_team_id)
+            ->call('copyToTeam')
+            ->assertHasErrors(['copyToTeamId' => 'not_in']);
+
+        expect(Recipe::count())->toBe(1);
+    });
+
+    test('cannot copy a recipe from another of the user\'s teams to their current team', function () {
+        $otherTeam = Team::factory()->create();
+        $user = User::factory()->hasAttached($otherTeam)->create();
+
+        $recipe = Recipe::factory()->for($otherTeam)->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::recipes.show', ['recipe' => $recipe])
+            ->set('copyToTeamId', $user->current_team_id)
+            ->call('copyToTeam')
+            ->assertHasErrors(['copyToTeamId' => 'not_in']);
+
+        expect(Recipe::count())->toBe(1);
+    });
+
     test('cannot copy recipe from team user does not belong to', function () {
         $otherTeam = Team::factory()->create();
         $user = User::factory()->hasAttached($otherTeam)->create();

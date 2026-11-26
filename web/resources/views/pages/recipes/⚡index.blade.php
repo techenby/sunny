@@ -9,6 +9,7 @@ use App\Models\Team;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -70,7 +71,12 @@ new class extends Component
     {
         $this->validate([
             'copyRecipeId' => ['required', 'integer'],
-            'copyToTeamId' => ['required', 'integer', 'exists:team_members,team_id,user_id,' . Auth::id()],
+            'copyToTeamId' => [
+                'required',
+                'integer',
+                Rule::notIn([Auth::user()->current_team_id]),
+                Rule::exists('team_members', 'team_id')->where('user_id', Auth::id()),
+            ],
         ]);
 
         $recipe = $this->recipes->firstWhere('id', $this->copyRecipeId);

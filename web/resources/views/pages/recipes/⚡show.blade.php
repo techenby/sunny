@@ -7,6 +7,7 @@ use App\Models\Recipe;
 use App\Models\Team;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Laravel\Head\Facades\Head;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
@@ -45,7 +46,12 @@ new class extends Component
     public function copyToTeam(): void
     {
         $this->validate([
-            'copyToTeamId' => ['required', 'integer', 'exists:team_members,team_id,user_id,' . Auth::id()],
+            'copyToTeamId' => [
+                'required',
+                'integer',
+                Rule::notIn([$this->recipe->team_id, Auth::user()->current_team_id]),
+                Rule::exists('team_members', 'team_id')->where('user_id', Auth::id()),
+            ],
         ]);
 
         $this->authorize('copy', $this->recipe);
