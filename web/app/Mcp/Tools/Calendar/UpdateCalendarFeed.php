@@ -26,10 +26,11 @@ class UpdateCalendarFeed extends Tool
             'id' => ['required', 'integer'],
             'name' => ['sometimes', 'required', 'string', 'max:255'],
             'url' => ['sometimes', 'required', 'string', 'url:http,https', 'max:2048'],
-            'color' => ['sometimes', Rule::enum(CalendarColor::class)],
+            'color' => ['sometimes', 'required', Rule::enum(CalendarColor::class)],
         ], [
             'name.required' => 'The name cannot be blank. Leave it out to keep the current name.',
             'url.required' => 'The url cannot be blank. Leave it out to keep the current URL.',
+            'color.required' => 'The color cannot be blank. Leave it out to keep the current color.',
             'url.url' => 'The url must be a valid http or https URL pointing to an ICS calendar file.',
             'color.enum' => 'The color must be one of: ' . collect(CalendarColor::cases())->map(fn (CalendarColor $color): string => "{$color->value} ({$color->name})")->implode(', ') . '.',
         ]);
