@@ -73,6 +73,10 @@ it('still sends a rename made offline before the move', function () {
 });
 
 it('takes an item out of every place', function () {
+    Saloon::fake([SaveRecordRequest::class => fn (PendingRequest $request): MockResponse => MockResponse::make(['data' => [
+        ...Item::find((int) basename($request->getUrl()))->only('id', 'team_id', 'type', 'name', 'metadata', 'created_at', 'updated_at'), ...$request->body()->all(),
+    ]])]);
+
     Native::visit('/inventory/10')
         ->tap('item-move')
         ->tap('move-parent-choose')
@@ -80,6 +84,15 @@ it('takes an item out of every place', function () {
         ->assertSee('Not in a place yet');
 
     expect(Item::find(10)->parent_id)->toBeNull();
+
+    app(SunnyWrites::class)->push('saved-token');
+
+    Saloon::assertSentCount(1);
+    Saloon::assertSent(fn (SaveRecordRequest $request): bool => $request->getMethod() === Method::PATCH
+        && $request->resolveEndpoint() === '/teams/family/items/10'
+        && $request->body()->all() === ['parent_id' => null]);
+    expect(PendingWrite::count())->toBe(0)
+        ->and(Item::find(10)->parent_id)->toBeNull();
 });
 
 it('moves a place back to the places in the home', function () {

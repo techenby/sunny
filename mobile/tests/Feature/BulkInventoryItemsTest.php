@@ -125,6 +125,10 @@ it('never moves a picked container into itself or anything inside it', function 
 });
 
 it('takes one picked thing out of every place', function () {
+    Saloon::fake([SaveRecordRequest::class => fn (PendingRequest $request): MockResponse => MockResponse::make(['data' => [
+        ...Item::find((int) basename($request->getUrl()))->only('id', 'team_id', 'type', 'name', 'metadata', 'created_at', 'updated_at'), ...$request->body()->all(),
+    ]])]);
+
     Native::visit('/inventory/6')
         ->tap('item-select')
         ->tap('item-child-10')
@@ -136,6 +140,13 @@ it('takes one picked thing out of every place', function () {
         ->assertToastShown(fn (array $params): bool => $params['message'] === 'Moved 1 thing to “Not in a place yet”' && $params['variant'] === 'success');
 
     expect(Item::find(10)->parent_id)->toBeNull();
+
+    app(SunnyWrites::class)->push();
+
+    Saloon::assertSentCount(1);
+    Saloon::assertSent(fn (SaveRecordRequest $request): bool => $request->resolveEndpoint() === '/teams/family/items/10'
+        && $request->body()->all() === ['parent_id' => null]);
+    expect(PendingWrite::count())->toBe(0);
 });
 
 it('leaves the single Move for the page itself', function () {
