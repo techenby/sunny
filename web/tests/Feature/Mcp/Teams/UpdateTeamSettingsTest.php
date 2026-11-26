@@ -6,6 +6,7 @@ use App\Mcp\Tools\Teams\UpdateTeamSettings;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Tests\Feature\Mcp\SunnyTestServer;
 
@@ -43,6 +44,22 @@ test('it updates only the provided settings', function () {
         ->week_start->toBe(Carbon::MONDAY)
         ->appearance->toBe(Appearance::Dark)
         ->rotation->toBe(0);
+});
+
+test('it updates the team inside a transaction', function () {
+    $user = User::factory()->create();
+    $outerLevel = DB::transactionLevel();
+    $updateLevel = null;
+
+    Team::updating(function () use (&$updateLevel) {
+        $updateLevel = DB::transactionLevel();
+    });
+
+    SunnyTestServer::actingAs($user)
+        ->tool(UpdateTeamSettings::class, ['timezone' => 'Asia/Tokyo'])
+        ->assertOk();
+
+    expect($updateLevel)->toBe($outerLevel + 1);
 });
 
 test('it updates appearance and rotation', function () {
