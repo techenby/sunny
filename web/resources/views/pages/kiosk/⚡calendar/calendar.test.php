@@ -2,6 +2,8 @@
 
 use App\Enums\Appearance;
 use App\Enums\CalendarColor;
+use App\Enums\CalendarEventStyle;
+use App\Enums\CalendarView;
 use App\Enums\TeamRole;
 use App\Models\CalendarFeed;
 use App\Models\KioskDevice;
@@ -100,7 +102,8 @@ ICS),
         ->create();
     $user = User::factory()->memberOf($team)->create();
 
-    Livewire::actingAs($user)
+    Livewire::withQueryParams(['format' => 'week'])
+        ->actingAs($user)
         ->test('pages::kiosk.calendar')
         ->assertSee('Cinco de Mayo')
         ->set('format', 'day')
@@ -204,7 +207,8 @@ test('can go to the next and previous weeks', function () {
 
     $user = User::factory()->create();
 
-    Livewire::actingAs($user)
+    Livewire::withQueryParams(['format' => 'week'])
+        ->actingAs($user)
         ->test('pages::kiosk.calendar')
         ->assertSeeInOrder([
             'calendar-day-2026-05-03', 'calendar-day-2026-05-04', 'calendar-day-2026-05-05', 'calendar-day-2026-05-06', 'calendar-day-2026-05-07', 'calendar-day-2026-05-08', 'calendar-day-2026-05-09',
@@ -367,7 +371,8 @@ ICS),
         ->create();
     $user = User::factory()->memberOf($team)->create();
 
-    Livewire::actingAs($user)
+    Livewire::withQueryParams(['format' => 'week'])
+        ->actingAs($user)
         ->test('pages::kiosk.calendar')
         ->assertSee("Couldn't update Work Calendar.")
         ->assertSee('Open Sunny on your phone or computer')
@@ -458,7 +463,8 @@ ICS),
     $user = User::factory()->memberOf($team)->create();
     [$brazilianHolidays, $usHolidays] = $team->calendarFeeds()->orderBy('name')->get();
 
-    Livewire::actingAs($user)
+    Livewire::withQueryParams(['format' => 'week'])
+        ->actingAs($user)
         ->test('pages::kiosk.calendar')
         ->assertSet('selectedFeeds', [$brazilianHolidays->id, $usHolidays->id])
         ->assertSeeInOrder([
@@ -500,3 +506,76 @@ test('a kiosk keeps showing its own team calendars after the user switches teams
     expect($component->get('feeds')->pluck('id')->all())->toBe([$kitchen->id])
         ->and($component->get('selectedFeeds'))->toBe([$kitchen->id]);
 });
+
+test('opens on the team calendar view', function (CalendarView $view) {
+    $team = Team::factory()->create(['calendar_view' => $view]);
+    $user = User::factory()->memberOf($team)->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::kiosk.calendar')
+        ->assertSet('format', $view->value);
+})->with([CalendarView::Day, CalendarView::Week, CalendarView::Month]);
+
+test('automatic leaves the view for the display to pick by its width', function () {
+    $team = Team::factory()->create(['calendar_view' => CalendarView::Automatic]);
+    $user = User::factory()->memberOf($team)->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::kiosk.calendar')
+        ->assertSet('format', '')
+        ->assertSeeHtml("matchMedia('(min-width: 80rem)')")
+        ->set('format', 'month')
+        ->assertDontSeeHtml("matchMedia('(min-width: 80rem)')");
+});
+
+test('a view in the address wins over the team view', function () {
+    $team = Team::factory()->create(['calendar_view' => CalendarView::Month]);
+    $user = User::factory()->memberOf($team)->create();
+
+    Livewire::withQueryParams(['format' => 'day'])
+        ->actingAs($user)
+        ->test('pages::kiosk.calendar')
+        ->assertSet('format', 'day');
+
+    Livewire::withQueryParams(['format' => 'year'])
+        ->actingAs($user)
+        ->test('pages::kiosk.calendar')
+        ->assertSet('format', 'month');
+});
+
+test('events follow the team event style', function (CalendarEventStyle $eventStyle) {
+    Http::fake([
+        'https://example.com/us-holidays.ics' => Http::response(<<<'ICS'
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Sunny//Tests//EN
+BEGIN:VEVENT
+UID:cinco-de-mayo
+DTSTAMP:20260501T120000Z
+DTSTART;VALUE=DATE:20260505
+DTEND;VALUE=DATE:20260506
+SUMMARY:Cinco de Mayo
+END:VEVENT
+END:VCALENDAR
+ICS),
+    ]);
+
+    $this->travelTo(Date::parse('2026-05-05 12:00'));
+
+    $team = Team::factory()
+        ->has(CalendarFeed::factory()->state([
+            'url' => 'https://example.com/us-holidays.ics',
+            'color' => CalendarColor::Green,
+        ]))
+        ->create(['calendar_view' => CalendarView::Week, 'calendar_event_style' => $eventStyle]);
+    $user = User::factory()->memberOf($team)->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::kiosk.calendar')
+        ->assertSeeHtml('data-event-style="' . $eventStyle->value . '"')
+        ->assertSeeHtml('--event-color: #16a34a')
+        ->set('format', 'month')
+        ->assertSeeHtml('data-event-style="' . $eventStyle->value . '"')
+        ->set('format', 'day')
+        ->assertSeeHtml('data-event-style="' . $eventStyle->value . '"');
+})->with(CalendarEventStyle::cases());

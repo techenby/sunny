@@ -1,6 +1,8 @@
 <?php
 
 use App\Enums\Appearance;
+use App\Enums\CalendarEventStyle;
+use App\Enums\CalendarView;
 use App\Enums\TeamRole;
 use App\Models\KioskDevice;
 use App\Models\Team;
@@ -19,6 +21,8 @@ test('renders successfully', function () {
         'week_start' => Carbon::MONDAY,
         'appearance' => Appearance::Light,
         'rotation' => 90,
+        'calendar_view' => CalendarView::Month,
+        'calendar_event_style' => CalendarEventStyle::Filled,
     ]);
 
     $user = User::factory()->memberOf($team)->create();
@@ -34,7 +38,9 @@ test('renders successfully', function () {
         ->assertSet('form.timezone', 'Asia/Tokyo')
         ->assertSet('form.week_start', Carbon::MONDAY)
         ->assertSet('form.appearance', 'light')
-        ->assertSet('form.rotation', 90);
+        ->assertSet('form.rotation', 90)
+        ->assertSet('form.calendar_view', 'month')
+        ->assertSet('form.calendar_event_style', 'filled');
 })->group('smoke');
 
 test('owners and admins can change kiosk settings', function (TeamRole $role) {
@@ -55,6 +61,8 @@ test('owners and admins can change kiosk settings', function (TeamRole $role) {
         ->set('form.week_start', Carbon::SUNDAY)
         ->set('form.appearance', 'light')
         ->set('form.rotation', 270)
+        ->set('form.calendar_view', 'day')
+        ->set('form.calendar_event_style', 'tinted')
         ->set('form.address', [
             'address' => '123 Grand Line',
             'city' => 'East Blue',
@@ -71,6 +79,8 @@ test('owners and admins can change kiosk settings', function (TeamRole $role) {
         ->week_start->toBe(Carbon::SUNDAY)
         ->appearance->toBe(Appearance::Light)
         ->rotation->toBe(270)
+        ->calendar_view->toBe(CalendarView::Day)
+        ->calendar_event_style->toBe(CalendarEventStyle::Tinted)
         ->address->toMatchArray(['address' => '123 Grand Line', 'city' => 'East Blue']);
 })->with([TeamRole::Owner, TeamRole::Admin]);
 
@@ -82,7 +92,7 @@ test('members see the team settings as read-only', function () {
     Livewire::actingAs($user)
         ->test('pages::kiosk.configure.settings')
         ->assertSeeHtml('data-test="team-settings-read-only"')
-        ->assertSee('Only the team owner or an admin can change the timezone, week start, appearance, rotation, address, and paired displays.')
+        ->assertSee('Only the team owner or an admin can change the timezone, week start, appearance, calendar, rotation, address, and paired displays.')
         ->assertSee('Kitchen')
         ->assertDontSee('Forget');
 });
@@ -115,12 +125,16 @@ test('members cannot change team settings', function (array $changes) {
         ->week_start->toBe(Carbon::MONDAY)
         ->appearance->toBe(Appearance::Dark)
         ->rotation->toBe(0)
+        ->calendar_view->toBe(CalendarView::Automatic)
+        ->calendar_event_style->toBe(CalendarEventStyle::Stripe)
         ->address->city->toBe('East Blue');
 })->with([
     'timezone' => [['timezone' => 'America/Sao_Paulo']],
     'week start' => [['week_start' => Carbon::SUNDAY]],
     'appearance' => [['appearance' => 'light']],
     'rotation' => [['rotation' => 90]],
+    'calendar view' => [['calendar_view' => 'month']],
+    'event style' => [['calendar_event_style' => 'filled']],
     'address' => [['address.city' => 'Water 7']],
 ]);
 
@@ -133,8 +147,10 @@ test('options must be valid', function () {
         ->set('form.week_start', 15)
         ->set('form.appearance', 'sepia')
         ->set('form.rotation', 45)
+        ->set('form.calendar_view', 'year')
+        ->set('form.calendar_event_style', 'sparkly')
         ->call('save')
-        ->assertHasErrors(['form.timezone', 'form.week_start', 'form.appearance', 'form.rotation']);
+        ->assertHasErrors(['form.timezone', 'form.week_start', 'form.appearance', 'form.rotation', 'form.calendar_view', 'form.calendar_event_style']);
 });
 
 $withAddress = ['address' => [

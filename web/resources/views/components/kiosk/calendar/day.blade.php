@@ -44,24 +44,22 @@
 
                 <div class="pointer-events-none absolute inset-y-0 left-16 right-3">
                     @foreach ($this->dayTimedEvents as $event)
-                        <div
+                        <x-kiosk.calendar.event-surface
+                            :$event
                             wire:key="calendar-timed-event-{{ $event['feed_id'] }}-{{ $event['starts_at']->timestamp }}-{{ str($event['title'])->slug() }}"
-                            @class([
-                                'pointer-events-auto absolute overflow-hidden rounded-md border border-zinc-200 bg-white p-2 text-sm shadow-xs dark:border-zinc-700 dark:bg-zinc-950',
-                                'line-through decoration-2 opacity-60' => ($event['response_status'] ?? null) === 'DECLINED',
-                            ])
-                            style="top: {{ $event['timeline_top'] }}%; height: {{ $event['timeline_height'] }}%; left: 0; right: 0; min-height: 2.5rem; border-left: 4px {{ ($event['response_status'] ?? null) === 'NEEDS-ACTION' ? 'dashed' : 'solid' }} {{ $event['feed_color'] }}"
+                            class="pointer-events-auto absolute overflow-hidden rounded-md p-2 text-sm"
+                            style="top: {{ $event['timeline_top'] }}%; height: {{ $event['timeline_height'] }}%; left: 0; right: 0; min-height: 2.5rem"
                         >
-                            <div class="mb-1 flex items-center gap-1.5 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                            <div class="mb-1 flex items-center gap-1.5 text-xs font-medium text-(--event-muted)">
                                 {{ $this->eventTimeRange($event) }}
                             </div>
 
-                            <div class="truncate font-medium leading-snug text-zinc-900 dark:text-zinc-100">{{ $event['title'] }}</div>
+                            <div class="truncate font-medium leading-snug">{{ $event['title'] }}</div>
 
                             @if ($event['location'])
-                                <div class="mt-1 truncate text-xs text-zinc-500 dark:text-zinc-400">{{ $event['location'] }}</div>
+                                <div class="mt-1 truncate text-xs text-(--event-muted)">{{ $event['location'] }}</div>
                             @endif
-                        </div>
+                        </x-kiosk.calendar.event-surface>
                     @endforeach
                 </div>
             </div>

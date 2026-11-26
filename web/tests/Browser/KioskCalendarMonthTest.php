@@ -57,3 +57,19 @@ test('month events keep their height when the display enlarges text', function (
     $page->assertScript("{$byKey('calendar-month-event-')}.length", 2)
         ->assertScript("{$byKey('calendar-month-event-')}.every((chip) => chip.clientHeight >= chip.scrollHeight)");
 });
+
+test('the automatic view picks month on a large display and week on a smaller one', function () use ($byKey) {
+    $page = visit(route('kiosk.calendar', ['format' => 'day'], absolute: false))
+        ->resize(1920, 1080)
+        ->navigate(route('kiosk.calendar', absolute: false))
+        ->assertNoJavaScriptErrors()
+        ->waitForText('Make Ship Happen Recording');
+
+    $page->assertScript("{$byKey('calendar-month-weekday-')}.length", 7);
+
+    $page->resize(1024, 768)
+        ->navigate(route('kiosk.calendar', absolute: false))
+        ->waitForText('Make Ship Happen Recording')
+        ->assertScript("{$byKey('calendar-month-weekday-')}.length", 0)
+        ->assertScript("{$byKey('calendar-event-')}.length", 3);
+});

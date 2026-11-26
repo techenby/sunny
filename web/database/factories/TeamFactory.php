@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Database\Factories;
 
 use App\Enums\Appearance;
+use App\Enums\CalendarEventStyle;
+use App\Enums\CalendarView;
 use App\Models\Team;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
@@ -25,6 +27,8 @@ class TeamFactory extends Factory
             'week_start' => Carbon::SUNDAY,
             'appearance' => Appearance::Dark,
             'rotation' => 0,
+            'calendar_view' => CalendarView::Automatic,
+            'calendar_event_style' => CalendarEventStyle::Stripe,
             'screensaver_after' => 5,
             'return_home_after' => 10,
         ];

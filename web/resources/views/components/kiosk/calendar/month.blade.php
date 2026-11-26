@@ -32,17 +32,15 @@
 
                     <div class="flex min-h-0 flex-col gap-1 overflow-hidden">
                         @foreach (array_slice($day['events'], 0, 2) as $event)
-                            <div
+                            <x-kiosk.calendar.event-surface
+                                :$event
+                                compact
                                 wire:key="calendar-month-event-{{ $event['feed_id'] }}-{{ $event['starts_at']->timestamp }}-{{ str($event['title'])->slug() }}"
-                                @class([
-                                    'truncate rounded-sm border border-zinc-200 bg-white px-1.5 py-1 text-xs leading-tight text-zinc-900 shadow-xs dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100',
-                                    'line-through decoration-2 opacity-60' => ($event['response_status'] ?? null) === 'DECLINED',
-                                ])
-                                style="border-left: 3px {{ ($event['response_status'] ?? null) === 'NEEDS-ACTION' ? 'dashed' : 'solid' }} {{ $event['feed_color'] }}"
+                                class="truncate rounded-sm px-1.5 py-1 text-xs leading-tight"
                             >
                                 <span class="font-medium">{{ $this->eventTimeRange($event) }}</span>
                                 {{ $event['title'] }}
-                            </div>
+                            </x-kiosk.calendar.event-surface>
                         @endforeach
 
                         @if (count($day['events']) > 2)

@@ -2,7 +2,7 @@
     <form wire:submit="save" class="space-y-6 p-6 lg:p-8">
         @unless ($this->canUpdateTeam)
             <flux:callout variant="secondary" icon="lock-closed" data-test="team-settings-read-only">
-                <flux:callout.text>{{ __('Only the team owner or an admin can change the timezone, week start, appearance, rotation, address, and paired displays.') }}</flux:callout.text>
+                <flux:callout.text>{{ __('Only the team owner or an admin can change the timezone, week start, appearance, calendar, rotation, address, and paired displays.') }}</flux:callout.text>
             </flux:callout>
         @endunless
 
@@ -26,6 +26,32 @@
             <flux:radio value="light" icon="sun" :label="__('Light')" />
             <flux:radio value="dark" icon="moon" :label="__('Dark')" />
             <flux:radio value="system" icon="computer-desktop" :label="__('System')" />
+        </flux:radio.group>
+
+        <flux:select wire:model="form.calendar_view" :label="__('Calendar opens on')" :description="__('Automatic shows the month on large displays and the week on smaller ones.')" variant="listbox" :disabled="! $this->canUpdateTeam">
+            @foreach (App\Enums\CalendarView::cases() as $view)
+                <flux:select.option :value="$view->value">{{ $view->label() }}</flux:select.option>
+            @endforeach
+        </flux:select>
+
+        <flux:radio.group wire:model="form.calendar_event_style" :label="__('Event style')" variant="cards" class="max-sm:flex-col" :disabled="! $this->canUpdateTeam">
+            @foreach (App\Enums\CalendarEventStyle::cases() as $eventStyle)
+                <flux:radio :value="$eventStyle->value" class="flex-1" data-test="event-style-{{ $eventStyle->value }}">
+                    <div class="flex flex-1 flex-col gap-3">
+                        <div class="flex items-center gap-2">
+                            <flux:radio.indicator />
+                            <flux:heading>{{ $eventStyle->label() }}</flux:heading>
+                        </div>
+
+                        @foreach ([[App\Enums\CalendarColor::Blue, '9:00 AM', __('Soccer practice')], [App\Enums\CalendarColor::Orange, '5:30 PM', __('Dinner at Grandma’s')]] as [$color, $time, $title])
+                            <x-kiosk.calendar.event-surface :event="['feed_color' => $color]" :$eventStyle class="rounded-md p-2 text-sm">
+                                <div class="mb-1 text-xs font-medium text-(--event-muted)">{{ $time }}</div>
+                                <div class="font-medium leading-snug">{{ $title }}</div>
+                            </x-kiosk.calendar.event-surface>
+                        @endforeach
+                    </div>
+                </flux:radio>
+            @endforeach
         </flux:radio.group>
 
         <flux:radio.group wire:model="form.rotation" :label="__('Rotation')" :description="__('Rotates the kiosk display for devices that ignore the browser orientation setting.')" variant="segmented" :disabled="! $this->canUpdateTeam">
