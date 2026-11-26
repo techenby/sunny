@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools\Teams;
 
+use App\Actions\Teams\UpdateTeam;
 use App\Enums\Appearance;
 use App\Mcp\Tools\Teams\Concerns\FormatsTeams;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
@@ -23,7 +24,7 @@ class UpdateTeamSettings extends Tool
 {
     use FormatsTeams;
 
-    public function handle(Request $request): Response|ResponseFactory
+    public function handle(Request $request, UpdateTeam $updateTeam): Response|ResponseFactory
     {
         $user = $request->user();
         $team = $user->currentTeam;
@@ -77,9 +78,7 @@ class UpdateTeamSettings extends Tool
             return Response::error('Provide at least one field to update: timezone, week_start, appearance, rotation, or address.');
         }
 
-        $team->update($data);
-
-        return Response::structured($this->teamSettings($team->refresh()));
+        return Response::structured($this->teamSettings($updateTeam->handle($team, $data)->refresh()));
     }
 
     /** @return array<string, JsonSchema> */
