@@ -64,7 +64,7 @@ it('returns to the home screen when logging out is confirmed', function () {
     Native::visit('/preferences')
         ->tap('log-out')
         ->emitNative(ButtonPressed::class, ['index' => 1, 'label' => 'Log out', 'id' => 'log-out'])
-        ->assertReplacedWith('/')
+        ->assertReplacedStackWith('/')
         ->follow()
         ->assertScreen(Home::class);
 });

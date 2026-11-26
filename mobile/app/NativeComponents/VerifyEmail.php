@@ -231,7 +231,7 @@ class VerifyEmail extends Component
             return;
         }
 
-        $this->replace('/');
+        $this->replaceStack('/');
     }
 
     public function render(): View
@@ -271,13 +271,13 @@ class VerifyEmail extends Component
     private function signedOut(): void
     {
         rescue(fn () => app(DestroySession::class)->handle(), report: false);
-        $this->replace('/');
+        $this->replaceStack('/');
     }
 
     private function continueToSunny(): void
     {
         SunnySyncCoordinator::forgetDispatch();
         Toast::success('Email verified');
-        $this->replace('/');
+        $this->replaceStack('/');
     }
 }

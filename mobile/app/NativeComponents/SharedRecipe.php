@@ -45,7 +45,7 @@ class SharedRecipe extends Component
     public function mount(): void
     {
         if (app(SunnyStore::class)->lastSyncedAt() === null) {
-            $this->replace('/');
+            $this->replaceStack('/');
 
             return;
         }

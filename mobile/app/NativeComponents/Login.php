@@ -75,7 +75,7 @@ class Login extends Component
             }
 
             $this->startOver();
-            $this->replace('/');
+            $this->replaceStack('/');
         } catch (RequestException $exception) {
             $status = $exception->getResponse()->status();
             $this->error = match ($status) {

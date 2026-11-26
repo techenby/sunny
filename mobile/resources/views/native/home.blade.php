@@ -1,10 +1,12 @@
 @use('App\Icons\Android')
 @use('App\Icons\Ios')
 
+<native:top-bar title="" />
+
 <column
     ref="welcome-screen"
     fill
-    class="safe-area bg-theme-background px-6 py-6"
+    class="bg-theme-background px-6 py-6"
 >
     <row ref="sunny-brand" class="w-full items-center gap-3">
         <image

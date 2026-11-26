@@ -89,7 +89,7 @@ it('carries on once the email is verified', function (): void {
 
     Native::visit('/verify-email')
         ->tap('verify-email-check')
-        ->assertReplacedWith('/');
+        ->assertReplacedStackWith('/');
 
     expect(app(SunnyStore::class)->needsEmailVerification())->toBeFalse();
 });
@@ -97,7 +97,7 @@ it('carries on once the email is verified', function (): void {
 it('moves on by itself when the email was verified on the web', function (): void {
     Saloon::fake([GetUserRequest::class => MockResponse::make(['data' => unverifiedUser(['email_verified_at' => now()->toIso8601String()])])]);
 
-    Native::visit('/verify-email')->assertReplacedWith('/');
+    Native::visit('/verify-email')->assertReplacedStackWith('/');
 });
 
 it('signs out from the verify screen when the server no longer accepts the saved login', function (string $button, array $responses): void {
@@ -107,7 +107,7 @@ it('signs out from the verify screen when the server no longer accepts the saved
     Native::visit('/verify-email')
         ->assertNoNavigation()
         ->tap($button)
-        ->assertReplacedWith('/')
+        ->assertReplacedStackWith('/')
         ->assertDontSee('The server couldn’t');
 
     Native::fakeBridge()->assertCalled('SecureStorage.Delete');
@@ -126,7 +126,7 @@ it('signs out when the background check finds the saved login was revoked', func
     app(SunnyOutbox::class)->queue('recipes', 1, ['name' => 'Soup'], 1);
     Saloon::fake([GetUserRequest::class => MockResponse::make([], 401)]);
 
-    Native::visit('/verify-email')->assertReplacedWith('/');
+    Native::visit('/verify-email')->assertReplacedStackWith('/');
 
     Native::fakeBridge()->assertCalled('SecureStorage.Delete');
     expect(PendingWrite::count())->toBe(1)->and(app(SunnyStore::class)->rememberedAccount())->toBe(7);
@@ -135,7 +135,7 @@ it('signs out when the background check finds the saved login was revoked', func
 it('sends changes queued before a revoked login once the same person signs back in', function (): void {
     app(SunnyOutbox::class)->queue('recipes', 1, ['name' => 'Soup'], 1);
     Saloon::fake([GetUserRequest::class => MockResponse::make([], 401)]);
-    Native::visit('/verify-email')->assertReplacedWith('/');
+    Native::visit('/verify-email')->assertReplacedStackWith('/');
 
     Native::fakeBridge()->respondTo('SecureStorage.Set', ['success' => true]);
     Saloon::fake([CreateTokenRequest::class => MockResponse::make(['id' => 7, 'token' => 'new-token'])]);
@@ -158,7 +158,7 @@ it('sends changes queued before a revoked login once the same person signs back 
 it('drops changes queued before a revoked login when someone else signs in on the phone', function (): void {
     app(SunnyOutbox::class)->queue('recipes', 1, ['name' => 'Soup'], 1);
     Saloon::fake([GetUserRequest::class => MockResponse::make([], 401)]);
-    Native::visit('/verify-email')->assertReplacedWith('/');
+    Native::visit('/verify-email')->assertReplacedStackWith('/');
 
     Native::fakeBridge()->respondTo('SecureStorage.Set', ['success' => true]);
     Saloon::fake([CreateTokenRequest::class => MockResponse::make(['id' => 8, 'token' => 'other-token'])]);

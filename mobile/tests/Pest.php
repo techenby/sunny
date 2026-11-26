@@ -7,6 +7,7 @@ use GuzzleHttp\Psr7\Request as GuzzleRequest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Native\Mobile\AsyncTask;
 use Native\Mobile\Testing\FakeBridge;
+use Native\Mobile\Testing\TestableComponent;
 use Saloon\Config;
 use Saloon\Exceptions\Request\FatalRequestException;
 use Saloon\Http\Faking\MockResponse;
@@ -25,6 +26,15 @@ use Tests\TestCase;
 */
 
 Config::preventStrayRequests();
+
+TestableComponent::macro('assertReplacedStackWith', function (string $uri): TestableComponent {
+    /** @var TestableComponent $this */
+    $this->assertReplacedWith($uri);
+
+    expect($this->instance()->getNavigationIntent()->clearsStack)->toBeTrue('Expected the whole navigation stack to be replaced, but the screens below stayed.');
+
+    return $this;
+});
 
 pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)

@@ -38,14 +38,14 @@ trait CallsSunnyOnline
         } catch (RequestException $exception) {
             if ($exception->getResponse()->status() === 401) {
                 rescue(fn () => app(DestroySession::class)->handle(), report: false);
-                $this->replace('/');
+                $this->replaceStack('/');
 
                 return false;
             }
 
             $failed('failed', $exception->getResponse());
         } catch (AuthenticationException) {
-            $this->replace('/');
+            $this->replaceStack('/');
         } catch (UnexpectedValueException) {
             $failed('failed', null);
         } catch (RuntimeException) {

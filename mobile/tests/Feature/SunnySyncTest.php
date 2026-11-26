@@ -331,7 +331,7 @@ it('returns to login when a background sync finds the session revoked', function
     Saloon::fake([SyncRequest::class => MockResponse::make([], 401)]);
     Native::visit('/dashboard')
         ->emitNative('sunny-sync-complete', ['status' => 'failed', 'exceptionClass' => UnauthorizedException::class])
-        ->assertReplacedWith('/login');
+        ->assertReplacedStackWith('/login');
     expect(Recipe::count())->toBe(0);
     $bridge->assertCalled('SecureStorage.Delete');
 });
@@ -344,7 +344,7 @@ it('starts a fresh background sync after signing back in from a revoked session'
     Cache::add('sunny-sync-dispatched', true, 300);
     Native::visit('/dashboard')
         ->emitNative('sunny-sync-complete', ['status' => 'failed', 'exceptionClass' => UnauthorizedException::class])
-        ->assertReplacedWith('/login');
+        ->assertReplacedStackWith('/login');
 
     Native::visit('/dashboard');
 
@@ -354,7 +354,7 @@ it('starts a fresh background sync after signing back in from a revoked session'
 it('clears local data when a session is revoked', function (): void {
     seedSunnyData();
     Saloon::fake([SyncRequest::class => MockResponse::make([], 401)]);
-    Native::visit('/dashboard')->call('sync')->assertReplacedWith('/login');
+    Native::visit('/dashboard')->call('sync')->assertReplacedStackWith('/login');
     expect(Recipe::count())->toBe(0)->and(Item::count())->toBe(0)->and(app(SunnyStore::class)->lastSyncedAt())->toBeNull();
 });
 

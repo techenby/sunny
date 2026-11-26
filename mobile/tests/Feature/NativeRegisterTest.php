@@ -62,7 +62,7 @@ it('creates the account, signs in and asks the new account to verify its email b
         ->tap('register-submit')
         ->assertSet('password', '')
         ->assertSet('passwordConfirmation', '')
-        ->assertReplacedWith('/')
+        ->assertReplacedStackWith('/')
         ->follow()
         ->assertReplacedWith('/verify-email');
 
@@ -87,7 +87,7 @@ it('sends an invited account that is already onboarded to verify its email, then
 
     fillRegistration()
         ->tap('register-submit')
-        ->assertReplacedWith('/')
+        ->assertReplacedStackWith('/')
         ->follow()
         ->assertReplacedWith('/verify-email');
 
@@ -200,7 +200,7 @@ it('keeps what was typed when offline and tries again', function (): void {
 
     $screen->tap('register-submit')
         ->assertSet('failure', null)
-        ->assertReplacedWith('/');
+        ->assertReplacedStackWith('/');
 });
 
 it('does not contact Sunny when the phone knows it is offline', function (): void {

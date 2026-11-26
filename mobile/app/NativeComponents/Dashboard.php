@@ -207,7 +207,7 @@ class Dashboard extends Component
     {
         if (is_a($exception, AuthenticationException::class, true) || is_a($exception, UnauthorizedException::class, true)) {
             rescue(fn () => app(DestroySession::class)->handle(), report: false);
-            $this->replace('/login');
+            $this->replaceStack('/login');
 
             return;
         }

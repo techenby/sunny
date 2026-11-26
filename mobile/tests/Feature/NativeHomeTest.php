@@ -24,10 +24,11 @@ it('introduces Sunny with native components', function () {
         ->assertSee('Log in')
         ->assertSee('Create account')
         ->assertMissingElement('top_bar')
+        ->assertElement('native_root_stack', fn (array $node): bool => ($node['props']['hide_nav_bar'] ?? null) === true)
         ->assertElement('column', fn (array $node): bool => ($node['ref'] ?? null) === 'welcome-screen'
             && ($node['layout']['width'] ?? null) === 'fill'
             && ($node['layout']['height'] ?? null) === 'fill'
-            && ($node['layout']['safe_area'] ?? null) === 1)
+            && ! isset($node['layout']['safe_area']))
         ->assertElement('image', fn (array $node): bool => ($node['ref'] ?? null) === 'sunny-brand-icon'
             && ($node['props']['src'] ?? null) === $iconPath
             && ($node['props']['alt'] ?? null) === 'SunnyHome'

@@ -25,7 +25,7 @@ it('switches to the linked item’s team before opening it', function () {
 });
 
 it('sends a link to the welcome screen before anything has synced', function () {
-    Native::visit('/i/8')->assertReplacedWith('/');
+    Native::visit('/i/8')->assertReplacedStackWith('/');
 });
 
 it('offers the browser when the linked item is not on this phone', function () {

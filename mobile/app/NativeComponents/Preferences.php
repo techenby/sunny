@@ -170,7 +170,7 @@ class Preferences extends Component
             return;
         }
 
-        $this->replace('/');
+        $this->replaceStack('/');
     }
 
     private function refreshProfile(): void

@@ -1,5 +1,5 @@
 {
-    "_hash": "e509f8a4b9ce8c2134690281a76876a783e1324ffc7043e7a1badfb3d9b9292d",
+    "_hash": "9966d111c8619ea1ad4b3e1ec986c0fde12a79a9f3c3e538444e0330ae1c70c2",
     "patches": {
         "nativephp/mobile-camera": [
             {
@@ -111,6 +111,16 @@
                 "description": "iOS: when a screen hides the tab bar, keep the bottom bar's inset on the page so the last field can scroll clear of a pinned button",
                 "url": "patches/nativephp-mobile-hidden-tab-bar-keeps-bottom-inset.patch",
                 "sha256": "96349e38067273d2efb59a2d6d05d2ee6391cde793f79eba24835fa1a10ca262",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
+            },
+            {
+                "package": "nativephp/mobile",
+                "description": "iOS + PHP: let a screen replace the whole navigation stack (replaceStack) and redraw the stack root when its address changes, so logging out leaves nothing to go back to and a replace at the root is not dropped",
+                "url": "patches/nativephp-mobile-replace-whole-stack.patch",
+                "sha256": "b857fc6b9b997e5e51b59a2cf2dd32ca2742efa6745fa1a3ac71b42e8afccb7d",
                 "depth": 1,
                 "extra": {
                     "provenance": "root"

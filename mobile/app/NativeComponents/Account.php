@@ -86,7 +86,7 @@ class Account extends Component implements HidesTabBar
 
             return;
         } catch (AuthenticationException) {
-            $this->replace('/');
+            $this->replaceStack('/');
 
             return;
         } catch (RuntimeException) {
@@ -128,7 +128,7 @@ class Account extends Component implements HidesTabBar
 
             return;
         } catch (AuthenticationException) {
-            $this->replace('/');
+            $this->replaceStack('/');
 
             return;
         } catch (RuntimeException) {
@@ -218,7 +218,7 @@ class Account extends Component implements HidesTabBar
 
         if ($response->status() === 401) {
             rescue(fn () => app(DestroySession::class)->handle(), report: false);
-            $this->replace('/');
+            $this->replaceStack('/');
 
             return;
         }
