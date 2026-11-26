@@ -10,17 +10,6 @@
 @if ($recipe)
     <native:bottom-bar>
         <column class="w-full gap-3 px-4 pb-2">
-            @if ($copiedTo !== null)
-                <row ref="recipe-copied" class="{{ Card::classes() }} w-full items-center gap-3 py-3 pl-4 pr-3">
-                    <column class="h-8 w-8 items-center justify-center rounded-full bg-theme-primary">
-                        <native:icon :ios="Ios::Checkmark" :android="Android::Check" :size="16" class="text-theme-on-primary" />
-                    </column>
-                    <column class="flex-1 gap-0.5">
-                        <text font="semibold" class="text-base text-theme-on-surface">Copied to {{ $copiedTo }}</text>
-                        <x-ui.text size="sm">Switch team in Settings to see it there</x-ui.text>
-                    </column>
-                </row>
-            @endif
             <row class="w-full items-center justify-end gap-3">
                 @if ($this->canCook())
                     <x-ui.button
@@ -315,7 +304,7 @@
 
                     @if ($copyProblem !== null)
                         @php($note = $this->copyNote())
-                        <x-ui.alert
+                        <x-ui.note
                             ref="recipe-copy-problem"
                             :tone="match ($copyProblem) { 'offline' => 'offline', 'unsent' => 'info', default => 'error' }"
                             :ios="$copyProblem === 'offline' ? Ios::WifiSlash : Ios::ExclamationmarkCircle"
@@ -418,7 +407,7 @@
 
                     @if ($shareProblem !== null)
                         @php($note = $this->shareNote())
-                        <x-ui.alert
+                        <x-ui.note
                             ref="recipe-share-problem"
                             :tone="match ($shareProblem) { 'offline' => 'offline', 'unsent' => 'info', default => 'error' }"
                             :ios="$shareProblem === 'offline' ? Ios::WifiSlash : Ios::ExclamationmarkCircle"

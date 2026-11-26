@@ -27,13 +27,13 @@
             @if ($this->disconnected || $failure === 'offline')
                 <x-ui.offline ref="forgot-password-offline" :extra="$this->disconnected ? null : 'Nothing’s been sent yet.'" />
             @elseif ($failure === 'server')
-                <x-ui.alert ref="forgot-password-server-error" tone="error" :ios="Ios::ExclamationmarkTriangle" :android="Android::Warning" title="Something went wrong on our end" message="No link sent. Try again in a moment." />
+                <x-ui.note ref="forgot-password-server-error" tone="error" :ios="Ios::ExclamationmarkTriangle" :android="Android::Warning" title="Something went wrong on our end" message="No link sent. Try again in a moment." />
             @elseif ($failure === 'throttled' && $this->throttled())
                 <column class="w-full" native:poll="5s">
-                    <x-ui.alert ref="forgot-password-throttled" tone="error" :ios="Ios::Clock" :android="Android::Schedule" title="Too many tries" message="Wait a minute and try again. In the meantime, check your inbox for the links we sent." />
+                    <x-ui.note ref="forgot-password-throttled" tone="error" :ios="Ios::Clock" :android="Android::Schedule" title="Too many tries" message="Wait a minute and try again. In the meantime, check your inbox for the links we sent." />
                 </column>
             @elseif ($failure === 'unavailable')
-                <x-ui.alert ref="forgot-password-unavailable" tone="error" :ios="Ios::ExclamationmarkTriangle" :android="Android::Warning" title="Password reset isn’t available right now" message="No link sent. Try again later." />
+                <x-ui.note ref="forgot-password-unavailable" tone="error" :ios="Ios::ExclamationmarkTriangle" :android="Android::Warning" title="Password reset isn’t available right now" message="No link sent. Try again later." />
             @endif
 
             @php($offline = $failure === 'offline' && ! $this->disconnected)

@@ -35,7 +35,7 @@
     <x-ui.sheet-header ref="sheet-close" :title="'Rename '.$name" close="save" />
     <x-ui.sheet-confirm ref="sheet-confirm" :ios="Ios::Plus" :android="Android::Add" help="Or tap one above to look inside it" tap="save">Put it in {{ $name }}</x-ui.sheet-confirm>
     <x-ui.sheet-confirm ref="sheet-confirm-saving" :loading="$saves > 2" tap="save">Save</x-ui.sheet-confirm>
-    <x-ui.alert ref="alert-error" tone="error" :ios="Ios::ExclamationmarkCircle" :android="Android::ErrorOutline" title="Couldn’t save" message="Try again in a moment." />
+    <x-ui.note ref="note-error" tone="error" :ios="Ios::ExclamationmarkCircle" :android="Android::ErrorOutline" title="Couldn’t save" message="Try again in a moment." />
     <x-ui.badge ref="badge-primary" color="primary" size="sm">Current step</x-ui.badge>
     <column ref="rows" class="w-full">
         <x-ui.row ref="row-add" headline="Invite someone" :ios="Ios::PlusCircle" :android="Android::AddCircle" tone="add" tap="save" />

@@ -43,7 +43,7 @@ it('renders kit components in place among their siblings', function () {
                 'empty-state',
                 'field-label',
                 'field-help',
-                'alert-error',
+                'note-error',
                 'badge-primary',
                 'rows',
                 'after',
@@ -379,9 +379,9 @@ it('confirms a sheet with one full-width primary button that is unavailable only
             && $node['layout']['padding'] == [24, 16, 0, 16]);
 });
 
-it('colours an alert by what it says: red for an error, neutral for offline', function () {
+it('colours a note by what it says: red for an error, neutral for offline', function () {
     Native::test(UiKitScreen::class)
-        ->assertElement('row', fn (array $node): bool => refNode('alert-error')($node)
+        ->assertElement('row', fn (array $node): bool => refNode('note-error')($node)
             && $node['children'][0]['props']['color'] === theme('destructive')
             && $node['children'][1]['children'][0]['props']['color'] === theme('destructive'))
         ->assertElement('row', fn (array $node): bool => refNode('offline')($node)

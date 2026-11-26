@@ -55,7 +55,7 @@ it('shows every kit piece under the name a developer types', function (string $p
         ->assertSee('x-ui.empty-state')
         ->assertSee('x-ui.avatar')
         ->assertSee('x-ui.badge')
-        ->assertSee('x-ui.alert')
+        ->assertSee('x-ui.note')
         ->assertSee('App\Ui\Card::classes()')
         ->assertSee('x-ui.row')
         ->assertSee('native.inventory-item-row')

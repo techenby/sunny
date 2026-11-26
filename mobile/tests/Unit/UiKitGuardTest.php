@@ -565,7 +565,7 @@ it('keeps coral out of text, except for a selected or active state', function ()
 
     $found = textTagsMatching('/text-theme-primary(-text)?(?![\w\/-])/', $exceptions);
 
-    $violations = textTagViolations($found, $exceptions, 'coral is for filled buttons, icons, checkmarks and selected states, not text. An action is dark text with a coral icon (<x-ui.row tone="add">), a text-only action or link is text-theme-secondary in semibold, and a note is <x-ui.alert>. If this is a selected or active state, add it and the reason to the exceptions in tests/Unit/UiKitGuardTest.php.');
+    $violations = textTagViolations($found, $exceptions, 'coral is for filled buttons, icons, checkmarks and selected states, not text. An action is dark text with a coral icon (<x-ui.row tone="add">), a text-only action or link is text-theme-secondary in semibold, and a note is <x-ui.note>. If this is a selected or active state, add it and the reason to the exceptions in tests/Unit/UiKitGuardTest.php.');
 
     expect($violations)->toBe([], implode("\n", $violations));
 });
@@ -712,15 +712,15 @@ it('keeps offline boxes neutral', function () {
             $switchesForOffline = preg_match("/'offline' \\? 'bg-theme-surface-variant'/", $box[2][0]) === 1;
 
             if ($tinted && $offlineIcon && ! $switchesForOffline) {
-                $violations[] = sprintf('resources/views/native/%s.blade.php:%d (ref "%s"): offline is not an error, so its box is neutral (bg-theme-surface-variant) with a grey icon, not tinted red or coral. Use <x-ui.alert tone="offline"> or <x-ui.offline>.', $view, nativeViewLine($source, $box[0][1]), nativeTagRef($box[2][0]) ?? 'none');
+                $violations[] = sprintf('resources/views/native/%s.blade.php:%d (ref "%s"): offline is not an error, so its box is neutral (bg-theme-surface-variant) with a grey icon, not tinted red or coral. Use <x-ui.note tone="offline"> or <x-ui.offline>.', $view, nativeViewLine($source, $box[0][1]), nativeTagRef($box[2][0]) ?? 'none');
             }
         }
 
-        preg_match_all('/<x-ui\.alert\b'.NATIVE_TAG_ATTRIBUTES.'>/s', $source, $alerts, PREG_SET_ORDER | PREG_OFFSET_CAPTURE);
+        preg_match_all('/<x-ui\.note\b'.NATIVE_TAG_ATTRIBUTES.'>/s', $source, $notes, PREG_SET_ORDER | PREG_OFFSET_CAPTURE);
 
-        foreach ($alerts as $alert) {
-            if (str_contains($alert[1][0], 'WifiSlash') && preg_match('/(?<![\w-]):?tone=/', $alert[1][0]) !== 1) {
-                $violations[] = sprintf('resources/views/native/%s.blade.php:%d (ref "%s"): an offline note is <x-ui.alert tone="offline">, which is neutral.', $view, nativeViewLine($source, $alert[0][1]), nativeTagRef($alert[1][0]) ?? 'none');
+        foreach ($notes as $note) {
+            if (str_contains($note[1][0], 'WifiSlash') && preg_match('/(?<![\w-]):?tone=/', $note[1][0]) !== 1) {
+                $violations[] = sprintf('resources/views/native/%s.blade.php:%d (ref "%s"): an offline note is <x-ui.note tone="offline">, which is neutral.', $view, nativeViewLine($source, $note[0][1]), nativeTagRef($note[1][0]) ?? 'none');
             }
         }
     }

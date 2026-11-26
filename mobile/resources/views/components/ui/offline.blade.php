@@ -4,7 +4,7 @@
 ])
 
 <column class="w-full" native:poll="5s">
-    <x-ui.alert
+    <x-ui.note
         :ref="$ref"
         tone="offline"
         :ios="\App\Icons\Ios::WifiSlash"

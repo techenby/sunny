@@ -8,6 +8,7 @@ use App\Http\Integrations\Sunny\SunnySyncCoordinator;
 use App\Http\Integrations\Sunny\SunnyTeam;
 use App\Models\Team;
 use App\Support\Offline;
+use App\Support\Toast;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Support\Str;
 use JsonException;
@@ -28,8 +29,6 @@ trait CopiesRecipeToTeam
 
     /** @var array<int, string> */
     public array $copyUuids = [];
-
-    public ?string $copiedTo = null;
 
     /**
      * @return array<int, string>
@@ -144,7 +143,7 @@ trait CopiesRecipeToTeam
 
         unset($this->copyUuids[$to->id]);
         $this->showCopy = false;
-        $this->copiedTo = $teams[$to->id];
+        Toast::success('Copied to '.$teams[$to->id]);
     }
 
     /**

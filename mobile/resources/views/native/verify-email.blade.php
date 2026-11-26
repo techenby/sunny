@@ -37,15 +37,15 @@ $busy = $sending || $checking;
             </x-ui.text>
 
             @if ($problem === 'not-verified')
-                <x-ui.alert ref="verify-email-not-verified" tone="error" :ios="Ios::ExclamationmarkTriangle" :android="Android::Warning" title="Not verified yet" :message="'Open the link we sent to '.$email.', then try again.'" />
+                <x-ui.note ref="verify-email-not-verified" tone="error" :ios="Ios::ExclamationmarkTriangle" :android="Android::Warning" title="Not verified yet" :message="'Open the link we sent to '.$email.', then try again.'" />
             @elseif ($problem === 'throttled')
-                <x-ui.alert ref="verify-email-throttled" tone="error" :ios="Ios::Clock" :android="Android::Schedule" title="Too many tries" message="Wait a minute and try again." />
+                <x-ui.note ref="verify-email-throttled" tone="error" :ios="Ios::Clock" :android="Android::Schedule" title="Too many tries" message="Wait a minute and try again." />
             @elseif ($problem === 'send-failed')
-                <x-ui.alert ref="verify-email-send-failed" tone="error" :ios="Ios::ExclamationmarkTriangle" :android="Android::Warning" title="Something went wrong on our end" message="No email sent. Try again in a moment." />
+                <x-ui.note ref="verify-email-send-failed" tone="error" :ios="Ios::ExclamationmarkTriangle" :android="Android::Warning" title="Something went wrong on our end" message="No email sent. Try again in a moment." />
             @elseif ($problem === 'check-failed')
-                <x-ui.alert ref="verify-email-check-failed" tone="error" :ios="Ios::ExclamationmarkTriangle" :android="Android::Warning" title="Something went wrong on our end" message="Couldn’t check just now. Try again in a moment." />
+                <x-ui.note ref="verify-email-check-failed" tone="error" :ios="Ios::ExclamationmarkTriangle" :android="Android::Warning" title="Something went wrong on our end" message="Couldn’t check just now. Try again in a moment." />
             @elseif ($problem === 'locked')
-                <x-ui.alert ref="verify-email-locked" tone="error" :ios="Ios::Lock" :android="Android::Lock" title="Unable to read your saved login" message="Unlock your device and try again." />
+                <x-ui.note ref="verify-email-locked" tone="error" :ios="Ios::Lock" :android="Android::Lock" title="Unable to read your saved login" message="Unlock your device and try again." />
             @endif
         </column>
     </scroll-view>
@@ -91,11 +91,11 @@ $busy = $sending || $checking;
                 @if ($changeProblem === 'offline')
                     <x-ui.offline ref="verify-email-change-offline" :extra="'Your email hasn’t been changed.'" />
                 @elseif ($changeProblem === 'throttled')
-                    <x-ui.alert ref="verify-email-change-throttled" tone="error" :ios="Ios::Clock" :android="Android::Schedule" title="Too many tries" message="Wait a minute and try again." />
+                    <x-ui.note ref="verify-email-change-throttled" tone="error" :ios="Ios::Clock" :android="Android::Schedule" title="Too many tries" message="Wait a minute and try again." />
                 @elseif ($changeProblem === 'failed')
-                    <x-ui.alert ref="verify-email-change-failed" tone="error" :ios="Ios::ExclamationmarkTriangle" :android="Android::Warning" title="Something went wrong on our end" message="Your email hasn’t been changed. Try again in a moment." />
+                    <x-ui.note ref="verify-email-change-failed" tone="error" :ios="Ios::ExclamationmarkTriangle" :android="Android::Warning" title="Something went wrong on our end" message="Your email hasn’t been changed. Try again in a moment." />
                 @elseif ($changeProblem === 'locked')
-                    <x-ui.alert ref="verify-email-change-locked" tone="error" :ios="Ios::Lock" :android="Android::Lock" title="Unable to read your saved login" message="Unlock your device and try again." />
+                    <x-ui.note ref="verify-email-change-locked" tone="error" :ios="Ios::Lock" :android="Android::Lock" title="Unable to read your saved login" message="Unlock your device and try again." />
                 @endif
             </column>
             <x-ui.sheet-confirm ref="verify-email-change-save" :loading="$savingEmail" tap="saveEmail">Save</x-ui.sheet-confirm>

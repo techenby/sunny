@@ -42,7 +42,7 @@
 
             @if ($canInvite)
                 @if ($sent)
-                    <x-ui.alert
+                    <x-ui.note
                         ref="invite-sent"
                         :ios="Ios::CheckmarkCircle"
                         :android="Android::CheckCircle"
