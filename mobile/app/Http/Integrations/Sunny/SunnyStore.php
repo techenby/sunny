@@ -195,8 +195,8 @@ class SunnyStore
         });
         DB::table('sunny_accounts')->update(['name' => null, 'email' => null, 'email_verified_at' => null]);
         Invitation::query()->delete();
-        app(SunnyOutbox::class)->prunePhotos();
-        app(SunnyThumbnails::class)->prune();
+        app(SunnyOutbox::class)->prunePhotos(includingNew: true);
+        app(SunnyThumbnails::class)->prune(includingNew: true);
     }
 
     public function userId(): ?int

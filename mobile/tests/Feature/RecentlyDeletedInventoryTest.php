@@ -306,6 +306,7 @@ it('deletes forever once confirmed, with its photos', function () {
     $thumb = SunnyThumbnails::pathFor('https://sunny.example/thumbs/701.jpg');
     File::ensureDirectoryExists(SunnyThumbnails::directory());
     File::put($thumb, 'thumb');
+    touch($thumb, now()->subMinutes(2)->getTimestamp());
     ItemPhoto::find(701)->update(['thumb_url' => 'https://sunny.example/thumbs/701.jpg', 'thumb_path' => $thumb]);
     app(SunnyStore::class)->saveRecord('items', deletedSunnyItem(25, 'Lamp shade', 'item', 20, '2026-11-17T08:00:00Z'));
 

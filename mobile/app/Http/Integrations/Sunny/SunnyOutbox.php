@@ -9,6 +9,7 @@ use App\Models\PendingWrite;
 use App\Models\RoutineOccurrence;
 use App\Models\RoutineOccurrenceStep;
 use App\Models\Team;
+use App\Support\UnusedFiles;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
@@ -330,7 +331,7 @@ class SunnyOutbox
     /**
      * Delete kept photos that neither a queued change nor a local record still points at.
      */
-    public function prunePhotos(): void
+    public function prunePhotos(bool $includingNew = false): void
     {
         $inUse = PendingWrite::query()->pluck('photo_path')
             ->merge(Item::withTrashed()->pluck('photo_url'))
@@ -338,11 +339,7 @@ class SunnyOutbox
             ->merge(ItemPhoto::query()->pluck('url'))
             ->filter()->flip();
 
-        foreach (File::glob(self::photoDirectory().'/*') as $path) {
-            if (! $inUse->has($path)) {
-                File::delete($path);
-            }
-        }
+        UnusedFiles::delete(self::photoDirectory(), $inUse, $includingNew);
     }
 
     public static function photoDirectory(): string
