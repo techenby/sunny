@@ -524,8 +524,38 @@ test('automatic leaves the view for the display to pick by its width', function 
         ->test('pages::kiosk.calendar')
         ->assertSet('format', '')
         ->assertSeeHtml("matchMedia('(min-width: 80rem)')")
-        ->set('format', 'month')
+        ->call('pickAutomaticView', true)
+        ->assertSet('format', 'month')
+        ->assertSet('chosenFormat', '')
         ->assertDontSeeHtml("matchMedia('(min-width: 80rem)')");
+
+    Livewire::actingAs($user)
+        ->test('pages::kiosk.calendar')
+        ->call('pickAutomaticView', false)
+        ->assertSet('format', 'week')
+        ->assertSet('chosenFormat', '');
+});
+
+test('the automatic pick does not replace a view already showing', function () {
+    $team = Team::factory()->create(['calendar_view' => CalendarView::Day]);
+    $user = User::factory()->memberOf($team)->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::kiosk.calendar')
+        ->call('pickAutomaticView', true)
+        ->assertSet('format', 'day');
+});
+
+test('only a view picked on the calendar goes in the address', function () {
+    $team = Team::factory()->create(['calendar_view' => CalendarView::Month]);
+    $user = User::factory()->memberOf($team)->create();
+
+    Livewire::actingAs($user)
+        ->test('pages::kiosk.calendar')
+        ->assertSet('format', 'month')
+        ->assertSet('chosenFormat', '')
+        ->set('format', 'day')
+        ->assertSet('chosenFormat', 'day');
 });
 
 test('a view in the address wins over the team view', function () {
@@ -540,7 +570,8 @@ test('a view in the address wins over the team view', function () {
     Livewire::withQueryParams(['format' => 'year'])
         ->actingAs($user)
         ->test('pages::kiosk.calendar')
-        ->assertSet('format', 'month');
+        ->assertSet('format', 'month')
+        ->assertSet('chosenFormat', '');
 });
 
 test('events follow the team event style', function (CalendarEventStyle $eventStyle) {

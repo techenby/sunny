@@ -18,7 +18,9 @@ new #[Layout('layouts::kiosk')] class extends Component
     #[Url]
     public string $focusedDate = '';
 
-    #[Url]
+    #[Url(as: 'format')]
+    public string $chosenFormat = '';
+
     public string $format = '';
 
     public array $selectedFeeds = [];
@@ -27,9 +29,10 @@ new #[Layout('layouts::kiosk')] class extends Component
     {
         $this->focusedDate = CarbonImmutable::now($this->timezoneName())->toDateString();
 
-        $view = CalendarView::tryFrom($this->format);
+        $view = CalendarView::tryFrom($this->chosenFormat);
 
         if ($view === null || $view === CalendarView::Automatic) {
+            $this->chosenFormat = '';
             $view = $this->team->calendar_view;
         }
 
@@ -191,6 +194,18 @@ new #[Layout('layouts::kiosk')] class extends Component
                 ];
             })
             ->all();
+    }
+
+    public function updatedFormat(string $format): void
+    {
+        $this->chosenFormat = $format;
+    }
+
+    public function pickAutomaticView(bool $wide): void
+    {
+        if ($this->format === '') {
+            $this->format = $wide ? CalendarView::Month->value : CalendarView::Week->value;
+        }
     }
 
     public function previous(): void

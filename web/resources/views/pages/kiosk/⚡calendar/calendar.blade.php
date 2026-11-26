@@ -46,7 +46,7 @@
     </div>
 
     @if ($format === '')
-        <div class="flex-1" x-init="$wire.$set('format', window.matchMedia('(min-width: 80rem)').matches ? 'month' : 'week')"></div>
+        <div class="flex-1" x-init="$wire.pickAutomaticView(window.matchMedia('(min-width: 80rem)').matches)"></div>
     @else
         <x-dynamic-component :component="'kiosk.calendar.' . $format" />
     @endif

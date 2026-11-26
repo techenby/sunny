@@ -65,10 +65,27 @@ test('the automatic view picks month on a large display and week on a smaller on
         ->assertNoJavaScriptErrors()
         ->waitForText('Make Ship Happen Recording');
 
-    $page->assertScript("{$byKey('calendar-month-weekday-')}.length", 7);
+    $page->assertScript("{$byKey('calendar-month-weekday-')}.length", 7)
+        ->assertScript("new URLSearchParams(location.search).has('format')", false);
 
     $page->resize(1024, 768)
+        ->refresh()
+        ->waitForText('Make Ship Happen Recording')
+        ->assertScript("{$byKey('calendar-month-weekday-')}.length", 0)
+        ->assertScript("{$byKey('calendar-event-')}.length", 3)
+        ->assertScript("new URLSearchParams(location.search).has('format')", false);
+});
+
+test('a view picked on the calendar stays after a reload', function () use ($byKey) {
+    $page = visit(route('kiosk.calendar', absolute: false))
+        ->resize(1920, 1080)
         ->navigate(route('kiosk.calendar', absolute: false))
+        ->waitForText('Make Ship Happen Recording')
+        ->click('Week')
+        ->waitForText('Edit Recording')
+        ->assertScript("new URLSearchParams(location.search).get('format')", 'week');
+
+    $page->refresh()
         ->waitForText('Make Ship Happen Recording')
         ->assertScript("{$byKey('calendar-month-weekday-')}.length", 0)
         ->assertScript("{$byKey('calendar-event-')}.length", 3);
