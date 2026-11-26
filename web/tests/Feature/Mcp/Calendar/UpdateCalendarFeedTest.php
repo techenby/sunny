@@ -63,3 +63,26 @@ test('it requires at least one field to update', function () {
         ->tool(UpdateCalendarFeed::class, ['id' => $feed->id])
         ->assertHasErrors(['Provide at least one field to update: name, url, or color.']);
 });
+
+test('it refuses a blank name or url and leaves the feed unchanged', function (string $field, string $message) {
+    $user = User::factory()->create();
+    $feed = CalendarFeed::factory()->for($user->currentTeam)->create([
+        'name' => 'Crew Calendar',
+        'url' => 'https://example.com/crew.ics',
+    ]);
+
+    SunnyTestServer::actingAs($user)
+        ->tool(UpdateCalendarFeed::class, [
+            'id' => $feed->id,
+            $field => '',
+        ])
+        ->assertHasErrors([$message]);
+
+    $feed->refresh();
+
+    expect($feed->name)->toBe('Crew Calendar')
+        ->and($feed->url)->toBe('https://example.com/crew.ics');
+})->with([
+    'name' => ['name', 'The name cannot be blank.'],
+    'url' => ['url', 'The url cannot be blank.'],
+]);
