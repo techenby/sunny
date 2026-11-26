@@ -2,6 +2,7 @@
 
 namespace App\Http\Integrations\Sunny;
 
+use App\Enums\TeamRole;
 use App\Models\Checklist;
 use App\Models\ChecklistItem;
 use App\Models\Invitation;
@@ -54,7 +55,7 @@ class SunnyStore
             }
 
             if (! Team::query()->where('server', self::server())->where('is_active', true)->exists()) {
-                Team::query()->where('server', self::server())->orderBy('id')->first()?->update(['is_active' => true]);
+                ($this->personalTeam() ?? Team::query()->where('server', self::server())->orderBy('id')->first())?->update(['is_active' => true]);
             }
 
             foreach (['recipes', 'items', 'checklists', 'checklist_items', 'routines', 'routine_steps'] as $type) {
@@ -110,7 +111,7 @@ class SunnyStore
             $team->delete();
 
             if (! Team::query()->where('server', self::server())->where('is_active', true)->exists()) {
-                Team::query()->where('server', self::server())->orderBy('name')->orderBy('id')->first()?->update(['is_active' => true]);
+                ($this->personalTeam() ?? Team::query()->where('server', self::server())->orderBy('name')->orderBy('id')->first())?->update(['is_active' => true]);
             }
         });
     }
@@ -329,6 +330,14 @@ class SunnyStore
     public static function server(): string
     {
         return hash('sha256', rtrim((string) config('services.sunny.api_url'), '/'));
+    }
+
+    private function personalTeam(): ?Team
+    {
+        $userId = $this->userId();
+
+        return Team::query()->where('server', self::server())->where('is_personal', true)->get()
+            ->first(fn (Team $team): bool => $team->roleOf($userId) === TeamRole::Owner);
     }
 
     /** @return list<array{id: int, name: string, initials: string, role?: string}> */

@@ -152,6 +152,20 @@ it('removes records for teams that were deleted or are no longer accessible', fu
     expect(Team::count())->toBe(0)->and(Recipe::count())->toBe(0)->and(Item::count())->toBe(0);
 })->with([true, false]);
 
+it('switches to the personal team when a sync drops the active team', function (): void {
+    app(SunnyStore::class)->rememberAccount(5);
+    Saloon::fake([SyncRequest::class => MockResponse::make($this->snapshot)]);
+    app(SunnySync::class)->sync();
+    $this->snapshot['teams'] = [
+        ['id' => 3, 'name' => 'Luffy’s Team', 'is_personal' => true, 'members' => [['id' => 1, 'name' => 'Luffy', 'initials' => 'L', 'role' => 'owner'], ['id' => 5, 'name' => 'Andy', 'initials' => 'A', 'role' => 'member']]],
+        ['id' => 4, 'name' => 'Alabasta', 'members' => [['id' => 5, 'name' => 'Andy', 'initials' => 'A', 'role' => 'member']]],
+        ['id' => 9, 'name' => 'Andy’s Team', 'is_personal' => true, 'members' => [['id' => 5, 'name' => 'Andy', 'initials' => 'A', 'role' => 'owner']]],
+    ];
+    Saloon::fake([SyncRequest::class => MockResponse::make($this->snapshot)]);
+    app(SunnySync::class)->sync();
+    expect(Team::where('is_active', true)->pluck('id')->all())->toBe([9]);
+});
+
 it('keeps local data and sync state when the API fails or returns invalid data', function (bool $invalid): void {
     seedSunnyData();
     $lastSynced = app(SunnyStore::class)->lastSyncedAt();

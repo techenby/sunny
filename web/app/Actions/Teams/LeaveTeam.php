@@ -11,12 +11,10 @@ class LeaveTeam
 {
     public function handle(User $user, Team $team): void
     {
-        $fallbackTeam = $user->isCurrentTeam($team) ? $user->fallbackTeam($team) : null;
-
         $team->memberships()->where('user_id', $user->id)->delete();
 
-        if ($fallbackTeam) {
-            $user->switchTeam($fallbackTeam);
+        if ($user->isCurrentTeam($team)) {
+            $user->switchTeam($user->personalTeam());
         }
     }
 }

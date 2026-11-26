@@ -315,9 +315,10 @@ it('does not remove a member the alert was not about', function (): void {
     expect(Team::find(1)->roleOf(7))->not->toBeNull();
 });
 
-it('leaves the current team and switches to another one', function (): void {
+it('leaves the current team and switches to the personal team even when another team sorts first', function (): void {
     signInAs(9);
-    Team::create(['id' => 2, 'server' => SunnyStore::server(), 'name' => 'Ari’s Team', 'slug' => 'aris-team', 'is_personal' => true]);
+    Team::create(['id' => 2, 'server' => SunnyStore::server(), 'name' => 'Ari’s Team', 'slug' => 'aris-team', 'is_personal' => true, 'members' => [['id' => 9, 'name' => 'Ari Swick', 'initials' => 'AS', 'role' => 'owner']]]);
+    Team::create(['id' => 3, 'server' => SunnyStore::server(), 'name' => 'Alabasta', 'slug' => 'alabasta', 'members' => [['id' => 9, 'name' => 'Ari Swick', 'initials' => 'AS', 'role' => 'member']]]);
     Saloon::fake([LeaveTeamRequest::class => MockResponse::make([], 204)]);
 
     Native::visit('/preferences')
