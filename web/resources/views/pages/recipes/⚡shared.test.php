@@ -167,3 +167,43 @@ test('a shared page left open keeps working while the link stays the same', func
 
     expect($user->currentTeam->recipes()->count())->toBe(1);
 });
+
+test('a guest who taps add is sent to log in and comes back to the shared recipe', function () {
+    $recipe = Recipe::factory()->shared()->create();
+    $user = User::factory()->create();
+
+    Livewire::test('pages::recipes.shared', ['shareToken' => $recipe->share_token])
+        ->call('addToMyTeam')
+        ->assertRedirect(route('login'));
+
+    $this->post(route('login.store'), ['email' => $user->email, 'password' => 'password'])
+        ->assertRedirect(route('recipes.shared', $recipe->share_token));
+});
+
+test('a guest who taps add comes back to the shared recipe after the two factor challenge', function () {
+    $recipe = Recipe::factory()->shared()->create();
+    $user = User::factory()->withTwoFactor()->create();
+
+    Livewire::test('pages::recipes.shared', ['shareToken' => $recipe->share_token])
+        ->call('addToMyTeam');
+
+    $this->post(route('login.store'), ['email' => $user->email, 'password' => 'password'])
+        ->assertRedirect(route('two-factor.login'));
+
+    $this->post(route('two-factor.login.store'), ['recovery_code' => 'recovery-code-1'])
+        ->assertRedirect(route('recipes.shared', $recipe->share_token));
+});
+
+test('a guest who taps add and then registers comes back to the shared recipe', function () {
+    $recipe = Recipe::factory()->shared()->create();
+
+    Livewire::test('pages::recipes.shared', ['shareToken' => $recipe->share_token])
+        ->call('addToMyTeam');
+
+    $this->post(route('register.store'), [
+        'name' => 'Nami',
+        'email' => 'nami@example.com',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+    ])->assertRedirect(route('recipes.shared', $recipe->share_token));
+});
