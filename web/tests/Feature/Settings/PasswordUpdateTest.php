@@ -44,7 +44,7 @@ test('changing the password signs out the app and other browsers but keeps this 
     ]);
 
     Livewire::actingAs($user)
-        ->test('pages::settings.password')
+        ->test('pages::settings.security')
         ->set('current_password', 'password')
         ->set('password', 'new-password')
         ->set('password_confirmation', 'new-password')

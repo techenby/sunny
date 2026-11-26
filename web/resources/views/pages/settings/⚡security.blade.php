@@ -76,6 +76,8 @@ new class extends Component {
             'password' => $validated['password'],
         ]);
 
+        Auth::user()->signOutEverywhere(exceptSessionId: session()->getId());
+
         $this->reset('current_password', 'password', 'password_confirmation');
 
         Flux::toast(variant: 'success', text: __('Password updated.'));
