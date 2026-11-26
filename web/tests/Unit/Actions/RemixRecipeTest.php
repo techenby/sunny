@@ -45,6 +45,16 @@ test('it does not copy the client uuid', function () {
     expect($remix->client_uuid)->toBeNull();
 });
 
+test('it remixes a shared recipe without copying its share link', function () {
+    $recipe = Recipe::factory()->shared()->create();
+
+    $remix = (new RemixRecipe)->handle($recipe);
+
+    expect($remix->exists)->toBeTrue()
+        ->and($remix->share_token)->toBeNull()
+        ->and($recipe->fresh()->isShared())->toBeTrue();
+});
+
 test('the remix keeps its photo when the original removes its own', function () {
     Storage::fake();
     Storage::put('teams/1/recipes/stew.jpg', 'stew photo');
