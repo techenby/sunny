@@ -189,6 +189,11 @@ it('enforces the web form’s length limits', function (string $property, int $m
     'prep time' => ['prepTime', 50, 'Prep time is too long (50 characters max).'],
     'cook time' => ['cookTime', 50, 'Cook time is too long (50 characters max).'],
     'total time' => ['totalTime', 50, 'Total time is too long (50 characters max).'],
+    'description' => ['description', 20000, 'The description is too long (20,000 characters max).'],
+    'ingredients' => ['ingredients', 20000, 'The ingredients are too long (20,000 characters max).'],
+    'instructions' => ['instructions', 20000, 'The instructions are too long (20,000 characters max).'],
+    'notes' => ['notes', 20000, 'The notes are too long (20,000 characters max).'],
+    'nutrition' => ['nutrition', 5000, 'The nutrition is too long (5,000 characters max).'],
 ]);
 
 it('keeps the new recipe queued on the phone when Sunny rejects the session', function () {
