@@ -24,6 +24,7 @@ class DuplicateItemRequest extends FormRequest
     {
         return [
             'count' => ['sometimes', 'integer', 'min:1', 'max:25'],
+            'client_uuid' => ['nullable', 'uuid'],
         ];
     }
 }

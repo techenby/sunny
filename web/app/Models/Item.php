@@ -21,6 +21,7 @@ use Illuminate\Validation\ValidationException;
 
 /**
  * @property array<array-key, mixed>|null $metadata
+ * @property string|null $client_uuid
  * @property-read array<string, string> $details
  */
 class Item extends Model

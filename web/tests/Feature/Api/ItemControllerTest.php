@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
+use Ramsey\Uuid\Uuid;
 
 test('guests cannot access items', function () {
     $this->getJson(route('api.items.index', 'household'))->assertUnauthorized();
@@ -149,6 +150,41 @@ test('duplicate defaults to a single copy', function () {
         ->assertJsonCount(1, 'data');
 
     expect(Item::count())->toBe(2);
+});
+
+test('duplicate returns the same copies when a client uuid is retried', function () {
+    $user = User::factory()->create();
+    $item = Item::factory()->for($user->currentTeam)->create(['name' => 'Wrench']);
+    $payload = ['count' => 2, 'client_uuid' => '9b2f6c1e-3d4a-4f5b-8c7d-1e2f3a4b5c6d'];
+
+    $first = $this->actingAs($user)
+        ->postJson(route('api.items.duplicate', [$user->currentTeam, $item]), $payload)
+        ->assertCreated()
+        ->assertJsonCount(2, 'data');
+
+    $this->actingAs($user)
+        ->postJson(route('api.items.duplicate', [$user->currentTeam, $item]), $payload)
+        ->assertOk()
+        ->assertJsonPath('data.*.id', $first->json('data.*.id'));
+
+    expect($user->currentTeam->items()->where('name', 'Wrench')->count())->toBe(3);
+});
+
+test('duplicate returns the existing copy when a retry wins the race to insert it', function () {
+    $user = User::factory()->create();
+    $item = Item::factory()->for($user->currentTeam)->create(['name' => 'Wrench']);
+    $uuid = '9b2f6c1e-3d4a-4f5b-8c7d-1e2f3a4b5c6d';
+    $raced = createAfterLookup('items', 'client_uuid', fn () => Item::factory()->for($user->currentTeam)->create([
+        'name' => 'Wrench',
+        'client_uuid' => Uuid::uuid5($uuid, '1')->toString(),
+    ]));
+
+    $this->actingAs($user)
+        ->postJson(route('api.items.duplicate', [$user->currentTeam, $item]), ['client_uuid' => $uuid])
+        ->assertOk()
+        ->assertJsonPath('data.0.id', $raced->model->id);
+
+    expect($user->currentTeam->items()->where('name', 'Wrench')->count())->toBe(2);
 });
 
 test('duplicate validates count is between 1 and 25', function () {
