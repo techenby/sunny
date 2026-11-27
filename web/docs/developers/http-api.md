@@ -422,8 +422,8 @@ returns `id`, `team_id`, `name`, `source`, `servings`, `prep_time`,
 
 Save a shared recipe by sending a `team_id` the user belongs to (and optionally
 a `client_uuid`) to `POST /api/shared-recipes/{token}/save`. The saved recipe
-gets the shared recipe's text fields, with `source` set to the share URL; its
-tags and photo aren't copied. It returns the new recipe with `201`. If that
+gets the shared recipe's fields, tags and photo, with `source` set to the share
+URL. It returns the new recipe with `201`. If that
 team has already saved the recipe, or it's the team that shared it, it returns
 the existing recipe with `200` instead.
 

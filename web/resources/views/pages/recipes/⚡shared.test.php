@@ -84,6 +84,7 @@ test('adding shared recipe to team creates a copy', function () {
         'name' => 'Shared Pasta',
         'description' => 'A nice pasta recipe',
         'servings' => '4',
+        'tags' => ['Dinner'],
     ]);
 
     $user = User::factory()->create();
@@ -97,6 +98,7 @@ test('adding shared recipe to team creates a copy', function () {
         ->name->toBe('Shared Pasta')
         ->description->toBe('A nice pasta recipe')
         ->servings->toBe('4')
+        ->tags->toBe(['Dinner'])
         ->source->toBe(route('recipes.shared', $recipe->share_token))
         ->share_token->toBeNull();
 });

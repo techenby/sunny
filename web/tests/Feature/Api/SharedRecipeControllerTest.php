@@ -42,9 +42,16 @@ test('show returns 404 when the share link is turned off or unknown', function (
     $this->actingAs($user)->getJson(route('api.shared-recipes.show', 'unknown'))->assertNotFound();
 });
 
-test('save adds a shared recipe to a team of the user', function () {
+test('save adds a shared recipe to a team of the user with its tags and photo', function () {
+    Storage::fake();
     $user = User::factory()->create();
-    $recipe = Recipe::factory()->create(['name' => 'Grandma’s Pie', 'share_token' => 'abc', 'tags' => ['Dessert']]);
+    $recipe = Recipe::factory()->create([
+        'name' => 'Grandma’s Pie',
+        'share_token' => 'abc',
+        'tags' => ['Dessert'],
+        'photo_path' => 'teams/1/recipes/pie.png',
+    ]);
+    Storage::put($recipe->photo_path, 'pie photo');
 
     $this->actingAs($user)
         ->postJson(route('api.shared-recipes.save', 'abc'), ['team_id' => $user->current_team_id])
@@ -52,9 +59,14 @@ test('save adds a shared recipe to a team of the user', function () {
         ->assertJsonPath('data.team_id', $user->current_team_id)
         ->assertJsonPath('data.name', 'Grandma’s Pie')
         ->assertJsonPath('data.source', route('recipes.shared', 'abc'))
-        ->assertJsonPath('data.share_token', null);
+        ->assertJsonPath('data.share_token', null)
+        ->assertJsonPath('data.tags', ['Dessert']);
 
-    expect($user->currentTeam->recipes()->count())->toBe(1)
+    $saved = $user->currentTeam->recipes()->sole();
+
+    expect($saved->photo_path)->toStartWith("teams/{$user->current_team_id}/recipes/grandmas-pie-")
+        ->and(Storage::get($saved->photo_path))->toBe('pie photo')
+        ->and($recipe->fresh()->photo_path)->toBe('teams/1/recipes/pie.png')
         ->and($recipe->fresh()->team_id)->not->toBe($user->current_team_id);
 });
 
