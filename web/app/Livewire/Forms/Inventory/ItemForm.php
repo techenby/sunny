@@ -95,4 +95,13 @@ class ItemForm extends Form
             'photo' => ['nullable', 'image', 'max:5120', CreateThumbnail::DIMENSIONS_RULE],
         ];
     }
+
+    /** @return array<string, string> */
+    protected function messages(): array
+    {
+        return [
+            'parent_id.exists' => __('That place isn’t in this team.'),
+            'parent_id.not_in' => __('An item can’t go inside itself or inside something it holds.'),
+        ];
+    }
 }

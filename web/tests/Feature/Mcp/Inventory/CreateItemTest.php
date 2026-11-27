@@ -61,7 +61,7 @@ test('it rejects a parent belonging to another team', function () {
             'type' => 'item',
             'parent_id' => $otherParent->id,
         ])
-        ->assertHasErrors(['Parent item not found.']);
+        ->assertHasErrors(['That place isn’t in this team.']);
 
     expect(Item::query()->where('name', 'Hammer')->count())->toBe(0);
 });

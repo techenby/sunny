@@ -2,7 +2,10 @@
 
 use App\Enums\ItemType;
 use App\Http\Integrations\Sunny\Requests\SaveRecordRequest;
+use App\Http\Integrations\Sunny\SunnyStore;
+use App\Models\Item;
 use App\Models\PendingWrite;
+use App\Models\Team;
 use App\NativeComponents\CreateInventoryItem;
 use Native\Mobile\Events\Camera\PhotoTaken;
 use Native\Mobile\Events\Gallery\MediaSelected;
@@ -437,6 +440,18 @@ it('refuses to save a detail name or value over 255 characters', function (array
     'name' => [['key' => str_repeat('a', 256), 'value' => 'Long']],
     'value' => [['key' => 'size', 'value' => str_repeat('a', 256)]],
 ]);
+
+it('refuses a place from another team', function () {
+    Team::create(['id' => 2, 'server' => SunnyStore::server(), 'name' => 'Work', 'slug' => 'work']);
+    Item::create([...Item::find(6)->toArray(), 'id' => 90, 'team_id' => 2, 'name' => 'Office']);
+
+    Native::visit('/inventory/create')
+        ->input('create-item-name', 'Sleeping bag')
+        ->set('parentId', 90)
+        ->tap('create-item-submit')
+        ->assertNoNavigation()
+        ->assertSee('That place isn’t in this team.');
+});
 
 it('refuses to save an item without a name', function () {
     Native::visit('/inventory/create')

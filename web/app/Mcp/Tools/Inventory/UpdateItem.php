@@ -18,7 +18,7 @@ use Laravel\Mcp\Server\Tool;
 use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 
 #[IsIdempotent]
-#[Description('Update an existing inventory item. Only the provided fields are changed. Move an item by passing a new parent_id (or null to make it top-level); an item cannot be moved inside itself or one of its descendants.')]
+#[Description('Update an existing inventory item. Only the provided fields are changed. Move an item by passing a new parent_id (or null to make it top-level); an item can’t go inside itself or inside something it holds.')]
 class UpdateItem extends Tool
 {
     public function handle(Request $request, UpdateItemAction $action): Response
@@ -42,16 +42,6 @@ class UpdateItem extends Tool
         Gate::forUser($request->user())->authorize('update', $item);
 
         $data = Arr::except($validated, 'id');
-
-        if (isset($data['parent_id'])) {
-            if ($team->items()->whereKey($data['parent_id'])->doesntExist()) {
-                return Response::error('Parent item not found.');
-            }
-
-            if ($data['parent_id'] === $item->id || $item->descendantIds()->contains($data['parent_id'])) {
-                return Response::error('An item cannot be moved inside itself or one of its descendants.');
-            }
-        }
 
         $item = $action->handle($item, $data);
 

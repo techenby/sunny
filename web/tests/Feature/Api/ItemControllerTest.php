@@ -616,7 +616,18 @@ test('store rejects a parent from another team', function () {
     $this->actingAs($user)
         ->postJson(route('api.items.store', $user->currentTeam), ['name' => 'Screwdriver', 'type' => 'item', 'parent_id' => $parent->id])
         ->assertUnprocessable()
-        ->assertJsonValidationErrors('parent_id');
+        ->assertJsonValidationErrors(['parent_id' => 'That place isn’t in this team.']);
+});
+
+test('update rejects a parent from another team', function () {
+    $user = User::factory()->create();
+    $item = Item::factory()->for($user->currentTeam)->create();
+    $parent = Item::factory()->create();
+
+    $this->actingAs($user)
+        ->patchJson(route('api.items.update', [$user->currentTeam, $item]), ['parent_id' => $parent->id])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['parent_id' => 'That place isn’t in this team.']);
 });
 
 test('update rejects putting an item inside itself or inside something it holds', function (string $target) {
@@ -628,7 +639,7 @@ test('update rejects putting an item inside itself or inside something it holds'
     $this->actingAs($user)
         ->patchJson(route('api.items.update', [$user->currentTeam, $shelf]), ['parent_id' => ['itself' => $shelf, 'something it holds' => $box][$target]->id])
         ->assertUnprocessable()
-        ->assertJsonValidationErrors('parent_id');
+        ->assertJsonValidationErrors(['parent_id' => 'An item can’t go inside itself or inside something it holds.']);
 
     expect($shelf->fresh()->parent_id)->toBeNull();
 })->with(['itself', 'something it holds']);
