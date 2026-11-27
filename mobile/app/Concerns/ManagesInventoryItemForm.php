@@ -151,6 +151,24 @@ trait ManagesInventoryItemForm
             return 'Fill in every detail, or remove the empty ones.';
         }
 
+        $missingName = collect($this->metadata)
+            ->contains(fn (array $pair): bool => trim($pair['key']) === '' && trim($pair['value']) !== '');
+
+        if ($missingName) {
+            return 'Give every detail a name, or remove the empty ones.';
+        }
+
+        if ($keys->count() > 50) {
+            return 'An item can have at most 50 details.';
+        }
+
+        $tooLong = collect($this->metadata)
+            ->contains(fn (array $pair): bool => mb_strlen(trim($pair['key'])) > 255 || mb_strlen(trim($pair['value'])) > 255);
+
+        if ($tooLong) {
+            return 'Each detail name and value can be at most 255 characters.';
+        }
+
         return '';
     }
 }

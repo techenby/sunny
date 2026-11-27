@@ -408,6 +408,36 @@ it('refuses to save a metadata key with no value', function () {
         ->assertSee('Fill in every detail, or remove the empty ones.');
 });
 
+it('refuses to save a detail value with no name', function () {
+    Native::visit('/inventory/create')
+        ->input('create-item-name', 'Sleeping bag')
+        ->set('metadata', [['key' => '  ', 'value' => 'Long']])
+        ->tap('create-item-submit')
+        ->assertNoNavigation()
+        ->assertSee('Give every detail a name, or remove the empty ones.');
+});
+
+it('refuses to save more than 50 details', function () {
+    Native::visit('/inventory/create')
+        ->input('create-item-name', 'Sleeping bag')
+        ->set('metadata', collect(range(1, 51))->map(fn (int $n): array => ['key' => "detail {$n}", 'value' => 'yes'])->all())
+        ->tap('create-item-submit')
+        ->assertNoNavigation()
+        ->assertSee('An item can have at most 50 details.');
+});
+
+it('refuses to save a detail name or value over 255 characters', function (array $pair) {
+    Native::visit('/inventory/create')
+        ->input('create-item-name', 'Sleeping bag')
+        ->set('metadata', [$pair])
+        ->tap('create-item-submit')
+        ->assertNoNavigation()
+        ->assertSee('Each detail name and value can be at most 255 characters.');
+})->with([
+    'name' => [['key' => str_repeat('a', 256), 'value' => 'Long']],
+    'value' => [['key' => 'size', 'value' => str_repeat('a', 256)]],
+]);
+
 it('refuses to save an item without a name', function () {
     Native::visit('/inventory/create')
         ->input('create-item-name', '   ')
