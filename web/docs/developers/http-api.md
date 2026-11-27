@@ -224,6 +224,11 @@ user belongs to.
 | `GET` | `/api/teams/{team}/recipes/{recipe}` | Read a recipe. |
 | `PATCH` | `/api/teams/{team}/recipes/{recipe}` | Update a recipe. |
 | `DELETE` | `/api/teams/{team}/recipes/{recipe}` | Delete a recipe. |
+| `POST` | `/api/teams/{team}/recipes/{recipe}/copy` | Copy a recipe to another of the user's teams. |
+| `PUT` | `/api/teams/{team}/recipes/{recipe}/share` | Turn on a recipe's share link. |
+| `DELETE` | `/api/teams/{team}/recipes/{recipe}/share` | Turn off a recipe's share link. |
+| `GET` | `/api/shared-recipes/{token}` | Read a recipe someone shared. |
+| `POST` | `/api/shared-recipes/{token}/save` | Save a shared recipe to one of the user's teams. |
 | `GET` | `/api/teams/{team}/checklists` | List the team's lists with their items. |
 | `POST` | `/api/teams/{team}/checklists` | Create a list. |
 | `GET` | `/api/teams/{team}/checklists/{checklist}` | Read a list with its items. |
@@ -360,7 +365,8 @@ retrying a permanent delete is safe.
 
 Only `name` is required. Supported optional fields are `source`, `servings`,
 `prep_time`, `cook_time`, `total_time`, `description`, `ingredients`,
-`instructions`, `notes`, `nutrition`, and `parent_id` (a recipe in the same
+`instructions`, `notes`, `nutrition`, `tags`, `photo`, `client_uuid` (see
+[Retrying creates](#retrying-creates)), and `parent_id` (a recipe in the same
 team).
 
 ```json
@@ -369,9 +375,20 @@ team).
   "servings": "4",
   "total_time": "30 minutes",
   "ingredients": "1 lb pasta\n2 cups sauce",
-  "instructions": "Cook pasta. Warm sauce. Combine."
+  "instructions": "Cook pasta. Warm sauce. Combine.",
+  "tags": ["Dinner", "Vegetarian"]
 }
 ```
+
+`ingredients` and `instructions` take text with one entry per line, up to
+20,000 characters; start a line with `# ` to make it a section heading.
+`description` and `notes` allow 20,000 characters and `nutrition` 5,000.
+`tags` is a list of up to 50 strings, and sending it on update replaces the
+recipe's tags.
+
+`photo` is an image up to 10 MB and 10,000 pixels on each side; send it as
+multipart form data. On update, `photo` replaces the recipe's photo and
+`remove_photo: true` deletes it. If both are sent, the new photo wins.
 
 To import a recipe, send its page's `url` (and optionally a `client_uuid`) to
 `POST /api/teams/{team}/recipes/import`. SunnyHome reads the page's Recipe
@@ -380,6 +397,35 @@ has no recipe, it returns `422` on `url`. If SunnyHome can't open the page at
 all (the site returns an error, blocks the request, or doesn't answer), it
 returns `424` on `url`, so a client can tell the two apart. Imports are limited
 to 30 a minute.
+
+### Copying and sharing
+
+Copy a recipe to another team the user belongs to by sending that team's
+`team_id` (and optionally a `client_uuid`) to
+`POST /api/teams/{team}/recipes/{recipe}/copy`. The copy keeps every field,
+including tags and the photo, and its `parent_id` points at the original.
+Copying to the recipe's own team returns `422` on `team_id`. It returns the
+copy with `201`.
+
+`PUT .../share` turns on a recipe's share link and `DELETE .../share` turns it
+off. Both return the recipe, whose `share_token` and `share_url` are set while
+sharing is on and `null` while it's off. Sending `PUT` again keeps the same
+link, so both can safely be retried. Turning sharing off and on again makes a
+new link, and the old one stops working.
+
+Anyone signed in can read a shared recipe with
+`GET /api/shared-recipes/{token}`, where `{token}` is its `share_token`. It
+returns `id`, `team_id`, `name`, `source`, `servings`, `prep_time`,
+`cook_time`, `total_time`, `description`, `ingredients`, `instructions`,
+`notes`, `nutrition`, `share_token`, `share_url`, `photo_url`, and
+`thumb_url`. A token that isn't shared any more returns `404`.
+
+Save a shared recipe by sending a `team_id` the user belongs to (and optionally
+a `client_uuid`) to `POST /api/shared-recipes/{token}/save`. The saved recipe
+gets the shared recipe's text fields, with `source` set to the share URL; its
+tags and photo aren't copied. It returns the new recipe with `201`. If that
+team has already saved the recipe, or it's the team that shared it, it returns
+the existing recipe with `200` instead.
 
 ## List payloads
 
