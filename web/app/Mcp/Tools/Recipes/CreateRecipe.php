@@ -32,6 +32,7 @@ class CreateRecipe extends Tool
             'total_time' => ['nullable', 'string', 'max:50'],
             'notes' => ['nullable', 'string', 'max:20000'],
             'source' => ['nullable', 'string', 'max:500'],
+            'nutrition' => ['nullable', 'string', 'max:5000'],
             'tags' => ['nullable', 'array', 'max:50'],
             'tags.*' => ['string', 'max:255'],
         ]);
@@ -73,6 +74,8 @@ class CreateRecipe extends Tool
                 ->description('Freeform notes about the recipe.'),
             'source' => $schema->string()
                 ->description('Where the recipe came from: a URL, book title, or person.'),
+            'nutrition' => $schema->string()
+                ->description('Nutrition information as plain text with one fact per line, e.g. "Calories: 320" then "Protein: 12g".'),
             'tags' => $schema->array()
                 ->items($schema->string())
                 ->description('Tags to categorize the recipe, e.g. ["Dinner", "Vegetarian"].'),

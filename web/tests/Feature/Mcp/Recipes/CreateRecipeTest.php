@@ -67,6 +67,33 @@ test('it converts html ingredients and instructions to rows', function () {
         ->and(array_column($recipe->instructions, 'text'))->toBe(['Mix and bake.']);
 });
 
+test('it stores nutrition information', function () {
+    $user = User::factory()->create();
+
+    SunnyServer::actingAs($user)
+        ->tool(CreateRecipe::class, [
+            'name' => 'Chocolate Cake',
+            'nutrition' => "Calories: 320\nProtein: 4g",
+        ])
+        ->assertOk()
+        ->assertSee('Calories: 320');
+
+    expect(Recipe::sole()->nutrition)->toBe("Calories: 320\nProtein: 4g");
+});
+
+test('it rejects nutrition over 5000 characters', function () {
+    $user = User::factory()->create();
+
+    SunnyServer::actingAs($user)
+        ->tool(CreateRecipe::class, [
+            'name' => 'Chocolate Cake',
+            'nutrition' => str_repeat('a', 5001),
+        ])
+        ->assertHasErrors();
+
+    expect(Recipe::count())->toBe(0);
+});
+
 test('it requires a name', function () {
     $user = User::factory()->create();
 
