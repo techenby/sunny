@@ -41,6 +41,21 @@ test('it stores plain text ingredients and instructions as rows', function () {
         ->and(array_column($recipe->fresh()->instructions, 'text'))->toBe(['Mix everything.', 'Bake at 450F.']);
 });
 
+test('it updates nutrition information', function () {
+    $user = User::factory()->create();
+    $recipe = Recipe::factory()->for($user->currentTeam)->create(['nutrition' => 'Calories: 100']);
+
+    SunnyTestServer::actingAs($user)
+        ->tool(UpdateRecipe::class, [
+            'id' => $recipe->id,
+            'nutrition' => 'Calories: 250',
+        ])
+        ->assertOk()
+        ->assertSee('Calories: 250');
+
+    expect($recipe->fresh()->nutrition)->toBe('Calories: 250');
+});
+
 test('it requires an id', function () {
     $user = User::factory()->create();
 
