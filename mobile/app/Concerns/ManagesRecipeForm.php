@@ -228,17 +228,22 @@ trait ManagesRecipeForm
         }
 
         $limits = [
-            'The name' => [$this->name, 255],
-            'The source' => [$this->source, 500],
-            'Servings' => [$this->servings, 50],
-            'Prep time' => [$this->prepTime, 50],
-            'Cook time' => [$this->cookTime, 50],
-            'Total time' => [$this->totalTime, 50],
+            'The name is' => [$this->name, 255],
+            'The source is' => [$this->source, 500],
+            'Servings is' => [$this->servings, 50],
+            'Prep time is' => [$this->prepTime, 50],
+            'Cook time is' => [$this->cookTime, 50],
+            'Total time is' => [$this->totalTime, 50],
+            'The description is' => [$this->description, 20_000],
+            'The ingredients are' => [$this->ingredients, 20_000],
+            'The instructions are' => [$this->instructions, 20_000],
+            'The notes are' => [$this->notes, 20_000],
+            'The nutrition is' => [$this->nutrition, 5_000],
         ];
 
         foreach ($limits as $label => [$value, $max]) {
             if (mb_strlen(trim($value)) > $max) {
-                return "{$label} is too long ({$max} characters max).";
+                return "{$label} too long (".number_format($max).' characters max).';
             }
         }
 
