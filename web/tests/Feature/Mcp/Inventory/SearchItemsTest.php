@@ -21,6 +21,21 @@ test('can search items by name', function () {
         ->assertDontSee('Screwdriver');
 });
 
+test('can search items by detail values', function () {
+    $user = User::factory()->create();
+    Item::factory()->for($user->currentTeam)->create(['name' => 'Cordless drill', 'metadata' => ['brand' => 'DeWalt']]);
+    Item::factory()->for($user->currentTeam)->create(['name' => 'Hammer', 'metadata' => ['brand' => 'Estwing']]);
+
+    SunnyServer::actingAs($user)
+        ->tool(SearchItems::class, ['query' => 'dewalt'])
+        ->assertOk()
+        ->assertStructuredContent(fn (AssertableJson $json) => $json
+            ->where('count', 1)
+            ->where('items.0.name', 'Cordless drill')
+            ->etc())
+        ->assertDontSee('Hammer');
+});
+
 test('falls back to matching individual words in a multi-word search', function () {
     $user = User::factory()->create();
     Item::factory()->for($user->currentTeam)->create(['name' => 'GoPro Camera Bag']);
