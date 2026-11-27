@@ -44,8 +44,10 @@ new class extends Component
         $this->modal('checklist-form')->show();
     }
 
-    public function delete(Checklist $checklist): void
+    public function delete(int $id): void
     {
+        $checklist = $this->team()->checklists()->findOrFail($id);
+
         $this->authorize('delete', $checklist);
 
         $checklist->delete();
@@ -55,8 +57,10 @@ new class extends Component
         unset($this->lists);
     }
 
-    public function edit(Checklist $checklist): void
+    public function edit(int $id): void
     {
+        $checklist = $this->team()->checklists()->findOrFail($id);
+
         $this->authorize('update', $checklist);
 
         $this->form->load($checklist);

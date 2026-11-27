@@ -1,8 +1,10 @@
 <?php
 
 use App\Enums\ChecklistType;
+use App\Enums\TeamRole;
 use App\Models\Checklist;
 use App\Models\ChecklistItem;
+use App\Models\Team;
 use App\Models\User;
 use Livewire\Livewire;
 
@@ -52,7 +54,26 @@ describe('authorization', function () {
         Livewire::actingAs($user)
             ->test('pages::lists.index')
             ->call('edit', $list->id)
-            ->assertForbidden();
+            ->assertNotFound();
+    });
+
+    test('will not edit or delete a list from another of the user’s teams', function () {
+        $user = User::factory()->create();
+        $team = Team::factory()->create();
+        $team->members()->attach($user, ['role' => TeamRole::Member->value]);
+        $list = Checklist::factory()->for($team)->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::lists.index')
+            ->call('edit', $list->id)
+            ->assertNotFound();
+
+        Livewire::actingAs($user)
+            ->test('pages::lists.index')
+            ->call('delete', $list->id)
+            ->assertNotFound();
+
+        expect($list->fresh())->not->toBeNull();
     });
 });
 
