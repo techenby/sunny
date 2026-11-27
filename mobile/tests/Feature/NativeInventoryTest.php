@@ -75,6 +75,15 @@ it('searches nested items and shows the full path to each one', function () {
         ->assertSee('Nothing called “zzz”');
 });
 
+it('searches detail values too, after the names that match', function () {
+    Item::findOrFail(8)->update(['metadata' => ['brand' => 'DeWalt']]);
+    Item::findOrFail(13)->update(['name' => 'DeWalt work light']);
+
+    $screen = Native::visit('/inventory')->input('updateSearch', 'dewalt');
+
+    expect(array_column($screen->get('searchResults'), 'name'))->toBe(['DeWalt work light', 'Cordless drill']);
+});
+
 it('says when a search result is not in a place yet', function () {
     Item::findOrFail(12)->update(['parent_id' => null]);
 

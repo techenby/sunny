@@ -159,9 +159,12 @@ class Inventory extends Component
 
         $items = collect(static::all())->keyBy('id');
 
+        $nameMatches = fn (array $item): bool => Str::contains($item['name'], $this->search, ignoreCase: true);
+
         return $items
-            ->filter(fn (array $item): bool => Str::contains($item['name'], $this->search, ignoreCase: true))
-            ->sortBy('name')
+            ->filter(fn (array $item): bool => $nameMatches($item)
+                || collect($item['metadata'] ?? [])->contains(fn (mixed $value): bool => Str::contains((string) $value, $this->search, ignoreCase: true)))
+            ->sortBy([fn (array $a, array $b): int => $nameMatches($b) <=> $nameMatches($a), 'name'])
             ->map(fn (array $item): array => [...$item, 'where' => $this->whereItIs($item, $items)])
             ->values()
             ->all();

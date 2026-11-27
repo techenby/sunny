@@ -7,6 +7,8 @@ namespace App\Models;
 use App\Concerns\LimitedPerOwner;
 use App\Enums\ItemType;
 use Database\Factories\ItemFactory;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -96,6 +98,21 @@ class Item extends Model
     public function primaryPhoto(): HasOne
     {
         return $this->hasOne(ItemPhoto::class)->ofMany(['position' => 'min', 'id' => 'min']);
+    }
+
+    /** @param Builder<static> $query */
+    #[Scope]
+    protected function matching(Builder $query, string $term): void
+    {
+        $anywhere = '%' . Str::lower($term) . '%';
+
+        $detailMatches = $this->getConnection()->getDriverName() === 'pgsql'
+            ? "case when json_typeof(items.metadata) = 'object' then exists (select 1 from json_each_text(items.metadata) as detail where lower(detail.value) like ?) else false end"
+            : 'exists (select 1 from json_each(items.metadata) as detail where lower(detail.value) like ?)';
+
+        $query->where(fn (Builder $query) => $query
+            ->whereRaw('lower(name) like ?', [$anywhere])
+            ->orWhereRaw($detailMatches, [$anywhere]));
     }
 
     /** @return BaseCollection<int, int> */

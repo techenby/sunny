@@ -20,7 +20,7 @@ use Laravel\Mcp\Server\Tool;
 use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 
 #[IsReadOnly]
-#[Description('Search the home inventory of the current team. Items form a hierarchy: locations contain bins, bins contain items. Filter by name, type, or parent to browse the tree. Returns a compact list; use the get-item tool for full details. Set trashed to true to search only deleted items instead, e.g. to find an id for the restore-item tool.')]
+#[Description('Search the home inventory of the current team. Items form a hierarchy: locations contain bins, bins contain items. Search names and detail values (like a brand or color), or filter by type or parent to browse the tree. Returns a compact list; use the get-item tool for full details. Set trashed to true to search only deleted items instead, e.g. to find an id for the restore-item tool.')]
 class SearchItems extends Tool
 {
     public function handle(Request $request): ResponseFactory
@@ -69,7 +69,7 @@ class SearchItems extends Tool
     {
         return [
             'query' => $schema->string()
-                ->description('Search item names. Multi-word searches try the full phrase first, then items matching any meaningful word, so related names can still be found.'),
+                ->description('Search item names and detail values, e.g. "DeWalt" finds items whose brand is DeWalt. Multi-word searches try the full phrase first, then items matching any meaningful word, so related names can still be found.'),
             'type' => $schema->string()
                 ->enum(ItemType::class)
                 ->description('Filter by item type: "location" (e.g. a room or shelf), "bin" (a container), or "item" (a thing).')
@@ -120,7 +120,7 @@ class SearchItems extends Tool
         $query = Str::squish($query);
 
         $items = (clone $itemsQuery)
-            ->whereLike('name', "%{$query}%")
+            ->matching($query)
             ->limit($limit)
             ->get(['id', 'name', 'type', 'parent_id']);
 
@@ -135,7 +135,7 @@ class SearchItems extends Tool
             ->whereNotIn('id', $items->modelKeys())
             ->where(function (Builder $query) use ($terms): void {
                 foreach ($terms as $term) {
-                    $query->orWhereLike('name', "%{$term}%");
+                    $query->orWhere(fn (Builder $query) => $query->matching($term));
                 }
             })
             ->limit($remaining)

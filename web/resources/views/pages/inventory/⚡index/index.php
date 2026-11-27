@@ -484,16 +484,9 @@ new class extends Component
     protected function applySearch(Builder $query): void
     {
         $term = Str::lower($this->search);
-        $anywhere = '%' . $term . '%';
-
-        $detailMatches = $query->getConnection()->getDriverName() === 'pgsql'
-            ? "case when json_typeof(items.metadata) = 'object' then exists (select 1 from json_each_text(items.metadata) as detail where lower(detail.value) like ?) else false end"
-            : 'exists (select 1 from json_each(items.metadata) as detail where lower(detail.value) like ?)';
 
         $query
-            ->where(fn (Builder $query) => $query
-                ->whereRaw('lower(name) like ?', [$anywhere])
-                ->orWhereRaw($detailMatches, [$anywhere]))
-            ->orderByRaw('case when lower(name) like ? then 0 when lower(name) like ? then 1 else 2 end', [$term . '%', $anywhere]);
+            ->matching($term)
+            ->orderByRaw('case when lower(name) like ? then 0 when lower(name) like ? then 1 else 2 end', [$term . '%', '%' . $term . '%']);
     }
 };
