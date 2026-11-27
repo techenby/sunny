@@ -210,7 +210,7 @@ class InventoryItemDetail extends Component
     {
         return array_values(array_filter([
             Menu::item('item-edit', 'Edit', Ios::Pencil, Android::Edit, 'edit'),
-            NavAction::make('item-print-label')->label('Print label')->icon(ios: Ios::Qrcode->value, android: Android::QrCode2->value)->press('showQrCode'),
+            $this->item['id'] < 0 ? null : NavAction::make('item-print-label')->label('Print label')->icon(ios: Ios::Qrcode->value, android: Android::QrCode2->value)->press('showQrCode'),
             NavAction::make('item-make-copies')->label('Make copies')->icon(ios: Ios::SquareOnSquare->value, android: Android::ContentCopy->value)->press('openCopies'),
             $this->teamMoveTeams() === [] ? null : NavAction::make('item-move-to-team')->label('Move to another team')->icon(ios: Ios::ArrowLeftArrowRight->value, android: Android::SwapHoriz->value)->press('openTeamMove'),
             Menu::delete('delete-item', 'Delete '.mb_strtolower($this->item['type']->label()), 'confirmDeleteItem', 'Delete '.$this->item['name']),
