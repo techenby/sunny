@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\Routines\OrderRoutineSteps;
 use App\Livewire\Forms\Routines\RoutineForm;
 use App\Models\Routine;
 use App\Models\RoutineStep;
@@ -170,20 +171,16 @@ new class extends Component
     {
         $this->authorize('update', $this->routine);
 
-        $steps = $this->steps->values();
-        $index = $steps->search(fn (RoutineStep $step): bool => $step->id === $stepId);
-        $target = $steps->get($index + $direction);
+        $ids = $this->steps->modelKeys();
+        $index = array_search($stepId, $ids, true);
 
-        if ($index === false || ! $target instanceof RoutineStep) {
+        if ($index === false || ! isset($ids[$index + $direction])) {
             return;
         }
 
-        $step = $steps->get($index);
+        [$ids[$index], $ids[$index + $direction]] = [$ids[$index + $direction], $ids[$index]];
 
-        [$step->position, $target->position] = [$target->position, $step->position];
-
-        $step->save();
-        $target->save();
+        (new OrderRoutineSteps)->handle($this->routine, $ids);
 
         unset($this->steps);
     }
