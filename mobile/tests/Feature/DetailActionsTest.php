@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Item;
 use App\Models\Recipe;
 use Native\Mobile\Testing\Native;
 
@@ -109,6 +110,14 @@ it('puts Edit first and Delete last in the more menu, Delete red with a trash ic
     'a list' => ['/lists/1', 'list-more', ['edit-list', 'remove-done', 'uncheck-all', 'delete-list']],
     'a routine' => ['/routines/1', 'routine-more', ['edit-routine', 'delete-routine']],
 ]);
+
+it('leaves Print label out of the menu until the item has synced', function () {
+    Item::create([...Item::find(8)->toArray(), 'id' => -1, 'name' => 'New drill']);
+
+    $menu = detailMenu(Native::visit('/inventory/-1', platform: 'ios')->tree(), 'item-more');
+
+    expect(array_column(array_column($menu, 'props'), 'id'))->toBe(['item-edit', 'item-make-copies', 'delete-item']);
+});
 
 it('names the kind on the Delete item and the thing in its accessibility label', function (string $uri, string $more, string $label, string $a11yLabel) {
     $menu = detailMenu(Native::visit($uri)->tree(), $more);
