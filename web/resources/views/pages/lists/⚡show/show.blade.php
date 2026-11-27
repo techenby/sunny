@@ -45,7 +45,7 @@
                         @else
                             <button
                                 type="button"
-                                wire:click="toggle({{ $item->id }})"
+                                wire:click="setItemCompleted({{ $item->id }}, {{ $item->isCompleted() ? 'false' : 'true' }})"
                                 class="flex flex-1 items-center gap-3 rounded-lg border border-zinc-200 p-3 text-left transition hover:border-zinc-300 dark:border-zinc-700 dark:hover:border-zinc-600"
                             >
                                 @if ($item->isCompleted())

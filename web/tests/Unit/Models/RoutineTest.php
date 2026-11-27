@@ -158,13 +158,18 @@ test('completing an occurrence step records who did it', function () {
         ->and($step->completedBy->id)->toBe($user->id);
 });
 
-test('toggling an occurrence step flips its state', function () {
+test('setting an occurrence step completed is safe to repeat', function () {
+    $user = User::factory()->create();
+    $other = User::factory()->create();
     $step = RoutineOccurrenceStep::factory()->create();
 
-    $step->toggle();
-    expect($step->isCompleted())->toBeTrue();
+    $step->setCompleted(true, $user);
+    $step->setCompleted(true, $other);
+    expect($step->isCompleted())->toBeTrue()
+        ->and($step->completed_by)->toBe($user->id);
 
-    $step->toggle();
+    $step->setCompleted(false);
+    $step->setCompleted(false);
     expect($step->isCompleted())->toBeFalse()
         ->and($step->completed_by)->toBeNull();
 });

@@ -38,7 +38,7 @@ describe('authorization', function () {
 
         Livewire::actingAs($user)
             ->test('pages::lists.show', ['checklist' => $list])
-            ->call('toggle', $other->id)
+            ->call('setItemCompleted', $other->id, true)
             ->assertNotFound();
 
         expect($other->fresh())->isCompleted()->toBeFalse();
@@ -194,18 +194,25 @@ describe('crud and actions', function () {
         expect($list->items()->sole()->url)->toBeNull();
     });
 
-    test('toggles an item and records who did it', function () {
+    test('checks an item and records who did it, and a repeated tap keeps it checked', function () {
         $user = User::factory()->create();
         $list = Checklist::factory()->for($user->currentTeam)->create();
         $item = ChecklistItem::factory()->for($list)->create();
 
-        Livewire::actingAs($user)
+        $page = Livewire::actingAs($user)
             ->test('pages::lists.show', ['checklist' => $list])
-            ->call('toggle', $item->id);
+            ->assertSeeHtml("setItemCompleted({$item->id}, true)")
+            ->call('setItemCompleted', $item->id, true)
+            ->call('setItemCompleted', $item->id, true)
+            ->assertSeeHtml("setItemCompleted({$item->id}, false)");
 
         expect($item->fresh())
             ->isCompleted()->toBeTrue()
             ->completed_by->toBe($user->id);
+
+        $page->call('setItemCompleted', $item->id, false);
+
+        expect($item->fresh()->isCompleted())->toBeFalse();
     });
 
     test('renames an item without changing whether it is checked', function () {

@@ -21,7 +21,7 @@
                     <ul>
                         @foreach ($list->items as $item)
                             <li wire:key="dashboard-list-item-{{ $item->id }}">
-                                <x-dashboard.check-item wire:click="toggle({{ $item->id }})">
+                                <x-dashboard.check-item wire:click="setItemCompleted({{ $item->id }}, {{ $item->isCompleted() ? 'false' : 'true' }})">
                                     {{ $item->name }}
                                 </x-dashboard.check-item>
                             </li>

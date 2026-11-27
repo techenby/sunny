@@ -119,11 +119,11 @@ new class extends Component
         unset($this->items);
     }
 
-    public function toggle(int $itemId): void
+    public function setItemCompleted(int $itemId, bool $completed): void
     {
         $this->authorize('update', $this->checklist);
 
-        $this->item($itemId)->toggle(Auth::user());
+        $this->item($itemId)->setCompleted($completed, Auth::user());
 
         unset($this->items);
     }

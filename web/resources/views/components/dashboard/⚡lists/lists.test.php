@@ -94,26 +94,28 @@ test('it shows an empty state when nothing is left', function () {
         ->assertSee(__('All caught up. Nothing left on your lists.'));
 });
 
-test('toggling an item completes it and drops it from the card', function () {
+test('ticking an item completes it and drops it from the card', function () {
     $user = User::factory()->create();
     $list = Checklist::factory()->for($user->currentTeam)->todo()->household()->create();
     $item = ChecklistItem::factory()->for($list)->create(['name' => 'Call the plumber']);
 
     Livewire::actingAs($user)
         ->test('dashboard.lists')
-        ->call('toggle', $item->id)
+        ->call('setItemCompleted', $item->id, true)
         ->assertDontSee('Call the plumber');
 
     expect($item->fresh()->isCompleted())->toBeTrue()
         ->and($item->fresh()->completed_by)->toBe($user->id);
 });
 
-test('it will not toggle an item from another team', function () {
+test('it will not tick an item from another team', function () {
     $user = User::factory()->create();
     $item = ChecklistItem::factory()->create();
 
     Livewire::actingAs($user)
         ->test('dashboard.lists')
-        ->call('toggle', $item->id)
-        ->assertForbidden();
+        ->call('setItemCompleted', $item->id, true)
+        ->assertNotFound();
+
+    expect($item->fresh()->isCompleted())->toBeFalse();
 });

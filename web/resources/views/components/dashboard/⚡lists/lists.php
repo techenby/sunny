@@ -35,13 +35,16 @@ new class extends Component
         return $this->openLists()->count();
     }
 
-    public function toggle(int $itemId): void
+    public function setItemCompleted(int $itemId, bool $completed): void
     {
-        $item = ChecklistItem::with('checklist')->findOrFail($itemId);
+        $item = ChecklistItem::query()
+            ->with('checklist')
+            ->whereHas('checklist', fn (Builder $query) => $query->whereBelongsTo(Auth::user()->currentTeam))
+            ->findOrFail($itemId);
 
         $this->authorize('update', $item->checklist);
 
-        $item->toggle(Auth::user());
+        $item->setCompleted($completed, Auth::user());
 
         unset($this->lists, $this->total);
     }
