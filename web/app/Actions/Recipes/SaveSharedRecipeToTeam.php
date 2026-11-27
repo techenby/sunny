@@ -17,14 +17,23 @@ class SaveSharedRecipeToTeam
 
         $source = route('recipes.shared', $recipe->share_token);
 
-        return $team->recipes()->firstWhere('source', $source)
-            ?? (new CreateRecipe)->handle($team, [
-                ...$recipe->only([
-                    'name', 'servings', 'prep_time', 'cook_time', 'total_time',
-                    'description', 'ingredients', 'instructions', 'notes', 'nutrition',
-                ]),
-                'source' => $source,
-                'client_uuid' => $clientUuid,
-            ]);
+        $existing = $team->recipes()->firstWhere('source', $source);
+
+        if ($existing !== null) {
+            return $existing;
+        }
+
+        $saved = (new CreateRecipe)->handle($team, [
+            ...$recipe->only([
+                'name', 'servings', 'prep_time', 'cook_time', 'total_time',
+                'description', 'ingredients', 'instructions', 'notes', 'nutrition', 'tags',
+            ]),
+            'source' => $source,
+            'client_uuid' => $clientUuid,
+        ]);
+
+        (new CopyRecipePhoto)->handle($recipe, $saved);
+
+        return $saved;
     }
 }
