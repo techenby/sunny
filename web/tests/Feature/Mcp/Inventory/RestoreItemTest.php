@@ -48,13 +48,19 @@ test('it requires an id', function () {
         ->assertHasErrors();
 });
 
-test('it does not restore an item that is not deleted', function () {
+test('it returns an item that is not deleted unchanged, so a retry is safe', function () {
     $user = User::factory()->create();
-    $item = Item::factory()->for($user->currentTeam)->create();
+    $item = Item::factory()->item()->for($user->currentTeam)->create(['name' => 'Hammer']);
 
     SunnyTestServer::actingAs($user)
         ->tool(RestoreItem::class, ['id' => $item->id])
-        ->assertHasErrors(['Deleted item not found.']);
+        ->assertOk()
+        ->assertStructuredContent(fn (AssertableJson $json) => $json
+            ->where('id', $item->id)
+            ->where('name', 'Hammer')
+            ->etc());
+
+    expect($item->fresh()->trashed())->toBeFalse();
 });
 
 test('it cannot restore items from other teams', function () {
@@ -64,7 +70,7 @@ test('it cannot restore items from other teams', function () {
 
     SunnyTestServer::actingAs($user)
         ->tool(RestoreItem::class, ['id' => $item->id])
-        ->assertHasErrors(['Deleted item not found.']);
+        ->assertHasErrors(['Item not found.']);
 
     expect($item->fresh())->toBeTrashed();
 });

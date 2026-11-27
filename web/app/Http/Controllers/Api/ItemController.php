@@ -69,11 +69,11 @@ class ItemController extends Controller
 
     public function duplicate(DuplicateItemRequest $request, Team $team, Item $item, DuplicateItem $action): JsonResponse
     {
-        $copies = $action->handle($item, $request->validated('count') ?? 1);
+        $copies = $action->handle($item, $request->validated('count') ?? 1, $request->validated('client_uuid'));
 
         return ItemResource::collection($copies)
             ->response()
-            ->setStatusCode(201);
+            ->setStatusCode($copies->first()?->wasRecentlyCreated ? 201 : 200);
     }
 
     public function move(MoveItemRequest $request, Team $team, Item $item, MoveItemToTeam $action): ItemResource

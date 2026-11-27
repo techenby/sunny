@@ -17,10 +17,10 @@ class DuplicateItem
         private readonly SunnyStore $store,
     ) {}
 
-    public function handle(Team $team, int $itemId, int $count): int
+    public function handle(Team $team, int $itemId, int $count, ?string $clientUuid = null): int
     {
         $records = $this->auth->authenticatedConnector()
-            ->send(new DuplicateItemRequest($team->slug, $itemId, $count))
+            ->send(new DuplicateItemRequest($team->slug, $itemId, $count, $clientUuid))
             ->json('data');
 
         $copies = collect(is_array($records) ? $records : [])

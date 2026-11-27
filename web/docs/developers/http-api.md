@@ -341,13 +341,19 @@ Add a photo with `photo` (an image up to 10 MB), plus an optional `position`
 Retrying with the same `client_uuid` returns the photo already saved. Move a
 photo by sending its new `position`; the others shift to make room.
 
-Duplicate an entry with an optional count:
+Duplicate an entry with an optional count and `client_uuid`:
 
 ```json
 {
-  "count": 3
+  "count": 3,
+  "client_uuid": "9b2f6c1e-3d4a-4f5b-8c7d-1e2f3a4b5c6d"
 }
 ```
+
+The copies are returned with `201`. Retrying with the same `client_uuid`
+returns the copies already made with `200` instead of making more, so a client
+can retry after a lost response. Send a new `client_uuid` for a new set of
+copies.
 
 Deleting an entry moves anything inside it to the top level. Deleted entries
 still come back from `GET /api/sync` with `deleted_at` set, so a client can

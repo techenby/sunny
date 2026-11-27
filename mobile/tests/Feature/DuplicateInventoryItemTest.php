@@ -9,6 +9,7 @@ use App\Models\ItemPhoto;
 use App\Models\PendingWrite;
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Psr7\Request as GuzzleRequest;
+use Illuminate\Support\Str;
 use Native\Mobile\Testing\Native;
 use Saloon\Exceptions\Request\FatalRequestException;
 use Saloon\Http\Faking\MockResponse;
@@ -60,7 +61,8 @@ it('makes one copy next to the original, with its photos', function (): void {
 
     Saloon::assertSent(fn (Request $request): bool => $request instanceof DuplicateItemRequest
         && $request->resolveEndpoint() === '/teams/family/items/12/duplicate'
-        && $request->body()->all() === ['count' => 1]);
+        && $request->body()->get('count') === 1
+        && Str::isUuid($request->body()->get('client_uuid')));
 
     expect(Item::find(90))->toMatchArray(['name' => 'Holiday decorations', 'parent_id' => 11, 'team_id' => 1])
         ->and(ItemPhoto::where('item_id', 90)->pluck('url')->all())->toBe(['https://sunny.example/photos/90.jpg']);
@@ -80,7 +82,7 @@ it('makes several copies at once', function (): void {
         ->tap('item-copies-submit')
         ->assertToastShown(fn (array $params): bool => $params['message'] === '6 copies made');
 
-    Saloon::assertSent(fn (Request $request): bool => $request instanceof DuplicateItemRequest && $request->body()->all() === ['count' => 6]);
+    Saloon::assertSent(fn (Request $request): bool => $request instanceof DuplicateItemRequest && $request->body()->get('count') === 6);
 
     expect(Item::where('name', 'Holiday decorations')->where('parent_id', 11)->count())->toBe(7)
         ->and(ItemPhoto::whereBetween('item_id', [90, 95])->count())->toBe(6);
@@ -131,7 +133,10 @@ it('leaves View to the screen of the item that was copied', function (): void {
 
 it('copies nothing while offline and lets them try again', function (): void {
     $attempts = 0;
-    Saloon::fake([DuplicateItemRequest::class => function (PendingRequest $pending) use (&$attempts): MockResponse {
+    $uuids = [];
+    Saloon::fake([DuplicateItemRequest::class => function (PendingRequest $pending) use (&$attempts, &$uuids): MockResponse {
+        $uuids[] = $pending->body()->get('client_uuid');
+
         return $attempts++ === 0
             ? MockResponse::make()->throw(fn (PendingRequest $pending) => new FatalRequestException(new ConnectException('Could not resolve host', new GuzzleRequest('POST', 'https://sunny.example')), $pending))
             : MockResponse::make(['data' => sunnyCopiesOf(12, 3)], 201);
@@ -156,7 +161,27 @@ it('copies nothing while offline and lets them try again', function (): void {
         ->assertSet('copiesProblem', null)
         ->assertToastShown(fn (array $params): bool => $params['message'] === '3 copies made');
 
-    expect(Item::count())->toBe(18);
+    expect(Item::count())->toBe(18)
+        ->and($uuids)->toHaveCount(2)
+        ->and($uuids[0])->toBe($uuids[1]);
+});
+
+it('asks for a new set of copies when the number changes after a failed try', function (): void {
+    $uuids = [];
+    Saloon::fake([DuplicateItemRequest::class => function (PendingRequest $pending) use (&$uuids): MockResponse {
+        $uuids[] = $pending->body()->get('client_uuid');
+
+        return MockResponse::make()->throw(fn (PendingRequest $pending) => new FatalRequestException(new ConnectException('Could not resolve host', new GuzzleRequest('POST', 'https://sunny.example')), $pending));
+    }]);
+
+    Native::visit('/inventory/12')
+        ->tap('Make copies')
+        ->tap('item-copies-submit')
+        ->tap('item-copies-more')
+        ->tap('item-copies-submit');
+
+    expect($uuids)->toHaveCount(2)
+        ->and($uuids[0])->not->toBe($uuids[1]);
 });
 
 it('explains when Sunny refuses to make copies', function (int $status, array $body, string $message): void {

@@ -22,6 +22,7 @@ use App\Support\Toast;
 use App\Support\ToastAction;
 use App\Ui\Menu;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use JsonException;
@@ -53,6 +54,8 @@ class InventoryItemDetail extends Component
     public bool $showCopies = false;
 
     public int $copies = 1;
+
+    public string $copiesClientUuid = '';
 
     public ?string $copiesProblem = null;
 
@@ -220,6 +223,7 @@ class InventoryItemDetail extends Component
     public function openCopies(): void
     {
         $this->copies = 1;
+        $this->copiesClientUuid = (string) Str::uuid();
         $this->copiesProblem = null;
         $this->copiesError = '';
         $this->showCopies = true;
@@ -234,7 +238,12 @@ class InventoryItemDetail extends Component
 
     public function changeCopies(int $by): void
     {
-        $this->copies = max(1, min(DuplicateItem::MAX_COPIES, $this->copies + $by));
+        $copies = max(1, min(DuplicateItem::MAX_COPIES, $this->copies + $by));
+
+        if ($copies !== $this->copies) {
+            $this->copies = $copies;
+            $this->copiesClientUuid = (string) Str::uuid();
+        }
     }
 
     public function makeCopies(): void
@@ -274,7 +283,7 @@ class InventoryItemDetail extends Component
         }
 
         try {
-            $made = app(DuplicateItem::class)->handle($team, $this->item['id'], $this->copies);
+            $made = app(DuplicateItem::class)->handle($team, $this->item['id'], $this->copies, $this->copiesClientUuid ?: null);
         } catch (FatalRequestException) {
             $this->copiesProblem = 'offline';
 
