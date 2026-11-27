@@ -32,10 +32,6 @@ class CreateItem extends Tool
 
         $team = $request->user()->currentTeam;
 
-        if (isset($validated['parent_id']) && $team->items()->whereKey($validated['parent_id'])->doesntExist()) {
-            return Response::error('Parent item not found.');
-        }
-
         $item = $action->handle($team, $validated);
 
         return Response::text(sprintf(

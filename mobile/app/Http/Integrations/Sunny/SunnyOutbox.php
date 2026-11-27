@@ -45,7 +45,7 @@ class SunnyOutbox
         }
         if ($resource === 'items' && ($payload['parent_id'] ?? null) !== null) {
             if (! Item::forCurrentServer()->where('team_id', $teamId)->whereKey($payload['parent_id'])->exists()) {
-                throw ValidationException::withMessages(['parent_id' => 'Choose a parent in the same team.']);
+                throw ValidationException::withMessages(['parent_id' => 'That place isn’t in this team.']);
             }
         }
         if ($photoPath !== null) {

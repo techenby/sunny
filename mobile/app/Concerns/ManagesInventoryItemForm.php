@@ -133,7 +133,7 @@ trait ManagesInventoryItemForm
             return 'The name is too long (255 characters max).';
         }
         if ($this->parentId !== null && $this->selectedParent === null) {
-            return 'Choose a parent in the same team.';
+            return 'That place isn’t in this team.';
         }
 
         $keys = collect($this->metadata)

@@ -46,7 +46,7 @@ test('it prevents moving an item inside one of its descendants', function () {
 
     SunnyServer::actingAs($user)
         ->tool(UpdateItem::class, ['id' => $garage->id, 'parent_id' => $bin->id])
-        ->assertHasErrors(['An item cannot be moved inside itself or one of its descendants.']);
+        ->assertHasErrors(['An item can’t go inside itself or inside something it holds.']);
 
     expect($garage->refresh()->parent_id)->toBeNull();
 });
@@ -77,7 +77,7 @@ test('it rejects a parent belonging to another team', function () {
 
     SunnyServer::actingAs($user)
         ->tool(UpdateItem::class, ['id' => $item->id, 'parent_id' => $otherParent->id])
-        ->assertHasErrors(['Parent item not found.']);
+        ->assertHasErrors(['That place isn’t in this team.']);
 
     expect($item->refresh()->parent_id)->toBeNull();
 });

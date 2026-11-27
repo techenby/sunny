@@ -36,6 +36,14 @@ class StoreItemRequest extends FormRequest
         ];
     }
 
+    /** @return array<string, string> */
+    public function messages(): array
+    {
+        return [
+            'parent_id.exists' => __('That place isn’t in this team.'),
+        ];
+    }
+
     protected function prepareForValidation(): void
     {
         if (is_string($this->input('metadata'))) {

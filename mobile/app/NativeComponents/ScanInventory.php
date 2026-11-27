@@ -569,7 +569,7 @@ class ScanInventory extends Component
         }
 
         if ($this->parentId !== null && $this->selectedParent === null) {
-            return 'Choose a place in the same team.';
+            return 'That place isn’t in this team.';
         }
 
         if ($this->teamId === null) {

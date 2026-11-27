@@ -817,7 +817,7 @@ describe('can manage item photos', function () {
     });
 });
 
-test('the item form refuses a place it should not have', function (string $place) {
+test('the item form refuses a place it should not have', function (string $place, string $message) {
     $user = User::factory()->create();
     $shelf = Item::factory()->for($user->currentTeam)->create(['name' => 'Shelf']);
     $bin = Item::factory()->for($user->currentTeam)->childOf($shelf)->create(['name' => 'Bin']);
@@ -828,10 +828,14 @@ test('the item form refuses a place it should not have', function (string $place
         ->call('edit', $shelf->id)
         ->set('form.parent_id', ['another team' => $elsewhere, 'itself' => $shelf, 'something it holds' => $bin][$place]->id)
         ->call('save')
-        ->assertHasErrors('form.parent_id');
+        ->assertHasErrors(['form.parent_id' => $message]);
 
     expect($shelf->fresh()->parent_id)->toBeNull();
-})->with(['another team', 'itself', 'something it holds']);
+})->with([
+    ['another team', 'That place isn’t in this team.'],
+    ['itself', 'An item can’t go inside itself or inside something it holds.'],
+    ['something it holds', 'An item can’t go inside itself or inside something it holds.'],
+]);
 
 describe('bulk update parent', function () {
     test('can bulk update parent for selected items', function () {
