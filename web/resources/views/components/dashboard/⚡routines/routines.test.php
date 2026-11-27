@@ -1,5 +1,7 @@
 <?php
 
+use App\Enums\TeamRole;
+use App\Models\Team;
 use App\Actions\Routines\GenerateRoutineOccurrences;
 use App\Models\Routine;
 use App\Models\RoutineOccurrence;
@@ -41,7 +43,7 @@ test('it does not show inactive routines or another team\'s routines', function 
         ->assertSee(__('Nothing scheduled for you today.'));
 });
 
-test('toggling a step completes it for the user', function () {
+test('ticking a step completes it for the user, and ticking it again keeps it done', function () {
     $user = User::factory()->create();
     $routine = Routine::factory()->for($user->currentTeam)->daily()->household()->create();
     RoutineStep::factory()->for($routine)->create();
@@ -49,13 +51,17 @@ test('toggling a step completes it for the user', function () {
     $component = Livewire::actingAs($user)->test('dashboard.routines');
     $step = RoutineOccurrenceStep::sole();
 
-    $component->call('toggle', $step->id);
+    $component->call('setStepCompleted', $step->id, true)->call('setStepCompleted', $step->id, true);
 
     expect($step->fresh()->isCompleted())->toBeTrue()
         ->and($step->fresh()->completed_by)->toBe($user->id);
+
+    $component->call('setStepCompleted', $step->id, false);
+
+    expect($step->fresh()->isCompleted())->toBeFalse();
 });
 
-test('it will not toggle a step from another team', function () {
+test('it will not tick a step from another team', function () {
     $user = User::factory()->create();
     $routine = Routine::factory()->daily()->create();
     RoutineStep::factory()->for($routine)->create();
@@ -63,7 +69,23 @@ test('it will not toggle a step from another team', function () {
     $component = Livewire::actingAs($user)->test('dashboard.routines');
     resolve(GenerateRoutineOccurrences::class)->forDate($routine->team);
 
-    $component->call('toggle', RoutineOccurrenceStep::sole()->id)->assertForbidden();
+    $component->call('setStepCompleted', RoutineOccurrenceStep::sole()->id, true)->assertNotFound();
+});
+
+test('it will not tick a step from another of the user’s teams', function () {
+    $user = User::factory()->create();
+    $team = Team::factory()->create();
+    $team->members()->attach($user, ['role' => TeamRole::Member->value]);
+    $routine = Routine::factory()->for($team)->daily()->household()->create();
+    RoutineStep::factory()->for($routine)->create();
+    resolve(GenerateRoutineOccurrences::class)->forDate($team);
+
+    Livewire::actingAs($user)
+        ->test('dashboard.routines')
+        ->call('setStepCompleted', RoutineOccurrenceStep::sole()->id, true)
+        ->assertNotFound();
+
+    expect(RoutineOccurrenceStep::sole()->isCompleted())->toBeFalse();
 });
 
 test('steps follow the routine order, even after one is completed', function () {
@@ -75,7 +97,7 @@ test('steps follow the routine order, even after one is completed', function () 
     $component = Livewire::actingAs($user)->test('dashboard.routines');
     $first = RoutineOccurrenceStep::whereRelation('step', 'name', 'First')->sole();
 
-    $component->call('toggle', $first->id)->assertSeeInOrder(['First', 'Second']);
+    $component->call('setStepCompleted', $first->id, true)->assertSeeInOrder(['First', 'Second']);
 
     expect($component->get('occurrences')->first()->steps->map(fn ($step) => $step->step->name)->all())
         ->toBe(['First', 'Second']);
@@ -106,7 +128,7 @@ test('it drops today\'s routine once its start moves later, unless a step is don
     RoutineStep::factory()->for($done)->create();
 
     $component = Livewire::actingAs($user)->test('dashboard.routines')->assertSee('Water plants');
-    $component->call('toggle', RoutineOccurrenceStep::whereRelation('occurrence', 'routine_id', $done->id)->sole()->id);
+    $component->call('setStepCompleted', RoutineOccurrenceStep::whereRelation('occurrence', 'routine_id', $done->id)->sole()->id, true);
 
     $started->update(['starts_on' => $user->currentTeam->today()->addDay()]);
     $done->update(['starts_on' => $user->currentTeam->today()->addDay()]);

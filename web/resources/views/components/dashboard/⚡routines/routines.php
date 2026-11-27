@@ -3,6 +3,7 @@
 use App\Actions\Routines\GenerateRoutineOccurrences;
 use App\Models\RoutineOccurrence;
 use App\Models\RoutineOccurrenceStep;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
@@ -35,13 +36,16 @@ new class extends Component
             ->values();
     }
 
-    public function toggle(int $occurrenceStepId): void
+    public function setStepCompleted(int $occurrenceStepId, bool $completed): void
     {
-        $occurrenceStep = RoutineOccurrenceStep::with('occurrence.routine')->findOrFail($occurrenceStepId);
+        $occurrenceStep = RoutineOccurrenceStep::query()
+            ->with('occurrence.routine')
+            ->whereHas('occurrence.routine', fn (Builder $query) => $query->whereBelongsTo(Auth::user()->currentTeam))
+            ->findOrFail($occurrenceStepId);
 
         $this->authorize('complete', $occurrenceStep->occurrence->routine);
 
-        $occurrenceStep->toggle(Auth::user());
+        $occurrenceStep->setCompleted($completed, Auth::user());
 
         unset($this->occurrences, $this->total, $this->todaysOccurrences);
     }

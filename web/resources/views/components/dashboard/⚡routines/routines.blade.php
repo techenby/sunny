@@ -20,7 +20,7 @@
                 >
                     @foreach ($occurrence->steps as $step)
                         <li wire:key="dashboard-occurrence-step-{{ $step->id }}">
-                            <x-dashboard.check-item :completed="$step->isCompleted()" wire:click="toggle({{ $step->id }})">
+                            <x-dashboard.check-item :completed="$step->isCompleted()" wire:click="setStepCompleted({{ $step->id }}, {{ $step->isCompleted() ? 'false' : 'true' }})">
                                 {{ $step->step?->name }}
                             </x-dashboard.check-item>
                         </li>

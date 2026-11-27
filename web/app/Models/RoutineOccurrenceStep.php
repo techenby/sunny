@@ -62,9 +62,13 @@ class RoutineOccurrenceStep extends Model
         ]);
     }
 
-    public function toggle(?User $user = null): void
+    public function setCompleted(bool $completed, ?User $user = null): void
     {
-        $this->isCompleted() ? $this->uncomplete() : $this->complete($user);
+        if ($this->isCompleted() === $completed) {
+            return;
+        }
+
+        $completed ? $this->complete($user) : $this->uncomplete();
     }
 
     /** @param Builder<static> $query */

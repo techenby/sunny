@@ -62,14 +62,18 @@ test('completing an item records who completed it', function () {
         ->and($item->completedBy->id)->toBe($user->id);
 });
 
-test('toggling an item flips its completed state', function () {
+test('setting an item completed is safe to repeat', function () {
     $user = User::factory()->create();
+    $other = User::factory()->create();
     $item = ChecklistItem::factory()->create();
 
-    $item->toggle($user);
-    expect($item->isCompleted())->toBeTrue();
+    $item->setCompleted(true, $user);
+    $item->setCompleted(true, $other);
+    expect($item->isCompleted())->toBeTrue()
+        ->and($item->completed_by)->toBe($user->id);
 
-    $item->toggle($user);
+    $item->setCompleted(false);
+    $item->setCompleted(false);
     expect($item->isCompleted())->toBeFalse()
         ->and($item->completed_by)->toBeNull();
 });
