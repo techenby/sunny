@@ -226,6 +226,20 @@ describe('crud and actions', function () {
         expect($routine->steps()->pluck('name')->all())->toBe(['First', 'Second']);
     });
 
+    test('reorders steps that share a position and numbers them again', function () {
+        $user = User::factory()->create();
+        $routine = Routine::factory()->for($user->currentTeam)->create();
+        $first = RoutineStep::factory()->for($routine)->create(['name' => 'First', 'position' => 1]);
+        RoutineStep::factory()->for($routine)->create(['name' => 'Second', 'position' => 1]);
+        RoutineStep::factory()->for($routine)->create(['name' => 'Third', 'position' => 5]);
+
+        Livewire::actingAs($user)
+            ->test('pages::routines.show', ['routine' => $routine])
+            ->call('moveDown', $first->id);
+
+        expect($routine->steps()->pluck('position', 'name')->all())->toBe(['Second' => 1, 'First' => 2, 'Third' => 3]);
+    });
+
     test('moving past either end does nothing', function () {
         $user = User::factory()->create();
         $routine = Routine::factory()->for($user->currentTeam)->create();
