@@ -125,6 +125,21 @@ describe('form validation', function () {
         expect(Routine::count())->toBe(0);
     })->with([-1, 7, 9]);
 
+    test('rejects the same weekday twice', function () {
+        $user = User::factory()->create();
+
+        Livewire::actingAs($user)
+            ->test('pages::routines.index')
+            ->call('create')
+            ->set('form.name', 'Sheets')
+            ->set('form.frequency', RoutineFrequency::Weekly->value)
+            ->set('form.weekdays', [Carbon::MONDAY, Carbon::MONDAY])
+            ->call('save')
+            ->assertHasErrors('form.weekdays.0');
+
+        expect(Routine::count())->toBe(0);
+    });
+
     test('accepts every real weekday', function () {
         $user = User::factory()->create();
 

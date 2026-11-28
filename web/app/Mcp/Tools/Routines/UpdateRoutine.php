@@ -57,7 +57,7 @@ class UpdateRoutine extends Tool
             return Response::error('Provide at least one field to update.');
         }
 
-        $routine->update($this->normalizeSchedule($data));
+        $routine->update($data);
 
         return Response::structured($this->routineWithStepsPayload($routine->load(['user', 'steps'])));
     }
