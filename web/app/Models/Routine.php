@@ -21,6 +21,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Number;
 use Illuminate\Support\Str;
 
+/**
+ * @property RoutineFrequency $frequency
+ * @property list<int|string>|null $weekdays
+ * @property int|null $day_of_month
+ */
 #[Fillable([
     'team_id',
     'user_id',
@@ -41,6 +46,16 @@ class Routine extends Model
 
     public const int MAX_PER_OWNER = 100;
     use SoftDeletes;
+
+    protected static function booted(): void
+    {
+        static::saving(function (Routine $routine): void {
+            $frequency = $routine->frequency;
+
+            $routine->weekdays = $frequency->usesWeekdays() ? array_values($routine->scheduledWeekdays()) : null;
+            $routine->day_of_month = $frequency->usesDayOfMonth() ? $routine->day_of_month : null;
+        });
+    }
 
     /** @return HasMany<RoutineOccurrence, $this> */
     public function occurrences(): HasMany

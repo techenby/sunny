@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Actions\Routines\OrderRoutineSteps;
-use App\Enums\RoutineFrequency;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\StoreRoutineRequest;
 use App\Http\Requests\Api\UpdateRoutineRequest;
@@ -35,7 +34,7 @@ class RoutineController extends Controller
             $team->routines()->withTrashed(),
             $request->validated('client_uuid'),
             fn (): Routine => $team->routines()->create([
-                ...$this->schedule($request->validated()),
+                ...$request->validated(),
                 'starts_on' => $request->validated('starts_on') ?? $team->today()->toDateString(),
             ]),
         );
@@ -54,7 +53,7 @@ class RoutineController extends Controller
 
     public function update(UpdateRoutineRequest $request, Team $team, Routine $routine, OrderRoutineSteps $action): RoutineResource
     {
-        $routine->update($this->schedule($request->safe()->except('step_order')));
+        $routine->update($request->safe()->except('step_order'));
 
         if ($request->has('step_order')) {
             $action->handle($routine, array_map(intval(...), $request->validated('step_order')));
@@ -70,27 +69,5 @@ class RoutineController extends Controller
         $routine->delete();
 
         return response()->noContent();
-    }
-
-    /**
-     * Only keep the fields the chosen frequency reads, so a routine switched
-     * from weekly to daily doesn't hold on to stale weekdays.
-     *
-     * @param  array<string, mixed>  $data
-     * @return array<string, mixed>
-     */
-    private function schedule(array $data): array
-    {
-        if (! isset($data['frequency'])) {
-            return $data;
-        }
-
-        $frequency = RoutineFrequency::from($data['frequency']);
-
-        return [
-            ...$data,
-            'weekdays' => $frequency->usesWeekdays() ? array_map(intval(...), $data['weekdays']) : null,
-            'day_of_month' => $frequency->usesDayOfMonth() ? $data['day_of_month'] : null,
-        ];
     }
 }

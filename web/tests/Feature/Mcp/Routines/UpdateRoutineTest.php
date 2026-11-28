@@ -68,6 +68,21 @@ test('it clears schedule fields the new frequency does not use', function () {
     expect($routine->refresh()->weekdays)->toBeNull();
 });
 
+test('it ignores weekdays sent on their own for a routine that does not use them', function () {
+    $user = User::factory()->create();
+    $routine = Routine::factory()->for($user->currentTeam)->create();
+
+    SunnyTestServer::actingAs($user)
+        ->tool(UpdateRoutine::class, ['id' => $routine->id, 'weekdays' => [Carbon::TUESDAY]])
+        ->assertOk()
+        ->assertStructuredContent(fn (AssertableJson $json) => $json
+            ->where('frequency', 'daily')
+            ->where('weekdays', null)
+            ->etc());
+
+    expect($routine->refresh()->weekdays)->toBeNull();
+});
+
 test('it requires weekdays when switching to weekly', function () {
     $user = User::factory()->create();
     $routine = Routine::factory()->for($user->currentTeam)->daily()->create();

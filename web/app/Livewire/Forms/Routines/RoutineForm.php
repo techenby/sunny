@@ -55,12 +55,6 @@ class RoutineForm extends Form
 
         $data = $this->validate();
 
-        // Only persist the fields the chosen frequency actually reads, so a
-        // routine switched from weekly to daily doesn't keep stale weekdays.
-        $frequency = RoutineFrequency::from($data['frequency']);
-        $data['weekdays'] = $frequency->usesWeekdays() ? array_values($data['weekdays']) : null;
-        $data['day_of_month'] = $frequency->usesDayOfMonth() ? $data['day_of_month'] : null;
-
         if ($this->editingRoutine) {
             $this->editingRoutine->update($data);
             $routine = $this->editingRoutine;
@@ -87,7 +81,7 @@ class RoutineForm extends Form
                 Rule::requiredIf($this->frequency === RoutineFrequency::Weekly->value),
                 'array',
             ],
-            'weekdays.*' => ['integer', 'between:0,6'],
+            'weekdays.*' => ['integer', 'between:0,6', 'distinct'],
             'day_of_month' => [
                 Rule::requiredIf($this->frequency === RoutineFrequency::Monthly->value),
                 'nullable',

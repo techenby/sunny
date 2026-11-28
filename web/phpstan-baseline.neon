@@ -477,7 +477,7 @@ parameters:
 		-
 			message: '#^Cannot access property \$value on string\.$#'
 			identifier: property.nonObject
-			count: 2
+			count: 1
 			path: app/Livewire/Forms/Routines/RoutineForm.php
 
 		-
@@ -1317,7 +1317,7 @@ parameters:
 		-
 			message: '#^Cannot access property \$value on string\.$#'
 			identifier: property.nonObject
-			count: 2
+			count: 1
 			path: app/Mcp/Tools/Routines/AddRoutineSteps.php
 
 		-
@@ -1479,7 +1479,7 @@ parameters:
 		-
 			message: '#^Cannot access property \$value on string\.$#'
 			identifier: property.nonObject
-			count: 2
+			count: 1
 			path: app/Mcp/Tools/Routines/CreateRoutine.php
 
 		-
@@ -1539,7 +1539,7 @@ parameters:
 		-
 			message: '#^Cannot access property \$value on string\.$#'
 			identifier: property.nonObject
-			count: 2
+			count: 1
 			path: app/Mcp/Tools/Routines/GetRoutine.php
 
 		-
@@ -1641,7 +1641,7 @@ parameters:
 		-
 			message: '#^Cannot access property \$value on string\.$#'
 			identifier: property.nonObject
-			count: 2
+			count: 1
 			path: app/Mcp/Tools/Routines/ListRoutines.php
 
 		-
@@ -1701,7 +1701,7 @@ parameters:
 		-
 			message: '#^Cannot access property \$value on string\.$#'
 			identifier: property.nonObject
-			count: 2
+			count: 1
 			path: app/Mcp/Tools/Routines/ReorderRoutineSteps.php
 
 		-
@@ -1755,7 +1755,7 @@ parameters:
 		-
 			message: '#^Cannot access property \$value on string\.$#'
 			identifier: property.nonObject
-			count: 2
+			count: 1
 			path: app/Mcp/Tools/Routines/UpdateRoutine.php
 
 		-
@@ -1803,7 +1803,7 @@ parameters:
 		-
 			message: '#^Cannot access property \$value on string\.$#'
 			identifier: property.nonObject
-			count: 2
+			count: 1
 			path: app/Mcp/Tools/Routines/UpdateRoutineStep.php
 
 		-
@@ -2109,36 +2109,6 @@ parameters:
 		-
 			message: '#^Cannot call method startOfDay\(\) on string\.$#'
 			identifier: method.nonObject
-			count: 1
-			path: app/Models/Routine.php
-
-		-
-			message: '#^Match arm comparison between string and App\\Enums\\RoutineFrequency\:\:Daily is always false\.$#'
-			identifier: match.alwaysFalse
-			count: 2
-			path: app/Models/Routine.php
-
-		-
-			message: '#^Match arm comparison between string and App\\Enums\\RoutineFrequency\:\:Monthly is always false\.$#'
-			identifier: match.alwaysFalse
-			count: 2
-			path: app/Models/Routine.php
-
-		-
-			message: '#^Match arm comparison between string and App\\Enums\\RoutineFrequency\:\:Weekly is always false\.$#'
-			identifier: match.alwaysFalse
-			count: 2
-			path: app/Models/Routine.php
-
-		-
-			message: '#^Match expression does not handle remaining value\: string$#'
-			identifier: match.unhandled
-			count: 2
-			path: app/Models/Routine.php
-
-		-
-			message: '#^Parameter \#2 \$array of function array_map expects array, array\|string given\.$#'
-			identifier: argument.type
 			count: 1
 			path: app/Models/Routine.php
 

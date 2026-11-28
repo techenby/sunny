@@ -223,6 +223,25 @@ test('update leaves the schedule alone when the frequency is not sent', function
         ->assertJsonPath('data.weekdays', [1, 5]);
 });
 
+test('update keeps weekdays sent on their own in step with the stored frequency', function () {
+    $user = User::factory()->create();
+    $daily = Routine::factory()->for($user->currentTeam)->create();
+    $weekly = Routine::factory()->for($user->currentTeam)->weekly([1])->create();
+
+    $this->actingAs($user)
+        ->patchJson(route('api.routines.update', [$user->currentTeam, $daily]), ['weekdays' => [2, 4]])
+        ->assertOk()
+        ->assertJsonPath('data.weekdays', null);
+
+    $this->actingAs($user)
+        ->patchJson(route('api.routines.update', [$user->currentTeam, $weekly]), ['weekdays' => ['2', '4']])
+        ->assertOk()
+        ->assertJsonPath('data.weekdays', [2, 4]);
+
+    expect($daily->fresh()->weekdays)->toBeNull()
+        ->and($weekly->fresh()->weekdays)->toBe([2, 4]);
+});
+
 test('update can hand a routine to the whole household', function () {
     $user = User::factory()->create();
     $routine = Routine::factory()->for($user->currentTeam)->assignedTo($user)->create();

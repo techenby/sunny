@@ -49,7 +49,7 @@ class CreateRoutine extends Tool
 
         $routine = DB::transaction(function () use ($team, $validated): Routine {
             $routine = $team->routines()->create([
-                ...$this->normalizeSchedule(Arr::except($validated, ['steps'])),
+                ...Arr::except($validated, ['steps']),
                 'starts_on' => $validated['starts_on'] ?? $team->today()->toDateString(),
             ]);
 
